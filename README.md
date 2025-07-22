@@ -12,31 +12,7 @@ Es como el "Airbnb de la movilidad alternativa".
 - 📦 API REST
 - 🔐 Seguridad con CORS, dotenv, bcrypt, etc.
 
----
 
-## 📁 Estructura
-
-rodamallorca/
-├── backend/ # Microservicio de autenticación (por ahora)
-│ ├── src/
-│ │ ├── modules/
-│ │ │ └── auth/
-│ │ │ ├── application/
-│ │ │ ├── domain/
-│ │ │ ├── infraestructure/
-│ │ │ └── interfaces/
-│ │ └── index.ts
-│ ├── tsconfig.json
-│ └── package.json
-├── frontend/ # App en React (por desarrollar)
-├── .gitignore
-├── pnpm-workspace.yaml
-├── package.json
-└── README.md
-
-
-
----
 
 ## ▶️ Scripts
 
