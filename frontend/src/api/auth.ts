@@ -1,0 +1,11 @@
+import axios from 'axios';
+import { API_BASE_URL, AUTH_ENDPOINTS } from '../constants';
+
+const API = axios.create({
+  baseURL: API_BASE_URL,
+});
+
+export const login = async (email: string, password: string) => {
+  const response = await API.post(AUTH_ENDPOINTS.LOGIN, { email, password });
+  return response.data;
+};
