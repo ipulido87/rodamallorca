@@ -1,8 +1,8 @@
-import express from 'express';
 import cors from 'cors';
-import morgan from 'morgan';
 import dotenv from 'dotenv';
-import authRoutes from './modules/auth/infraestructure/auth.routes';
+import express from 'express';
+import morgan from 'morgan';
+import authRoutes from './modules/auth/infraestructure/routes/auth.routes';
 
 
 dotenv.config();
