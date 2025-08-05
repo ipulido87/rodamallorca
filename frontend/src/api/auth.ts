@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { API_BASE_URL, AUTH_ENDPOINTS } from '../constants';
+import { API_URL, AUTH_ENDPOINTS } from '../constants/api';
 
 const API = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: API_URL,
 });
 
 export const login = async (email: string, password: string) => {

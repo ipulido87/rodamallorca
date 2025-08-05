@@ -1,4 +1,3 @@
-// src/theme/theme.ts
 import { blueGrey, indigo, red } from '@mui/material/colors';
 import { createTheme } from '@mui/material/styles';
 

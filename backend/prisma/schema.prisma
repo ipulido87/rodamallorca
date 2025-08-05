@@ -9,8 +9,12 @@ datasource db {
 }
 
 model User {
-  id       String  @id @default(uuid())
-  email    String  @unique
-  password String
-  createdAt DateTime @default(now())
+  id               String   @id @default(uuid())
+  email            String   @unique
+  password         String
+  createdAt        DateTime @default(now())
+  verified         Boolean  @default(false)
+  verificationCode String?  @unique
+  codeExpiresAt    DateTime?
 }
+

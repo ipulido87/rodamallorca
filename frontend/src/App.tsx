@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Home } from './pages/home';
-import { LandingPage } from './pages/landing-page'; // 👈 importa la nueva portada
+import { LandingPage } from './pages/landing-page';
 import { LoginForm } from './pages/login-form';
 import { Register } from './pages/register-user';
 
