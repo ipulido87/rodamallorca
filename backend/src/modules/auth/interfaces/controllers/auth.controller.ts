@@ -4,8 +4,8 @@ import prisma from '../../../../lib/prisma';
 import { sanitizeUser } from '../../../../utils/sanitize-user';
 import { loginUser } from '../../application/login-user';
 import { RegisterUserSchema } from '../../domain/schemas/register.schema';
-import { sendVerificationEmail } from '../../infraestructure/services/email-service';
-import { saveUser } from '../../infraestructure/services/user.service';
+import { sendVerificationEmail } from '../../infrastructure/services/email-service';
+import { saveUser } from '../../infrastructure/services/user.service';
 
 
 export const registerUser = async (req: Request, res: Response) => {
@@ -53,33 +53,21 @@ export const loginUserController = async (req: Request, res: Response) => {
 };
 
 export const verifyUser = async (req: Request, res: Response) => {
-  const { code } = req.query;
+  const { email, code } = req.body;
 
-  if (!code || typeof code !== 'string') {
-    return res.status(400).json({ message: 'Código de verificación inválido' });
+  if (!email || !code) {
+    return res.status(400).json({ message: 'Faltan datos para verificar' });
   }
 
-  try {
-    const user = await prisma.user.findFirst({
-      where: { verificationCode: code },
-    });
-
-    console.log('🟡 Usuario encontrado:', user);
-
-    if (!user) {
-      return res.status(404).json({ message: 'Código no encontrado o ya verificado' });
-    }
-
-    const updated = await prisma.user.update({
-      where: { id: user.id },
-      data: { verificationCode: null,verified: true, },
-    });
-
-    console.log('🟢 Usuario actualizado:', updated);
-
-    return res.status(200).json({ message: '✅ Usuario verificado correctamente' });
-  } catch (error) {
-    console.error('[VerifyUser Error]', error);
-    return res.status(500).json({ message: 'Error interno del servidor' });
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user || user.verificationCode !== code) {
+    return res.status(400).json({ message: 'Código inválido o usuario no encontrado' });
   }
+
+  await prisma.user.update({
+    where: { email },
+    data: { verified: true, verificationCode: null, codeExpiresAt: null },
+  });
+
+  return res.status(200).json({ message: '✅ Usuario verificado correctamente' });
 };

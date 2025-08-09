@@ -9,12 +9,14 @@ datasource db {
 }
 
 model User {
-  id               String   @id @default(uuid())
-  email            String   @unique
-  password         String
-  createdAt        DateTime @default(now())
-  verified         Boolean  @default(false)
-  verificationCode String?  @unique
-  codeExpiresAt    DateTime?
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String?
+  googleId  String?  @unique
+  name      String?
+  picture   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now()) // 👈 añade este default
 }
+
 

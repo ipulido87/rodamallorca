@@ -1,4 +1,4 @@
-import { saveUser } from '../infraestructure/services/user.service';
+import { saveUser } from '../infrastructure/services/user.service';
 
 export const registerUserUseCase = async (email: string, password: string) => {
   if (!email || !password) {
