@@ -22,3 +22,57 @@ Es como el "Airbnb de la movilidad alternativa".
 cd backend
 pnpm install
 pnpm run dev
+```bash
+
+.
+├─ .git/
+├─ .gitignore
+├─ package.json
+├─ pnpm-workspace.yaml
+├─ pnpm-lock.yaml            # (solo este lock en la raíz)
+├─ README.md
+├─ backend/
+│  ├─ .env
+│  ├─ .gitignore
+│  ├─ package.json
+│  ├─ prisma/
+│  │  ├─ migrations/
+│  │  └─ schema.prisma
+│  ├─ src/
+│  │  ├─ config/
+│  │  ├─ index.ts
+│  │  ├─ lib/
+│  │  ├─ modules/
+│  │  ├─ types/
+│  │  ├─ utils/
+│  │  └─ vendors/
+│  └─ tsconfig.json
+└─ frontend/
+   ├─ .env
+   ├─ eslint.config.js
+   ├─ index.html
+   ├─ package.json
+   ├─ public/
+   │  └─ vite.svg
+   ├─ README.md
+   ├─ src/
+   │  ├─ api/
+   │  ├─ App.css
+   │  ├─ App.tsx
+   │  ├─ assets/
+   │  ├─ components/
+   │  ├─ constants/
+   │  ├─ contexts/
+   │  ├─ hooks/
+   │  ├─ index.css
+   │  ├─ main.tsx
+   │  ├─ pages/
+   │  ├─ providers/
+   │  ├─ services/
+   │  ├─ theme/
+   │  └─ vite-env.d.ts
+   ├─ tsconfig.app.json
+   ├─ tsconfig.json
+   ├─ tsconfig.node.json
+   └─ vite.config.ts
+
