@@ -22,7 +22,7 @@ Es como el "Airbnb de la movilidad alternativa".
 cd backend
 pnpm install
 pnpm run dev
-```bash
+
 
 .
 ├─ .git/
