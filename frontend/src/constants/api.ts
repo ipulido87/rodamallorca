@@ -1,7 +1,8 @@
-export const API_URL = 'http://localhost:4000/api';
+export const API_URL = 'http://localhost:4000/api'
 
 export const AUTH_ENDPOINTS = {
   LOGIN: '/auth/login',
   REGISTER: '/auth/register',
   VERIFY: '/auth/verify',
-};
+  GOOGLE_CALLBACK: '/auth/google/callback',
+} as const

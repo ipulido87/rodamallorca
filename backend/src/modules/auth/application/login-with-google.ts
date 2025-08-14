@@ -1,6 +1,6 @@
-import { UserRepository } from '../domain/user-respository'
-import { signJwt } from '../infrastructure/jwt/jwt.service'
-import { handleCallback } from '../infrastructure/oidc/google-client'
+import { UserRepository } from '../domain/repositories/user-repository'
+import { signJwt } from '../infrastructure/adapters/jwt/jwt.service'
+import { handleCallback } from '../infrastructure/adapters/oidc/google-client'
 
 export async function loginWithGoogleUseCase(params: {
   state: string

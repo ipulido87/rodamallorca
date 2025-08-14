@@ -3,7 +3,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import express from 'express'
 import morgan from 'morgan'
-import authRoutes from './modules/auth/infrastructure/http/auth.routes'
+import authRoutes from './modules/auth/interfaces/http/auth.routes'
 
 dotenv.config()
 

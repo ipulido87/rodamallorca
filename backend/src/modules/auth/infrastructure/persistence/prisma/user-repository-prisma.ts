@@ -1,5 +1,8 @@
 import { PrismaClient } from '@prisma/client'
-import { UserDTO, UserRepository } from './../../domain/user-respository'
+import {
+  UserDTO,
+  UserRepository,
+} from '../../../domain/repositories/user-repository'
 
 const prisma = new PrismaClient()
 

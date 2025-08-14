@@ -1,8 +1,8 @@
 import crypto from 'crypto'
 import { Router } from 'express'
-import { LoginUserSchema } from '../../domain/schemas/login.schema'
-import { RegisterUserSchema } from '../../domain/schemas/register.schema'
-import { VerifyCodeSchema } from '../../domain/schemas/verify-code.schema'
+import { LoginUserSchema } from '../../application/login.schema'
+import { RegisterUserSchema } from '../../application/register.schema'
+import { VerifyCodeSchema } from '../../application/verify-code.schema'
 import {
   loginUserController,
   registerUser,
@@ -14,8 +14,8 @@ import { validateBody } from '../../interfaces/middlewares/validateBody'
 // 👇 OIDC + JWT + Repo (ajusta paths si hace falta)
 import { verify as jwtVerify } from 'jsonwebtoken'
 import { loginWithGoogleUseCase } from '../../application/login-with-google'
-import { UserRepositoryPrisma } from '../../domain/schemas/user-repository-prisma'
-import { buildAuthUrl } from '../oidc/google-client'
+import { buildAuthUrl } from '../../infrastructure/adapters/oidc/google-client'
+import { UserRepositoryPrisma } from '../../infrastructure/persistence/prisma/user-repository-prisma'
 
 const router = Router()
 
@@ -109,19 +109,6 @@ router.get('/me', async (req, res) => {
   } catch {
     return res.json({ user: null })
   }
-})
-
-router.get('/google-url', async (_req, res) => {
-  const state = crypto.randomUUID()
-  const url = await buildAuthUrl(state)
-  res.cookie('oauth_state', state, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 10 * 60 * 1000,
-    path: '/',
-  })
-  res.json({ url })
 })
 
 export default router
