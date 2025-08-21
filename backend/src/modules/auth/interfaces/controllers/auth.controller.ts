@@ -3,9 +3,9 @@ import { Request, Response } from 'express'
 import prisma from '../../../../lib/prisma'
 import { sanitizeUser } from '../../../../utils/sanitize-user'
 import { loginUser } from '../../application/login-user'
-import { RegisterUserSchema } from '../../application/register.schema'
 import { sendVerificationEmail } from '../../infrastructure/adapters/email/email-service'
 import { saveUser } from '../../infrastructure/services/user.service'
+import { RegisterUserSchema } from '../http/schemas/register.schema'
 
 export const registerUser = async (req: Request, res: Response) => {
   const result = RegisterUserSchema.safeParse(req.body)

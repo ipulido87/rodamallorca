@@ -1,8 +1,5 @@
 import crypto from 'crypto'
 import { Router } from 'express'
-import { LoginUserSchema } from '../../application/login.schema'
-import { RegisterUserSchema } from '../../application/register.schema'
-import { VerifyCodeSchema } from '../../application/verify-code.schema'
 import {
   loginUserController,
   registerUser,
@@ -10,6 +7,9 @@ import {
 } from '../../interfaces/controllers/auth.controller'
 import { verifyToken } from '../../interfaces/middlewares/auth.middleware'
 import { validateBody } from '../../interfaces/middlewares/validateBody'
+import { LoginUserSchema } from './schemas/login.schema'
+import { RegisterUserSchema } from './schemas/register.schema'
+import { VerifyCodeSchema } from './schemas/verify-code.schema'
 
 // 👇 OIDC + JWT + Repo (ajusta paths si hace falta)
 import { verify as jwtVerify } from 'jsonwebtoken'
@@ -72,12 +72,14 @@ router.get('/google/callback', async (req, res) => {
       return res.status(400).json({ error: 'Missing state or code' })
 
     const repo = new UserRepositoryPrisma()
-    const { token } = await loginWithGoogleUseCase({
-      state,
-      code,
-      cookieState: req.cookies?.oauth_state,
-      repo,
-    })
+    const { token } = await loginWithGoogleUseCase(
+      {
+        state,
+        code,
+        cookieState: req.cookies?.oauth_state,
+      },
+      { repo }
+    )
 
     res.clearCookie('oauth_state')
     res.cookie('auth_token', token, {
