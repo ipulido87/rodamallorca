@@ -5,30 +5,39 @@ import prisma from '../../../lib/prisma'
 import { sanitizeUser } from '../../../utils/sanitize-user'
 
 export const loginUser = async (email: string, password: string) => {
-  const user = await prisma.user.findUnique({ where: { email } })
+  // 1) normaliza email
+  const emailNorm = email.trim().toLowerCase()
+
+  // 2) busca usuario
+  const user = await prisma.user.findUnique({ where: { email: emailNorm } })
+  // devuelve siempre mismo error para no filtrar info
+  const invalid = new Error('Invalid credentials')
 
   if (!user) {
-    throw new Error('Invalid credentials')
+    throw invalid
   }
 
+  // 3) exige verificación por email (si tu política lo requiere)
+  if (!user.verified) {
+    throw new Error('Please verify your email before logging in')
+  }
+
+  // 4) usuarios de Google no tienen password local
   if (!user.password) {
-    throw new Error(
-      'This account does not have a password. Try Sign in with Google.'
-    )
+    throw invalid
   }
 
-  const isPasswordValid = await bcrypt.compare(password, user.password)
-
-  if (!isPasswordValid) {
-    throw new Error('Invalid credentials')
+  // 5) compara password
+  const ok = await bcrypt.compare(password, user.password)
+  if (!ok) {
+    throw invalid
   }
 
+  // 6) firma JWT (incluye lo que necesites)
   const token = jwt.sign(
-    { userId: user.id, email: user.email },
+    { sub: user.id, email: user.email }, // puedes añadir roles, etc.
     config.jwtSecret,
-    {
-      expiresIn: '1h',
-    }
+    { expiresIn: '1h' }
   )
 
   return { token, user: sanitizeUser(user) }

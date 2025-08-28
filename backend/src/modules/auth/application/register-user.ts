@@ -1,10 +1,15 @@
-import { saveUser } from '../infrastructure/services/user.service';
+import { saveUser } from '../infrastructure/services/user.service'
 
-export const registerUserUseCase = async (email: string, password: string) => {
-  if (!email || !password) {
-    throw new Error('Email and password are required');
-  }
+export type RegisterInput = {
+  email: string
+  password: string
+  name: string
+  birthDate?: Date
+  phone?: string
+}
 
-  await saveUser(email, password);
-  return { email };
-};
+export const registerUserUseCase = async (input: RegisterInput) => {
+  const email = input.email.trim().toLowerCase()
+  const user = await saveUser({ ...input, email })
+  return user
+}

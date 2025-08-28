@@ -15,12 +15,16 @@ model User {
   googleId         String?  @unique
   name             String?
   picture          String?
+  birthDate        DateTime?
+  phone            String?  // puedes añadir @unique si quieres
   verificationCode String?
   verified         Boolean  @default(false)
   codeExpiresAt    DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }
+
+
 
 model Workshop {
   id          String   @id @default(uuid())

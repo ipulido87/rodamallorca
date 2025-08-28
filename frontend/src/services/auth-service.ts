@@ -1,19 +1,35 @@
-import axios from 'axios';
-import { API_URL } from '../constants/api';
+// src/services/auth-service.ts
+import axios from 'axios'
+import { API_URL, AUTH_ENDPOINTS } from '../constants/api'
 
-const API = axios.create({ baseURL: API_URL });
+export const API = axios.create({
+  baseURL: API_URL,
+  withCredentials: true, // por si usas cookie httpOnly en /me, google/callback, etc.
+})
 
-export const register = async (email: string, password: string) => {
-  const res = await API.post('/auth/register', { email, password });
-  return res.data;
-};
+// ---- Endpoints ----
+export async function register(input: {
+  email: string
+  password: string
+  name: string
+  birthDate?: string // "YYYY-MM-DD"
+  phone?: string
+}) {
+  const res = await API.post(AUTH_ENDPOINTS.REGISTER, input)
+  return res.data // { message, user }
+}
 
-export const login = async (email: string, password: string) => {
-  const res = await API.post('/auth/login', { email, password });
-  return res.data;
-};
+export async function login(email: string, password: string) {
+  const res = await API.post(AUTH_ENDPOINTS.LOGIN, { email, password })
+  return res.data // { token, user }
+}
 
-export const verifyCode = async (email: string, code: string) => {
-  const res = await API.post('/auth/verify', { email, code });
-  return res.data;
-};
+export async function verifyCode(email: string, code: string) {
+  const res = await API.post(AUTH_ENDPOINTS.VERIFY, { email, code })
+  return res.data // { message, user? }
+}
+
+export async function me() {
+  const res = await API.get('/auth/me')
+  return res.data // { user } | { user: null }
+}

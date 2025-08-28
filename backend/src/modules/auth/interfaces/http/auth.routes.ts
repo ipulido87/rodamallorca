@@ -13,6 +13,7 @@ import { VerifyCodeSchema } from './schemas/verify-code.schema'
 
 // 👇 OIDC + JWT + Repo (ajusta paths si hace falta)
 import { verify as jwtVerify } from 'jsonwebtoken'
+import { asyncHandler } from '../../../../utils/async-handler'
 import { loginWithGoogleUseCase } from '../../application/login-with-google'
 import { buildAuthUrl } from '../../infrastructure/adapters/oidc/google-client'
 import { UserRepositoryPrisma } from '../../infrastructure/persistence/prisma/user-repository-prisma'
@@ -20,15 +21,23 @@ import { UserRepositoryPrisma } from '../../infrastructure/persistence/prisma/us
 const router = Router()
 
 // ---------- Tus rutas existentes ----------
-router.post('/register', validateBody(RegisterUserSchema), registerUser)
-router.post('/login', validateBody(LoginUserSchema), loginUserController)
+router.post(
+  '/register',
+  validateBody(RegisterUserSchema),
+  asyncHandler(registerUser)
+)
+router.post(
+  '/login',
+  validateBody(LoginUserSchema),
+  asyncHandler(loginUserController)
+)
 
 router.get('/protected', verifyToken, (req, res) => {
   console.log('Usuario logueado:', req.user)
   res.json({ message: 'Todo ok', user: req.user })
 })
 
-router.post('/verify', validateBody(VerifyCodeSchema), verifyUser)
+router.post('/verify', validateBody(VerifyCodeSchema), asyncHandler(verifyUser))
 
 // ---------- Google OAuth ----------
 router.get('/google', async (req, res) => {
