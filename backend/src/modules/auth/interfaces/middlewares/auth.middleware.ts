@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
-import { config } from '../../../../config/config' // usa tu fuente de env
+import { config } from '../../../../config/config'
 
-// Si quieres reutilizar el tipo:
+// Para tipar req.user (asegúrate de tener src/types/express.d.ts)
 export type AuthenticatedRequest = Request & { user: Express.UserPayload }
 
 export const verifyToken = (
@@ -10,21 +10,18 @@ export const verifyToken = (
   res: Response,
   next: NextFunction
 ) => {
-  const header =
-    req.headers.authorization ||
-    (req.headers.Authorization as string | undefined)
-  if (!header)
+  const authHeader =
+    req.headers.authorization || (req.headers as any).Authorization
+  if (!authHeader)
     return res.status(401).json({ message: 'Missing Authorization header' })
 
-  // Espera "Bearer <token>"
-  const [scheme, token] = header.split(' ')
-  if (scheme?.toLowerCase() !== 'bearer' || !token) {
+  const match = /^Bearer\s+(.+)$/i.exec(authHeader)
+  if (!match)
     return res.status(401).json({ message: 'Invalid Authorization format' })
-  }
 
+  const token = match[1]
   try {
     const decoded = jwt.verify(token, config.jwtSecret) as Express.UserPayload
-    // opcional: valida campos mínimos
     if (!decoded?.id || !decoded?.email) {
       return res.status(403).json({ message: 'Invalid token payload' })
     }
@@ -35,10 +32,6 @@ export const verifyToken = (
   }
 }
 
-/**
- * Úsalo después de verifyToken para garantizar req.user no es undefined
- * y obtener tipado fuerte en tus controllers.
- */
 export const requireUser = (
   req: Request,
   res: Response,
@@ -46,4 +39,17 @@ export const requireUser = (
 ) => {
   if (!req.user) return res.status(401).json({ message: 'Not authenticated' })
   next()
+}
+
+export const requireRole = (
+  ...roles: NonNullable<Express.UserPayload['role']>[]
+) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user) return res.status(401).json({ message: 'Not authenticated' })
+    // Si tu JWT aún no trae role, esto te protege de undefined
+    if (!req.user.role || !roles.includes(req.user.role)) {
+      return res.status(403).json({ message: 'Forbidden' })
+    }
+    next()
+  }
 }

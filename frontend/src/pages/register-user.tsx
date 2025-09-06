@@ -5,6 +5,7 @@ import {
   Box,
   Button,
   Container,
+  Divider,
   IconButton,
   InputAdornment,
   Paper,
@@ -15,6 +16,7 @@ import { useTheme } from '@mui/material/styles'
 import axios, { AxiosError } from 'axios'
 import { ChangeEvent, FormEvent, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { GoogleLoginButton } from '../components/google-login-button'
 import { EMAIL_MIN_LENGTH, PASSWORD_MIN_LENGTH } from '../constants/validation'
 import {
   register as apiRegister,
@@ -82,18 +84,18 @@ export const Register = () => {
         name: formData.name.trim(),
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
-        birthDate: formData.birthDate || undefined, // MUI date devuelve "" si está vacío
+        birthDate: formData.birthDate || undefined,
         phone: formData.phone?.trim() || undefined,
       }
       const data = await apiRegister(payload)
       setPendingEmail(data.user.email)
       setStep('code')
       showAlert(
-        'Te enviamos un código al correo. Introdúcelo para verificar tu cuenta.',
+        'We have sent a verification code to your email. Enter it to verify your account.',
         'success'
       )
     } catch (err) {
-      let msg = 'No se pudo registrar. Inténtalo de nuevo.'
+      let msg = 'Registration failed. Please try again.'
       if (axios.isAxiosError(err)) {
         const ax = err as AxiosError<{ message?: string }>
         msg = ax.response?.data?.message ?? msg
@@ -110,10 +112,10 @@ export const Register = () => {
     setLoading(true)
     try {
       await apiVerifyCode(pendingEmail, code.trim())
-      showAlert('✅ Cuenta verificada. Ahora puedes iniciar sesión.', 'success')
+      showAlert('✅ Account verified. You can now log in.', 'success')
       setTimeout(() => navigate('/login'), 1200)
     } catch (err) {
-      let msg = 'Código inválido o expirado.'
+      let msg = 'Invalid or expired code.'
       if (axios.isAxiosError(err)) {
         const ax = err as AxiosError<{ message?: string }>
         msg = ax.response?.data?.message ?? msg
@@ -128,13 +130,13 @@ export const Register = () => {
     <Container maxWidth="xs">
       <Paper elevation={3} sx={{ p: 4, mt: 10 }}>
         <Typography variant="h5" textAlign="center" gutterBottom>
-          {step === 'form' ? 'Registro' : 'Verificar cuenta'}
+          {step === 'form' ? 'Register' : 'Verify Account'}
         </Typography>
 
         {step === 'form' ? (
           <Box component="form" onSubmit={handleRegister}>
             <TextField
-              label="Nombre"
+              label="Name"
               name="name"
               value={formData.name}
               onChange={handleChange}
@@ -144,7 +146,7 @@ export const Register = () => {
               inputProps={{ minLength: 2 }}
             />
             <TextField
-              label="Correo electrónico"
+              label="Email"
               name="email"
               type="email"
               value={formData.email}
@@ -155,7 +157,7 @@ export const Register = () => {
               inputProps={{ minLength: EMAIL_MIN_LENGTH }}
             />
             <TextField
-              label="Contraseña"
+              label="Password"
               name="password"
               type={showPassword ? 'text' : 'password'}
               value={formData.password}
@@ -169,9 +171,7 @@ export const Register = () => {
                   <InputAdornment position="end">
                     <IconButton
                       aria-label={
-                        showPassword
-                          ? 'Ocultar contraseña'
-                          : 'Mostrar contraseña'
+                        showPassword ? 'Hide password' : 'Show password'
                       }
                       onClick={() => setShowPassword((v) => !v)}
                       edge="end"
@@ -183,7 +183,7 @@ export const Register = () => {
               }}
             />
             <TextField
-              label="Fecha de nacimiento"
+              label="Birth Date"
               name="birthDate"
               type="date"
               value={formData.birthDate ?? ''}
@@ -193,7 +193,7 @@ export const Register = () => {
               InputLabelProps={{ shrink: true }}
             />
             <TextField
-              label="Móvil"
+              label="Phone"
               name="phone"
               type="tel"
               value={formData.phone ?? ''}
@@ -233,21 +233,25 @@ export const Register = () => {
               sx={{ mt: 2 }}
               disabled={!canSubmit || loading}
             >
-              {loading ? 'Registrando…' : 'Registrarse'}
+              {loading ? 'Registering…' : 'Register'}
             </Button>
+
+            <Divider sx={{ my: 3 }}>or</Divider>
+            <GoogleLoginButton />
+
             <Button
               fullWidth
               variant="text"
               sx={{ mt: 1 }}
               onClick={() => navigate('/login')}
             >
-              ¿Ya tienes cuenta? Inicia sesión
+              Already have an account? Log in
             </Button>
           </Box>
         ) : (
           <Box component="form" onSubmit={handleVerify}>
             <TextField
-              label="Código de verificación"
+              label="Verification Code"
               name="code"
               value={code}
               onChange={(e) => setCode(e.target.value)}
@@ -255,7 +259,7 @@ export const Register = () => {
               required
               fullWidth
               autoFocus
-              helperText={`Hemos enviado el código a ${pendingEmail}`}
+              helperText={`We sent the code to ${pendingEmail}`}
             />
             <Button
               fullWidth
@@ -264,7 +268,7 @@ export const Register = () => {
               sx={{ mt: 2 }}
               disabled={loading || !code.trim()}
             >
-              {loading ? 'Verificando…' : 'Verificar cuenta'}
+              {loading ? 'Verifying…' : 'Verify Account'}
             </Button>
             <Button
               fullWidth
@@ -272,7 +276,7 @@ export const Register = () => {
               sx={{ mt: 1 }}
               onClick={() => setStep('form')}
             >
-              Volver
+              Back
             </Button>
           </Box>
         )}

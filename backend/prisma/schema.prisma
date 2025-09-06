@@ -7,6 +7,11 @@ datasource db {
   url               = env("DATABASE_URL")
   shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
+enum UserRole {
+  USER
+  WORKSHOP_OWNER
+  ADMIN
+}
 
 model User {
   id               String   @id @default(uuid())
@@ -22,6 +27,7 @@ model User {
   codeExpiresAt    DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  role             UserRole @default(USER)   // 👈 aquí el rol
 
   // Relaciones
   workshops        Workshop[]

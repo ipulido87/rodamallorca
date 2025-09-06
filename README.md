@@ -12,8 +12,6 @@ Es como el "Airbnb de la movilidad alternativa".
 - 📦 API REST
 - 🔐 Seguridad con CORS, dotenv, bcrypt, etc.
 
-
-
 ## ▶️ Scripts
 
 ### Backend
@@ -24,55 +22,88 @@ pnpm install
 pnpm run dev
 
 
-.
-├─ .git/
-├─ .gitignore
-├─ package.json
-├─ pnpm-workspace.yaml
-├─ pnpm-lock.yaml            # (solo este lock en la raíz)
-├─ README.md
-├─ backend/
-│  ├─ .env
-│  ├─ .gitignore
-│  ├─ package.json
-│  ├─ prisma/
-│  │  ├─ migrations/
-│  │  └─ schema.prisma
-│  ├─ src/
-│  │  ├─ config/
-│  │  ├─ index.ts
-│  │  ├─ lib/
-│  │  ├─ modules/
-│  │  ├─ types/
-│  │  ├─ utils/
-│  │  └─ vendors/
-│  └─ tsconfig.json
-└─ frontend/
-   ├─ .env
-   ├─ eslint.config.js
-   ├─ index.html
-   ├─ package.json
-   ├─ public/
-   │  └─ vite.svg
-   ├─ README.md
-   ├─ src/
-   │  ├─ api/
-   │  ├─ App.css
-   │  ├─ App.tsx
-   │  ├─ assets/
-   │  ├─ components/
-   │  ├─ constants/
-   │  ├─ contexts/
-   │  ├─ hooks/
-   │  ├─ index.css
-   │  ├─ main.tsx
-   │  ├─ pages/
-   │  ├─ providers/
-   │  ├─ services/
-   │  ├─ theme/
-   │  └─ vite-env.d.ts
-   ├─ tsconfig.app.json
-   ├─ tsconfig.json
-   ├─ tsconfig.node.json
-   └─ vite.config.ts
+```
 
+backend/
+├── prisma/
+│ ├── migrations/
+│ ├── schema.prisma
+│ └── seed.ts
+├── src/
+│ ├── modules/
+│ │ ├── auth/ ✅ COMPLETO
+│ │ │ ├── application/
+│ │ │ │ ├── login-user.ts
+│ │ │ │ ├── register-user.ts
+│ │ │ │ └── login-with-google.ts
+│ │ │ ├── domain/
+│ │ │ │ └── repositories/
+│ │ │ │ └── user-repository.ts
+│ │ │ ├── infrastructure/
+│ │ │ │ ├── adapters/
+│ │ │ │ │ ├── email/email-service.ts
+│ │ │ │ │ ├── jwt/jwt.service.ts
+│ │ │ │ │ └── oidc/google-client.ts
+│ │ │ │ └── persistence/prisma/
+│ │ │ │ └── user-repository-prisma.ts
+│ │ │ └── interfaces/
+│ │ │ ├── controllers/
+│ │ │ │ └── auth.controller.ts
+│ │ │ ├── http/
+│ │ │ │ ├── auth.routes.ts
+│ │ │ │ └── schemas/
+│ │ │ │ ├── login.schema.ts
+│ │ │ │ ├── register.schema.ts
+│ │ │ │ └── verify-code.schema.ts
+│ │ │ └── middlewares/
+│ │ │ ├── auth.middleware.ts
+│ │ │ ├── require-owner.ts
+│ │ │ └── validate-body.ts
+│ │ ├── workshops/ ✅ MOVIDO, FALTA COMPLETAR
+│ │ │ ├── application/
+│ │ │ │ └── create-workshop.ts
+│ │ │ ├── domain/
+│ │ │ │ └── repositories/
+│ │ │ │ └── workshop-repository.ts
+│ │ │ ├── infrastructure/
+│ │ │ │ └── persistence/prisma/
+│ │ │ │ └── workshop-repository-prisma.ts
+│ │ │ └── interfaces/
+│ │ │ └── http/
+│ │ │ └── workshop.routes.ts (era owner.routes.ts)
+│ │ ├── products/ ✅ MOVIDO, FALTA COMPLETAR
+│ │ │ ├── application/
+│ │ │ │ └── create-product.ts
+│ │ │ ├── domain/
+│ │ │ │ └── repositories/
+│ │ │ │ └── product-repository.ts
+│ │ │ ├── infrastructure/
+│ │ │ │ └── persistence/prisma/
+│ │ │ │ └── product-repository-prisma.ts (⚠️ IMPLEMENTACIÓN VACÍA)
+│ │ │ └── interfaces/
+│ │ │ └── http/
+│ │ │ └── product.routes.ts
+│ │ └── catalog/ ✅ MOVIDO, FALTA SEPARAR
+│ │ └── interfaces/
+│ │ └── http/
+│ │ └── catalog.routes.ts (contiene workshops + products)
+│ ├── config/
+│ │ └── config.ts
+│ ├── lib/
+│ │ └── prisma.ts
+│ ├── types/
+│ │ └── express/
+│ │ └── index.d.ts
+│ ├── utils/
+│ │ ├── async-handler.ts
+│ │ └── sanitize-user.ts
+│ ├── vendors/
+│ │ └── oidc.ts
+│ └── index.ts ✅ IMPORTS CORREGIDOS
+├── .env
+├── package.json
+└── tsconfig.json
+
+```
+
+```

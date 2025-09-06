@@ -35,9 +35,9 @@ export const loginUser = async (email: string, password: string) => {
 
   // 6) firma JWT (incluye lo que necesites)
   const token = jwt.sign(
-    { sub: user.id, email: user.email }, // puedes añadir roles, etc.
+    { id: user.id, email: user.email, role: user.role ?? 'USER' },
     config.jwtSecret,
-    { expiresIn: '1h' }
+    { expiresIn: '7d' }
   )
 
   return { token, user: sanitizeUser(user) }

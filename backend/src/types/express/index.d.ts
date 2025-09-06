@@ -1,11 +1,11 @@
-import { JwtPayload } from 'jsonwebtoken'
+import 'express'
 
 declare global {
   namespace Express {
-    interface UserPayload extends JwtPayload {
+    interface UserPayload {
       id: string
       email: string
-      roles?: string[]
+      role: 'USER' | 'WORKSHOP_OWNER' | 'ADMIN'
     }
 
     interface Request {
@@ -13,5 +13,3 @@ declare global {
     }
   }
 }
-
-export {}

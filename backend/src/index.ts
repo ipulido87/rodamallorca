@@ -1,34 +1,36 @@
-import cookieParser from 'cookie-parser' // 👈
+import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import express from 'express'
 import morgan from 'morgan'
-import authRoutes from './modules/auth/interfaces/http/auth.routes'
 
+import authRoutes from './modules/auth/interfaces/http/auth.routes'
+import catalogRoutes from './modules/catalog/interfaces/http/catalog.routes'
+import productRoutes from './modules/products/interfaces/http/products.routes'
+import ownerRoutes from './modules/workshops/interfaces/http/workshop.routes'
 dotenv.config()
 
 const app = express()
 const PORT = process.env.PORT || 4000
 
-// Middlewares
 app.use(morgan('dev'))
 app.use(express.json())
-app.use(cookieParser()) // 👈 necesario para leer/escribir cookies
-
+app.use(cookieParser())
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173', // 👈 tu front
-    credentials: true, // 👈 permite cookies
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true,
   })
 )
 
-// Rutas
+// Montaje de rutas
 app.use('/api/auth', authRoutes)
+app.use('/api/catalog', catalogRoutes) // público
+app.use('/api/owner', ownerRoutes) // privado (JWT + role)
 
-// Healthcheck (opcional)
 app.get('/api/health', (_req, res) => res.send('ok'))
 
-// Start
 app.listen(PORT, () => {
-  console.log(`Auth service running on http://localhost:${PORT}`)
+  console.log(`API running on http://localhost:${PORT}`)
 })
+app.use('/api/owner', productRoutes)

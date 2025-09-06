@@ -6,7 +6,7 @@ import {
   verifyUser,
 } from '../../interfaces/controllers/auth.controller'
 import { verifyToken } from '../../interfaces/middlewares/auth.middleware'
-import { validateBody } from '../../interfaces/middlewares/validateBody'
+import { validateBody } from '../middlewares/validate-body'
 import { LoginUserSchema } from './schemas/login.schema'
 import { RegisterUserSchema } from './schemas/register.schema'
 import { VerifyCodeSchema } from './schemas/verify-code.schema'
