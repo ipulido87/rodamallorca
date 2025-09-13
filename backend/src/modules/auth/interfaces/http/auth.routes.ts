@@ -107,13 +107,39 @@ router.get('/google/callback', async (req, res) => {
 })
 
 router.get('/me', async (req, res) => {
-  const token = req.cookies?.auth_token
+  let token = null
+  let payload = null
+
+  // 1. Primero intenta Authorization header (JWT del login manual)
+  const authHeader = req.headers.authorization
+  if (authHeader?.startsWith('Bearer ')) {
+    token = authHeader.substring(7)
+  }
+
+  // 2. Si no hay Authorization header, busca en cookies (Google OAuth)
+  if (!token) {
+    token = req.cookies?.auth_token
+  }
+
   if (!token) return res.json({ user: null })
+
   try {
-    const payload = jwtVerify(token, process.env.JWT_SECRET!) as {
-      sub: string
-      email: string
+    // Diferentes formatos de payload según el origen del token
+    if (authHeader) {
+      // Token del login manual: { id, email, role }
+      payload = jwtVerify(token, process.env.JWT_SECRET!) as {
+        id: string
+        email: string
+        role?: string
+      }
+    } else {
+      // Token de Google OAuth: { sub, email }
+      payload = jwtVerify(token, process.env.JWT_SECRET!) as {
+        sub: string
+        email: string
+      }
     }
+
     const repo = new UserRepositoryPrisma()
     const user = await repo.findByEmail(payload.email)
     return res.json({ user })

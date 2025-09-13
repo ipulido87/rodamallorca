@@ -16,6 +16,7 @@ export class UserRepositoryPrisma implements UserRepository {
           name: u.name,
           picture: u.picture,
           googleId: u.googleId,
+          role: u.role,
         }
       : null
   }
@@ -46,6 +47,7 @@ export class UserRepositoryPrisma implements UserRepository {
       name: u.name,
       picture: u.picture,
       googleId: u.googleId,
+      role: u.role,
     }
   }
 }

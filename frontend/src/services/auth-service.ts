@@ -14,6 +14,7 @@ export async function register(input: {
   name: string
   birthDate?: string // "YYYY-MM-DD"
   phone?: string
+  role?: 'USER' | 'WORKSHOP_OWNER' // AGREGAR ESTO
 }) {
   const res = await API.post(AUTH_ENDPOINTS.REGISTER, input)
   return res.data // { message, user }

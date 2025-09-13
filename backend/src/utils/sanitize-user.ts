@@ -7,6 +7,7 @@ export function sanitizeUser(u: any) {
     birthDate: u.birthDate ?? null,
     phone: u.phone ?? null,
     verified: u.verified,
+    role: u.role,
     createdAt: u.createdAt,
     updatedAt: u.updatedAt,
   }

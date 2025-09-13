@@ -1,5 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { PrivateRoute } from './components/PrivateRoute'
+import { PrivateRoute } from './components/private-ruta'
+import { RoleRoute } from './components/role-route'
+import { Dashboard } from './pages/dashboard'
 import { Home } from './pages/home'
 import { LandingPage } from './pages/landing-page'
 import { LoginForm } from './pages/login-form'
@@ -20,6 +22,14 @@ function App() {
               <PrivateRoute>
                 <Home />
               </PrivateRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <RoleRoute requiredRole="WORKSHOP_OWNER">
+                <Dashboard />
+              </RoleRoute>
             }
           />
         </Routes>

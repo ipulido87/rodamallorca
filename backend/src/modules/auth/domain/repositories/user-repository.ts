@@ -4,6 +4,7 @@ export interface UserDTO {
   name?: string | null
   picture?: string | null
   googleId?: string | null
+  role?: string | null
 }
 
 export interface UserRepository {

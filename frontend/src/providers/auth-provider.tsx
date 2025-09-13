@@ -83,6 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       name: string
       birthDate?: string
       phone?: string
+      role?: 'USER' | 'WORKSHOP_OWNER' // AGREGAR ESTO
     }) => {
       await apiRegister(input)
       // no seteamos token todavía; el user verificará su email
@@ -101,6 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user,
       isAuthenticated:
         !!user && (!!token || true) /* si trabajas con cookie httpOnly */,
+      isWorkshopOwner: user?.role === 'WORKSHOP_OWNER', // AGREGAR ESTA LÍNEA
       loading,
       login,
       logout,
