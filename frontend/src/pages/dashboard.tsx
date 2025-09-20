@@ -2,7 +2,7 @@ import { Box, Button, Container, Paper, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/use-auth'
-import { getMyProducts, Product } from '../services/producto-service'
+import { getMyProducts, Product } from '../services/product-service'
 import { getMyWorkshops, Workshop } from '../services/workshop-service'
 
 export const Dashboard = () => {
