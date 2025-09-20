@@ -1,4 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { MainLayout } from './components/layout/main-layout'
+import { PublicLayout } from './components/layout/public-layout'
 import { PrivateRoute } from './components/private-ruta'
 import { RoleRoute } from './components/role-route'
 import { Catalog } from './pages/catalog'
@@ -17,44 +19,144 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginForm />} />
-          <Route path="/register" element={<Register />} />
+          {/* Rutas públicas con PublicLayout */}
           <Route
-            path="/home"
+            path="/"
             element={
-              <PrivateRoute>
-                <Home />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/dashboard"
-            element={
-              <RoleRoute requiredRole="WORKSHOP_OWNER">
-                <Dashboard />
-              </RoleRoute>
-            }
-          />
-          <Route
-            path="/create-workshop"
-            element={
-              <RoleRoute requiredRole="WORKSHOP_OWNER">
-                <CreateWorkshop />
-              </RoleRoute>
+              <PublicLayout showFooter={false}>
+                <LandingPage />
+              </PublicLayout>
             }
           />
 
           <Route
-            path="/create-product"
+            path="/login"
             element={
-              <RoleRoute requiredRole="WORKSHOP_OWNER">
-                <CreateProduct />
-              </RoleRoute>
+              <PublicLayout>
+                <LoginForm />
+              </PublicLayout>
             }
           />
-          <Route path="/catalog" element={<Catalog />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
+
+          <Route
+            path="/register"
+            element={
+              <PublicLayout>
+                <Register />
+              </PublicLayout>
+            }
+          />
+
+          {/* Rutas privadas con MainLayout */}
+          <Route
+            path="/*"
+            element={
+              <PrivateRoute>
+                <MainLayout />
+              </PrivateRoute>
+            }
+          >
+            {/* Rutas anidadas dentro del MainLayout */}
+
+            {/* Rutas para ambos roles */}
+            <Route path="catalog" element={<Catalog />} />
+            <Route path="product/:id" element={<ProductDetail />} />
+
+            {/* Rutas solo para USER */}
+            <Route path="home" element={<Home />} />
+
+            {/* Rutas solo para WORKSHOP_OWNER */}
+            <Route
+              path="dashboard"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <Dashboard />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="create-workshop"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <CreateWorkshop />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="create-product"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <CreateProduct />
+                </RoleRoute>
+              }
+            />
+
+            {/* Páginas que puedes agregar según el menú */}
+            <Route
+              path="my-products"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <div>Mis Productos - Por implementar</div>
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="services"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <div>Servicios - Por implementar</div>
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="orders"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <div>Pedidos - Por implementar</div>
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="customers"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <div>Clientes - Por implementar</div>
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="billing"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <div>Facturación - Por implementar</div>
+                </RoleRoute>
+              }
+            />
+
+            {/* Rutas para USER */}
+            <Route
+              path="my-orders"
+              element={<div>Mis Pedidos - Por implementar</div>}
+            />
+            <Route
+              path="favorites"
+              element={<div>Favoritos - Por implementar</div>}
+            />
+            <Route
+              path="repairs"
+              element={<div>Reparaciones - Por implementar</div>}
+            />
+
+            {/* Rutas comunes */}
+            <Route
+              path="profile"
+              element={<div>Mi Perfil - Por implementar</div>}
+            />
+            <Route
+              path="settings"
+              element={<div>Configuración - Por implementar</div>}
+            />
+          </Route>
         </Routes>
       </AuthProvider>
     </BrowserRouter>
