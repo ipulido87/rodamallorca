@@ -1,11 +1,27 @@
+import crypto from 'crypto'
 import { Request, Response } from 'express'
+import { verify as jwtVerify } from 'jsonwebtoken'
 import prisma from '../../../../lib/prisma'
 import { sanitizeUser } from '../../../../utils/sanitize-user'
 import { loginUser } from '../../application/login-user'
+import { loginWithGoogleUseCase } from '../../application/login-with-google'
 import { registerUserUseCase } from '../../application/register-user'
 import { sendVerificationEmail } from '../../infrastructure/adapters/email/email-service'
+import { buildAuthUrl } from '../../infrastructure/adapters/oidc/google-client'
+import { UserRepositoryPrisma } from '../../infrastructure/persistence/prisma/user-repository-prisma'
 import { LoginUserSchema } from '../http/schemas/login.schema'
 import { RegisterUserSchema } from '../http/schemas/register.schema'
+
+interface PrismaError extends Error {
+  code?: string
+}
+
+interface JWTPayload {
+  id?: string
+  sub?: string
+  email: string
+  role?: string
+}
 
 export const registerUser = async (req: Request, res: Response) => {
   const parsed = RegisterUserSchema.safeParse(req.body)
@@ -26,7 +42,6 @@ export const registerUser = async (req: Request, res: Response) => {
     try {
       await sendVerificationEmail(user.email, user.verificationCode!)
     } catch (e) {
-      // no bloquees el registro por fallo de email; log y responde con aviso
       console.warn('[sendVerificationEmail] failed:', e)
     }
 
@@ -34,20 +49,20 @@ export const registerUser = async (req: Request, res: Response) => {
       message: 'User registered successfully',
       user: sanitizeUser(user),
     })
-  } catch (err: any) {
-    // Prisma P2002 (unique violation) — puede ser email o phone
-    if (err?.code === 'P2002') {
+  } catch (err) {
+    const error = err as PrismaError
+    if (error?.code === 'P2002') {
       return res
         .status(409)
         .json({ message: 'Email or phone already registered' })
     }
-    console.error('[RegisterUser Error]', err)
+    console.error('[RegisterUser Error]', error)
     return res.status(500).json({ message: 'Internal server error' })
   }
 }
 
 export const loginUserController = async (req: Request, res: Response) => {
-  const result = LoginUserSchema.safeParse(req.body) // <-- antes usabas RegisterUserSchema
+  const result = LoginUserSchema.safeParse(req.body)
 
   if (!result.success) {
     return res.status(400).json({ errors: result.error.issues })
@@ -93,4 +108,111 @@ export const verifyUser = async (req: Request, res: Response) => {
   return res
     .status(200)
     .json({ message: '✅ Usuario verificado correctamente' })
+}
+
+export const protectedRoute = (req: Request, res: Response) => {
+  console.log('Usuario logueado:', req.user)
+  res.json({ message: 'Todo ok', user: req.user })
+}
+
+export const initiateGoogleLogin = async (req: Request, res: Response) => {
+  try {
+    const state = crypto.randomUUID()
+    const url = await buildAuthUrl(state)
+
+    res.cookie('oauth_state', state, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 10 * 60 * 1000,
+      path: '/',
+    })
+
+    console.log('[GOOGLE] auth url =>', url)
+    console.log('[GOOGLE] state cookie seteada =>', state)
+
+    return res.redirect(url)
+  } catch (e) {
+    console.error('Error en /google:', e)
+    return res.status(500).json({ error: 'cannot start oauth' })
+  }
+}
+
+export const handleGoogleCallback = async (req: Request, res: Response) => {
+  try {
+    console.log('[CALLBACK] URL completa:', req.originalUrl)
+    console.log('[CALLBACK] Query:', req.query)
+    console.log('[CALLBACK] Cookie state:', req.cookies?.oauth_state)
+
+    const { state, code } = req.query as { state?: string; code?: string }
+    if (!state || !code) {
+      return res.status(400).json({ error: 'Missing state or code' })
+    }
+
+    const repo = new UserRepositoryPrisma()
+    const { token } = await loginWithGoogleUseCase(
+      {
+        state,
+        code,
+        cookieState: req.cookies?.oauth_state,
+      },
+      { repo }
+    )
+
+    res.clearCookie('oauth_state')
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/',
+    })
+
+    return res.redirect(process.env.FRONTEND_URL ?? 'http://localhost:5173/')
+  } catch (e) {
+    const error = e as Error
+    console.error('Google callback error:', error)
+    return res.status(500).json({ error: error?.message ?? 'unknown' })
+  }
+}
+
+export const getCurrentUser = async (req: Request, res: Response) => {
+  let token = null
+  let payload = null
+
+  const authHeader = req.headers.authorization
+  if (authHeader?.startsWith('Bearer ')) {
+    token = authHeader.substring(7)
+  }
+
+  if (!token) {
+    token = req.cookies?.auth_token
+  }
+
+  if (!token) return res.json({ user: null })
+
+  try {
+    if (authHeader) {
+      payload = jwtVerify(token, process.env.JWT_SECRET!) as JWTPayload
+    } else {
+      payload = jwtVerify(token, process.env.JWT_SECRET!) as JWTPayload
+    }
+
+    const repo = new UserRepositoryPrisma()
+    const user = await repo.findByEmail(payload.email)
+    return res.json({ user })
+  } catch {
+    return res.json({ user: null })
+  }
+}
+
+export const logout = (req: Request, res: Response) => {
+  res.clearCookie('auth_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+  })
+
+  res.json({ message: 'Logged out successfully' })
 }

@@ -81,3 +81,37 @@ export const searchProductsController = async (
     next(e)
   }
 }
+
+export const getProductByIdController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params
+
+    const product = await prisma.product.findUnique({
+      where: {
+        id,
+        status: 'PUBLISHED',
+      },
+      include: {
+        workshop: {
+          select: { id: true, name: true, city: true, country: true },
+        },
+        category: {
+          select: { id: true, name: true },
+        },
+        images: true,
+      },
+    })
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' })
+    }
+
+    res.json(product)
+  } catch (e) {
+    next(e)
+  }
+}

@@ -21,10 +21,11 @@ import {
 
 import { Build, Person } from '@mui/icons-material'
 import axios, { AxiosError } from 'axios'
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react'
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { z } from 'zod'
 import { GoogleLoginButton } from '../components/google-login-button'
-import { EMAIL_MIN_LENGTH, PASSWORD_MIN_LENGTH } from '../constants/validation'
+import { PASSWORD_MIN_LENGTH } from '../constants/validation'
 import {
   register as apiRegister,
   verifyCode as apiVerifyCode,
@@ -32,18 +33,55 @@ import {
 
 type UserRole = 'user' | 'owner'
 
-type RegisterFormData = {
-  name: string
-  email: string
-  password: string
-  birthDate?: string
-  phone?: string
-  role: UserRole
-  // Campos adicionales para talleres
-  businessName?: string
-  businessAddress?: string
-  businessDescription?: string
-}
+// Zod schema con validación condicional
+const registerSchema = z
+  .object({
+    name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
+    email: z
+      .string()
+      .min(1, 'El email es obligatorio')
+      .email('Debe ser un email válido'),
+    password: z
+      .string()
+      .min(
+        PASSWORD_MIN_LENGTH,
+        `La contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres`
+      ),
+    birthDate: z.string().optional(),
+    phone: z.string().optional(),
+    role: z.enum(['user', 'owner']),
+    businessName: z.string().optional(),
+    businessAddress: z.string().optional(),
+    businessDescription: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      // Validación condicional: si es owner, los campos de negocio son requeridos
+      if (data.role === 'owner') {
+        return (
+          data.businessName &&
+          data.businessName.trim().length >= 2 &&
+          data.businessAddress &&
+          data.businessAddress.trim().length >= 5
+        )
+      }
+      return true
+    },
+    {
+      message: 'Los campos de taller son obligatorios para cuentas de taller',
+      path: ['businessName'], // El error se mostrará en businessName
+    }
+  )
+
+// Schema separado para validación de código
+const verifyCodeSchema = z.object({
+  code: z
+    .string()
+    .min(1, 'El código es obligatorio')
+    .min(4, 'El código debe tener al menos 4 caracteres'),
+})
+
+type RegisterFormData = z.infer<typeof registerSchema>
 
 export const Register = () => {
   const navigate = useNavigate()
@@ -73,6 +111,12 @@ export const Register = () => {
     'success'
   )
 
+  // Estados para errores de validación
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({})
+  const [codeError, setCodeError] = useState<string>('')
+
   // Obtener el tipo de cuenta desde la URL
   useEffect(() => {
     const type = searchParams.get('type') as UserRole
@@ -86,39 +130,49 @@ export const Register = () => {
     setAlertSeverity(severity)
     setAlertOpen(true)
   }
+
   const closeAlert = () => setAlertOpen(false)
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+
+    // Limpiar errores específicos al escribir
+    if (validationErrors[name]) {
+      setValidationErrors((prev) => ({ ...prev, [name]: '' }))
+    }
   }
 
   const handleRoleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const role = e.target.value as UserRole
     setFormData((prev) => ({ ...prev, role }))
+
+    // Limpiar errores relacionados con el rol al cambiar
+    setValidationErrors((prev) => ({
+      ...prev,
+      businessName: '',
+      businessAddress: '',
+    }))
   }
-
-  const canSubmit = useMemo(() => {
-    const basicValidation =
-      formData.name.trim().length >= 2 &&
-      formData.email.trim().length >= EMAIL_MIN_LENGTH &&
-      formData.password.length >= PASSWORD_MIN_LENGTH
-
-    // Validación adicional para talleres
-    if (formData.role === 'owner') {
-      return (
-        basicValidation &&
-        (formData.businessName?.trim().length ?? 0) >= 2 &&
-        (formData.businessAddress?.trim().length ?? 0) >= 5
-      )
-    }
-
-    return basicValidation
-  }, [formData])
 
   const handleRegister = async (e: FormEvent) => {
     e.preventDefault()
-    if (!canSubmit) return
+    setValidationErrors({})
+
+    // Validación con Zod
+    const result = registerSchema.safeParse(formData)
+
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      result.error.issues.forEach((issue) => {
+        if (issue.path[0]) {
+          errors[issue.path[0] as string] = issue.message
+        }
+      })
+      setValidationErrors(errors)
+      return
+    }
+
     setLoading(true)
     try {
       // Mapear los roles al formato que espera el backend
@@ -128,19 +182,20 @@ export const Register = () => {
       } as const
 
       const payload = {
-        name: formData.name.trim(),
-        email: formData.email.trim().toLowerCase(),
-        password: formData.password,
-        birthDate: formData.birthDate || undefined,
-        phone: formData.phone?.trim() || undefined,
-        role: roleMapping[formData.role] as 'USER' | 'WORKSHOP_OWNER',
+        name: result.data.name.trim(),
+        email: result.data.email.trim().toLowerCase(),
+        password: result.data.password,
+        birthDate: result.data.birthDate || undefined,
+        phone: result.data.phone?.trim() || undefined,
+        role: roleMapping[result.data.role] as 'USER' | 'WORKSHOP_OWNER',
         // Campos adicionales para talleres
-        ...(formData.role === 'owner' && {
-          businessName: formData.businessName?.trim(),
-          businessAddress: formData.businessAddress?.trim(),
-          businessDescription: formData.businessDescription?.trim(),
+        ...(result.data.role === 'owner' && {
+          businessName: result.data.businessName?.trim(),
+          businessAddress: result.data.businessAddress?.trim(),
+          businessDescription: result.data.businessDescription?.trim(),
         }),
       }
+
       const data = await apiRegister(payload)
       setPendingEmail(data.user.email)
       setStep('code')
@@ -162,10 +217,19 @@ export const Register = () => {
 
   const handleVerify = async (e: FormEvent) => {
     e.preventDefault()
-    if (!code.trim()) return
+    setCodeError('')
+
+    // Validación del código con Zod
+    const result = verifyCodeSchema.safeParse({ code })
+
+    if (!result.success) {
+      setCodeError(result.error.issues[0]?.message || 'Código inválido')
+      return
+    }
+
     setLoading(true)
     try {
-      await apiVerifyCode(pendingEmail, code.trim())
+      await apiVerifyCode(pendingEmail, result.data.code.trim())
       showAlert('✅ Cuenta verificada. Ya puedes iniciar sesión.', 'success')
       setTimeout(() => navigate('/login'), 1200)
     } catch (err) {
@@ -245,7 +309,8 @@ export const Register = () => {
               margin="normal"
               required
               fullWidth
-              inputProps={{ minLength: 2 }}
+              error={!!validationErrors.name}
+              helperText={validationErrors.name}
             />
 
             <TextField
@@ -257,7 +322,8 @@ export const Register = () => {
               margin="normal"
               required
               fullWidth
-              inputProps={{ minLength: EMAIL_MIN_LENGTH }}
+              error={!!validationErrors.email}
+              helperText={validationErrors.email}
             />
 
             <TextField
@@ -269,7 +335,8 @@ export const Register = () => {
               margin="normal"
               required
               fullWidth
-              inputProps={{ minLength: PASSWORD_MIN_LENGTH }}
+              error={!!validationErrors.password}
+              helperText={validationErrors.password}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -306,7 +373,8 @@ export const Register = () => {
                   margin="normal"
                   required
                   fullWidth
-                  inputProps={{ minLength: 2 }}
+                  error={!!validationErrors.businessName}
+                  helperText={validationErrors.businessName}
                 />
 
                 <TextField
@@ -317,8 +385,9 @@ export const Register = () => {
                   margin="normal"
                   required
                   fullWidth
-                  inputProps={{ minLength: 5 }}
                   placeholder="Calle, número, ciudad..."
+                  error={!!validationErrors.businessAddress}
+                  helperText={validationErrors.businessAddress}
                 />
 
                 <TextField
@@ -331,6 +400,8 @@ export const Register = () => {
                   multiline
                   rows={3}
                   placeholder="Cuéntanos sobre tu taller, servicios que ofreces..."
+                  error={!!validationErrors.businessDescription}
+                  helperText={validationErrors.businessDescription}
                 />
               </>
             )}
@@ -379,7 +450,7 @@ export const Register = () => {
               variant="contained"
               size="large"
               sx={{ mt: 3 }}
-              disabled={!canSubmit || loading}
+              disabled={loading}
             >
               {loading
                 ? 'Registrando…'
@@ -409,12 +480,18 @@ export const Register = () => {
               label="Código de Verificación"
               name="code"
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e) => {
+                setCode(e.target.value)
+                if (codeError) setCodeError('')
+              }}
               margin="normal"
               required
               fullWidth
               autoFocus
-              helperText={`Hemos enviado el código a ${pendingEmail}`}
+              error={!!codeError}
+              helperText={
+                codeError || `Hemos enviado el código a ${pendingEmail}`
+              }
             />
 
             {alertOpen && (
@@ -433,7 +510,7 @@ export const Register = () => {
               variant="contained"
               size="large"
               sx={{ mt: 2 }}
-              disabled={loading || !code.trim()}
+              disabled={loading}
             >
               {loading ? 'Verificando…' : 'Verificar Cuenta'}
             </Button>

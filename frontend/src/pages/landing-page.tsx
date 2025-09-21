@@ -10,9 +10,11 @@ import {
   Typography,
 } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../hooks/use-auth'
 
 export const LandingPage = () => {
   const navigate = useNavigate()
+  const { user, isAuthenticated } = useAuth()
 
   const stats = [
     { number: '500+', label: 'Bicicletas' },
@@ -110,226 +112,315 @@ export const LandingPage = () => {
               }}
             />
           </Stack>
-        </Box>
 
-        {/* Cards de registro */}
-        <Box sx={{ pb: 8 }}>
-          <Typography
-            variant="h3"
-            textAlign="center"
-            gutterBottom
-            sx={{
-              color: 'white',
-              mb: 6,
-              textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
-              fontSize: { xs: '2rem', md: '2.5rem' },
-            }}
-          >
-            ¿Cómo quieres rodar con nosotros?
-          </Typography>
-
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            spacing={4}
-            justifyContent="center"
-            sx={{ maxWidth: '900px', mx: 'auto' }}
-          >
-            {/* Cliente */}
-            <Card
-              elevation={8}
-              sx={{
-                flex: 1,
-                maxWidth: { xs: '100%', md: '420px' },
-                cursor: 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                background: 'linear-gradient(145deg, #ffffff, #f8fafc)',
-                '&:hover': {
-                  transform: 'translateY(-8px) scale(1.02)',
-                  boxShadow: '0 25px 50px rgba(0,0,0,0.2)',
-                },
-              }}
-              onClick={() => navigate('/register?type=user')}
-            >
-              <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                <Box
-                  sx={{
-                    width: 90,
-                    height: 90,
-                    borderRadius: '50%',
-                    bgcolor: 'primary.main',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mx: 'auto',
-                    mb: 3,
-                    boxShadow: '0 8px 24px rgba(63, 81, 181, 0.3)',
-                  }}
-                >
-                  <Person sx={{ fontSize: 45, color: 'white' }} />
-                </Box>
-
-                <Typography
-                  variant="h4"
-                  gutterBottom
-                  color="primary"
-                  sx={{ fontWeight: 'bold', mb: 2 }}
-                >
-                  Soy Ciclista
-                </Typography>
-                <Typography
-                  variant="body1"
-                  color="text.secondary"
-                  sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.6 }}
-                >
-                  Encuentra la bici perfecta, alquila para tus rutas o repara tu
-                  compañera de aventuras
-                </Typography>
-
-                <Stack spacing={2} sx={{ mb: 4 }}>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ fontSize: '1rem' }}
-                  >
-                    🔍 Explora cientos de bicicletas
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ fontSize: '1rem' }}
-                  >
-                    🏔️ Alquila para rutas en la Serra de Tramuntana
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ fontSize: '1rem' }}
-                  >
-                    🔧 Conecta con talleres especializados
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ fontSize: '1rem' }}
-                  >
-                    🏖️ Descubre rutas costeras únicas
-                  </Typography>
-                </Stack>
-
+          {/* Contenido condicional según autenticación */}
+          {isAuthenticated ? (
+            <Box sx={{ mt: 4 }}>
+              <Typography
+                variant="h3"
+                gutterBottom
+                sx={{
+                  color: 'white',
+                  textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+                  fontSize: { xs: '1.8rem', md: '2.5rem' },
+                  mb: 3,
+                }}
+              >
+                ¡Bienvenido de nuevo, {user?.name}!
+              </Typography>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: 'rgba(255,255,255,0.9)',
+                  mb: 4,
+                  maxWidth: '600px',
+                  mx: 'auto',
+                }}
+              >
+                {user?.role === 'WORKSHOP_OWNER'
+                  ? 'Gestiona tu taller y conecta con más ciclistas'
+                  : 'Descubre nuevas rutas y encuentra la bici perfecta'}
+              </Typography>
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={2}
+                justifyContent="center"
+              >
                 <Button
                   variant="contained"
                   size="large"
-                  fullWidth
-                  startIcon={<DirectionsBike />}
+                  onClick={() => navigate('/catalog')}
                   sx={{
+                    bgcolor: 'white',
+                    color: 'primary.main',
                     py: 2,
+                    px: 4,
                     fontSize: '1.2rem',
+                    '&:hover': {
+                      bgcolor: 'rgba(255,255,255,0.9)',
+                      transform: 'translateY(-2px)',
+                    },
                   }}
                 >
-                  Empezar a Rodar
+                  Explorar Catálogo
                 </Button>
-              </CardContent>
-            </Card>
-
-            {/* Propietario de Taller */}
-            <Card
-              elevation={8}
+                {user?.role === 'WORKSHOP_OWNER' && (
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    onClick={() => navigate('/dashboard')}
+                    sx={{
+                      color: 'white',
+                      borderColor: 'white',
+                      py: 2,
+                      px: 4,
+                      fontSize: '1.2rem',
+                      '&:hover': {
+                        borderColor: 'white',
+                        bgcolor: 'rgba(255,255,255,0.1)',
+                        transform: 'translateY(-2px)',
+                      },
+                    }}
+                  >
+                    Mi Dashboard
+                  </Button>
+                )}
+              </Stack>
+            </Box>
+          ) : (
+            <Typography
+              variant="h5"
               sx={{
-                flex: 1,
-                maxWidth: { xs: '100%', md: '420px' },
-                cursor: 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                background: 'linear-gradient(145deg, #ffffff, #f8fafc)',
-                '&:hover': {
-                  transform: 'translateY(-8px) scale(1.02)',
-                  boxShadow: '0 25px 50px rgba(0,0,0,0.2)',
-                },
+                color: 'rgba(255,255,255,0.9)',
+                textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+                fontSize: { xs: '1.3rem', md: '1.5rem' },
               }}
-              onClick={() => navigate('/register?type=owner')}
             >
-              <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                <Box
-                  sx={{
-                    width: 90,
-                    height: 90,
-                    borderRadius: '50%',
-                    bgcolor: 'success.main',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    mx: 'auto',
-                    mb: 3,
-                    boxShadow: '0 8px 24px rgba(0, 150, 136, 0.3)',
-                  }}
-                >
-                  <Build sx={{ fontSize: 45, color: 'white' }} />
-                </Box>
-
-                <Typography
-                  variant="h4"
-                  gutterBottom
-                  color="success.dark"
-                  sx={{ fontWeight: 'bold', mb: 2 }}
-                >
-                  Tengo un Taller
-                </Typography>
-                <Typography
-                  variant="body1"
-                  color="text.secondary"
-                  sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.6 }}
-                >
-                  Haz crecer tu negocio, conecta con más ciclistas y sé parte de
-                  la comunidad
-                </Typography>
-
-                <Stack spacing={2} sx={{ mb: 4 }}>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ fontSize: '1rem' }}
-                  >
-                    📦 Gestiona tu inventario online
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ fontSize: '1rem' }}
-                  >
-                    👥 Conecta con ciclistas de toda la isla
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ fontSize: '1rem' }}
-                  >
-                    💰 Aumenta tus ingresos
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ fontSize: '1rem' }}
-                  >
-                    🏆 Construye tu reputación
-                  </Typography>
-                </Stack>
-
-                <Button
-                  variant="contained"
-                  color="success"
-                  size="large"
-                  fullWidth
-                  startIcon={<Build />}
-                  sx={{
-                    py: 2,
-                    fontSize: '1.2rem',
-                  }}
-                >
-                  Unirse como Taller
-                </Button>
-              </CardContent>
-            </Card>
-          </Stack>
+              Únete a la comunidad ciclista de Mallorca
+            </Typography>
+          )}
         </Box>
+
+        {/* Cards de registro - Solo para usuarios no autenticados */}
+        {!isAuthenticated && (
+          <Box sx={{ pb: 8 }}>
+            <Typography
+              variant="h3"
+              textAlign="center"
+              gutterBottom
+              sx={{
+                color: 'white',
+                mb: 6,
+                textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+                fontSize: { xs: '2rem', md: '2.5rem' },
+              }}
+            >
+              ¿Cómo quieres rodar con nosotros?
+            </Typography>
+
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              spacing={4}
+              justifyContent="center"
+              sx={{ maxWidth: '900px', mx: 'auto' }}
+            >
+              {/* Cliente */}
+              <Card
+                elevation={8}
+                sx={{
+                  flex: 1,
+                  maxWidth: { xs: '100%', md: '420px' },
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  background: 'linear-gradient(145deg, #ffffff, #f8fafc)',
+                  '&:hover': {
+                    transform: 'translateY(-8px) scale(1.02)',
+                    boxShadow: '0 25px 50px rgba(0,0,0,0.2)',
+                  },
+                }}
+                onClick={() => navigate('/register?type=user')}
+              >
+                <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                  <Box
+                    sx={{
+                      width: 90,
+                      height: 90,
+                      borderRadius: '50%',
+                      bgcolor: 'primary.main',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mx: 'auto',
+                      mb: 3,
+                      boxShadow: '0 8px 24px rgba(63, 81, 181, 0.3)',
+                    }}
+                  >
+                    <Person sx={{ fontSize: 45, color: 'white' }} />
+                  </Box>
+
+                  <Typography
+                    variant="h4"
+                    gutterBottom
+                    color="primary"
+                    sx={{ fontWeight: 'bold', mb: 2 }}
+                  >
+                    Soy Ciclista
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    color="text.secondary"
+                    sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.6 }}
+                  >
+                    Encuentra la bici perfecta, alquila para tus rutas o repara
+                    tu compañera de aventuras
+                  </Typography>
+
+                  <Stack spacing={2} sx={{ mb: 4 }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: '1rem' }}
+                    >
+                      🔍 Explora cientos de bicicletas
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: '1rem' }}
+                    >
+                      🏔️ Alquila para rutas en la Serra de Tramuntana
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: '1rem' }}
+                    >
+                      🔧 Conecta con talleres especializados
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: '1rem' }}
+                    >
+                      🏖️ Descubre rutas costeras únicas
+                    </Typography>
+                  </Stack>
+
+                  <Button
+                    variant="contained"
+                    size="large"
+                    fullWidth
+                    startIcon={<DirectionsBike />}
+                    sx={{
+                      py: 2,
+                      fontSize: '1.2rem',
+                    }}
+                  >
+                    Empezar a Rodar
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Propietario de Taller */}
+              <Card
+                elevation={8}
+                sx={{
+                  flex: 1,
+                  maxWidth: { xs: '100%', md: '420px' },
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  background: 'linear-gradient(145deg, #ffffff, #f8fafc)',
+                  '&:hover': {
+                    transform: 'translateY(-8px) scale(1.02)',
+                    boxShadow: '0 25px 50px rgba(0,0,0,0.2)',
+                  },
+                }}
+                onClick={() => navigate('/register?type=owner')}
+              >
+                <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                  <Box
+                    sx={{
+                      width: 90,
+                      height: 90,
+                      borderRadius: '50%',
+                      bgcolor: 'success.main',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mx: 'auto',
+                      mb: 3,
+                      boxShadow: '0 8px 24px rgba(0, 150, 136, 0.3)',
+                    }}
+                  >
+                    <Build sx={{ fontSize: 45, color: 'white' }} />
+                  </Box>
+
+                  <Typography
+                    variant="h4"
+                    gutterBottom
+                    color="success.dark"
+                    sx={{ fontWeight: 'bold', mb: 2 }}
+                  >
+                    Tengo un Taller
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    color="text.secondary"
+                    sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.6 }}
+                  >
+                    Haz crecer tu negocio, conecta con más ciclistas y sé parte
+                    de la comunidad
+                  </Typography>
+
+                  <Stack spacing={2} sx={{ mb: 4 }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: '1rem' }}
+                    >
+                      📦 Gestiona tu inventario online
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: '1rem' }}
+                    >
+                      👥 Conecta con ciclistas de toda la isla
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: '1rem' }}
+                    >
+                      💰 Aumenta tus ingresos
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: '1rem' }}
+                    >
+                      🏆 Construye tu reputación
+                    </Typography>
+                  </Stack>
+
+                  <Button
+                    variant="contained"
+                    color="success"
+                    size="large"
+                    fullWidth
+                    startIcon={<Build />}
+                    sx={{
+                      py: 2,
+                      fontSize: '1.2rem',
+                    }}
+                  >
+                    Unirse como Taller
+                  </Button>
+                </CardContent>
+              </Card>
+            </Stack>
+          </Box>
+        )}
       </Container>
 
       {/* Estadísticas */}
@@ -382,49 +473,51 @@ export const LandingPage = () => {
         </Container>
       </Box>
 
-      {/* Footer */}
-      <Box sx={{ bgcolor: 'rgba(0,0,0,0.8)', py: 6 }}>
-        <Container maxWidth="lg">
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            justifyContent="space-between"
-            alignItems="center"
-            spacing={3}
-          >
-            <Box textAlign={{ xs: 'center', md: 'left' }}>
-              <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
-                ¿Ya tienes cuenta?
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: 'rgba(255,255,255,0.7)' }}
-              >
-                Accede a tu cuenta para empezar a rodar
-              </Typography>
-            </Box>
-
-            <Button
-              variant="outlined"
-              size="large"
-              onClick={() => navigate('/login')}
-              sx={{
-                color: 'white',
-                borderColor: 'white',
-                px: 4,
-                py: 1.5,
-                fontSize: '1.1rem',
-                '&:hover': {
-                  borderColor: 'white',
-                  bgcolor: 'rgba(255,255,255,0.1)',
-                  transform: 'translateY(-2px)',
-                },
-              }}
+      {/* Footer - Solo para usuarios no autenticados */}
+      {!isAuthenticated && (
+        <Box sx={{ bgcolor: 'rgba(0,0,0,0.8)', py: 6 }}>
+          <Container maxWidth="lg">
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              justifyContent="space-between"
+              alignItems="center"
+              spacing={3}
             >
-              Iniciar Sesión
-            </Button>
-          </Stack>
-        </Container>
-      </Box>
+              <Box textAlign={{ xs: 'center', md: 'left' }}>
+                <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
+                  ¿Ya tienes cuenta?
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ color: 'rgba(255,255,255,0.7)' }}
+                >
+                  Accede a tu cuenta para empezar a rodar
+                </Typography>
+              </Box>
+
+              <Button
+                variant="outlined"
+                size="large"
+                onClick={() => navigate('/login')}
+                sx={{
+                  color: 'white',
+                  borderColor: 'white',
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  '&:hover': {
+                    borderColor: 'white',
+                    bgcolor: 'rgba(255,255,255,0.1)',
+                    transform: 'translateY(-2px)',
+                  },
+                }}
+              >
+                Iniciar Sesión
+              </Button>
+            </Stack>
+          </Container>
+        </Box>
+      )}
     </Box>
   )
 }

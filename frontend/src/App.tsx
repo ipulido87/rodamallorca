@@ -7,9 +7,11 @@ import { Catalog } from './pages/catalog'
 import { CreateProduct } from './pages/create-product'
 import { CreateWorkshop } from './pages/create-workshop'
 import { Dashboard } from './pages/dashboard'
+import { EditProduct } from './pages/edit-product'
 import { Home } from './pages/home'
 import { LandingPage } from './pages/landing-page'
 import { LoginForm } from './pages/login-form'
+import { MyProducts } from './pages/my-products'
 import { ProductDetail } from './pages/product-detail'
 import { Register } from './pages/register-user'
 import { AuthProvider } from './providers/auth-provider'
@@ -90,13 +92,21 @@ function App() {
                 </RoleRoute>
               }
             />
+            <Route
+              path="edit-product/:id"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <EditProduct />
+                </RoleRoute>
+              }
+            />
 
             {/* Páginas que puedes agregar según el menú */}
             <Route
               path="my-products"
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
-                  <div>Mis Productos - Por implementar</div>
+                  <MyProducts />
                 </RoleRoute>
               }
             />

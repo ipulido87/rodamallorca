@@ -10,45 +10,73 @@ import {
 } from '@mui/material'
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { z } from 'zod'
 import { GoogleLoginButton } from '../components/google-login-button'
-import { useAuth } from '../hooks/use-auth' // Usar tu hook de auth
+import { useAuth } from '../hooks/use-auth'
 
-interface LoginFormData {
-  email: string
-  password: string
-}
+// Zod schema para validación del formulario de login
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, 'El email es obligatorio')
+    .email('Debe ser un email válido'),
+  password: z
+    .string()
+    .min(1, 'La contraseña es obligatoria')
+    .min(6, 'La contraseña debe tener al menos 6 caracteres'),
+})
+
+type LoginFormData = z.infer<typeof loginSchema>
 
 export const LoginForm = () => {
   const navigate = useNavigate()
-  const { login, loading } = useAuth() // Usar el contexto de auth
+  const { login, loading } = useAuth()
 
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
   })
   const [error, setError] = useState<string | null>(null)
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({})
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
-    // Limpiar error cuando el usuario empiece a escribir
+
+    // Limpiar errores al escribir
     if (error) setError(null)
+    if (validationErrors[name]) {
+      setValidationErrors((prev) => ({ ...prev, [name]: '' }))
+    }
   }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError(null)
+    setValidationErrors({})
+
+    // Validación con Zod
+    const result = loginSchema.safeParse(formData)
+
+    if (!result.success) {
+      const errors: Record<string, string> = {}
+      result.error.issues.forEach((issue) => {
+        if (issue.path[0]) {
+          errors[issue.path[0] as string] = issue.message
+        }
+      })
+      setValidationErrors(errors)
+      return
+    }
 
     try {
-      // Usar el método login del contexto
-      await login(formData.email, formData.password)
-
-      // El AuthProvider ya maneja el token y el usuario
-      // Ahora redirigir según el rol del usuario
+      // Usar datos validados por Zod
+      await login(result.data.email, result.data.password)
 
       // Pequeña espera para que se actualice el estado del usuario
       setTimeout(() => {
-        // El usuario ya está disponible en el contexto después del login
         const user = JSON.parse(localStorage.getItem('user') || '{}')
 
         if (user.role === 'WORKSHOP_OWNER') {
@@ -56,7 +84,7 @@ export const LoginForm = () => {
         } else if (user.role === 'USER') {
           navigate('/home')
         } else {
-          navigate('/catalog') // Fallback
+          navigate('/catalog')
         }
       }, 100)
     } catch (err: unknown) {
@@ -87,6 +115,8 @@ export const LoginForm = () => {
             margin="normal"
             required
             disabled={loading}
+            error={!!validationErrors.email}
+            helperText={validationErrors.email}
           />
           <TextField
             fullWidth
@@ -98,6 +128,8 @@ export const LoginForm = () => {
             margin="normal"
             required
             disabled={loading}
+            error={!!validationErrors.password}
+            helperText={validationErrors.password}
           />
 
           {error && (

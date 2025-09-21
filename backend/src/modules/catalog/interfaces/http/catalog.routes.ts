@@ -1,6 +1,6 @@
 import { Router } from 'express'
-import prisma from '../../../../lib/prisma'
 import {
+  getProductByIdController,
   searchProductsController,
   searchWorkshopsController,
 } from '../controllers/catalog.controller'
@@ -14,34 +14,6 @@ r.get('/workshops', searchWorkshopsController)
 r.get('/products', searchProductsController)
 
 // GET /api/catalog/products/:id
-r.get('/products/:id', async (req, res, next) => {
-  try {
-    const { id } = req.params
-
-    const product = await prisma.product.findUnique({
-      where: {
-        id,
-        status: 'PUBLISHED',
-      },
-      include: {
-        workshop: {
-          select: { id: true, name: true, city: true, country: true },
-        },
-        category: {
-          select: { id: true, name: true },
-        },
-        images: true,
-      },
-    })
-
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' })
-    }
-
-    res.json(product)
-  } catch (e) {
-    next(e)
-  }
-})
+r.get('/products/:id', getProductByIdController)
 
 export default r

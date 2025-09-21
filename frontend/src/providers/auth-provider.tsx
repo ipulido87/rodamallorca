@@ -80,11 +80,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.warn('Backend logout failed:', error)
     }
-    
+
     // Limpiar estado local
     persistToken(null)
     setUser(null)
-    
+
     // Forzar redirección para asegurar que sale de rutas protegidas
     setTimeout(() => {
       window.location.href = '/login'
@@ -110,6 +110,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await apiVerifyCode(email, code)
     // tras verificar puedes redirigir a /login desde el componente
   }, [])
+
+  // Auto-logout por inactividad
+  useEffect(() => {
+    if (!user) return // Solo si está autenticado
+
+    const INACTIVITY_TIMEOUT = 30 * 60 * 1000 // 30 minutos
+    let timeoutId: NodeJS.Timeout
+
+    const resetTimeout = () => {
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        logout()
+        alert('Sesión cerrada por inactividad (30 minutos)')
+      }, INACTIVITY_TIMEOUT)
+    }
+
+    // Eventos que resetean el timer
+    const events = [
+      'mousedown',
+      'mousemove',
+      'keypress',
+      'scroll',
+      'touchstart',
+    ]
+
+    events.forEach((event) => {
+      document.addEventListener(event, resetTimeout, true)
+    })
+
+    resetTimeout() // Iniciar el timer
+
+    return () => {
+      clearTimeout(timeoutId)
+      events.forEach((event) => {
+        document.removeEventListener(event, resetTimeout, true)
+      })
+    }
+  }, [user, logout]) // Dependencias: user y logout
 
   const value = useMemo(
     () => ({
