@@ -1,79 +1,59 @@
+
+import type {
+  PaginatedResponse,
+  Product,
+  ProductSearchParams,
+  Workshop,
+  WorkshopSearchParams,
+} from '../types/catalog'
 import { API } from './auth-service'
 
-export interface SearchParams {
-  q?: string
-  categoryId?: string
-  city?: string
-  page?: number
-  size?: number
-  min?: number
-  max?: number
+// Buscar talleres públicamente
+export async function searchWorkshops(
+  params?: WorkshopSearchParams
+): Promise<PaginatedResponse<Workshop>> {
+  const searchParams = new URLSearchParams()
+
+  if (params?.q) searchParams.append('q', params.q)
+  if (params?.city) searchParams.append('city', params.city)
+  if (params?.page) searchParams.append('page', params.page.toString())
+  if (params?.size) searchParams.append('size', params.size.toString())
+
+  const queryString = searchParams.toString()
+  const url = queryString
+    ? `/catalog/workshops?${queryString}`
+    : '/catalog/workshops'
+
+  const res = await API.get(url)
+  return res.data
 }
 
-export interface CatalogResponse<T> {
-  items: T[]
-  total: number
-  page: number
-  size: number
+// Buscar productos públicamente
+export async function searchProducts(
+  params?: ProductSearchParams
+): Promise<PaginatedResponse<Product>> {
+  const searchParams = new URLSearchParams()
+
+  if (params?.q) searchParams.append('q', params.q)
+  if (params?.categoryId) searchParams.append('categoryId', params.categoryId)
+  if (params?.city) searchParams.append('city', params.city)
+  if (params?.page) searchParams.append('page', params.page.toString())
+  if (params?.size) searchParams.append('size', params.size.toString())
+
+  const queryString = searchParams.toString()
+  const url = queryString
+    ? `/catalog/products?${queryString}`
+    : '/catalog/products'
+
+  const res = await API.get(url)
+  return res.data
 }
 
-export interface ProductImage {
-  id: string
-  productId: string
-  url: string
-  position: number
+// Obtener detalle de producto (ambos nombres para compatibilidad)
+export async function getProduct(id: string): Promise<Product> {
+  const res = await API.get(`/catalog/products/${id}`)
+  return res.data
 }
 
-export interface PublicProduct {
-  id: string
-  workshopId: string
-  title: string
-  price: number
-  currency: string
-  condition: string
-  status: string
-  description?: string
-  categoryId?: string
-  createdAt: string
-  workshop: {
-    id: string
-    name: string
-    city: string
-    country: string
-  }
-  category?: {
-    id: string
-    name: string
-  }
-  images: ProductImage[]
-}
-
-export interface PublicWorkshop {
-  id: string
-  name: string
-  description?: string
-  address?: string
-  city?: string
-  country?: string
-  phone?: string
-  createdAt: string
-}
-
-export const searchProducts = async (
-  params: SearchParams = {}
-): Promise<CatalogResponse<PublicProduct>> => {
-  const response = await API.get('/catalog/products', { params })
-  return response.data
-}
-
-export const searchWorkshops = async (
-  params: SearchParams = {}
-): Promise<CatalogResponse<PublicWorkshop>> => {
-  const response = await API.get('/catalog/workshops', { params })
-  return response.data
-}
-
-export const getProductById = async (id: string): Promise<PublicProduct> => {
-  const response = await API.get(`/catalog/products/${id}`)
-  return response.data
-}
+// Alias para compatibilidad con código existente
+export const getProductById = getProduct
