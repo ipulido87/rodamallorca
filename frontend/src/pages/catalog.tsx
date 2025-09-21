@@ -17,6 +17,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { FilterBar } from '../components/common/filter-bar'
 import {
   productFilterConfig,
@@ -56,6 +57,7 @@ function TabPanel(props: TabPanelProps) {
 
 export const Catalog = () => {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [tabValue, setTabValue] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -320,7 +322,19 @@ export const Catalog = () => {
           }}
         >
           {productsData?.items.map((product: Product) => (
-            <Card key={product.id} sx={{ height: '100%' }}>
+            <Card
+              key={product.id}
+              sx={{
+                height: '100%',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.12)',
+                },
+              }}
+              onClick={() => navigate(`/product/${product.id}`)}
+            >
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   {product.title}

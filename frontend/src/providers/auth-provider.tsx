@@ -46,14 +46,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(data?.user ?? null)
     } catch {
       setUser(null)
+      // Si falla /me, también limpia el token inválido
+      persistToken(null)
     }
-  }, [])
+  }, [persistToken])
 
   // Carga inicial: si hay token o cookie httpOnly, intenta hidratar /me
   useEffect(() => {
     ;(async () => {
       setLoading(true)
       try {
+        // Siempre intentar refreshMe por si hay cookie httpOnly o session del login con Google
         await refreshMe()
       } finally {
         setLoading(false)
@@ -70,10 +73,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     [persistToken]
   )
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    try {
+      // Llamar al backend para limpiar cookies
+      await API.post('/auth/logout')
+    } catch (error) {
+      console.warn('Backend logout failed:', error)
+    }
+    
+    // Limpiar estado local
     persistToken(null)
     setUser(null)
-    // opcional: llamar a /auth/logout si limpias cookie en backend
+    
+    // Forzar redirección para asegurar que sale de rutas protegidas
+    setTimeout(() => {
+      window.location.href = '/login'
+    }, 100)
   }, [persistToken])
 
   const register = useCallback(
@@ -83,7 +98,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       name: string
       birthDate?: string
       phone?: string
-      role?: 'USER' | 'WORKSHOP_OWNER' // AGREGAR ESTO
+      role?: 'USER' | 'WORKSHOP_OWNER'
     }) => {
       await apiRegister(input)
       // no seteamos token todavía; el user verificará su email
@@ -100,9 +115,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     () => ({
       token,
       user,
-      isAuthenticated:
-        !!user && (!!token || true) /* si trabajas con cookie httpOnly */,
-      isWorkshopOwner: user?.role === 'WORKSHOP_OWNER', // AGREGAR ESTA LÍNEA
+      // FIX: Para Google OAuth el token está en cookies, no localStorage
+      // Si hay user, está autenticado (independientemente del token local)
+      isAuthenticated: !!user,
+      isWorkshopOwner: user?.role === 'WORKSHOP_OWNER',
       loading,
       login,
       logout,

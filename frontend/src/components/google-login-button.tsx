@@ -2,9 +2,13 @@ import GoogleIcon from '@mui/icons-material/Google'
 import { Button } from '@mui/material'
 
 export function GoogleLoginButton() {
+  // En tu GoogleLoginButton, agrega un callback URL
   const handleLogin = () => {
     const base = import.meta.env.VITE_API_URL
-    window.location.href = `${base}/auth/google`
+    const callbackUrl = `${window.location.origin}/auth/callback`
+    window.location.href = `${base}/auth/google?redirect=${encodeURIComponent(
+      callbackUrl
+    )}`
   }
 
   return (

@@ -148,4 +148,17 @@ router.get('/me', async (req, res) => {
   }
 })
 
+// En tu auth.routes.ts, agregar:
+router.post('/logout', (req, res) => {
+  // Limpiar cookie del backend
+  res.clearCookie('auth_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+  })
+
+  res.json({ message: 'Logged out successfully' })
+})
+
 export default router
