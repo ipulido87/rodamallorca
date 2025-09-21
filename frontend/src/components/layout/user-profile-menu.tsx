@@ -7,7 +7,7 @@ import {
   MenuItem,
 } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
-import { UserProfileMenuProps } from '../../types/layout'
+import { UserProfileMenuProps } from '../../shared/types/layout'
 
 export const UserProfileMenu: React.FC<UserProfileMenuProps> = ({
   anchorEl,

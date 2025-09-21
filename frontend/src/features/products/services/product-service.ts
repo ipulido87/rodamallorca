@@ -1,4 +1,4 @@
-import { API } from './auth-service'
+import { API } from '../../../features/auth/services/auth-service'
 
 export interface CreateProductData {
   title: string

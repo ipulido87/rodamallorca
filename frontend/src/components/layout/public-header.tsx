@@ -28,7 +28,7 @@ import {
 } from '@mui/material'
 import { useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../hooks/use-auth'
+import { useAuth } from '../../features/auth/hooks/useAuth'
 
 interface HideOnScrollProps {
   children: React.ReactElement

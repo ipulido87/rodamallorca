@@ -1,6 +1,6 @@
 // src/services/auth-service.ts
 import axios from 'axios'
-import { API_URL, AUTH_ENDPOINTS } from '../constants/api'
+import { API_URL, AUTH_ENDPOINTS } from '../../../constants/api'
 
 export const API = axios.create({
   baseURL: API_URL,
@@ -13,7 +13,7 @@ export async function register(input: {
   password: string
   name: string
   birthDate?: string // "YYYY-MM-DD"
-  phone?: string  
+  phone?: string
   role?: 'USER' | 'WORKSHOP_OWNER' // AGREGAR ESTO
 }) {
   const res = await API.post(AUTH_ENDPOINTS.REGISTER, input)

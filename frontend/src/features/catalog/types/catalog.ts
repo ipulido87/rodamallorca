@@ -1,5 +1,3 @@
-// types/catalog.ts
-
 export interface Workshop {
   id: string
   ownerId: string
@@ -93,4 +91,31 @@ export interface FilterConfig {
   max?: number
   step?: number
   placeholder?: string
+}
+
+// Agregar al final de C:\rodamallorca\frontend\src\features\catalog\types\catalog.ts
+
+export interface PublicProduct {
+  id: string
+  title: string
+  description?: string
+  price: number
+  status: 'PUBLISHED' | 'DRAFT'
+  condition: 'new' | 'used' | 'refurb'
+  currency: string
+  categoryId: string | null
+  workshopId: string
+  createdAt: string
+  updatedAt: string
+  workshop: {
+    id: string
+    name: string
+    city?: string
+    country?: string
+  }
+  category: {
+    id: string
+    name: string
+  } | null
+  images: ProductImage[]
 }

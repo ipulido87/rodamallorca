@@ -1,10 +1,9 @@
-
 import { Box, CssBaseline, Toolbar } from '@mui/material'
 import { useMemo, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { getMenuItemsForRole } from '../../config/menu-items'
-import { useAuth } from '../../hooks/use-auth' // Ajustar ruta según donde tengas el hook
-import { MainLayoutProps } from '../../types/layout'
+import { useAuth } from '../../features/auth/hooks/useAuth' // Ajustar ruta según donde tengas el hook
+import { getMenuItemsForRole } from '../../shared/constants/menu-items'
+import { MainLayoutProps } from '../../shared/types/layout'
 import { Sidebar } from './side-bar'
 import { TopBar } from './top-bar'
 

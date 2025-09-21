@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../hooks/use-auth'
+import { useAuth } from '../features/auth/hooks/useAuth'
 
 export const LandingPage = () => {
   const navigate = useNavigate()

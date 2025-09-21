@@ -1,6 +1,6 @@
 // config/productFilters.ts
 
-import type { FilterConfig } from '../components/common/filter-bar'
+import type { FilterConfig } from '../../features/catalog/types/catalog'
 
 export const productFilterConfig: FilterConfig[] = [
   {

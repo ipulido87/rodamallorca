@@ -1,12 +1,12 @@
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
-import { AuthContext, User } from '../contexts/auth-context'
+import { AuthContext, User } from '../features/auth/providers/auth-providers'
 import {
   API,
   login as apiLogin,
   me as apiMe,
   register as apiRegister,
   verifyCode as apiVerifyCode,
-} from '../services/auth-service'
+} from '../features/auth/services/auth-service'
 
 // Key para localStorage
 const TOKEN_KEY = 'token'
@@ -116,7 +116,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return // Solo si está autenticado
 
     const INACTIVITY_TIMEOUT = 30 * 60 * 1000 // 30 minutos
-    let timeoutId: NodeJS.Timeout
+    let timeoutId: number
 
     const resetTimeout = () => {
       clearTimeout(timeoutId)

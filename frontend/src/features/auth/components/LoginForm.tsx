@@ -11,8 +11,8 @@ import {
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
-import { GoogleLoginButton } from '../components/google-login-button'
-import { useAuth } from '../features/auth/hooks/useAuth'
+import { GoogleLoginButton } from '../../../components/google-login-button'
+import { useAuth } from './../hooks/useAuth'
 
 // Zod schema para validación del formulario de login
 const loginSchema = z.object({

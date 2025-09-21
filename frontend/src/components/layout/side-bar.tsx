@@ -14,8 +14,8 @@ import {
   useTheme,
 } from '@mui/material'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../hooks/use-auth' // Ajustar ruta según donde tengas el hook
-import { SidebarProps } from '../../types/layout'
+import { useAuth } from '../../features/auth/hooks/useAuth' // Ajustar ruta según donde tengas el hook
+import { SidebarProps } from '../../shared/types/layout'
 import { getIcon } from '../../utils/icon-mapper'
 
 const DRAWER_WIDTH = 280

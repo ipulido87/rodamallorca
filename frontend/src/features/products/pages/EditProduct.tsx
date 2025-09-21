@@ -21,7 +21,7 @@ import {
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { z } from 'zod'
-import { useAuth } from '../features/auth/hooks/useAuth'
+import { useAuth } from '../../auth/hooks/useAuth'
 
 interface Product {
   id: string

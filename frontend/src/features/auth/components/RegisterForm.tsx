@@ -24,12 +24,12 @@ import axios, { AxiosError } from 'axios'
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
-import { GoogleLoginButton } from '../components/google-login-button'
+import { PASSWORD_MIN_LENGTH } from '../../../shared/constants/validation'
 import {
   register as apiRegister,
   verifyCode as apiVerifyCode,
-} from '../features/auth/services/auth-service'
-import { PASSWORD_MIN_LENGTH } from '../shared/constants/validation'
+} from '../services/auth-service'
+import { GoogleLoginButton } from './.././../../components/google-login-button'
 
 type UserRole = 'user' | 'owner'
 

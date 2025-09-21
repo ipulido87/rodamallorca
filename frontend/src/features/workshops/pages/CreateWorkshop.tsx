@@ -3,40 +3,36 @@ import {
   Box,
   Button,
   Container,
-  MenuItem,
   Paper,
   TextField,
   Typography,
 } from '@mui/material'
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ApiError } from '../../../shared/types/api'
 import {
-  createProduct,
-  type CreateProductData,
-} from '../services/product-service'
-import { ApiError } from '../types/api'
+  createWorkshop,
+  type CreateWorkshopData,
+} from '../services/workshop-service'
 
-export const CreateProduct = () => {
+export const CreateWorkshop = () => {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  const [formData, setFormData] = useState<CreateProductData>({
-    title: '',
-    price: 0,
-    condition: 'used',
-    status: 'DRAFT',
+  const [formData, setFormData] = useState<CreateWorkshopData>({
+    name: '',
     description: '',
-    categoryId: '',
+    address: '',
+    city: '',
+    country: '',
+    phone: '',
   })
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === 'price' ? Number(value) : value,
-    }))
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
   const handleSubmit = async (e: FormEvent) => {
@@ -45,34 +41,35 @@ export const CreateProduct = () => {
     setError('')
 
     try {
-      await createProduct({
-        title: formData.title.trim(),
-        price: formData.price * 100, // convertir a céntimos
-        condition: formData.condition,
-        status: formData.status,
+      await createWorkshop({
+        name: formData.name.trim(),
         description: formData.description?.trim() || undefined,
-        categoryId: formData.categoryId?.trim() || undefined,
+        address: formData.address?.trim() || undefined,
+        city: formData.city?.trim() || undefined,
+        country: formData.country?.trim() || undefined,
+        phone: formData.phone?.trim() || undefined,
       })
 
-      setSuccess('Product created successfully!')
+      setSuccess('Workshop created successfully!')
       setTimeout(() => navigate('/dashboard'), 1500)
     } catch (err) {
       if (err && typeof err === 'object' && 'response' in err) {
         const apiError = err as ApiError
-        setError(apiError.response?.data?.message || 'Failed to create product')
+        setError(
+          apiError.response?.data?.message || 'Failed to create workshop'
+        )
       } else {
-        setError('Failed to create product')
+        setError('Failed to create workshop')
       }
     } finally {
       setLoading(false)
     }
   }
-
   return (
     <Container maxWidth="md">
       <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
         <Typography variant="h4" gutterBottom>
-          Create Product
+          Create Workshop
         </Typography>
 
         {error && (
@@ -89,55 +86,14 @@ export const CreateProduct = () => {
 
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
-            label="Product Title"
-            name="title"
-            value={formData.title}
+            label="Workshop Name"
+            name="name"
+            value={formData.name}
             onChange={handleChange}
             margin="normal"
             required
             fullWidth
           />
-
-          <TextField
-            label="Price (€)"
-            name="price"
-            type="number"
-            value={formData.price}
-            onChange={handleChange}
-            margin="normal"
-            required
-            fullWidth
-            inputProps={{ min: 0, step: 0.01 }}
-          />
-
-          <TextField
-            label="Condition"
-            name="condition"
-            value={formData.condition}
-            onChange={handleChange}
-            margin="normal"
-            required
-            fullWidth
-            select
-          >
-            <MenuItem value="new">New</MenuItem>
-            <MenuItem value="used">Used</MenuItem>
-            <MenuItem value="refurb">Refurbished</MenuItem>
-          </TextField>
-
-          <TextField
-            label="Status"
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-            margin="normal"
-            required
-            fullWidth
-            select
-          >
-            <MenuItem value="DRAFT">Draft</MenuItem>
-            <MenuItem value="PUBLISHED">Published</MenuItem>
-          </TextField>
 
           <TextField
             label="Description"
@@ -147,18 +103,54 @@ export const CreateProduct = () => {
             margin="normal"
             fullWidth
             multiline
-            rows={4}
+            rows={3}
+          />
+
+          <TextField
+            label="Address"
+            name="address"
+            value={formData.address}
+            onChange={handleChange}
+            margin="normal"
+            fullWidth
+          />
+
+          <TextField
+            label="City"
+            name="city"
+            value={formData.city}
+            onChange={handleChange}
+            margin="normal"
+            fullWidth
+          />
+
+          <TextField
+            label="Country Code (ES, FR, etc.)"
+            name="country"
+            value={formData.country}
+            onChange={handleChange}
+            margin="normal"
+            fullWidth
+            inputProps={{ maxLength: 2 }}
+          />
+
+          <TextField
+            label="Phone"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            margin="normal"
+            fullWidth
+            type="tel"
           />
 
           <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
             <Button
               type="submit"
               variant="contained"
-              disabled={
-                loading || !formData.title.trim() || formData.price <= 0
-              }
+              disabled={loading || !formData.name.trim()}
             >
-              {loading ? 'Creating...' : 'Create Product'}
+              {loading ? 'Creating...' : 'Create Workshop'}
             </Button>
 
             <Button variant="outlined" onClick={() => navigate('/dashboard')}>

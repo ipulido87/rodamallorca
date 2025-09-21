@@ -18,13 +18,6 @@ import {
 } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FilterBar } from '../components/common/filter-bar'
-import {
-  productFilterConfig,
-  workshopFilterConfig,
-} from '../config/product-filters'
-import { useAuth } from '../hooks/use-auth'
-import { searchProducts, searchWorkshops } from '../services/catalog-service'
 import type {
   FilterValue,
   FilterValues,
@@ -33,7 +26,14 @@ import type {
   ProductSearchParams,
   Workshop,
   WorkshopSearchParams,
-} from '../types/catalog'
+} from '../../../features/catalog/types/catalog'
+import { FilterBar } from '../../../shared/components/FilterBar'
+import {
+  productFilterConfig,
+  workshopFilterConfig,
+} from '../../../shared/constants/product-filters'
+import { useAuth } from '../../auth/hooks/useAuth'
+import { searchProducts, searchWorkshops } from '../services/catalog-service'
 
 interface TabPanelProps {
   children?: React.ReactNode

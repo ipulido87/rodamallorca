@@ -1,12 +1,12 @@
-
+import { API } from '../../../features/auth/services/auth-service'
 import type {
   PaginatedResponse,
   Product,
   ProductSearchParams,
+  PublicProduct,
   Workshop,
   WorkshopSearchParams,
-} from '../types/catalog'
-import { API } from './auth-service'
+} from '../../catalog/types/catalog'
 
 // Buscar talleres públicamente
 export async function searchWorkshops(
@@ -50,7 +50,7 @@ export async function searchProducts(
 }
 
 // Obtener detalle de producto (ambos nombres para compatibilidad)
-export async function getProduct(id: string): Promise<Product> {
+export async function getProduct(id: string): Promise<PublicProduct> {
   const res = await API.get(`/catalog/products/${id}`)
   return res.data
 }

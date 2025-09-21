@@ -21,7 +21,7 @@ import type {
   FilterConfig,
   FilterValue,
   FilterValues,
-} from '../../types/catalog'
+} from '../../features/catalog/types/catalog'
 
 interface FilterBarProps {
   filters: FilterConfig[]

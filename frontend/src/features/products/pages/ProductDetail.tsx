@@ -1,9 +1,19 @@
 import { ArrowBack, LocationOn, Store } from '@mui/icons-material'
-import { Box, Button, Card, CardContent, Chip, Container, IconButton, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Container,
+  IconButton,
+  Typography,
+} from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getProductById, type PublicProduct } from '../services/catalog-service'
-import { ApiError } from '../types/api'
+import { ApiError } from '../../../shared/types/api'
+import { getProductById } from '../../catalog/services/catalog-service'
+import type { PublicProduct } from '../../catalog/types/catalog'
 
 export const ProductDetail = () => {
   const { id } = useParams<{ id: string }>()
@@ -70,25 +80,27 @@ export const ProductDetail = () => {
           <IconButton onClick={() => navigate('/catalog')} sx={{ mr: 2 }}>
             <ArrowBack />
           </IconButton>
-          <Typography variant="h4">
-            Product Details
-          </Typography>
+          <Typography variant="h4">Product Details</Typography>
         </Box>
 
-        <Box sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-          gap: 4
-        }}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+            gap: 4,
+          }}
+        >
           {/* Product Image Placeholder */}
           <Card>
-            <Box sx={{
-              height: 400,
-              backgroundColor: 'grey.100',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
+            <Box
+              sx={{
+                height: 400,
+                backgroundColor: 'grey.100',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               <Typography variant="h6" color="text.secondary">
                 No image available
               </Typography>
@@ -101,18 +113,29 @@ export const ProductDetail = () => {
               {product.title}
             </Typography>
 
-            <Typography variant="h4" color="primary" gutterBottom sx={{ fontWeight: 700 }}>
+            <Typography
+              variant="h4"
+              color="primary"
+              gutterBottom
+              sx={{ fontWeight: 700 }}
+            >
               {formatPrice(product.price)}
             </Typography>
 
             <Box sx={{ mb: 3 }}>
-              <Chip 
-                label={product.condition} 
-                color={product.condition === 'new' ? 'success' : product.condition === 'used' ? 'default' : 'warning'}
+              <Chip
+                label={product.condition}
+                color={
+                  product.condition === 'new'
+                    ? 'success'
+                    : product.condition === 'used'
+                    ? 'default'
+                    : 'warning'
+                }
                 sx={{ textTransform: 'capitalize', mr: 1 }}
               />
-              <Chip 
-                label={product.status} 
+              <Chip
+                label={product.status}
                 variant="outlined"
                 sx={{ textTransform: 'capitalize' }}
               />
@@ -144,9 +167,7 @@ export const ProductDetail = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <Store sx={{ mr: 1, color: 'primary.main' }} />
-                  <Typography variant="h6">
-                    Workshop Information
-                  </Typography>
+                  <Typography variant="h6">Workshop Information</Typography>
                 </Box>
 
                 <Typography variant="h6" gutterBottom>
@@ -154,7 +175,9 @@ export const ProductDetail = () => {
                 </Typography>
 
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <LocationOn sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }} />
+                  <LocationOn
+                    sx={{ mr: 1, fontSize: 20, color: 'text.secondary' }}
+                  />
                   <Typography variant="body2">
                     {product.workshop.city}, {product.workshop.country}
                   </Typography>
@@ -168,19 +191,15 @@ export const ProductDetail = () => {
 
             {/* Action Buttons */}
             <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
-              <Button 
-                variant="contained" 
+              <Button
+                variant="contained"
                 size="large"
                 sx={{ flex: 1 }}
                 disabled
               >
                 Contact Workshop
               </Button>
-              <Button 
-                variant="outlined" 
-                size="large"
-                disabled
-              >
+              <Button variant="outlined" size="large" disabled>
                 Add to Favorites
               </Button>
             </Box>
@@ -193,14 +212,18 @@ export const ProductDetail = () => {
             <Typography variant="h6" gutterBottom>
               Product Information
             </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 2 }}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: 2,
+              }}
+            >
               <Box>
                 <Typography variant="caption" color="text.secondary">
                   Product ID
                 </Typography>
-                <Typography variant="body2">
-                  {product.id}
-                </Typography>
+                <Typography variant="body2">{product.id}</Typography>
               </Box>
               <Box>
                 <Typography variant="caption" color="text.secondary">
@@ -214,9 +237,7 @@ export const ProductDetail = () => {
                 <Typography variant="caption" color="text.secondary">
                   Status
                 </Typography>
-                <Typography variant="body2">
-                  {product.status}
-                </Typography>
+                <Typography variant="body2">{product.status}</Typography>
               </Box>
             </Box>
           </CardContent>

@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
-import { useAuth } from '../hooks/use-auth'
+import { useAuth } from '../features/auth/hooks/useAuth'
 
 export const PrivateRoute = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated, loading } = useAuth()
