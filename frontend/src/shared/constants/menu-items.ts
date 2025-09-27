@@ -46,6 +46,13 @@ export const menuItems: MenuItem[] = [
     path: '/billing',
     roles: ['WORKSHOP_OWNER'],
   },
+  {
+    id: 'my-workshops',
+    text: 'Mis Talleres',
+    icon: 'Build',
+    path: '/my-workshops',
+    roles: ['WORKSHOP_OWNER'],
+  },
 
   // Menú para Clientes (USER)
   {

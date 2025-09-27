@@ -16,4 +16,43 @@ export class WorkshopRepositoryPrisma implements WorkshopRepository {
     const w = await prisma.workshop.findUnique({ where: { id } })
     return w ? { ...w } : null
   }
+
+  async findByOwnerId(ownerId: string): Promise<WorkshopDTO[]> {
+    const workshops = await prisma.workshop.findMany({
+      where: { ownerId },
+      orderBy: { createdAt: 'desc' },
+    })
+    return workshops
+  }
+
+  async update(
+    id: string,
+    input: Partial<Omit<WorkshopDTO, 'id' | 'ownerId'>>
+  ): Promise<WorkshopDTO | null> {
+    try {
+      const workshop = await prisma.workshop.update({
+        where: { id },
+        data: input,
+      })
+      return workshop
+    } catch {
+      return null
+    }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      await prisma.workshop.delete({ where: { id } })
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async findAll(): Promise<WorkshopDTO[]> {
+    const workshops = await prisma.workshop.findMany({
+      orderBy: { createdAt: 'desc' },
+    })
+    return workshops
+  }
 }

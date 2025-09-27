@@ -1,523 +1,635 @@
-import { Build, DirectionsBike, Person, Speed } from '@mui/icons-material'
 import {
+  Build,
+  DirectionsBike,
+  LocationOn,
+  Search,
+  Security,
+  Speed,
+  Star,
+  TrendingUp,
+  Verified,
+} from '@mui/icons-material'
+import {
+  alpha,
   Box,
   Button,
   Card,
   CardContent,
   Chip,
   Container,
+  Fade,
   Stack,
   Typography,
+  useTheme,
 } from '@mui/material'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../features/auth/hooks/useAuth'
+
+// Hook optimizado para intersection observer
+const useInView = (threshold = 0.1) => {
+  const [inView, setInView] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold, rootMargin: '50px' }
+    )
+
+    const current = ref.current
+    if (current) observer.observe(current)
+
+    return () => {
+      if (current) observer.unobserve(current)
+    }
+  }, [threshold])
+
+  return [ref, inView] as const
+}
+
+// Contador animado mejorado
+const AnimatedCounter = ({
+  end,
+  duration = 2000,
+  suffix = '',
+}: {
+  end: number
+  duration?: number
+  suffix?: string
+}) => {
+  const [count, setCount] = useState(0)
+
+  useEffect(() => {
+    let startTime: number
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime
+      const progress = Math.min((currentTime - startTime) / duration, 1)
+
+      // Easing cuadrático
+      const easeOut = 1 - Math.pow(1 - progress, 2)
+      setCount(Math.floor(easeOut * end))
+
+      if (progress < 1) {
+        requestAnimationFrame(animate)
+      }
+    }
+
+    requestAnimationFrame(animate)
+  }, [end, duration])
+
+  return (
+    <span>
+      {count}
+      {suffix}
+    </span>
+  )
+}
 
 export const LandingPage = () => {
   const navigate = useNavigate()
-  const { user, isAuthenticated } = useAuth()
+  const theme = useTheme()
+  const [mounted, setMounted] = useState(false)
 
-  const stats = [
-    { number: '500+', label: 'Bicicletas' },
-    { number: '50+', label: 'Talleres' },
-    { number: '1000+', label: 'Ciclistas' },
-    { number: '100+', label: 'Rutas' },
+  const [heroRef, heroInView] = useInView(0.1)
+  const [statsRef, statsInView] = useInView(0.3)
+  const [featuresRef, featuresInView] = useInView(0.2)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const mainFeatures = [
+    {
+      icon: <Search sx={{ fontSize: 40 }} />,
+      title: 'Búsqueda Avanzada',
+      description: 'Filtros inteligentes para encontrar tu bicicleta ideal',
+      gradient: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+    },
+    {
+      icon: <Build sx={{ fontSize: 40 }} />,
+      title: 'Talleres Verificados',
+      description: 'Red de profesionales certificados en toda Mallorca',
+      gradient: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
+    },
+    {
+      icon: <Security sx={{ fontSize: 40 }} />,
+      title: 'Compra Segura',
+      description: 'Transacciones protegidas con garantía total',
+      gradient: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
+    },
+  ]
+
+  const benefits = [
+    {
+      icon: <Speed />,
+      title: 'Rápido y Eficiente',
+      desc: 'Encuentra lo que buscas en minutos',
+    },
+    {
+      icon: <LocationOn />,
+      title: 'Cobertura Total',
+      desc: 'Toda Mallorca en una sola plataforma',
+    },
+    {
+      icon: <Verified />,
+      title: 'Calidad Premium',
+      desc: 'Solo los mejores productos y servicios',
+    },
+    {
+      icon: <Star />,
+      title: 'Soporte 24/7',
+      desc: 'Atención personalizada cuando la necesites',
+    },
   ]
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        background: (theme) =>
-          `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 40%, ${theme.palette.info.light} 100%)`,
-      }}
-    >
+    <Box>
       {/* Hero Section */}
-      <Container maxWidth="lg">
-        <Box sx={{ pt: 10, pb: 8, textAlign: 'center', color: 'white' }}>
-          <Typography
-            variant="h1"
-            component="h1"
-            gutterBottom
-            sx={{
-              fontSize: { xs: '2.5rem', md: '4rem' },
-              fontWeight: 'bold',
-              textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
-              mb: 3,
-            }}
-          >
-            🚴‍♂️ RodaMallorca
-          </Typography>
-          <Typography
-            variant="h4"
-            gutterBottom
-            sx={{
-              fontSize: { xs: '1.25rem', md: '1.5rem' },
-              mb: 4,
-              textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
-              maxWidth: '700px',
-              mx: 'auto',
-              lineHeight: 1.4,
-            }}
-          >
-            Tu marketplace de bicicletas en la isla más bella del Mediterráneo
-          </Typography>
-
-          {/* Chips informativos */}
+      <Box
+        ref={heroRef}
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 50%, ${theme.palette.secondary.main} 100%)`,
+          color: theme.palette.primary.contrastText,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <Container maxWidth="lg" sx={{ zIndex: 1 }}>
           <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={2}
-            justifyContent="center"
-            sx={{ mb: 6 }}
+            direction={{ xs: 'column', md: 'row' }}
+            spacing={6}
+            alignItems="center"
           >
-            <Chip
-              icon={<DirectionsBike />}
-              label="Venta & Alquiler"
-              size="medium"
-              sx={{
-                bgcolor: 'rgba(255,255,255,0.2)',
-                color: 'white',
-                backdropFilter: 'blur(10px)',
-                fontSize: '1rem',
-                py: 2,
-                px: 1,
-                height: 48,
-              }}
-            />
-            <Chip
-              icon={<Build />}
-              label="Reparaciones"
-              size="medium"
-              sx={{
-                bgcolor: 'rgba(255,255,255,0.2)',
-                color: 'white',
-                backdropFilter: 'blur(10px)',
-                fontSize: '1rem',
-                py: 2,
-                px: 1,
-                height: 48,
-              }}
-            />
-            <Chip
-              icon={<Speed />}
-              label="Rutas Guiadas"
-              size="medium"
-              sx={{
-                bgcolor: 'rgba(255,255,255,0.2)',
-                color: 'white',
-                backdropFilter: 'blur(10px)',
-                fontSize: '1rem',
-                py: 2,
-                px: 1,
-                height: 48,
-              }}
-            />
-          </Stack>
+            <Box sx={{ flex: { md: 3 } }}>
+              <Fade in={mounted && heroInView} timeout={1500}>
+                <Box>
+                  <Chip
+                    label="Plataforma #1 en Mallorca"
+                    sx={{
+                      backgroundColor: alpha(theme.palette.common.white, 0.2),
+                      color: theme.palette.common.white,
+                      mb: 3,
+                      px: 2,
+                      py: 1,
+                      fontSize: '0.9rem',
+                      fontWeight: 600,
+                    }}
+                  />
 
-          {/* Contenido condicional según autenticación */}
-          {isAuthenticated ? (
-            <Box sx={{ mt: 4 }}>
-              <Typography
-                variant="h3"
-                gutterBottom
-                sx={{
-                  color: 'white',
-                  textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
-                  fontSize: { xs: '1.8rem', md: '2.5rem' },
-                  mb: 3,
-                }}
-              >
-                ¡Bienvenido de nuevo, {user?.name}!
-              </Typography>
-              <Typography
-                variant="h6"
-                sx={{
-                  color: 'rgba(255,255,255,0.9)',
-                  mb: 4,
-                  maxWidth: '600px',
-                  mx: 'auto',
-                }}
-              >
-                {user?.role === 'WORKSHOP_OWNER'
-                  ? 'Gestiona tu taller y conecta con más ciclistas'
-                  : 'Descubre nuevas rutas y encuentra la bici perfecta'}
-              </Typography>
-              <Stack
-                direction={{ xs: 'column', sm: 'row' }}
-                spacing={2}
-                justifyContent="center"
-              >
-                <Button
-                  variant="contained"
-                  size="large"
-                  onClick={() => navigate('/catalog')}
+                  <Typography
+                    variant="h1"
+                    sx={{
+                      fontWeight: 800,
+                      fontSize: { xs: '3rem', sm: '4rem', md: '5rem' },
+                      mb: 3,
+                      lineHeight: 1.1,
+                      background: `linear-gradient(45deg, ${
+                        theme.palette.common.white
+                      } 30%, ${alpha(theme.palette.common.white, 0.8)} 90%)`,
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  >
+                    Roda
+                    <span style={{ color: theme.palette.secondary.light }}>
+                      Mallorca
+                    </span>
+                  </Typography>
+
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      opacity: 0.95,
+                      mb: 4,
+                      fontWeight: 300,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    El marketplace más completo de bicicletas y servicios
+                    ciclistas en Mallorca
+                  </Typography>
+
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
+                    <Button
+                      variant="contained"
+                      size="large"
+                      onClick={() => navigate('/catalog')}
+                      startIcon={<Search />}
+                      sx={{
+                        backgroundColor: theme.palette.common.white,
+                        color: theme.palette.primary.main,
+                        px: 4,
+                        py: 2,
+                        fontSize: '1.2rem',
+                        fontWeight: 700,
+                        borderRadius: 3,
+                        boxShadow: `0 10px 40px ${alpha(
+                          theme.palette.common.black,
+                          0.15
+                        )}`,
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        '&:hover': {
+                          backgroundColor: alpha(
+                            theme.palette.common.white,
+                            0.95
+                          ),
+                          transform: 'translateY(-4px) scale(1.02)',
+                          boxShadow: `0 20px 60px ${alpha(
+                            theme.palette.common.black,
+                            0.2
+                          )}`,
+                        },
+                      }}
+                    >
+                      Explorar Catálogo
+                    </Button>
+
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      onClick={() => navigate('/register?type=owner')}
+                      startIcon={<Build />}
+                      sx={{
+                        borderColor: theme.palette.common.white,
+                        color: theme.palette.common.white,
+                        px: 4,
+                        py: 2,
+                        fontSize: '1.2rem',
+                        fontWeight: 700,
+                        borderRadius: 3,
+                        borderWidth: 2,
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        '&:hover': {
+                          backgroundColor: alpha(
+                            theme.palette.common.white,
+                            0.15
+                          ),
+                          borderColor: theme.palette.common.white,
+                          transform: 'translateY(-4px)',
+                          boxShadow: `0 10px 30px ${alpha(
+                            theme.palette.common.black,
+                            0.2
+                          )}`,
+                        },
+                      }}
+                    >
+                      Únete como Taller
+                    </Button>
+                  </Stack>
+                </Box>
+              </Fade>
+            </Box>
+
+            <Box sx={{ flex: { md: 2 } }}>
+              <Fade in={mounted && heroInView} timeout={1800}>
+                <Box
                   sx={{
-                    bgcolor: 'white',
-                    color: 'primary.main',
-                    py: 2,
-                    px: 4,
-                    fontSize: '1.2rem',
-                    '&:hover': {
-                      bgcolor: 'rgba(255,255,255,0.9)',
-                      transform: 'translateY(-2px)',
-                    },
+                    textAlign: 'center',
                   }}
                 >
-                  Explorar Catálogo
-                </Button>
-                {user?.role === 'WORKSHOP_OWNER' && (
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    onClick={() => navigate('/dashboard')}
+                  <DirectionsBike
                     sx={{
-                      color: 'white',
-                      borderColor: 'white',
-                      py: 2,
-                      px: 4,
-                      fontSize: '1.2rem',
-                      '&:hover': {
-                        borderColor: 'white',
-                        bgcolor: 'rgba(255,255,255,0.1)',
-                        transform: 'translateY(-2px)',
+                      fontSize: { xs: 120, md: 200 },
+                      color: theme.palette.common.white,
+                      filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.3))',
+                      animation: mounted
+                        ? 'pulse 3s ease-in-out infinite'
+                        : 'none',
+                      '@keyframes pulse': {
+                        '0%, 100%': { transform: 'scale(1)' },
+                        '50%': { transform: 'scale(1.1)' },
                       },
                     }}
-                  >
-                    Mi Dashboard
-                  </Button>
-                )}
-              </Stack>
+                  />
+                </Box>
+              </Fade>
             </Box>
-          ) : (
-            <Typography
-              variant="h5"
-              sx={{
-                color: 'rgba(255,255,255,0.9)',
-                textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
-                fontSize: { xs: '1.3rem', md: '1.5rem' },
-              }}
-            >
-              Únete a la comunidad ciclista de Mallorca
-            </Typography>
-          )}
-        </Box>
-
-        {/* Cards de registro - Solo para usuarios no autenticados */}
-        {!isAuthenticated && (
-          <Box sx={{ pb: 8 }}>
-            <Typography
-              variant="h3"
-              textAlign="center"
-              gutterBottom
-              sx={{
-                color: 'white',
-                mb: 6,
-                textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
-                fontSize: { xs: '2rem', md: '2.5rem' },
-              }}
-            >
-              ¿Cómo quieres rodar con nosotros?
-            </Typography>
-
-            <Stack
-              direction={{ xs: 'column', md: 'row' }}
-              spacing={4}
-              justifyContent="center"
-              sx={{ maxWidth: '900px', mx: 'auto' }}
-            >
-              {/* Cliente */}
-              <Card
-                elevation={8}
-                sx={{
-                  flex: 1,
-                  maxWidth: { xs: '100%', md: '420px' },
-                  cursor: 'pointer',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  background: 'linear-gradient(145deg, #ffffff, #f8fafc)',
-                  '&:hover': {
-                    transform: 'translateY(-8px) scale(1.02)',
-                    boxShadow: '0 25px 50px rgba(0,0,0,0.2)',
-                  },
-                }}
-                onClick={() => navigate('/register?type=user')}
-              >
-                <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                  <Box
-                    sx={{
-                      width: 90,
-                      height: 90,
-                      borderRadius: '50%',
-                      bgcolor: 'primary.main',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      mx: 'auto',
-                      mb: 3,
-                      boxShadow: '0 8px 24px rgba(63, 81, 181, 0.3)',
-                    }}
-                  >
-                    <Person sx={{ fontSize: 45, color: 'white' }} />
-                  </Box>
-
-                  <Typography
-                    variant="h4"
-                    gutterBottom
-                    color="primary"
-                    sx={{ fontWeight: 'bold', mb: 2 }}
-                  >
-                    Soy Ciclista
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    color="text.secondary"
-                    sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.6 }}
-                  >
-                    Encuentra la bici perfecta, alquila para tus rutas o repara
-                    tu compañera de aventuras
-                  </Typography>
-
-                  <Stack spacing={2} sx={{ mb: 4 }}>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontSize: '1rem' }}
-                    >
-                      🔍 Explora cientos de bicicletas
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontSize: '1rem' }}
-                    >
-                      🏔️ Alquila para rutas en la Serra de Tramuntana
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontSize: '1rem' }}
-                    >
-                      🔧 Conecta con talleres especializados
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontSize: '1rem' }}
-                    >
-                      🏖️ Descubre rutas costeras únicas
-                    </Typography>
-                  </Stack>
-
-                  <Button
-                    variant="contained"
-                    size="large"
-                    fullWidth
-                    startIcon={<DirectionsBike />}
-                    sx={{
-                      py: 2,
-                      fontSize: '1.2rem',
-                    }}
-                  >
-                    Empezar a Rodar
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Propietario de Taller */}
-              <Card
-                elevation={8}
-                sx={{
-                  flex: 1,
-                  maxWidth: { xs: '100%', md: '420px' },
-                  cursor: 'pointer',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  background: 'linear-gradient(145deg, #ffffff, #f8fafc)',
-                  '&:hover': {
-                    transform: 'translateY(-8px) scale(1.02)',
-                    boxShadow: '0 25px 50px rgba(0,0,0,0.2)',
-                  },
-                }}
-                onClick={() => navigate('/register?type=owner')}
-              >
-                <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                  <Box
-                    sx={{
-                      width: 90,
-                      height: 90,
-                      borderRadius: '50%',
-                      bgcolor: 'success.main',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      mx: 'auto',
-                      mb: 3,
-                      boxShadow: '0 8px 24px rgba(0, 150, 136, 0.3)',
-                    }}
-                  >
-                    <Build sx={{ fontSize: 45, color: 'white' }} />
-                  </Box>
-
-                  <Typography
-                    variant="h4"
-                    gutterBottom
-                    color="success.dark"
-                    sx={{ fontWeight: 'bold', mb: 2 }}
-                  >
-                    Tengo un Taller
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    color="text.secondary"
-                    sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.6 }}
-                  >
-                    Haz crecer tu negocio, conecta con más ciclistas y sé parte
-                    de la comunidad
-                  </Typography>
-
-                  <Stack spacing={2} sx={{ mb: 4 }}>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontSize: '1rem' }}
-                    >
-                      📦 Gestiona tu inventario online
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontSize: '1rem' }}
-                    >
-                      👥 Conecta con ciclistas de toda la isla
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontSize: '1rem' }}
-                    >
-                      💰 Aumenta tus ingresos
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontSize: '1rem' }}
-                    >
-                      🏆 Construye tu reputación
-                    </Typography>
-                  </Stack>
-
-                  <Button
-                    variant="contained"
-                    color="success"
-                    size="large"
-                    fullWidth
-                    startIcon={<Build />}
-                    sx={{
-                      py: 2,
-                      fontSize: '1.2rem',
-                    }}
-                  >
-                    Unirse como Taller
-                  </Button>
-                </CardContent>
-              </Card>
-            </Stack>
-          </Box>
-        )}
-      </Container>
+          </Stack>
+        </Container>
+      </Box>
 
       {/* Estadísticas */}
       <Box
-        sx={{ py: 8, bgcolor: 'rgba(0,0,0,0.1)', backdropFilter: 'blur(10px)' }}
+        ref={statsRef}
+        sx={{
+          py: { xs: 8, md: 12 },
+          background: `linear-gradient(180deg, ${alpha(
+            theme.palette.primary.main,
+            0.03
+          )} 0%, ${theme.palette.background.paper} 100%)`,
+        }}
       >
         <Container maxWidth="lg">
-          <Stack
-            direction="row"
-            spacing={{ xs: 2, md: 6 }}
-            justifyContent="center"
+          <Typography
+            variant="h3"
             textAlign="center"
-            flexWrap="wrap"
+            sx={{
+              fontWeight: 700,
+              mb: 6,
+              color: theme.palette.text.primary,
+            }}
           >
-            {stats.map((stat, index) => (
-              <Box
-                key={index}
-                sx={{
-                  flex: {
-                    xs: '0 1 calc(50% - 8px)',
-                    md: '0 1 calc(25% - 24px)',
-                  },
-                  minWidth: 120,
-                }}
-              >
-                <Typography
-                  variant="h2"
-                  sx={{
-                    fontWeight: 'bold',
-                    color: 'white',
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
-                    fontSize: { xs: '2.5rem', md: '3.5rem' },
-                  }}
-                >
-                  {stat.number}
-                </Typography>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    color: 'rgba(255,255,255,0.9)',
-                    textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
-                    fontWeight: 500,
-                  }}
-                >
-                  {stat.label}
-                </Typography>
+            Números que hablan por nosotros
+          </Typography>
+
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={4}
+            justifyContent="center"
+          >
+            {[
+              {
+                number: 350,
+                suffix: '+',
+                label: 'Bicicletas Disponibles',
+                color: theme.palette.primary.main,
+              },
+              {
+                number: 60,
+                suffix: '+',
+                label: 'Talleres Verificados',
+                color: theme.palette.secondary.main,
+              },
+              {
+                number: 98,
+                suffix: '%',
+                label: 'Satisfacción Cliente',
+                color: theme.palette.success.main,
+              },
+              {
+                number: 1200,
+                suffix: '+',
+                label: 'Ventas Realizadas',
+                color: theme.palette.info.main,
+              },
+            ].map((stat, index) => (
+              <Box key={index} sx={{ flex: 1, textAlign: 'center' }}>
+                <Fade in={statsInView} timeout={1200 + index * 200}>
+                  <Box>
+                    <Typography
+                      variant="h2"
+                      sx={{
+                        fontWeight: 800,
+                        fontSize: { xs: '2.5rem', md: '3.5rem' },
+                        color: stat.color,
+                        mb: 1,
+                      }}
+                    >
+                      {statsInView ? (
+                        <AnimatedCounter
+                          end={stat.number}
+                          suffix={stat.suffix}
+                        />
+                      ) : (
+                        0
+                      )}
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        fontWeight: 500,
+                      }}
+                    >
+                      {stat.label}
+                    </Typography>
+                  </Box>
+                </Fade>
               </Box>
             ))}
           </Stack>
         </Container>
       </Box>
 
-      {/* Footer - Solo para usuarios no autenticados */}
-      {!isAuthenticated && (
-        <Box sx={{ bgcolor: 'rgba(0,0,0,0.8)', py: 6 }}>
-          <Container maxWidth="lg">
-            <Stack
-              direction={{ xs: 'column', md: 'row' }}
-              justifyContent="space-between"
-              alignItems="center"
-              spacing={3}
-            >
-              <Box textAlign={{ xs: 'center', md: 'left' }}>
-                <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
-                  ¿Ya tienes cuenta?
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ color: 'rgba(255,255,255,0.7)' }}
-                >
-                  Accede a tu cuenta para empezar a rodar
-                </Typography>
-              </Box>
+      {/* Features Principales */}
+      <Box ref={featuresRef} sx={{ py: { xs: 8, md: 12 } }}>
+        <Container maxWidth="lg">
+          <Typography
+            variant="h3"
+            textAlign="center"
+            sx={{
+              fontWeight: 700,
+              mb: 2,
+              color: theme.palette.text.primary,
+            }}
+          >
+            Todo lo que necesitas en un solo lugar
+          </Typography>
 
-              <Button
-                variant="outlined"
-                size="large"
-                onClick={() => navigate('/login')}
-                sx={{
-                  color: 'white',
-                  borderColor: 'white',
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.1rem',
-                  '&:hover': {
-                    borderColor: 'white',
-                    bgcolor: 'rgba(255,255,255,0.1)',
-                    transform: 'translateY(-2px)',
-                  },
-                }}
-              >
-                Iniciar Sesión
-              </Button>
+          <Typography
+            variant="h6"
+            textAlign="center"
+            sx={{
+              color: theme.palette.text.secondary,
+              mb: 8,
+              fontWeight: 300,
+              maxWidth: 600,
+              mx: 'auto',
+            }}
+          >
+            Conectamos ciclistas con los mejores talleres y productos de
+            Mallorca
+          </Typography>
+
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={4}>
+            {mainFeatures.map((feature, index) => (
+              <Box key={index} sx={{ flex: 1 }}>
+                <Fade in={featuresInView} timeout={800 + index * 300}>
+                  <Card
+                    sx={{
+                      height: '100%',
+                      background: feature.gradient,
+                      color: theme.palette.common.white,
+                      borderRadius: 4,
+                      p: 4,
+                      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: `0 20px 60px ${alpha(
+                          theme.palette.common.black,
+                          0.15
+                        )}`,
+                      },
+                    }}
+                  >
+                    <CardContent sx={{ p: 0, textAlign: 'center' }}>
+                      <Box
+                        sx={{
+                          display: 'inline-flex',
+                          p: 3,
+                          borderRadius: 3,
+                          backgroundColor: alpha(
+                            theme.palette.common.white,
+                            0.2
+                          ),
+                          mb: 3,
+                        }}
+                      >
+                        {feature.icon}
+                      </Box>
+                      <Typography
+                        variant="h5"
+                        sx={{
+                          fontWeight: 700,
+                          mb: 2,
+                        }}
+                      >
+                        {feature.title}
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          opacity: 0.9,
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        {feature.description}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Fade>
+              </Box>
+            ))}
+          </Stack>
+
+          {/* Beneficios adicionales */}
+          <Box sx={{ mt: 12 }}>
+            <Typography
+              variant="h4"
+              textAlign="center"
+              sx={{
+                fontWeight: 600,
+                mb: 6,
+                color: theme.palette.text.primary,
+              }}
+            >
+              Más razones para elegirnos
+            </Typography>
+
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={3}
+              sx={{ flexWrap: 'wrap', justifyContent: 'center' }}
+            >
+              {benefits.map((benefit, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    flex: { xs: '1', sm: '0 1 calc(50% - 12px)' },
+                    maxWidth: { xs: '100%', sm: '300px' },
+                  }}
+                >
+                  <Fade in={featuresInView} timeout={600 + index * 200}>
+                    <Card
+                      sx={{
+                        p: 3,
+                        textAlign: 'center',
+                        borderRadius: 3,
+                        border: `1px solid ${alpha(
+                          theme.palette.divider,
+                          0.1
+                        )}`,
+                        height: '100%',
+                        minHeight: 160,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: `0 8px 25px ${alpha(
+                            theme.palette.common.black,
+                            0.1
+                          )}`,
+                        },
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          color: theme.palette.primary.main,
+                          mb: 2,
+                          '& svg': { fontSize: 32 },
+                        }}
+                      >
+                        {benefit.icon}
+                      </Box>
+                      <Typography variant="h6" fontWeight="600" gutterBottom>
+                        {benefit.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {benefit.desc}
+                      </Typography>
+                    </Card>
+                  </Fade>
+                </Box>
+              ))}
             </Stack>
-          </Container>
-        </Box>
-      )}
+          </Box>
+        </Container>
+      </Box>
+
+      {/* CTA Section */}
+      <Box
+        sx={{
+          py: { xs: 6, md: 8 },
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+          color: theme.palette.primary.contrastText,
+          textAlign: 'center',
+        }}
+      >
+        <Container maxWidth="md">
+          <TrendingUp sx={{ fontSize: 48, mb: 2, opacity: 0.9 }} />
+
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 700,
+              mb: 2,
+              fontSize: { xs: '2rem', md: '3rem' },
+            }}
+          >
+            Únete a la revolución ciclista
+          </Typography>
+
+          <Typography
+            variant="h6"
+            sx={{
+              mb: 4,
+              opacity: 0.9,
+              fontWeight: 300,
+            }}
+          >
+            Más de 1000 ciclistas ya confían en nosotros
+          </Typography>
+
+          <Button
+            variant="contained"
+            size="large"
+            onClick={() => navigate('/register')}
+            sx={{
+              backgroundColor: theme.palette.common.white,
+              color: theme.palette.primary.main,
+              px: 6,
+              py: 2,
+              fontSize: '1.2rem',
+              fontWeight: 600,
+              borderRadius: 2,
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.common.white, 0.95),
+                transform: 'scale(1.05)',
+              },
+            }}
+          >
+            Comenzar Ahora
+          </Button>
+        </Container>
+      </Box>
     </Box>
   )
 }

@@ -28,7 +28,7 @@ export const registerUser = async (req: Request, res: Response) => {
   if (!parsed.success) {
     return res.status(400).json({ errors: parsed.error.issues })
   }
-  const { email, password, name, birthDate, phone } = parsed.data
+  const { email, password, name, birthDate, phone, role } = parsed.data
 
   try {
     const user = await registerUserUseCase({
@@ -37,6 +37,7 @@ export const registerUser = async (req: Request, res: Response) => {
       name,
       birthDate,
       phone,
+      role,
     })
 
     try {

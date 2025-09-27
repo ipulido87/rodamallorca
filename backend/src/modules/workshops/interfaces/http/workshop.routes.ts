@@ -1,11 +1,16 @@
 import { Router } from 'express'
-import prisma from '../../../../lib/prisma'
 import {
   requireRole,
   requireUser,
   verifyToken,
 } from '../../../auth/interfaces/middlewares/auth.middleware'
-import { createWorkshopController } from '../controllers/workshop.controller'
+import {
+  createWorkshopController,
+  deleteWorkshopController,
+  getMyWorkshopsController,
+  getWorkshopController,
+  updateWorkshopController,
+} from '../controllers/workshop.controller'
 
 const r = Router()
 
@@ -18,23 +23,33 @@ r.post(
   createWorkshopController
 )
 
-// GET /api/owner/workshops/mine - Obtener mis talleres
 r.get(
   '/workshops/mine',
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
-  async (req, res, next) => {
-    try {
-      const workshops = await prisma.workshop.findMany({
-        where: { ownerId: req.user!.id },
-        orderBy: { createdAt: 'desc' },
-      })
-      res.json(workshops)
-    } catch (e) {
-      next(e)
-    }
-  }
+  getMyWorkshopsController
 )
+
+r.put(
+  '/workshops/:id',
+  verifyToken,
+  requireUser,
+  requireRole('WORKSHOP_OWNER'),
+  updateWorkshopController
+)
+
+r.delete(
+  '/workshops/:id',
+  verifyToken,
+  requireUser,
+  requireRole('WORKSHOP_OWNER'),
+  deleteWorkshopController
+)
+
+// GET /api/catalog/workshops/:id - Público
+r.get('/workshops/:id', getWorkshopController)
+
+// GET /api/owner/workshops/mine - Obtener mis talleres
 
 export default r

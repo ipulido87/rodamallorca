@@ -12,4 +12,9 @@ export interface WorkshopDTO {
 export interface WorkshopRepository {
   create(input: Omit<WorkshopDTO, 'id'>): Promise<WorkshopDTO>
   findById(id: string): Promise<WorkshopDTO | null>
+  // ↓ AGREGAR ESTOS MÉTODOS
+  findByOwnerId(ownerId: string): Promise<WorkshopDTO[]>
+  update(id: string, input: Partial<Omit<WorkshopDTO, 'id' | 'ownerId'>>): Promise<WorkshopDTO | null>
+  delete(id: string): Promise<boolean>
+  findAll(): Promise<WorkshopDTO[]>
 }

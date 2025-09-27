@@ -7,7 +7,10 @@ import morgan from 'morgan'
 import authRoutes from './modules/auth/interfaces/http/auth.routes'
 import catalogRoutes from './modules/catalog/interfaces/http/catalog.routes'
 import productRoutes from './modules/products/interfaces/http/products.routes'
-import ownerRoutes from './modules/workshops/interfaces/http/workshop.routes'
+import {
+  default as ownerRoutes,
+  default as workshopRoutes,
+} from './modules/workshops/interfaces/http/workshop.routes'
 dotenv.config()
 
 const app = express()
@@ -34,3 +37,6 @@ app.listen(PORT, () => {
   console.log(`API running on http://localhost:${PORT}`)
 })
 app.use('/api/owner', productRoutes)
+app.use('/api/owner', workshopRoutes)
+
+app.use('/api/owner', ownerRoutes) 

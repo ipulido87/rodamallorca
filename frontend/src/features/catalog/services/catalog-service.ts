@@ -55,5 +55,10 @@ export async function getProduct(id: string): Promise<PublicProduct> {
   return res.data
 }
 
+export async function getWorkshopById(id: string): Promise<Workshop> {
+  const res = await API.get(`/owner/workshops/${id}`)
+  return res.data
+}
+
 // Alias para compatibilidad con código existente
 export const getProductById = getProduct

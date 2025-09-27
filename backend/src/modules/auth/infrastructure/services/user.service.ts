@@ -1,3 +1,4 @@
+import { UserRole } from '@prisma/client'
 import bcrypt from 'bcrypt'
 import { v4 as uuidv4 } from 'uuid'
 import prisma from '../../../../lib/prisma'
@@ -8,6 +9,7 @@ type SaveUserInput = {
   name: string
   birthDate?: Date
   phone?: string
+  role?: UserRole
 }
 
 export const saveUser = async ({
@@ -16,6 +18,7 @@ export const saveUser = async ({
   name,
   birthDate,
   phone,
+  role,
 }: SaveUserInput) => {
   const passwordHash = await bcrypt.hash(password, 10)
   const verificationCode = uuidv4()
@@ -31,6 +34,7 @@ export const saveUser = async ({
       name,
       birthDate: birthDate ?? null,
       phone: phone ?? null,
+      role, // ← Sintaxis corta, equivale a role: role
       verificationCode,
       codeExpiresAt,
       verified: false,

@@ -237,7 +237,19 @@ export const Catalog = () => {
           }}
         >
           {workshopsData?.items.map((workshop: Workshop) => (
-            <Card key={workshop.id} sx={{ height: '100%' }}>
+            <Card
+              key={workshop.id}
+              sx={{
+                height: '100%',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.12)',
+                },
+              }}
+              onClick={() => navigate(`/workshop/${workshop.id}`)}
+            >
               <CardContent>
                 <Typography variant="h6" gutterBottom>
                   {workshop.name}

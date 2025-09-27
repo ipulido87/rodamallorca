@@ -7,7 +7,10 @@ import { Catalog } from './features/catalog/index'
 import { Dashboard } from './features/dashboard/index'
 import { MyProducts, ProductDetail } from './features/products'
 import { CreateProduct, EditProduct } from './features/products/index'
-import { CreateWorkshop } from './features/workshops/pages/CreateWorkshop'
+import { CreateWorkshop } from './features/workshops/pages/create-workshop'
+import { EditWorkshop } from './features/workshops/pages/edit-workshop'
+import { MyWorkshops } from './features/workshops/pages/my-work-shops'
+import { WorkshopDetail } from './features/workshops/pages/workshop-detail'
 import { Home } from './pages/HomePage'
 import { LandingPage } from './pages/LandingPage'
 import { LoginForm } from './pages/login-form'
@@ -56,14 +59,25 @@ function App() {
               </PrivateRoute>
             }
           >
-            {/* Rutas anidadas dentro del MainLayout */}
-
             {/* Rutas para ambos roles */}
             <Route path="catalog" element={<Catalog />} />
             <Route path="product/:id" element={<ProductDetail />} />
+            <Route path="workshop/:id" element={<WorkshopDetail />} />
 
             {/* Rutas solo para USER */}
             <Route path="home" element={<Home />} />
+            <Route
+              path="my-orders"
+              element={<div>Mis Pedidos - Por implementar</div>}
+            />
+            <Route
+              path="favorites"
+              element={<div>Favoritos - Por implementar</div>}
+            />
+            <Route
+              path="repairs"
+              element={<div>Reparaciones - Por implementar</div>}
+            />
 
             {/* Rutas solo para WORKSHOP_OWNER */}
             <Route
@@ -75,10 +89,34 @@ function App() {
               }
             />
             <Route
+              path="my-workshops"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <MyWorkshops />
+                </RoleRoute>
+              }
+            />
+            <Route
               path="create-workshop"
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
                   <CreateWorkshop />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="edit-workshop/:id"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <EditWorkshop />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="my-products"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <MyProducts />
                 </RoleRoute>
               }
             />
@@ -95,16 +133,6 @@ function App() {
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
                   <EditProduct />
-                </RoleRoute>
-              }
-            />
-
-            {/* Páginas que puedes agregar según el menú */}
-            <Route
-              path="my-products"
-              element={
-                <RoleRoute requiredRole="WORKSHOP_OWNER">
-                  <MyProducts />
                 </RoleRoute>
               }
             />
@@ -139,20 +167,6 @@ function App() {
                   <div>Facturación - Por implementar</div>
                 </RoleRoute>
               }
-            />
-
-            {/* Rutas para USER */}
-            <Route
-              path="my-orders"
-              element={<div>Mis Pedidos - Por implementar</div>}
-            />
-            <Route
-              path="favorites"
-              element={<div>Favoritos - Por implementar</div>}
-            />
-            <Route
-              path="repairs"
-              element={<div>Reparaciones - Por implementar</div>}
             />
 
             {/* Rutas comunes */}
