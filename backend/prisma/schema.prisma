@@ -27,7 +27,7 @@ model User {
   codeExpiresAt    DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  role             UserRole @default(USER)   // 👈 aquí el rol
+  role             UserRole @default(USER)   
 
   // Relaciones
   workshops        Workshop[]
@@ -35,7 +35,7 @@ model User {
 
 model Workshop {
   id          String   @id @default(uuid())
-  ownerId     String   // User.id del dueño del taller
+  ownerId     String   
   name        String
   description String?
   address     String?
@@ -72,8 +72,8 @@ model Product {
   description String?
   price       Int       // en céntimos
   currency    String    @default("EUR")
-  condition   String    @default("used")   // 'new' | 'used' | 'refurb'
-  status      String    @default("DRAFT")  // 'DRAFT' | 'PUBLISHED' | 'SOLD'
+  condition   String    @default("used")   
+  status      String    @default("DRAFT")  
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -90,10 +90,12 @@ model Product {
 model ProductImage {
   id        String  @id @default(uuid())
   productId String
-  url       String
+  original  String  
+  medium    String  
+  thumbnail String  
   position  Int     @default(0)
 
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  @@unique([productId, position]) // evita posiciones repetidas por producto
+  @@unique([productId, position])
 }

@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import express from 'express'
 import morgan from 'morgan'
 
+import path from 'path'
 import authRoutes from './modules/auth/interfaces/http/auth.routes'
 import catalogRoutes from './modules/catalog/interfaces/http/catalog.routes'
 import productRoutes from './modules/products/interfaces/http/products.routes'
@@ -39,4 +40,5 @@ app.listen(PORT, () => {
 app.use('/api/owner', productRoutes)
 app.use('/api/owner', workshopRoutes)
 
-app.use('/api/owner', ownerRoutes) 
+app.use('/api/owner', ownerRoutes)
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))

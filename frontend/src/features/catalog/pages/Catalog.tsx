@@ -5,19 +5,13 @@ import {
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
   Container,
-  Stack,
   Tab,
   Tabs,
   TextField,
   Typography,
 } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import type {
   FilterValue,
   FilterValues,
@@ -33,6 +27,10 @@ import {
   workshopFilterConfig,
 } from '../../../shared/constants/product-filters'
 import { useAuth } from '../../auth/hooks/useAuth'
+import {
+  ModernProductLayout,
+  ModernWorkshopLayout,
+} from '../../products/components/modern-product-layout'
 import { searchProducts, searchWorkshops } from '../services/catalog-service'
 
 interface TabPanelProps {
@@ -55,9 +53,24 @@ function TabPanel(props: TabPanelProps) {
   )
 }
 
+// Adaptador para products del catálogo
+const adaptCatalogProductForLayout = (product: Product) => {
+  return {
+    id: product.id,
+    title: product.title,
+    price: product.price,
+    condition: 'used' as const,
+    status: product.status,
+    images: product.images, // 👈 aquí ya metes las imágenes
+    workshop: {
+      name: product.workshop.name,
+      city: product.workshop.city ?? undefined,
+    },
+  }
+}
+
 export const Catalog = () => {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const [tabValue, setTabValue] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -211,6 +224,12 @@ export const Catalog = () => {
     setWorkshopFilters({})
   }
 
+  // Handler para favoritos en catálogo
+  const handleFavoriteToggle = (productId: string) => {
+    console.log('Toggle favorite for catalog product:', productId)
+    // Aquí puedes implementar la lógica de favoritos para el catálogo
+  }
+
   const renderWorkshopsContent = () => (
     <Box>
       {workshopsError && (
@@ -219,83 +238,13 @@ export const Catalog = () => {
         </Alert>
       )}
 
-      {workshopsLoading ? (
-        <Box display="flex" justifyContent="center" py={4}>
-          <CircularProgress />
-        </Box>
-      ) : (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, 1fr)',
-              md: 'repeat(3, 1fr)',
-              lg: 'repeat(4, 1fr)',
-            },
-            gap: 3,
-          }}
-        >
-          {workshopsData?.items.map((workshop: Workshop) => (
-            <Card
-              key={workshop.id}
-              sx={{
-                height: '100%',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: '0 8px 25px rgba(0,0,0,0.12)',
-                },
-              }}
-              onClick={() => navigate(`/workshop/${workshop.id}`)}
-            >
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  {workshop.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  {workshop.description || 'Sin descripción disponible'}
-                </Typography>
-                <Stack spacing={1} sx={{ mt: 2 }}>
-                  {workshop.address && (
-                    <Typography variant="caption" color="text.secondary">
-                      📍 {workshop.address}
-                    </Typography>
-                  )}
-                  {workshop.city && workshop.country && (
-                    <Typography variant="caption" color="text.secondary">
-                      🌍 {workshop.city}, {workshop.country}
-                    </Typography>
-                  )}
-                  {workshop.phone && (
-                    <Typography variant="caption" color="text.secondary">
-                      📞 {workshop.phone}
-                    </Typography>
-                  )}
-                  <Typography variant="caption" color="info.main">
-                    ⏰ Miembro desde{' '}
-                    {new Date(workshop.createdAt).getFullYear()}
-                  </Typography>
-                </Stack>
-              </CardContent>
-            </Card>
-          ))}
-        </Box>
-      )}
-
-      {!workshopsLoading &&
-        workshopsData &&
-        workshopsData.items.length === 0 && (
-          <Box textAlign="center" py={8}>
-            <Typography variant="h6" color="text.secondary">
-              No se encontraron talleres
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Intenta con otros términos de búsqueda
-            </Typography>
-          </Box>
-        )}
+      {/* Layout moderno de workshops para el catálogo */}
+      <ModernWorkshopLayout
+        workshops={workshopsData?.items || []}
+        loading={workshopsLoading}
+        // error={workshopsError}
+        emptyMessage="No se encontraron talleres"
+      />
 
       {workshopsData && workshopsData.total > 0 && (
         <Box textAlign="center" sx={{ mt: 4 }}>
@@ -316,87 +265,15 @@ export const Catalog = () => {
         </Alert>
       )}
 
-      {productsLoading ? (
-        <Box display="flex" justifyContent="center" py={4}>
-          <CircularProgress />
-        </Box>
-      ) : (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, 1fr)',
-              md: 'repeat(3, 1fr)',
-              lg: 'repeat(4, 1fr)',
-            },
-            gap: 3,
-          }}
-        >
-          {productsData?.items.map((product: Product) => (
-            <Card
-              key={product.id}
-              sx={{
-                height: '100%',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: '0 8px 25px rgba(0,0,0,0.12)',
-                },
-              }}
-              onClick={() => navigate(`/product/${product.id}`)}
-            >
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  {product.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  {product.description || 'Sin descripción disponible'}
-                </Typography>
-                <Stack spacing={1} sx={{ mt: 2 }}>
-                  <Typography variant="h6" color="primary">
-                    €{product.price}
-                  </Typography>
-                  {product.category && (
-                    <Chip
-                      label={product.category.name}
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                    />
-                  )}
-                  <Typography variant="caption" color="text.secondary">
-                    🏪 {product.workshop.name}
-                  </Typography>
-                  {product.workshop.city && (
-                    <Typography variant="caption" color="text.secondary">
-                      📍 {product.workshop.city}
-                    </Typography>
-                  )}
-                  <Typography variant="caption" color="success.main">
-                    ✅{' '}
-                    {product.status === 'PUBLISHED'
-                      ? 'Disponible'
-                      : 'No disponible'}
-                  </Typography>
-                </Stack>
-              </CardContent>
-            </Card>
-          ))}
-        </Box>
-      )}
-
-      {!productsLoading && productsData && productsData.items.length === 0 && (
-        <Box textAlign="center" py={8}>
-          <Typography variant="h6" color="text.secondary">
-            No se encontraron productos
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Intenta con otros términos de búsqueda
-          </Typography>
-        </Box>
-      )}
+      {/* Layout moderno de productos para el catálogo */}
+      <ModernProductLayout
+        products={productsData?.items.map(adaptCatalogProductForLayout) || []}
+        loading={productsLoading}
+        error={productsError ?? undefined}
+        emptyMessage="No se encontraron productos"
+        onFavoriteToggle={handleFavoriteToggle}
+        favoriteIds={[]} // Implementar favoritos del catálogo aquí
+      />
 
       {productsData && productsData.total > 0 && (
         <Box textAlign="center" sx={{ mt: 4 }}>

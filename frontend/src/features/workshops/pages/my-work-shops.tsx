@@ -1,19 +1,8 @@
-import {
-  Add,
-  Delete,
-  Edit,
-  LocationOn,
-  Phone,
-  Visibility,
-} from '@mui/icons-material'
+import { Add } from '@mui/icons-material'
 import {
   Alert,
   Box,
   Button,
-  Card,
-  CardActions,
-  CardContent,
-  Chip,
   CircularProgress,
   Container,
   Dialog,
@@ -21,12 +10,11 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  IconButton,
-  Stack,
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ModernWorkshopLayout } from '../../products/components/modern-product-layout'
 import {
   deleteWorkshop,
   getMyWorkshops,
@@ -65,9 +53,6 @@ export const MyWorkshops = () => {
     loadWorkshops()
   }, [])
 
-  const handleDeleteClick = (workshop: Workshop) => {
-    setDeleteDialog({ open: true, workshop })
-  }
 
   const handleDeleteConfirm = async () => {
     if (!deleteDialog.workshop) return
@@ -145,146 +130,13 @@ export const MyWorkshops = () => {
           </Alert>
         )}
 
-        {/* Lista de talleres */}
-        {workshops.length === 0 ? (
-          <Box sx={{ textAlign: 'center', py: 8 }}>
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              No tienes talleres registrados
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Crea tu primer taller para empezar a gestionar tu negocio
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={() => navigate('/workshops/create')}
-            >
-              Crear Primer Taller
-            </Button>
-          </Box>
-        ) : (
-          <Stack spacing={3}>
-            {workshops.map((workshop) => (
-              <Card key={workshop.id} sx={{ borderRadius: 3 }}>
-                <CardContent>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                      mb: 2,
-                    }}
-                  >
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="h5" fontWeight="bold" gutterBottom>
-                        {workshop.name}
-                      </Typography>
-
-                      <Chip
-                        label="Activo"
-                        color="success"
-                        size="small"
-                        sx={{ mb: 2 }}
-                      />
-
-                      {workshop.description && (
-                        <Typography
-                          variant="body1"
-                          color="text.secondary"
-                          sx={{ mb: 2 }}
-                        >
-                          {workshop.description}
-                        </Typography>
-                      )}
-
-                      <Stack spacing={1}>
-                        {workshop.address && (
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <LocationOn
-                              sx={{
-                                mr: 1,
-                                color: 'text.secondary',
-                                fontSize: 20,
-                              }}
-                            />
-                            <Typography variant="body2" color="text.secondary">
-                              {workshop.address}, {workshop.city},{' '}
-                              {workshop.country}
-                            </Typography>
-                          </Box>
-                        )}
-
-                        {workshop.phone && (
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <Phone
-                              sx={{
-                                mr: 1,
-                                color: 'text.secondary',
-                                fontSize: 20,
-                              }}
-                            />
-                            <Typography variant="body2" color="text.secondary">
-                              {workshop.phone}
-                            </Typography>
-                          </Box>
-                        )}
-                      </Stack>
-                    </Box>
-
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'flex-end',
-                        ml: 2,
-                      }}
-                    >
-                      <Typography variant="caption" color="text.secondary">
-                        Creado:{' '}
-                        {new Date(workshop.createdAt).toLocaleDateString()}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Actualizado:{' '}
-                        {new Date(workshop.updatedAt).toLocaleDateString()}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </CardContent>
-
-                <CardActions sx={{ justifyContent: 'flex-end', px: 2, pb: 2 }}>
-                  <IconButton
-                    onClick={() => navigate(`/workshop/${workshop.id}`)}
-                    color="primary"
-                    title="Ver detalles"
-                  >
-                    <Visibility />
-                  </IconButton>
-
-                  <IconButton
-                    onClick={() => navigate(`/edit-workshop/${workshop.id}`)}
-                    color="primary"
-                    title="Editar taller"
-                  >
-                    <Edit />
-                  </IconButton>
-
-                  <IconButton
-                    onClick={() => handleDeleteClick(workshop)}
-                    color="error"
-                    title="Eliminar taller"
-                    disabled={deleteLoading === workshop.id}
-                  >
-                    {deleteLoading === workshop.id ? (
-                      <CircularProgress size={20} />
-                    ) : (
-                      <Delete />
-                    )}
-                  </IconButton>
-                </CardActions>
-              </Card>
-            ))}
-          </Stack>
-        )}
+        {/* Layout moderno de workshops */}
+        <ModernWorkshopLayout
+          workshops={workshops}
+          loading={false} // Ya manejamos loading arriba
+          error={undefined} // Ya manejamos error arriba
+          emptyMessage="No tienes talleres registrados"
+        />
 
         {/* Modal de confirmación para eliminar */}
         <Dialog

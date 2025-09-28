@@ -18,8 +18,11 @@ export interface Category {
 
 export interface ProductImage {
   id: string
-  url: string
   productId: string
+  original: string
+  medium: string
+  thumbnail: string
+  position: number
 }
 
 export interface Product {

@@ -8,6 +8,13 @@ import { ProductRepositoryPrisma } from '../../infrastructure/persistence/prisma
 
 const repo = new ProductRepositoryPrisma()
 
+// Esquema para las imágenes
+const imageSchema = z.object({
+  original: z.string(),
+  medium: z.string(),
+  thumbnail: z.string(),
+})
+
 const createProductSchema = z.object({
   title: z.string().min(2),
   price: z.number().int().min(0),
@@ -15,6 +22,7 @@ const createProductSchema = z.object({
   status: z.enum(['DRAFT', 'PUBLISHED', 'SOLD']).optional(),
   description: z.string().optional().nullable(),
   categoryId: z.string().uuid().optional().nullable(),
+  images: z.array(imageSchema).min(1, 'Al menos una imagen es requerida'), // Nuevo campo
 })
 
 const updateProductSchema = z.object({
@@ -24,6 +32,7 @@ const updateProductSchema = z.object({
   status: z.enum(['DRAFT', 'PUBLISHED', 'SOLD']).optional(),
   description: z.string().optional().nullable(),
   categoryId: z.string().uuid().optional().nullable(),
+  images: z.array(imageSchema).optional(), // Opcional para updates
 })
 
 // Helper function to get user's workshop
@@ -32,6 +41,40 @@ async function getUserWorkshop(userId: string) {
     where: { ownerId: userId },
     select: { id: true },
   })
+}
+
+// Helper function to create product images
+async function createProductImages(
+  productId: string,
+  images: Array<{ original: string; medium: string; thumbnail: string }>
+) {
+  const imageData = images.map((image, index) => ({
+    productId,
+    original: image.original,
+    medium: image.medium,
+    thumbnail: image.thumbnail,
+    position: index,
+  }))
+
+  await prisma.productImage.createMany({
+    data: imageData,
+  })
+}
+
+// Helper function to update product images
+async function updateProductImages(
+  productId: string,
+  images: Array<{ original: string; medium: string; thumbnail: string }>
+) {
+  // Eliminar imágenes existentes
+  await prisma.productImage.deleteMany({
+    where: { productId },
+  })
+
+  // Crear nuevas imágenes
+  if (images.length > 0) {
+    await createProductImages(productId, images)
+  }
 }
 
 // GET /api/categories
@@ -62,26 +105,39 @@ export const createProduct = async (
   next: NextFunction
 ) => {
   try {
-    const body = createProductSchema.parse(req.body)
+    const { images, ...productData } = createProductSchema.parse(req.body)
 
     const workshop = await getUserWorkshop(req.user!.id)
     if (!workshop) {
       return res.status(403).json({ message: 'You do not own a workshop' })
     }
 
-    const result = await createProductDraft(
+    // Crear producto sin imágenes primero
+    const product = await createProductDraft(
       {
         workshopId: workshop.id,
-        title: body.title,
-        price: body.price,
-        condition: body.condition,
-        description: body.description,
-        categoryId: body.categoryId,
+        title: productData.title,
+        price: productData.price,
+        condition: productData.condition,
+        description: productData.description,
+        categoryId: productData.categoryId,
       },
       { repo }
     )
 
-    res.status(201).json(result)
+    // Crear las imágenes asociadas
+    await createProductImages(product.id, images)
+
+    // Obtener el producto completo con imágenes
+    const productWithImages = await prisma.product.findUnique({
+      where: { id: product.id },
+      include: {
+        category: { select: { id: true, name: true } },
+        images: { orderBy: { position: 'asc' } },
+      },
+    })
+
+    res.status(201).json(productWithImages)
   } catch (e) {
     next(e)
   }
@@ -103,7 +159,7 @@ export const getMyProducts = async (
       where: { workshopId: workshop.id },
       include: {
         category: { select: { id: true, name: true } },
-        images: true,
+        images: { orderBy: { position: 'asc' } },
       },
       orderBy: { createdAt: 'desc' },
     })
@@ -135,7 +191,7 @@ export const getProductById = async (
       },
       include: {
         category: { select: { id: true, name: true } },
-        images: true,
+        images: { orderBy: { position: 'asc' } },
       },
     })
 
@@ -157,15 +213,31 @@ export const updateProduct = async (
 ) => {
   try {
     const { id } = req.params
-    const body = updateProductSchema.parse(req.body)
+    const { images, ...productData } = updateProductSchema.parse(req.body)
 
     const workshop = await getUserWorkshop(req.user!.id)
     if (!workshop) {
       return res.status(403).json({ message: 'You do not own a workshop' })
     }
 
-    const result = await repo.update(id, workshop.id, body)
-    res.json(result)
+    // Actualizar producto
+    const result = await repo.update(id, workshop.id, productData)
+
+    // Actualizar imágenes si se proporcionaron
+    if (images) {
+      await updateProductImages(id, images)
+    }
+
+    // Obtener el producto actualizado con imágenes
+    const updatedProduct = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        category: { select: { id: true, name: true } },
+        images: { orderBy: { position: 'asc' } },
+      },
+    })
+
+    res.json(updatedProduct)
   } catch (e) {
     next(e)
   }
@@ -222,3 +294,4 @@ export const deleteProduct = async (
     next(e)
   }
 }
+  

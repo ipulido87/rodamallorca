@@ -438,7 +438,7 @@ export const LandingPage = () => {
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={4}>
             {mainFeatures.map((feature, index) => (
               <Box key={index} sx={{ flex: 1 }}>
-                <Fade in={featuresInView} timeout={800 + index * 300}>
+                <Fade in={featuresInView} timeout={1000 + index * 300}>
                   <Card
                     sx={{
                       height: '100%',

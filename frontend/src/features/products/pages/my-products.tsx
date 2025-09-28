@@ -1,10 +1,7 @@
-// pages/my-products.tsx
-
 import {
   Add,
   Delete,
   Edit,
-  MoreVert,
   Search,
   Visibility,
   VisibilityOff,
@@ -13,9 +10,6 @@ import {
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
-  Chip,
   CircularProgress,
   Container,
   Dialog,
@@ -23,7 +17,6 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  IconButton,
   Menu,
   MenuItem,
   Stack,
@@ -32,27 +25,21 @@ import {
 } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { adaptProductImages } from '../../../utils/adapt-product-Images'
+import { ModernProductLayout } from '../components/modern-product-layout'
+import { Product } from '../services/product-service'
+import type { CardProduct } from '../types/products-types'
 
-interface Product {
-  id: string
-  title: string
-  description?: string
-  price: number
-  status: 'PUBLISHED' | 'DRAFT'
-  categoryId: string | null
-  workshopId: string
-  createdAt: string
-  updatedAt: string
-  category?: {
-    id: string
-    name: string
-  } | null
-  images: Array<{
-    id: string
-    url: string
-    productId: string
-  }>
-}
+/* --------- Adaptador UI ← Backend --------- */
+const adaptProductForLayout = (product: Product): CardProduct => ({
+  id: product.id,
+  title: product.title,
+  price: product.price,
+  condition: 'used', // si tienes el real, cámbialo aquí
+  status: product.status,
+  images: adaptProductImages(product.images), // sin any
+  workshop: { name: 'Mi Taller', city: undefined },
+})
 
 export const MyProducts = () => {
   const navigate = useNavigate()
@@ -65,7 +52,11 @@ export const MyProducts = () => {
     'ALL' | 'PUBLISHED' | 'DRAFT'
   >('ALL')
 
-  // Estados para modales
+  // menú contextual
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+
+  // modal eliminar
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean
     product: Product | null
@@ -74,18 +65,13 @@ export const MyProducts = () => {
     product: null,
   })
 
-  // Estados para menu contextual
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
-
-  // Cargar productos del taller actual
+  // Cargar productos del taller
   const loadProducts = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
-
       const token = localStorage.getItem('token')
-      const response = await fetch(
+      const res = await fetch(
         `${import.meta.env.VITE_API_URL}/owner/products/mine`,
         {
           headers: {
@@ -95,16 +81,12 @@ export const MyProducts = () => {
           credentials: 'include',
         }
       )
-
-      if (!response.ok) {
-        throw new Error('Error al cargar productos')
-      }
-
-      const products = await response.json()
-      setProducts(products)
-    } catch (err) {
+      if (!res.ok) throw new Error('Error al cargar productos')
+      const data: Product[] = await res.json()
+      setProducts(data)
+    } catch (e) {
       setError('Error al cargar los productos')
-      console.error('Error loading products:', err)
+      console.error(e)
     } finally {
       setLoading(false)
     }
@@ -114,26 +96,21 @@ export const MyProducts = () => {
     loadProducts()
   }, [loadProducts])
 
-  // Filtrar productos
-  const filteredProducts = products.filter((product) => {
+  const filteredProducts = products.filter((p) => {
+    const q = searchQuery.toLowerCase()
     const matchesSearch =
-      product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (product.description &&
-        product.description.toLowerCase().includes(searchQuery.toLowerCase()))
-    const matchesStatus =
-      statusFilter === 'ALL' || product.status === statusFilter
-
+      p.title.toLowerCase().includes(q) ||
+      (p.description && p.description.toLowerCase().includes(q))
+    const matchesStatus = statusFilter === 'ALL' || p.status === statusFilter
     return matchesSearch && matchesStatus
   })
 
-  // Cambiar estado del producto
+  // publicar / ocultar
   const handleStatusChange = async (product: Product) => {
     try {
       const token = localStorage.getItem('token')
-
       if (product.status === 'DRAFT') {
-        // Publicar producto
-        const response = await fetch(
+        const res = await fetch(
           `${import.meta.env.VITE_API_URL}/owner/products/${
             product.id
           }/publish`,
@@ -146,19 +123,14 @@ export const MyProducts = () => {
             credentials: 'include',
           }
         )
-
-        if (!response.ok) {
-          throw new Error('Error al publicar producto')
-        }
-
+        if (!res.ok) throw new Error('Error al publicar producto')
         setProducts((prev) =>
           prev.map((p) =>
-            p.id === product.id ? { ...p, status: 'PUBLISHED' as const } : p
+            p.id === product.id ? { ...p, status: 'PUBLISHED' } : p
           )
         )
       } else {
-        // Para despublicar, usamos el endpoint de actualización
-        const response = await fetch(
+        const res = await fetch(
           `${import.meta.env.VITE_API_URL}/owner/products/${product.id}`,
           {
             method: 'PUT',
@@ -170,71 +142,58 @@ export const MyProducts = () => {
             body: JSON.stringify({ status: 'DRAFT' }),
           }
         )
-
-        if (!response.ok) {
-          throw new Error('Error al despublicar producto')
-        }
-
-        const updatedProduct = await response.json()
+        if (!res.ok) throw new Error('Error al despublicar producto')
+        const updated: Product = await res.json()
         setProducts((prev) =>
-          prev.map((p) => (p.id === product.id ? updatedProduct : p))
+          prev.map((p) => (p.id === product.id ? updated : p))
         )
       }
-
       handleCloseMenu()
-    } catch (err) {
+    } catch (e) {
       setError('Error al cambiar el estado del producto')
-      console.error('Error updating product status:', err)
+      console.error(e)
     }
   }
 
-  // Eliminar producto
   const handleDelete = async () => {
     if (!deleteDialog.product) return
-
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(
+      const res = await fetch(
         `${import.meta.env.VITE_API_URL}/owner/products/${
           deleteDialog.product.id
         }`,
         {
           method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
           credentials: 'include',
         }
       )
-
-      if (!response.ok) {
-        throw new Error('Error al eliminar el producto')
-      }
-
+      if (!res.ok) throw new Error('Error al eliminar el producto')
       setProducts((prev) =>
         prev.filter((p) => p.id !== deleteDialog.product!.id)
       )
       setDeleteDialog({ open: false, product: null })
-    } catch (err) {
+    } catch (e) {
       setError('Error al eliminar el producto')
-      console.error('Error deleting product:', err)
+      console.error(e)
     }
   }
 
-  // Editar producto
-  const handleEdit = (product: Product) => {
-    navigate(`/edit-product/${product.id}`)
+  const handleEdit = (p: Product) => {
+    navigate(`/edit-product/${p.id}`)
     handleCloseMenu()
   }
 
-  // Manejar menu
-  const handleOpenMenu = (
-    event: React.MouseEvent<HTMLElement>,
-    product: Product
+  // abrir menú desde la card (⋮)
+  const handleOpenMenuFromCard = (
+    e: React.MouseEvent<HTMLElement>,
+    cardProduct: CardProduct
   ) => {
-    event.stopPropagation()
-    setAnchorEl(event.currentTarget)
-    setSelectedProduct(product)
+    e.stopPropagation()
+    const original = products.find((p) => p.id === cardProduct.id) || null
+    setSelectedProduct(original)
+    setAnchorEl(e.currentTarget)
   }
 
   const handleCloseMenu = () => {
@@ -272,12 +231,10 @@ export const MyProducts = () => {
             Gestiona tu catálogo de productos
           </Typography>
         </Box>
-
         <Button
           variant="contained"
           startIcon={<Add />}
           onClick={() => navigate('/create-product')}
-          sx={{ height: 'fit-content' }}
         >
           Nuevo Producto
         </Button>
@@ -300,7 +257,6 @@ export const MyProducts = () => {
           }}
           sx={{ flex: 1 }}
         />
-
         <Stack direction="row" spacing={1}>
           <Button
             variant={statusFilter === 'ALL' ? 'contained' : 'outlined'}
@@ -329,126 +285,19 @@ export const MyProducts = () => {
         </Stack>
       </Stack>
 
-      {/* Lista de productos */}
-      {filteredProducts.length === 0 ? (
-        <Box textAlign="center" py={8}>
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            {searchQuery
-              ? 'No se encontraron productos'
-              : 'No tienes productos aún'}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            {searchQuery
-              ? 'Intenta con otros términos de búsqueda'
-              : 'Crea tu primer producto para empezar a vender'}
-          </Typography>
-          {!searchQuery && (
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={() => navigate('/create-product')}
-            >
-              Crear Producto
-            </Button>
-          )}
-        </Box>
-      ) : (
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, 1fr)',
-              md: 'repeat(3, 1fr)',
-              lg: 'repeat(4, 1fr)',
-            },
-            gap: 3,
-          }}
-        >
-          {filteredProducts.map((product) => (
-            <Card
-              key={product.id}
-              sx={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                },
-              }}
-              onClick={() => navigate(`/product/${product.id}`)}
-            >
-              <CardContent sx={{ flexGrow: 1 }}>
-                <Stack spacing={2}>
-                  {/* Header con estado */}
-                  <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    <Chip
-                      label={
-                        product.status === 'PUBLISHED'
-                          ? 'Publicado'
-                          : 'Borrador'
-                      }
-                      size="small"
-                      color={
-                        product.status === 'PUBLISHED' ? 'success' : 'warning'
-                      }
-                      variant="filled"
-                    />
-                    <IconButton
-                      size="small"
-                      onClick={(e) => handleOpenMenu(e, product)}
-                    >
-                      <MoreVert />
-                    </IconButton>
-                  </Stack>
+      {/* Grid con cards (con botón ⋮ por card) */}
+      <ModernProductLayout
+        products={filteredProducts.map(adaptProductForLayout)}
+        loading={false}
+        emptyMessage={
+          searchQuery
+            ? 'No se encontraron productos'
+            : 'No tienes productos aún'
+        }
+        onOpenMenu={handleOpenMenuFromCard}
+      />
 
-                  {/* Contenido */}
-                  <Box>
-                    <Typography variant="h6" gutterBottom noWrap>
-                      {product.title}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {product.description || 'Sin descripción'}
-                    </Typography>
-                  </Box>
-
-                  {/* Footer */}
-                  <Stack
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    <Typography variant="h6" color="primary" fontWeight="bold">
-                      €{product.price}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {product.category?.name || 'Sin categoría'}
-                    </Typography>
-                  </Stack>
-                </Stack>
-              </CardContent>
-            </Card>
-          ))}
-        </Box>
-      )}
-
-      {/* Menu contextual */}
+      {/* Menú contextual */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -484,7 +333,7 @@ export const MyProducts = () => {
         ]}
       </Menu>
 
-      {/* Modal de confirmación de eliminación */}
+      {/* Confirmación eliminar */}
       <Dialog
         open={deleteDialog.open}
         onClose={() => setDeleteDialog({ open: false, product: null })}

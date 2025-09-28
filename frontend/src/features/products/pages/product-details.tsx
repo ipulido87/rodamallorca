@@ -12,8 +12,10 @@ import {
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ApiError } from '../../../shared/types/api'
+import { adaptProductImages } from '../../../utils/adapt-product-Images'
 import { getProductById } from '../../catalog/services/catalog-service'
 import type { PublicProduct } from '../../catalog/types/catalog'
+import { ProductImageGallery } from '../components/product-image-galery'
 
 export const ProductDetail = () => {
   const { id } = useParams<{ id: string }>()
@@ -90,22 +92,11 @@ export const ProductDetail = () => {
             gap: 4,
           }}
         >
-          {/* Product Image Placeholder */}
-          <Card>
-            <Box
-              sx={{
-                height: 400,
-                backgroundColor: 'grey.100',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Typography variant="h6" color="text.secondary">
-                No image available
-              </Typography>
-            </Box>
-          </Card>
+          {/* Product Images */}
+          <ProductImageGallery
+            images={adaptProductImages(product.images)}
+            productTitle={product.title}
+          />
 
           {/* Product Information */}
           <Box>

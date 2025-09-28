@@ -1,4 +1,5 @@
 import { API } from '../../../features/auth/services/auth-service'
+import { ProcessedImage } from '../../media/services/media-service'
 
 export interface CreateProductData {
   title: string
@@ -6,10 +7,12 @@ export interface CreateProductData {
   condition?: 'new' | 'used' | 'refurb'
   status?: 'DRAFT' | 'PUBLISHED' | 'SOLD'
   description?: string
-  categoryId?: string
+  categoryId?: string,
+  images: ProcessedImage[]
 }
 
 export interface Product {
+  images: any
   id: string
   workshopId: string
   title: string

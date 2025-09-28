@@ -67,3 +67,127 @@ export default tseslint.config([
   },
 ])
 ```
+
+```
+
+RODAMALLORCA/
+├─ backend/
+│  └─ (contenido no mostrado)
+├─ frontend/
+│  ├─ node_modules/
+│  ├─ public/
+│  ├─ src/
+│  │  ├─ api/
+│  │  │  └─ auth.ts
+│  │  ├─ assets/
+│  │  │  └─ react.svg
+│  │  ├─ components/
+│  │  │  └─ layout/
+│  │  │     ├─ main-layout.tsx
+│  │  │     ├─ public-footer.tsx
+│  │  │     ├─ public-header.tsx
+│  │  │     ├─ public-layout.tsx
+│  │  │     ├─ side-bar.tsx
+│  │  │     ├─ top-bar.tsx
+│  │  │     ├─ user-profile-menu.tsx
+│  │  │     ├─ google-login-button.tsx
+│  │  │     ├─ private-ruta.tsx
+│  │  │     └─ role-route.tsx
+│  │  ├─ constants/
+│  │  │  └─ api.ts
+│  │  ├─ features/
+│  │  │  ├─ auth/
+│  │  │  ├─ catalog/
+│  │  │  │  ├─ components/
+│  │  │  │  ├─ pages/
+│  │  │  │  │  └─ Catalog.tsx
+│  │  │  │  ├─ services/
+│  │  │  │  │  └─ catalog-service.ts
+│  │  │  │  └─ types/
+│  │  │  │     ├─ catalog.ts
+│  │  │  │     └─ index.ts
+│  │  │  ├─ dashboard/
+│  │  │  │  ├─ components/
+│  │  │  │  ├─ pages/
+│  │  │  │  ├─ services/
+│  │  │  │  └─ index.ts
+│  │  │  ├─ media/
+│  │  │  │  ├─ components/
+│  │  │  │  │  └─ image-downloads.tsx
+│  │  │  │  └─ services/
+│  │  │  │     └─ media-service.ts
+│  │  │  ├─ products/
+│  │  │  │  ├─ components/
+│  │  │  │  │  ├─ modern-product-layout.tsx
+│  │  │  │  │  └─ product-image-galery.tsx
+│  │  │  │  ├─ pages/
+│  │  │  │  │  ├─ create-product.tsx
+│  │  │  │  │  ├─ edit-product.tsx
+│  │  │  │  │  ├─ my-products.tsx
+│  │  │  │  │  └─ product-details.tsx
+│  │  │  │  ├─ services/
+│  │  │  │  │  └─ product-service.ts
+│  │  │  │  └─ types/
+│  │  │  │     └─ index.ts
+│  │  │  └─ workshops/
+│  │  │     ├─ components/
+│  │  │     ├─ pages/
+│  │  │     │  ├─ create-workshop.tsx
+│  │  │     │  ├─ edit-workshop.tsx
+│  │  │     │  ├─ my-work-shops.tsx
+│  │  │     │  └─ workshop-detail.tsx
+│  │  │     ├─ services/
+│  │  │     │  └─ workshop-service.ts
+│  │  │     └─ types/
+│  │  ├─ pages/
+│  │  │  ├─ edit-product.tsx
+│  │  │  ├─ HomePage.tsx
+│  │  │  ├─ LandingPage.tsx
+│  │  │  ├─ login-form.tsx
+│  │  │  └─ register-user.tsx
+│  │  ├─ providers/
+│  │  │  └─ auth-provider.tsx
+│  │  ├─ shared/
+│  │  │  ├─ components/
+│  │  │  │  └─ FilterBar.tsx
+│  │  │  ├─ constants/
+│  │  │  │  ├─ menu-items.ts
+│  │  │  │  ├─ product-filters.ts
+│  │  │  │  └─ validation.ts
+│  │  │  ├─ hooks/
+│  │  │  ├─ services/
+│  │  │  ├─ theme/
+│  │  │  │  └─ index.ts
+│  │  │  ├─ types/
+│  │  │  │  ├─ api.ts
+│  │  │  │  ├─ layout.ts
+│  │  │  │  └─ index.ts
+│  │  │  └─ utils/
+│  │  │     └─ index.ts
+│  │  ├─ utils/
+│  │  │  ├─ api-urls.ts
+│  │  │  └─ icon-mapper.tsx
+│  │  ├─ App.css
+│  │  ├─ App.tsx
+│  │  ├─ index.css
+│  │  ├─ main.tsx
+│  │  └─ vite-env.d.ts
+│  ├─ .env
+│  ├─ eslint.config.js
+│  ├─ index.html
+│  ├─ package.json
+│  ├─ pnpm-lock.yaml
+│  ├─ README.md
+│  ├─ reorganize-structure.sh
+│  ├─ tsconfig.app.json
+│  ├─ tsconfig.json
+│  ├─ tsconfig.node.json
+│  ├─ update-imports.cjs
+│  └─ vite.config.ts
+├─ node_modules/
+├─ .gitignore
+├─ package.json
+├─ pnpm-lock.yaml
+├─ pnpm-workspace.yaml
+└─ README.md
+```
