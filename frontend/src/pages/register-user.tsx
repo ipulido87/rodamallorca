@@ -125,6 +125,20 @@ export const Register = () => {
     }
   }, [searchParams])
 
+  useEffect(() => {
+    const errorParam = searchParams.get('error')
+    if (errorParam) {
+      showAlert(decodeURIComponent(errorParam), 'error')
+      // Limpiar el parámetro de la URL
+      searchParams.delete('error')
+      window.history.replaceState(
+        {},
+        '',
+        `/register?${searchParams.toString()}`
+      )
+    }
+  }, [searchParams])
+
   const showAlert = (msg: string, severity: 'success' | 'error') => {
     setAlertMessage(msg)
     setAlertSeverity(severity)
@@ -460,7 +474,9 @@ export const Register = () => {
             </Button>
 
             <Divider sx={{ my: 3 }}>o</Divider>
-            <GoogleLoginButton />
+            <GoogleLoginButton
+              role={formData.role === 'owner' ? 'WORKSHOP_OWNER' : 'USER'}
+            />
 
             <Box textAlign="center" sx={{ mt: 2 }}>
               <Button variant="text" onClick={() => navigate('/login')}>

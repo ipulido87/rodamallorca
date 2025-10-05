@@ -57,6 +57,7 @@ export interface ProductSearchParams {
   maxPrice?: number
   page?: number
   size?: number
+  [key: string]: string | number | undefined
 }
 
 export interface WorkshopSearchParams {
@@ -64,6 +65,7 @@ export interface WorkshopSearchParams {
   city?: string
   page?: number
   size?: number
+  [key: string]: string | number | undefined
 }
 
 export interface PaginatedResponse<T> {

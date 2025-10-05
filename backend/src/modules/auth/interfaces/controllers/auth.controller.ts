@@ -118,7 +118,18 @@ export const protectedRoute = (req: Request, res: Response) => {
 
 export const initiateGoogleLogin = async (req: Request, res: Response) => {
   try {
-    const state = crypto.randomUUID()
+    // Capturar el rol desde query params
+    const role = req.query.role as string | undefined
+
+    // Crear state con el rol incluido
+    const stateData = {
+      id: crypto.randomUUID(),
+      role: role || 'USER', // default USER si no viene
+    }
+
+    // Codificar el state como JSON -> Base64
+    const state = Buffer.from(JSON.stringify(stateData)).toString('base64')
+
     const url = await buildAuthUrl(state)
 
     res.cookie('oauth_state', state, {
@@ -130,7 +141,7 @@ export const initiateGoogleLogin = async (req: Request, res: Response) => {
     })
 
     console.log('[GOOGLE] auth url =>', url)
-    console.log('[GOOGLE] state cookie seteada =>', state)
+    console.log('[GOOGLE] state cookie con rol =>', stateData)
 
     return res.redirect(url)
   } catch (e) {
@@ -145,17 +156,32 @@ export const handleGoogleCallback = async (req: Request, res: Response) => {
     console.log('[CALLBACK] Query:', req.query)
     console.log('[CALLBACK] Cookie state:', req.cookies?.oauth_state)
 
-    const { state, code } = req.query as { state?: string; code?: string }
-    if (!state || !code) {
+    const { state: stateParam, code } = req.query as {
+      state?: string
+      code?: string
+    }
+    if (!stateParam || !code) {
       return res.status(400).json({ error: 'Missing state or code' })
     }
 
+    let stateData: { id: string; role?: string }
+    try {
+      stateData = JSON.parse(
+        Buffer.from(stateParam, 'base64').toString('utf-8')
+      )
+    } catch {
+      return res.status(400).json({ error: 'Invalid state format' })
+    }
+
+    console.log('[CALLBACK] State decodificado:', stateData)
+
     const repo = new UserRepositoryPrisma()
-    const { token } = await loginWithGoogleUseCase(
+    const { token, user } = await loginWithGoogleUseCase(
       {
-        state,
+        state: stateParam,
         code,
         cookieState: req.cookies?.oauth_state,
+        role: stateData.role,
       },
       { repo }
     )
@@ -169,11 +195,20 @@ export const handleGoogleCallback = async (req: Request, res: Response) => {
       path: '/',
     })
 
+    console.log('[CALLBACK] Usuario autenticado:', {
+      email: user.email,
+      role: user.role,
+    })
+
     return res.redirect(process.env.FRONTEND_URL ?? 'http://localhost:5173/')
   } catch (e) {
     const error = e as Error
     console.error('Google callback error:', error)
-    return res.status(500).json({ error: error?.message ?? 'unknown' })
+
+    // Redirigir al frontend con el error
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173'
+    const errorMessage = encodeURIComponent(error.message)
+    return res.redirect(`${frontendUrl}/register?error=${errorMessage}`)
   }
 }
 

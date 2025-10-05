@@ -8,7 +8,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useState, type ChangeEvent, type FormEvent } from 'react'
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { GoogleLoginButton } from '../components/google-login-button'
@@ -40,6 +40,16 @@ export const LoginForm = () => {
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({})
+
+  // Después de tus estados existentes
+  useEffect(() => {
+    const errorParam = new URLSearchParams(window.location.search).get('error')
+    if (errorParam) {
+      setError(decodeURIComponent(errorParam))
+      // Limpiar el parámetro de la URL
+      window.history.replaceState({}, '', '/login')
+    }
+  }, [])
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -149,7 +159,7 @@ export const LoginForm = () => {
           </Button>
 
           <Divider sx={{ my: 3 }}>o</Divider>
-          <GoogleLoginButton />
+          <GoogleLoginButton role="USER" />
 
           <Button
             fullWidth

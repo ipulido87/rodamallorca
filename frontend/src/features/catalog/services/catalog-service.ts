@@ -1,4 +1,5 @@
-import { API } from '../../../features/auth/services/auth-service'
+// frontend/src/features/catalog/services/catalog-service.ts
+import { API } from '../../auth/services/auth-service'
 import type {
   PaginatedResponse,
   Product,
@@ -6,59 +7,65 @@ import type {
   PublicProduct,
   Workshop,
   WorkshopSearchParams,
-} from '../../catalog/types/catalog'
+} from '../types/catalog'
 
-// Buscar talleres públicamente
-export async function searchWorkshops(
-  params?: WorkshopSearchParams
-): Promise<PaginatedResponse<Workshop>> {
+// Helper genérico type-safe
+const buildQueryString = <T extends Record<string, unknown>>(
+  params: T
+): string => {
   const searchParams = new URLSearchParams()
 
-  if (params?.q) searchParams.append('q', params.q)
-  if (params?.city) searchParams.append('city', params.city)
-  if (params?.page) searchParams.append('page', params.page.toString())
-  if (params?.size) searchParams.append('size', params.size.toString())
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      searchParams.append(key, String(value))
+    }
+  })
 
-  const queryString = searchParams.toString()
-  const url = queryString
-    ? `/catalog/workshops?${queryString}`
-    : '/catalog/workshops'
-
-  const res = await API.get(url)
-  return res.data
+  return searchParams.toString()
 }
 
 // Buscar productos públicamente
-export async function searchProducts(
+export const searchProducts = async (
   params?: ProductSearchParams
-): Promise<PaginatedResponse<Product>> {
-  const searchParams = new URLSearchParams()
+): Promise<PaginatedResponse<Product>> => {
+  const queryString = params ? buildQueryString(params) : ''
+  const url = `/catalog/products${queryString ? `?${queryString}` : ''}`
 
-  if (params?.q) searchParams.append('q', params.q)
-  if (params?.categoryId) searchParams.append('categoryId', params.categoryId)
-  if (params?.city) searchParams.append('city', params.city)
-  if (params?.page) searchParams.append('page', params.page.toString())
-  if (params?.size) searchParams.append('size', params.size.toString())
-
-  const queryString = searchParams.toString()
-  const url = queryString
-    ? `/catalog/products?${queryString}`
-    : '/catalog/products'
-
-  const res = await API.get(url)
-  return res.data
+  const { data } = await API.get<PaginatedResponse<Product>>(url)
+  return data
 }
 
-// Obtener detalle de producto (ambos nombres para compatibilidad)
-export async function getProduct(id: string): Promise<PublicProduct> {
-  const res = await API.get(`/catalog/products/${id}`)
-  return res.data
+// Buscar workshops públicamente
+export const searchWorkshops = async (
+  params?: WorkshopSearchParams
+): Promise<PaginatedResponse<Workshop>> => {
+  const queryString = params ? buildQueryString(params) : ''
+  const url = `/catalog/workshops${queryString ? `?${queryString}` : ''}`
+
+  const { data } = await API.get<PaginatedResponse<Workshop>>(url)
+  return data
 }
 
-export async function getWorkshopById(id: string): Promise<Workshop> {
-  const res = await API.get(`/owner/workshops/${id}`)
-  return res.data
+// Obtener detalle de producto
+export const getProduct = async (id: string): Promise<PublicProduct> => {
+  const { data } = await API.get<PublicProduct>(`/catalog/products/${id}`)
+  return data
 }
 
-// Alias para compatibilidad con código existente
+// Obtener detalle de workshop
+export const getWorkshopById = async (id: string): Promise<Workshop> => {
+  const { data } = await API.get<Workshop>(`/owner/workshops/${id}`)
+  return data
+}
+
+// Alias para compatibilidad
 export const getProductById = getProduct
+
+// Exportar todo como objeto
+export const catalogService = {
+  searchProducts,
+  searchWorkshops,
+  getProduct,
+  getProductById,
+  getWorkshopById,
+} as const

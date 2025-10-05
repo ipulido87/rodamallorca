@@ -14,5 +14,6 @@ export interface UserRepository {
     googleId: string
     name?: string | null
     picture?: string | null
+    role?: string
   }): Promise<UserDTO>
 }

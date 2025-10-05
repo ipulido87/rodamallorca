@@ -1,5 +1,4 @@
-// pages/catalog.tsx
-
+// frontend/src/features/catalog/pages/Catalog.tsx
 import { Search } from '@mui/icons-material'
 import {
   Alert,
@@ -11,16 +10,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
-import type {
-  FilterValue,
-  FilterValues,
-  PaginatedResponse,
-  Product,
-  ProductSearchParams,
-  Workshop,
-  WorkshopSearchParams,
-} from '../../../features/catalog/types/catalog'
+import { useEffect, useState } from 'react'
+import { useDebounce } from '../../../features/../shared/hooks/use-debounce'
 import { FilterBar } from '../../../shared/components/FilterBar'
 import {
   productFilterConfig,
@@ -31,7 +22,8 @@ import {
   ModernProductLayout,
   ModernWorkshopLayout,
 } from '../../products/components/modern-product-layout'
-import { searchProducts, searchWorkshops } from '../services/catalog-service'
+import { useCatalogSearch } from '../hooks/use-catalog-search'
+import type { FilterValue, FilterValues, Product } from '../types/catalog'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -39,60 +31,59 @@ interface TabPanelProps {
   value: number
 }
 
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props
-  return (
-    <Box
-      role="tabpanel"
-      hidden={value !== index}
-      id={`tabpanel-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
-    </Box>
-  )
-}
+const TabPanel = ({ children, value, index, ...other }: TabPanelProps) => (
+  <Box
+    role="tabpanel"
+    hidden={value !== index}
+    id={`tabpanel-${index}`}
+    {...other}
+  >
+    {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
+  </Box>
+)
 
-// Adaptador para products del catálogo
-const adaptCatalogProductForLayout = (product: Product) => {
-  return {
-    id: product.id,
-    title: product.title,
-    price: product.price,
-    condition: 'used' as const,
-    status: product.status,
-    images: product.images, // 👈 aquí ya metes las imágenes
-    workshop: {
-      name: product.workshop.name,
-      city: product.workshop.city ?? undefined,
-    },
-  }
-}
+// Adaptador para productos del catálogo
+const adaptCatalogProductForLayout = (product: Product) => ({
+  id: product.id,
+  title: product.title,
+  price: product.price,
+  condition: 'used' as const,
+  status: product.status,
+  images: product.images,
+  workshop: {
+    name: product.workshop.name,
+    city: product.workshop.city ?? undefined,
+  },
+})
 
 export const Catalog = () => {
   const { user } = useAuth()
+  const isWorkshopOwner = user?.role === 'WORKSHOP_OWNER'
+
+  // Estado local
   const [tabValue, setTabValue] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
-
-  // Filtros
   const [productFilters, setProductFilters] = useState<FilterValues>({})
   const [workshopFilters, setWorkshopFilters] = useState<FilterValues>({})
 
-  // Estados para workshops
-  const [workshopsData, setWorkshopsData] =
-    useState<PaginatedResponse<Workshop> | null>(null)
-  const [workshopsLoading, setWorkshopsLoading] = useState(false)
-  const [workshopsError, setWorkshopsError] = useState<string | null>(null)
+  // Hook personalizado
+  const {
+    products,
+    productsLoading,
+    productsError,
+    productsPagination,
+    loadProducts,
+    workshops,
+    workshopsLoading,
+    workshopsError,
+    workshopsPagination,
+    loadWorkshops,
+  } = useCatalogSearch()
 
-  // Estados para products
-  const [productsData, setProductsData] =
-    useState<PaginatedResponse<Product> | null>(null)
-  const [productsLoading, setProductsLoading] = useState(false)
-  const [productsError, setProductsError] = useState<string | null>(null)
+  // Debounce para búsqueda
+  const debouncedQuery = useDebounce(searchQuery, 500)
 
-  const isWorkshopOwner = user?.role === 'WORKSHOP_OWNER'
-
-  // Configuración según el rol del usuario
+  // Configuración según rol
   const config = isWorkshopOwner
     ? {
         title: 'Análisis de Mercado',
@@ -109,103 +100,27 @@ export const Catalog = () => {
         searchButtonText: 'Buscar',
       }
 
-  // Cargar workshops con filtros
-  const loadWorkshops = useCallback(
-    async (search?: string, filters?: FilterValues) => {
-      setWorkshopsLoading(true)
-      setWorkshopsError(null)
-      try {
-        const params: WorkshopSearchParams = {
-          size: 12,
-          page: 1,
-        }
-
-        if (search) params.q = search
-        if (filters?.city && typeof filters.city === 'string') {
-          params.city = filters.city
-        }
-
-        const response = await searchWorkshops(params)
-        setWorkshopsData(response)
-      } catch (error) {
-        setWorkshopsError('Error al cargar los talleres')
-        console.error('Error loading workshops:', error)
-      } finally {
-        setWorkshopsLoading(false)
-      }
-    },
-    []
-  )
-
-  // Cargar products con filtros
-  const loadProducts = useCallback(
-    async (search?: string, filters?: FilterValues) => {
-      setProductsLoading(true)
-      setProductsError(null)
-      try {
-        const params: ProductSearchParams = {
-          size: 12,
-          page: 1,
-        }
-
-        if (search) params.q = search
-        if (filters?.city && typeof filters.city === 'string') {
-          params.city = filters.city
-        }
-        if (filters?.condition && typeof filters.condition === 'string') {
-          params.condition = filters.condition
-        }
-
-        // Manejar rango de precio
-        if (filters?.price && Array.isArray(filters.price)) {
-          params.minPrice = filters.price[0]
-          params.maxPrice = filters.price[1]
-        }
-
-        const response = await searchProducts(params)
-        setProductsData(response)
-      } catch (error) {
-        setProductsError('Error al cargar los productos')
-        console.error('Error loading products:', error)
-      } finally {
-        setProductsLoading(false)
-      }
-    },
-    []
-  )
-
-  // Cargar datos iniciales
+  // Cargar datos cuando cambien filtros o query con debounce
   useEffect(() => {
-    loadWorkshops('', workshopFilters)
-    loadProducts('', productFilters)
-  }, [productFilters, workshopFilters, loadWorkshops, loadProducts])
-
-  // Recargar cuando cambien los filtros
-  useEffect(() => {
-    const currentTab = tabValue
-    if (currentTab === 0) {
-      loadWorkshops(searchQuery, workshopFilters)
+    if (tabValue === 0) {
+      loadWorkshops(debouncedQuery, workshopFilters)
     }
-  }, [workshopFilters, searchQuery, tabValue, loadWorkshops])
+  }, [debouncedQuery, workshopFilters, tabValue, loadWorkshops])
 
   useEffect(() => {
-    const currentTab = tabValue
-    if (currentTab === 1) {
-      loadProducts(searchQuery, productFilters)
+    if (tabValue === 1) {
+      loadProducts(debouncedQuery, productFilters)
     }
-  }, [productFilters, searchQuery, tabValue, loadProducts])
+  }, [debouncedQuery, productFilters, tabValue, loadProducts])
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  // Carga inicial
+  useEffect(() => {
+    loadWorkshops()
+    loadProducts()
+  }, [loadProducts, loadWorkshops])
+
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue)
-  }
-
-  const handleSearch = () => {
-    const currentTab = tabValue
-    if (currentTab === 0) {
-      loadWorkshops(searchQuery || undefined, workshopFilters)
-    } else if (currentTab === 1) {
-      loadProducts(searchQuery || undefined, productFilters)
-    }
   }
 
   const handleProductFilterChange = (key: string, value: FilterValue) => {
@@ -216,18 +131,12 @@ export const Catalog = () => {
     setWorkshopFilters((prev) => ({ ...prev, [key]: value }))
   }
 
-  const clearProductFilters = () => {
-    setProductFilters({})
-  }
+  const clearProductFilters = () => setProductFilters({})
+  const clearWorkshopFilters = () => setWorkshopFilters({})
 
-  const clearWorkshopFilters = () => {
-    setWorkshopFilters({})
-  }
-
-  // Handler para favoritos en catálogo
   const handleFavoriteToggle = (productId: string) => {
-    console.log('Toggle favorite for catalog product:', productId)
-    // Aquí puedes implementar la lógica de favoritos para el catálogo
+    console.log('Toggle favorite:', productId)
+    // TODO: Implementar lógica de favoritos
   }
 
   const renderWorkshopsContent = () => (
@@ -238,19 +147,16 @@ export const Catalog = () => {
         </Alert>
       )}
 
-      {/* Layout moderno de workshops para el catálogo */}
       <ModernWorkshopLayout
-        workshops={workshopsData?.items || []}
+        workshops={workshops}
         loading={workshopsLoading}
-        // error={workshopsError}
         emptyMessage="No se encontraron talleres"
       />
 
-      {workshopsData && workshopsData.total > 0 && (
+      {workshopsPagination.total > 0 && (
         <Box textAlign="center" sx={{ mt: 4 }}>
           <Typography variant="body2" color="text.secondary">
-            Mostrando {workshopsData.items.length} de {workshopsData.total}{' '}
-            talleres
+            Mostrando {workshops.length} de {workshopsPagination.total} talleres
           </Typography>
         </Box>
       )}
@@ -265,21 +171,19 @@ export const Catalog = () => {
         </Alert>
       )}
 
-      {/* Layout moderno de productos para el catálogo */}
       <ModernProductLayout
-        products={productsData?.items.map(adaptCatalogProductForLayout) || []}
+        products={products.map(adaptCatalogProductForLayout)}
         loading={productsLoading}
         error={productsError ?? undefined}
         emptyMessage="No se encontraron productos"
         onFavoriteToggle={handleFavoriteToggle}
-        favoriteIds={[]} // Implementar favoritos del catálogo aquí
+        favoriteIds={[]}
       />
 
-      {productsData && productsData.total > 0 && (
+      {productsPagination.total > 0 && (
         <Box textAlign="center" sx={{ mt: 4 }}>
           <Typography variant="body2" color="text.secondary">
-            Mostrando {productsData.items.length} de {productsData.total}{' '}
-            productos
+            Mostrando {products.length} de {productsPagination.total} productos
           </Typography>
         </Box>
       )}
@@ -304,8 +208,7 @@ export const Catalog = () => {
         Tendencias del mercado ciclista
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-        Esta sección mostrará análisis de productos más vendidos y tendencias de
-        mercado
+        Esta sección mostrará análisis de productos más vendidos y tendencias
       </Typography>
     </Box>
   )
@@ -344,7 +247,6 @@ export const Catalog = () => {
           placeholder={config.searchPlaceholder}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
           InputProps={{
             startAdornment: <Search sx={{ color: 'text.secondary', mr: 1 }} />,
           }}
@@ -353,13 +255,13 @@ export const Catalog = () => {
           variant="contained"
           size="large"
           sx={{ minWidth: 120 }}
-          onClick={handleSearch}
+          disabled={productsLoading || workshopsLoading}
         >
           {config.searchButtonText}
         </Button>
       </Box>
 
-      {/* Filtros */}
+      {/* Contenido según tab */}
       {!isWorkshopOwner && (
         <>
           <TabPanel value={tabValue} index={0}>

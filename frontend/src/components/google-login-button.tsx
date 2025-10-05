@@ -1,12 +1,15 @@
 import GoogleIcon from '@mui/icons-material/Google'
 import { Button } from '@mui/material'
+import { API_URL } from '../constants/api'
 
-export function GoogleLoginButton() {
-  // En tu GoogleLoginButton, agrega un callback URL
+interface GoogleLoginButtonProps {
+  role?: 'USER' | 'WORKSHOP_OWNER'
+}
+
+export function GoogleLoginButton({ role = 'USER' }: GoogleLoginButtonProps) {
   const handleLogin = () => {
-    const base = import.meta.env.VITE_API_URL
     const callbackUrl = `${window.location.origin}/auth/callback`
-    window.location.href = `${base}/auth/google?redirect=${encodeURIComponent(
+    window.location.href = `${API_URL}/auth/google?role=${role}&redirect=${encodeURIComponent(
       callbackUrl
     )}`
   }
