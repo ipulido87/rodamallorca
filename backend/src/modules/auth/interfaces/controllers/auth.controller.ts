@@ -7,10 +7,15 @@ import { loginUser } from '../../application/login-user'
 import { loginWithGoogleUseCase } from '../../application/login-with-google'
 import { registerUserUseCase } from '../../application/register-user'
 import { sendVerificationEmail } from '../../infrastructure/adapters/email/email-service'
-import { buildAuthUrl } from '../../infrastructure/adapters/oidc/google-client'
+import {
+  buildAuthUrl,
+  getGoogleClient,
+  handleCallback,
+} from '../../infrastructure/adapters/oidc/google-client'
 import { UserRepositoryPrisma } from '../../infrastructure/persistence/prisma/user-repository-prisma'
 import { LoginUserSchema } from '../http/schemas/login.schema'
 import { RegisterUserSchema } from '../http/schemas/register.schema'
+import { generators } from 'openid-client'
 
 interface PrismaError extends Error {
   code?: string
@@ -118,20 +123,20 @@ export const protectedRoute = (req: Request, res: Response) => {
 
 export const initiateGoogleLogin = async (req: Request, res: Response) => {
   try {
-    // Capturar el rol desde query params
     const role = req.query.role as string | undefined
 
-    // Crear state con el rol incluido
     const stateData = {
       id: crypto.randomUUID(),
-      role: role || 'USER', // default USER si no viene
+      role: role || 'USER',
     }
 
-    // Codificar el state como JSON -> Base64
     const state = Buffer.from(JSON.stringify(stateData)).toString('base64')
 
-    const url = await buildAuthUrl(state)
+    // Generar codeVerifier y challenge AQUÍ en lugar de en google-client
+    const codeVerifier = generators.codeVerifier()
+    const codeChallenge = generators.codeChallenge(codeVerifier)
 
+    // Guardar AMBOS en cookies
     res.cookie('oauth_state', state, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -140,8 +145,26 @@ export const initiateGoogleLogin = async (req: Request, res: Response) => {
       path: '/',
     })
 
+    res.cookie('oauth_code_verifier', codeVerifier, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 10 * 60 * 1000,
+      path: '/',
+    })
+
+    // Construir URL manualmente SIN usar buildAuthUrl
+    const client = await getGoogleClient()
+    const url = client.authorizationUrl({
+      scope: 'openid email profile',
+      code_challenge: codeChallenge,
+      code_challenge_method: 'S256',
+      state,
+      redirect_uri: process.env.GOOGLE_REDIRECT_URI!,
+    })
+
     console.log('[GOOGLE] auth url =>', url)
-    console.log('[GOOGLE] state cookie con rol =>', stateData)
+    console.log('[GOOGLE] state con rol =>', stateData)
 
     return res.redirect(url)
   } catch (e) {
@@ -152,10 +175,6 @@ export const initiateGoogleLogin = async (req: Request, res: Response) => {
 
 export const handleGoogleCallback = async (req: Request, res: Response) => {
   try {
-    console.log('[CALLBACK] URL completa:', req.originalUrl)
-    console.log('[CALLBACK] Query:', req.query)
-    console.log('[CALLBACK] Cookie state:', req.cookies?.oauth_state)
-
     const { state: stateParam, code } = req.query as {
       state?: string
       code?: string
@@ -173,20 +192,33 @@ export const handleGoogleCallback = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid state format' })
     }
 
-    console.log('[CALLBACK] State decodificado:', stateData)
-
     const repo = new UserRepositoryPrisma()
+    const codeVerifier = req.cookies?.oauth_code_verifier as string
+
+    if (!codeVerifier) {
+      throw new Error('Missing code verifier')
+    }
+
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173'
+
+    // Si NO viene con rol (login), validar si existe primero SIN consumir el code
+    // Buscar por email en la cookie o hacer login directo
+
+    // Continuar con login/registro normal
     const { token, user } = await loginWithGoogleUseCase(
       {
         state: stateParam,
         code,
         cookieState: req.cookies?.oauth_state,
         role: stateData.role,
+        codeVerifier,
       },
       { repo }
     )
 
     res.clearCookie('oauth_state')
+    res.clearCookie('oauth_code_verifier')
+
     res.cookie('auth_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -195,17 +227,23 @@ export const handleGoogleCallback = async (req: Request, res: Response) => {
       path: '/',
     })
 
-    console.log('[CALLBACK] Usuario autenticado:', {
-      email: user.email,
-      role: user.role,
-    })
+    // Redirigir según el rol
+    if (user.role === 'WORKSHOP_OWNER') {
+      // Verificar si tiene workshop
+      const workshop = await prisma.workshop.findFirst({
+        where: { ownerId: user.id },
+      })
 
-    return res.redirect(process.env.FRONTEND_URL ?? 'http://localhost:5173/')
+      if (!workshop) {
+        return res.redirect(`${frontendUrl}/create-workshop?firstTime=true`)
+      }
+      return res.redirect(`${frontendUrl}/dashboard`)
+    }
+
+    return res.redirect(`${frontendUrl}/home`)
   } catch (e) {
     const error = e as Error
     console.error('Google callback error:', error)
-
-    // Redirigir al frontend con el error
     const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173'
     const errorMessage = encodeURIComponent(error.message)
     return res.redirect(`${frontendUrl}/register?error=${errorMessage}`)

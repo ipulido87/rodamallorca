@@ -10,16 +10,28 @@ export const verifyToken = (
   res: Response,
   next: NextFunction
 ) => {
+  // Intentar obtener token del header Authorization
   const authHeader =
     req.headers.authorization || (req.headers as any).Authorization
-  if (!authHeader)
-    return res.status(401).json({ message: 'Missing Authorization header' })
+  let token: string | undefined
 
-  const match = /^Bearer\s+(.+)$/i.exec(authHeader)
-  if (!match)
-    return res.status(401).json({ message: 'Invalid Authorization format' })
+  if (authHeader) {
+    const match = /^Bearer\s+(.+)$/i.exec(authHeader)
+    if (match) {
+      token = match[1]
+    }
+  }
 
-  const token = match[1]
+  // Si no hay token en el header, buscar en cookies
+  if (!token) {
+    token = req.cookies?.auth_token // ✅ ESTO ES CRÍTICO
+  }
+
+  // Si no hay token en ningún lado, rechazar
+  if (!token) {
+    return res.status(401).json({ message: 'Missing authentication token' })
+  }
+
   try {
     const decoded = jwt.verify(token, config.jwtSecret) as Express.UserPayload
     if (!decoded?.id || !decoded?.email) {
@@ -31,7 +43,6 @@ export const verifyToken = (
     return res.status(403).json({ message: 'Invalid or expired token' })
   }
 }
-
 export const requireUser = (
   req: Request,
   res: Response,
@@ -45,6 +56,10 @@ export const requireRole = (
   ...roles: NonNullable<Express.UserPayload['role']>[]
 ) => {
   return (req: Request, res: Response, next: NextFunction) => {
+    console.log('🔍 [requireRole] User:', req.user)
+    console.log('🔍 [requireRole] Required roles:', roles)
+    console.log('🔍 [requireRole] User role:', req.user?.role)
+
     if (!req.user) return res.status(401).json({ message: 'Not authenticated' })
     // Si tu JWT aún no trae role, esto te protege de undefined
     if (!req.user.role || !roles.includes(req.user.role)) {

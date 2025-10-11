@@ -3,15 +3,14 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import express from 'express'
 import morgan from 'morgan'
-
 import path from 'path'
+
 import authRoutes from './modules/auth/interfaces/http/auth.routes'
 import catalogRoutes from './modules/catalog/interfaces/http/catalog.routes'
+import mediaRoutes from './modules/media/interfaces/http/media.routes' // ← AGREGAR
 import productRoutes from './modules/products/interfaces/http/products.routes'
-import {
-  default as ownerRoutes,
-  default as workshopRoutes,
-} from './modules/workshops/interfaces/http/workshop.routes'
+import workshopRoutes from './modules/workshops/interfaces/http/workshop.routes'
+
 dotenv.config()
 
 const app = express()
@@ -27,18 +26,18 @@ app.use(
   })
 )
 
-// Montaje de rutas
+// Rutas
 app.use('/api/auth', authRoutes)
-app.use('/api/catalog', catalogRoutes) // público
-app.use('/api/owner', ownerRoutes) // privado (JWT + role)
+app.use('/api/catalog', catalogRoutes)
+app.use('/api/media', mediaRoutes) // ← AGREGAR
+app.use('/api/owner', productRoutes)
+app.use('/api/owner', workshopRoutes)
+
+// Servir archivos estáticos
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
 
 app.get('/api/health', (_req, res) => res.send('ok'))
 
 app.listen(PORT, () => {
   console.log(`API running on http://localhost:${PORT}`)
 })
-app.use('/api/owner', productRoutes)
-app.use('/api/owner', workshopRoutes)
-
-app.use('/api/owner', ownerRoutes)
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))

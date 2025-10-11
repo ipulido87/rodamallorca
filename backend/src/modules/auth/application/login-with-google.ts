@@ -8,6 +8,7 @@ interface GoogleLoginParams {
   code: string
   cookieState?: string
   role?: string
+  codeVerifier: string // NUEVO - REQUERIDO
 }
 
 interface GoogleLoginDeps {
@@ -18,13 +19,17 @@ export async function loginWithGoogleUseCase(
   params: GoogleLoginParams,
   deps: GoogleLoginDeps
 ) {
-  const { state, code, cookieState, role } = params
+  const { state, code, cookieState, role, codeVerifier } = params
   const { repo } = deps
+
+  console.log('🔍 [USE_CASE] Rol recibido:', role)
 
   if (!state || state !== cookieState) throw new Error('Invalid state')
 
-  const u = await handleCallback(state, code)
+  const u = await handleCallback(state, code, codeVerifier) // ✅ Pasar codeVerifier
   if (!u.email || !u.email_verified) throw new Error('Email not verified')
+
+  console.log('🔍 [USE_CASE] Llamando a upsertGoogleUser con rol:', role)
 
   const user = await repo.upsertGoogleUser({
     email: u.email,
@@ -34,6 +39,15 @@ export async function loginWithGoogleUseCase(
     role: role || 'USER',
   })
 
-  const token = signJwt({ sub: user.id, email: user.email })
+  console.log('✅ [USE_CASE] Usuario retornado:', {
+    email: user.email,
+    role: user.role,
+  })
+
+  const token = signJwt({
+    sub: user.id,
+    email: user.email,
+    role: user.role || undefined,
+  })
   return { user, token }
 }

@@ -127,10 +127,24 @@ export const Register = () => {
 
   useEffect(() => {
     const errorParam = searchParams.get('error')
+    const newGoogleUser = searchParams.get('newGoogleUser')
+
     if (errorParam) {
       showAlert(decodeURIComponent(errorParam), 'error')
-      // Limpiar el parámetro de la URL
       searchParams.delete('error')
+      window.history.replaceState(
+        {},
+        '',
+        `/register?${searchParams.toString()}`
+      )
+    }
+
+    if (newGoogleUser) {
+      showAlert(
+        'Esta cuenta de Google es nueva. Por favor elige el tipo de cuenta y continúa con Google.',
+        'success' // ✅ Cambiar a 'success'
+      )
+      searchParams.delete('newGoogleUser')
       window.history.replaceState(
         {},
         '',

@@ -116,7 +116,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return // Solo si está autenticado
 
     const INACTIVITY_TIMEOUT = 30 * 60 * 1000 // 30 minutos
-    let timeoutId: number
+    let timeoutId: NodeJS.Timeout // ✅ Correcto
 
     const resetTimeout = () => {
       clearTimeout(timeoutId)
