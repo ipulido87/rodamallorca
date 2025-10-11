@@ -35,7 +35,7 @@ export const createWorkshopController = async (
     const body = createWorkshopSchema.parse(req.body)
     const result = await createWorkshop(
       { ownerId: req.user!.id, ...body },
-      { repo }
+      { repo, authenticatedUserId: req.user!.id }
     )
     res.status(201).json(result)
   } catch (e) {

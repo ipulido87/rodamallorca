@@ -1,4 +1,3 @@
-// backend/src/modules/auth/application/login-with-google.ts
 import { UserRepository } from '../domain/repositories/user-repository'
 import { signJwt } from '../infrastructure/adapters/jwt/jwt.service'
 import { handleCallback } from '../infrastructure/adapters/oidc/google-client'
@@ -8,7 +7,7 @@ interface GoogleLoginParams {
   code: string
   cookieState?: string
   role?: string
-  codeVerifier: string // NUEVO - REQUERIDO
+  codeVerifier: string
 }
 
 interface GoogleLoginDeps {
@@ -26,28 +25,40 @@ export async function loginWithGoogleUseCase(
 
   if (!state || state !== cookieState) throw new Error('Invalid state')
 
-  const u = await handleCallback(state, code, codeVerifier) // ✅ Pasar codeVerifier
+  const u = await handleCallback(state, code, codeVerifier)
   if (!u.email || !u.email_verified) throw new Error('Email not verified')
 
-  console.log('🔍 [USE_CASE] Llamando a upsertGoogleUser con rol:', role)
+  console.log('🔍 [USE_CASE] Buscando/creando usuario Google:', u.email)
 
-  const user = await repo.upsertGoogleUser({
-    email: u.email,
-    googleId: u.sub,
-    name: u.name ?? null,
-    picture: u.picture ?? null,
-    role: role || 'USER',
-  })
+  try {
+    // Intentar encontrar usuario existente
+    const user = await repo.upsertGoogleUser({
+      email: u.email,
+      googleId: u.sub,
+      name: u.name ?? null,
+      picture: u.picture ?? null,
+      role: role || 'USER',
+    })
 
-  console.log('✅ [USE_CASE] Usuario retornado:', {
-    email: user.email,
-    role: user.role,
-  })
+    console.log('✅ [USE_CASE] Usuario encontrado/creado:', {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    })
 
-  const token = signJwt({
-    sub: user.id,
-    email: user.email,
-    role: user.role || undefined,
-  })
-  return { user, token }
+    const token = signJwt({
+      id: user.id,
+      email: user.email,
+      role: user.role || undefined,
+    })
+    return { user, token }
+  } catch (error) {
+    // ✅ Si el usuario no existe, lanzar error específico
+    if (error instanceof Error && error.message.includes('not found')) {
+      throw new Error(
+        `User with email ${u.email} not found. Please complete registration.`
+      )
+    }
+    throw error
+  }
 }

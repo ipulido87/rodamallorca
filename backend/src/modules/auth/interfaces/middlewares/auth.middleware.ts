@@ -34,7 +34,7 @@ export const verifyToken = (
 
   try {
     const decoded = jwt.verify(token, config.jwtSecret) as Express.UserPayload
-    if (!decoded?.id || !decoded?.email) {
+    if (!decoded.id || !decoded?.email) {
       return res.status(403).json({ message: 'Invalid token payload' })
     }
     req.user = decoded

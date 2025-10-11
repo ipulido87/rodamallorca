@@ -6,7 +6,7 @@ export type RegisterInput = {
   name: string
   birthDate?: Date
   phone?: string
-  role?: 'USER' | 'WORKSHOP_OWNER' | 'ADMIN' // ← Agregar esto
+  role?: 'USER' | 'WORKSHOP_OWNER' | 'ADMIN'
 }
 
 export const registerUserUseCase = async (input: RegisterInput) => {
