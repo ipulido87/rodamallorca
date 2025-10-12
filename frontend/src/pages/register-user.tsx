@@ -24,7 +24,7 @@ import axios, { AxiosError } from 'axios'
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
-import { GoogleLoginButton } from '../components/google-login-button'
+import { GoogleLoginButton } from '../features/auth/components/google-login-button'
 import {
   register as apiRegister,
   verifyCode as apiVerifyCode,
@@ -125,9 +125,12 @@ export const Register = () => {
     }
   }, [searchParams])
 
+  // En el useEffect que ya tienes, agrega:
   useEffect(() => {
     const errorParam = searchParams.get('error')
     const newGoogleUser = searchParams.get('newGoogleUser')
+    const googleEmail = searchParams.get('email')
+    const googleRole = searchParams.get('role')
 
     if (errorParam) {
       showAlert(decodeURIComponent(errorParam), 'error')
@@ -140,11 +143,23 @@ export const Register = () => {
     }
 
     if (newGoogleUser) {
+      // ✅ AUTO-COMPLETAR formulario para usuario Google
+      if (googleEmail) {
+        setFormData((prev) => ({
+          ...prev,
+          email: googleEmail,
+          // También establecer el rol si viene
+          ...(googleRole && { role: googleRole as UserRole }),
+        }))
+      }
+
       showAlert(
-        'Esta cuenta de Google es nueva. Por favor elige el tipo de cuenta y continúa con Google.',
-        'success' // ✅ Cambiar a 'success'
+        'Esta cuenta de Google es nueva. Completa los datos faltantes para terminar tu registro.',
+        'success'
       )
       searchParams.delete('newGoogleUser')
+      searchParams.delete('email')
+      searchParams.delete('role')
       window.history.replaceState(
         {},
         '',
@@ -490,6 +505,7 @@ export const Register = () => {
             <Divider sx={{ my: 3 }}>o</Divider>
             <GoogleLoginButton
               role={formData.role === 'owner' ? 'WORKSHOP_OWNER' : 'USER'}
+              mode="register" // ← Esto hará que use /auth/google (la original)
             />
 
             <Box textAlign="center" sx={{ mt: 2 }}>

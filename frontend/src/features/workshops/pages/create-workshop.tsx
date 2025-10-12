@@ -17,6 +17,10 @@ import {
 
 export const CreateWorkshop = () => {
   const navigate = useNavigate()
+  console.log(
+    '🔧 [CREATE_WORKSHOP] Componente RENDERIZADO - ¿Se ve en pantalla?'
+  )
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -41,6 +45,8 @@ export const CreateWorkshop = () => {
     setError('')
 
     try {
+      console.log('🔧 [CREATE_WORKSHOP] Datos del formulario:', formData)
+
       await createWorkshop({
         name: formData.name.trim(),
         description: formData.description?.trim() || undefined,
@@ -49,6 +55,8 @@ export const CreateWorkshop = () => {
         country: formData.country?.trim() || undefined,
         phone: formData.phone?.trim() || undefined,
       })
+
+      console.log('🔧 [CREATE_WORKSHOP] Workshop creado EXITOSAMENTE')
 
       setSuccess('Workshop created successfully!')
       setTimeout(() => navigate('/dashboard'), 1500)
@@ -125,13 +133,22 @@ export const CreateWorkshop = () => {
           />
 
           <TextField
-            label="Country Code (ES, FR, etc.)"
+            label="Country Code"
             name="country"
-            value={formData.country}
-            onChange={handleChange}
+            value={formData.country || ''}
+            onChange={(e) => {
+              const value = e.target.value
+                .toUpperCase()
+                .replace(/[^A-Z]/g, '')
+                .slice(0, 2)
+              setFormData((prev) => ({ ...prev, country: value }))
+            }}
             margin="normal"
             fullWidth
             inputProps={{ maxLength: 2 }}
+            helperText="2 letras (ej: ES, FR)"
+            error={!!formData.country && formData.country.length !== 2}
+            placeholder="ES"
           />
 
           <TextField

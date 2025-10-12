@@ -15,6 +15,10 @@ import { validateBody } from '../middlewares/validate-body'
 import { LoginUserSchema } from './schemas/login.schema'
 import { RegisterUserSchema } from './schemas/register.schema'
 import { VerifyCodeSchema } from './schemas/verify-code.schema'
+import {
+  forgotPasswordController,
+  resetPasswordController,
+} from '../controllers/password-reset.controller'
 
 const router = Router()
 
@@ -24,13 +28,14 @@ router.post('/verify', validateBody(VerifyCodeSchema), verifyUser)
 router.get('/protected', verifyToken, protectedRoute)
 
 // ✅ RUTAS DE GOOGLE COMPLETAS:
-router.get('/google', initiateGoogleLogin) // Para registro
-router.get('/google/callback', handleGoogleCallback) // Para registro
+router.get('/google', initiateGoogleLogin)
+router.get('/google/callback', handleGoogleCallback)
 
-router.get('/google/login', initiateGoogleLogin) // Para login
-router.get('/google/login/callback', handleGoogleLogin) // ← AÑADE ESTA RUTA
-
+router.get('/google/login', initiateGoogleLogin)
+router.get('/google/login/callback', handleGoogleLogin)
 router.get('/me', getCurrentUser)
 router.post('/logout', logout)
+router.post('/forgot-password', forgotPasswordController)
+router.post('/reset-password', resetPasswordController)
 
 export default router

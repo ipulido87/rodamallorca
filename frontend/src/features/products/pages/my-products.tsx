@@ -70,12 +70,10 @@ export const MyProducts = () => {
     try {
       setLoading(true)
       setError(null)
-      const token = localStorage.getItem('token')
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/owner/products/mine`,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
           credentials: 'include',
@@ -108,7 +106,6 @@ export const MyProducts = () => {
   // publicar / ocultar
   const handleStatusChange = async (product: Product) => {
     try {
-      const token = localStorage.getItem('token')
       if (product.status === 'DRAFT') {
         const res = await fetch(
           `${import.meta.env.VITE_API_URL}/owner/products/${
@@ -117,7 +114,6 @@ export const MyProducts = () => {
           {
             method: 'POST',
             headers: {
-              Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
             credentials: 'include',
@@ -135,7 +131,6 @@ export const MyProducts = () => {
           {
             method: 'PUT',
             headers: {
-              Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
             credentials: 'include',
@@ -158,14 +153,12 @@ export const MyProducts = () => {
   const handleDelete = async () => {
     if (!deleteDialog.product) return
     try {
-      const token = localStorage.getItem('token')
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/owner/products/${
           deleteDialog.product.id
         }`,
         {
           method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` },
           credentials: 'include',
         }
       )

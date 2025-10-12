@@ -100,6 +100,9 @@ export const protectedRoute = (req: Request, res: Response) => {
 export const initiateGoogleLogin = async (req: Request, res: Response) => {
   try {
     const isLogin = req.originalUrl.includes('/google/login')
+
+    console.log('🔐 [INITIATE_GOOGLE] URL:', req.originalUrl)
+    console.log('🔐 [INITIATE_GOOGLE] isLogin:', isLogin)
     const role = req.query.role as string | undefined
 
     const stateData = {
@@ -131,8 +134,11 @@ export const initiateGoogleLogin = async (req: Request, res: Response) => {
 
     // ✅ REDIRECT URIS DIFERENTES
     const redirectUri = isLogin
-      ? 'http://localhost:4000/api/auth/google/login/callback' // ← PARA LOGIN
-      : process.env.GOOGLE_REDIRECT_URI! // ← PARA REGISTRO
+      ? process.env.GOOGLE_LOGIN_REDIRECT_URI!
+      : process.env.GOOGLE_REDIRECT_URI!
+
+    console.log('🔐 [INITIATE_GOOGLE] Redirect URI:', redirectUri)
+    console.log('🔐 [INITIATE_GOOGLE] Esta URI ¿está en Google Console?')
 
     const url = client.authorizationUrl({
       scope: 'openid email profile',

@@ -53,7 +53,6 @@ export const MyWorkshops = () => {
     loadWorkshops()
   }, [])
 
-
   const handleDeleteConfirm = async () => {
     if (!deleteDialog.workshop) return
 
@@ -116,7 +115,7 @@ export const MyWorkshops = () => {
           <Button
             variant="contained"
             startIcon={<Add />}
-            onClick={() => navigate('/workshops/create')}
+            onClick={() => navigate('/create-workshop')}
             size="large"
           >
             Nuevo Taller

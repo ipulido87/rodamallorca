@@ -11,10 +11,9 @@ import {
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
-import { GoogleLoginButton } from '../../../components/google-login-button'
-import { useAuth } from './../hooks/useAuth'
+import { GoogleLoginButton } from '../components/google-login-button'
+import { useAuth } from '../hooks/useAuth'
 
-// Zod schema para validación del formulario de login
 const loginSchema = z.object({
   email: z
     .string()
@@ -72,10 +71,8 @@ export const LoginForm = () => {
     }
 
     try {
-      // Usar datos validados por Zod
       await login(result.data.email, result.data.password)
 
-      // Pequeña espera para que se actualice el estado del usuario
       setTimeout(() => {
         const user = JSON.parse(localStorage.getItem('user') || '{}')
 
@@ -148,7 +145,17 @@ export const LoginForm = () => {
             {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </Button>
 
+          <Button
+            fullWidth
+            variant="text"
+            sx={{ mt: 1 }}
+            onClick={() => navigate('/forgot-password')}
+          >
+            ¿Olvidaste tu contraseña?
+          </Button>
+
           <Divider sx={{ my: 3 }}>o</Divider>
+
           <GoogleLoginButton />
 
           <Button

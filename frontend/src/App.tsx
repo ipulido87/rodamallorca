@@ -13,9 +13,11 @@ import { MyWorkshops } from './features/workshops/pages/my-work-shops'
 import { WorkshopDetail } from './features/workshops/pages/workshop-detail'
 import { Home } from './pages/HomePage'
 import { LandingPage } from './pages/LandingPage'
-import { LoginForm } from './pages/login-form'
+import { LoginForm } from './features/auth/pages/login-form'
 import { Register } from './pages/register-user'
 import { AuthProvider } from './providers/auth-provider'
+import { ForgotPassword } from './features/auth/pages/forgot-password'
+import { ResetPassword } from './features/auth/pages/reset-password'
 
 function App() {
   return (
@@ -31,7 +33,6 @@ function App() {
               </PublicLayout>
             }
           />
-
           <Route
             path="/login"
             element={
@@ -40,7 +41,8 @@ function App() {
               </PublicLayout>
             }
           />
-
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route
             path="/register"
             element={
@@ -49,7 +51,6 @@ function App() {
               </PublicLayout>
             }
           />
-
           {/* Rutas privadas con MainLayout */}
           <Route
             path="/*"

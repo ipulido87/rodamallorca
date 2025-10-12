@@ -29,7 +29,7 @@ import {
   register as apiRegister,
   verifyCode as apiVerifyCode,
 } from '../services/auth-service'
-import { GoogleLoginButton } from './.././../../components/google-login-button'
+import { GoogleLoginButton } from '../components/google-login-button'
 
 type UserRole = 'user' | 'owner'
 

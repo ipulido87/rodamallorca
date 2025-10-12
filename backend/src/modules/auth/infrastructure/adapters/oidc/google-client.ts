@@ -8,8 +8,11 @@ export async function getGoogleClient(): Promise<Client> {
   const google = await Issuer.discover('https://accounts.google.com')
   client = new google.Client({
     client_id: process.env.GOOGLE_CLIENT_ID!,
-    client_secret: process.env.Google_CLIENT_SECRET!, // <- ojo al nombre; debe ser GOOGLE_CLIENT_SECRET
-    redirect_uris: [process.env.GOOGLE_REDIRECT_URI!],
+    client_secret: process.env.GOOGLE_CLIENT_SECRET!,
+    redirect_uris: [
+      process.env.GOOGLE_REDIRECT_URI!,
+      process.env.GOOGLE_LOGIN_REDIRECT_URI!,
+    ],
     response_types: ['code'],
   })
   return client

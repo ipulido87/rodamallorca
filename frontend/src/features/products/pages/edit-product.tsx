@@ -101,12 +101,10 @@ export const EditProduct = () => {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const token = localStorage.getItem('token')
         const response = await fetch(
           `${import.meta.env.VITE_API_URL}/categories`,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
             credentials: 'include',
@@ -139,12 +137,10 @@ export const EditProduct = () => {
       }
 
       try {
-        const token = localStorage.getItem('token')
         const response = await fetch(
           `${import.meta.env.VITE_API_URL}/owner/products/${id}`,
           {
             headers: {
-              Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
             credentials: 'include',
@@ -216,13 +212,11 @@ export const EditProduct = () => {
       setError(null)
       setValidationErrors({})
 
-      const token = localStorage.getItem('token')
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/owner/products/${id}`,
         {
           method: 'PUT',
           headers: {
-            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
           credentials: 'include',
