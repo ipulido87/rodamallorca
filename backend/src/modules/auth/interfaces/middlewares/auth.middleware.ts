@@ -10,39 +10,44 @@ export const verifyToken = (
   res: Response,
   next: NextFunction
 ) => {
-  // Intentar obtener token del header Authorization
-  const authHeader =
-    req.headers.authorization || (req.headers as any).Authorization
+  console.log('🔐 [VERIFY_TOKEN] === INICIANDO ===')
+  console.log('🔐 [VERIFY_TOKEN] Cookies recibidas:', req.cookies)
+  console.log('🔐 [VERIFY_TOKEN] Headers:', req.headers)
+
+  // 1. Header Authorization
+  const authHeader = req.headers.authorization
   let token: string | undefined
 
   if (authHeader) {
     const match = /^Bearer\s+(.+)$/i.exec(authHeader)
     if (match) {
       token = match[1]
+      console.log('✅ [VERIFY_TOKEN] Token de header encontrado')
     }
   }
 
-  // Si no hay token en el header, buscar en cookies
-  if (!token) {
-    token = req.cookies?.auth_token // ✅ ESTO ES CRÍTICO
+  // 2. Cookies
+  if (!token && req.cookies?.auth_token) {
+    token = req.cookies.auth_token
+    console.log('✅ [VERIFY_TOKEN] Token de cookie encontrado')
   }
 
-  // Si no hay token en ningún lado, rechazar
   if (!token) {
+    console.log('❌ [VERIFY_TOKEN] No hay token en ningún lado')
     return res.status(401).json({ message: 'Missing authentication token' })
   }
 
   try {
     const decoded = jwt.verify(token, config.jwtSecret) as Express.UserPayload
-    if (!decoded.id || !decoded?.email) {
-      return res.status(403).json({ message: 'Invalid token payload' })
-    }
+    console.log('✅ [VERIFY_TOKEN] Token válido. User:', decoded.email)
     req.user = decoded
     next()
-  } catch {
+  } catch (error) {
+    console.log('❌ [VERIFY_TOKEN] Token inválido:', error)
     return res.status(403).json({ message: 'Invalid or expired token' })
   }
 }
+
 export const requireUser = (
   req: Request,
   res: Response,

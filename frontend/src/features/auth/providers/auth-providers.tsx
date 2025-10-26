@@ -19,6 +19,7 @@ export type AuthContextType = {
   isAuthenticated: boolean
   isWorkshopOwner: boolean
   loading: boolean
+  authError: string | null // ✅ NUEVO: Error centralizado
   login: (email: string, password: string) => Promise<void>
   logout: () => void
   register: (input: {
@@ -30,7 +31,10 @@ export type AuthContextType = {
     role?: 'USER' | 'WORKSHOP_OWNER'
   }) => Promise<void>
   verifyCode: (email: string, code: string) => Promise<void>
+  resendVerification: (email: string) => Promise<void> // ✅ NUEVO
   refreshMe: () => Promise<void>
+  persistToken: (token: string | null) => void
+  clearError: () => void // ✅ NUEVO
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null)

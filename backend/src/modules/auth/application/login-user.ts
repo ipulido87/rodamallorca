@@ -5,60 +5,52 @@ import prisma from '../../../lib/prisma'
 import { sanitizeUser } from '../../../utils/sanitize-user'
 
 export const loginUser = async (email: string, password: string) => {
-  // 1) normaliza email
-  const emailNorm = email.trim().toLowerCase()
+  console.log('🔍 [LOGIN_USER] Intentando login con:', email)
 
-  console.log('🔍 [LOGIN] Intentando login con:', emailNorm)
-
-  // 2) busca usuario
-  const user = await prisma.user.findUnique({ where: { email: emailNorm } })
-  // devuelve siempre mismo error para no filtrar info
-  const invalid = new Error('Invalid credentials')
+  const user = await prisma.user.findUnique({
+    where: { email: email.toLowerCase() },
+  })
 
   if (!user) {
-    console.log('❌ [LOGIN] Usuario no encontrado')
-
-    throw invalid
+    console.log('❌ [LOGIN_USER] Usuario no encontrado:', email)
+    throw new Error('Invalid credentials')
   }
 
-  console.log('✅ [LOGIN] Usuario encontrado:', user.email)
-  console.log('🔍 [LOGIN] Tiene password?', !!user.password)
-  console.log('🔍 [LOGIN] Está verificado?', user.verified)
+  console.log('✅ [LOGIN_USER] Usuario encontrado:', user.email)
+  console.log('🔍 [LOGIN_USER] Tiene password?', !!user.password)
+  console.log('🔍 [LOGIN_USER] Está verificado?', user.verified)
 
-  // 3) exige verificación por email (si tu política lo requiere)
+  // ✅ VERIFICAR SI EL USUARIO ESTÁ VERIFICADO
   if (!user.verified) {
-    throw new Error('Please verify your email before logging in')
+    console.log('❌ [LOGIN_USER] Usuario no verificado:', user.email)
+    throw new Error('User not verified') // ← Mensaje específico
   }
 
-  // 4) usuarios de Google no tienen password local
   if (!user.password) {
-    console.log('❌ [LOGIN] Usuario sin password (Google?)')
-
-    throw invalid
+    console.log('❌ [LOGIN_USER] Usuario no tiene password:', user.email)
+    throw new Error('Invalid credentials')
   }
 
-  console.log(
-    '🔍 [LOGIN] Password en BD:',
-    user.password.substring(0, 20) + '...'
-  )
-  console.log('🔍 [LOGIN] Password ingresado:', password)
+  const isValidPassword = await bcrypt.compare(password, user.password)
 
-  // 5) compara password
-  const ok = await bcrypt.compare(password, user.password)
-  console.log('🔐 [LOGIN] Contraseñas coinciden?', ok)
-
-  if (!ok) {
-    console.log('❌ [LOGIN] Password incorrecto')
-
-    throw invalid
+  if (!isValidPassword) {
+    console.log('❌ [LOGIN_USER] Password inválido para:', user.email)
+    throw new Error('Invalid credentials')
   }
 
-  // 6) firma JWT (incluye lo que necesites)
+  console.log('✅ [LOGIN_USER] Password válido para:', user.email)
+
+  // Generar token JWT
   const token = jwt.sign(
-    { id: user.id, email: user.email, role: user.role ?? 'USER' },
-    config.jwtSecret,
-    { expiresIn: '7d' }
+    { userId: user.id, email: user.email },
+    process.env.JWT_SECRET || 'fallback-secret',
+    { expiresIn: '24h' }
   )
 
-  return { token, user: sanitizeUser(user) }
+  console.log('✅ [LOGIN_USER] Token generado para:', user.email)
+
+  return {
+    token,
+    user: sanitizeUser(user),
+  }
 }

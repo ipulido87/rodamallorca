@@ -29,6 +29,7 @@ import { adaptProductImages } from '../../../utils/adapt-product-Images'
 import { ModernProductLayout } from '../components/modern-product-layout'
 import { Product } from '../services/product-service'
 import type { CardProduct } from '../types/products-types'
+import axios, { AxiosError } from 'axios'
 
 /* --------- Adaptador UI ← Backend --------- */
 const adaptProductForLayout = (product: Product): CardProduct => ({
@@ -70,21 +71,32 @@ export const MyProducts = () => {
     try {
       setLoading(true)
       setError(null)
-      const res = await fetch(
+      console.log('🔧 [LOAD_PRODUCTS] Iniciando request con axios...')
+
+      const response = await axios.get<Product[]>(
         `${import.meta.env.VITE_API_URL}/owner/products/mine`,
         {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+          withCredentials: true,
         }
       )
-      if (!res.ok) throw new Error('Error al cargar productos')
-      const data: Product[] = await res.json()
-      setProducts(data)
-    } catch (e) {
+
+      console.log('🔧 [LOAD_PRODUCTS] Response status:', response.status)
+      console.log('🔧 [LOAD_PRODUCTS] Response data:', response.data)
+
+      setProducts(response.data)
+    } catch (error) {
       setError('Error al cargar los productos')
-      console.error(e)
+
+      if (error instanceof AxiosError) {
+        console.error(
+          '🔧 [LOAD_PRODUCTS] Axios error:',
+          error.response?.data || error.message
+        )
+      } else if (error instanceof Error) {
+        console.error('🔧 [LOAD_PRODUCTS] Error:', error.message)
+      } else {
+        console.error('🔧 [LOAD_PRODUCTS] Unknown error:', error)
+      }
     } finally {
       setLoading(false)
     }
@@ -107,69 +119,61 @@ export const MyProducts = () => {
   const handleStatusChange = async (product: Product) => {
     try {
       if (product.status === 'DRAFT') {
-        const res = await fetch(
+        await axios.post(
           `${import.meta.env.VITE_API_URL}/owner/products/${
             product.id
           }/publish`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-          }
+          {},
+          { withCredentials: true }
         )
-        if (!res.ok) throw new Error('Error al publicar producto')
         setProducts((prev) =>
           prev.map((p) =>
             p.id === product.id ? { ...p, status: 'PUBLISHED' } : p
           )
         )
       } else {
-        const res = await fetch(
+        const response = await axios.put<Product>(
           `${import.meta.env.VITE_API_URL}/owner/products/${product.id}`,
-          {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify({ status: 'DRAFT' }),
-          }
+          { status: 'DRAFT' },
+          { withCredentials: true }
         )
-        if (!res.ok) throw new Error('Error al despublicar producto')
-        const updated: Product = await res.json()
         setProducts((prev) =>
-          prev.map((p) => (p.id === product.id ? updated : p))
+          prev.map((p) => (p.id === product.id ? response.data : p))
         )
       }
       handleCloseMenu()
-    } catch (e) {
+    } catch (error) {
       setError('Error al cambiar el estado del producto')
-      console.error(e)
+
+      if (error instanceof AxiosError) {
+        console.error('Axios error:', error.response?.data || error.message)
+      } else if (error instanceof Error) {
+        console.error('Error:', error.message)
+      }
     }
   }
 
   const handleDelete = async () => {
     if (!deleteDialog.product) return
     try {
-      const res = await fetch(
+      await axios.delete(
         `${import.meta.env.VITE_API_URL}/owner/products/${
           deleteDialog.product.id
         }`,
-        {
-          method: 'DELETE',
-          credentials: 'include',
-        }
+        { withCredentials: true }
       )
-      if (!res.ok) throw new Error('Error al eliminar el producto')
       setProducts((prev) =>
         prev.filter((p) => p.id !== deleteDialog.product!.id)
       )
       setDeleteDialog({ open: false, product: null })
-    } catch (e) {
+    } catch (error) {
       setError('Error al eliminar el producto')
-      console.error(e)
+
+      if (error instanceof AxiosError) {
+        console.error('Axios error:', error.response?.data || error.message)
+      } else if (error instanceof Error) {
+        console.error('Error:', error.message)
+      }
     }
   }
 

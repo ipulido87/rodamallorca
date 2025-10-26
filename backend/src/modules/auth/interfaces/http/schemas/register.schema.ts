@@ -10,4 +10,6 @@ export const RegisterUserSchema = z.object({
     .regex(/^\+?[0-9 ]{7,15}$/, { message: 'Invalid phone' })
     .optional(),
   role: z.enum(['USER', 'WORKSHOP_OWNER']).optional(),
+  businessName: z.string().optional(),
+  businessAddress: z.string().optional(),
 })

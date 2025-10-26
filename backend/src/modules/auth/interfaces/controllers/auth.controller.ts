@@ -16,6 +16,7 @@ import { LoginUserSchema } from '../http/schemas/login.schema'
 import { RegisterUserSchema } from '../http/schemas/register.schema'
 import { generators } from 'openid-client'
 import { signJwt } from '../../infrastructure/adapters/jwt/jwt.service'
+import { error } from 'console'
 
 interface PrismaError extends Error {
   code?: string
@@ -32,21 +33,50 @@ interface JWTPayload {
 const getFrontendUrl = () => process.env.FRONTEND_URL ?? 'http://localhost:5173'
 
 export const registerUser = async (req: Request, res: Response) => {
+  console.log('🔐 [REGISTER] Body recibido:', req.body)
+
   const parsed = RegisterUserSchema.safeParse(req.body)
-  if (!parsed.success)
+  console.log('🔐 [REGISTER] Parsed data:', parsed.data)
+
+  if (!parsed.success) {
+    console.log('❌ [REGISTER] Validation errors:', parsed.error)
     return res.status(400).json({ errors: parsed.error.issues })
+  }
 
   try {
     const user = await registerUserUseCase(parsed.data)
+    console.log('✅ [REGISTER] Usuario creado:', user)
+
+    // ✅ CREAR WORKSHOP
+    if (user.role === 'WORKSHOP_OWNER') {
+      console.log('🔧 [REGISTER] Creando workshop para WORKSHOP_OWNER')
+
+      const workshop = await prisma.workshop.create({
+        data: {
+          ownerId: user.id,
+          name: `Taller de ${user.name}`,
+          description: `Taller de ${user.name}`,
+          address: null,
+          city: null,
+          country: null,
+          phone: null,
+        },
+      })
+      console.log('✅ [REGISTER] Workshop creado:', workshop.id)
+    }
+
     try {
       await sendVerificationEmail(user.email, user.verificationCode!)
-    } catch {}
+    } catch (e) {
+      console.warn('❌ [REGISTER] Error enviando email:', e)
+    }
 
     return res.status(201).json({
       message: 'User registered successfully',
       user: sanitizeUser(user),
     })
   } catch (err) {
+    console.error('❌ [REGISTER] Error completo:', err)
     const error = err as PrismaError
     if (error?.code === 'P2002')
       return res
@@ -66,9 +96,51 @@ export const loginUserController = async (req: Request, res: Response) => {
       result.data.email,
       result.data.password
     )
+
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
+      path: '/',
+    })
+
     res.json({ token, user })
-  } catch {
-    res.status(401).json({ error: 'Invalid email or password' })
+  } catch (error) {
+    console.error('❌ [LOGIN_CONTROLLER] Error completo:', error)
+
+    // ✅ DIFERENCIAR ENTRE TIPOS DE ERROR
+    const errorMessage = error instanceof Error ? error.message : String(error)
+
+    if (
+      errorMessage.includes('User not verified') ||
+      errorMessage.includes('not verified')
+    ) {
+      return res.status(403).json({
+        error: 'EMAIL_NOT_VERIFIED',
+        message:
+          'Por favor verifica tu email antes de iniciar sesión. Revisa tu bandeja de entrada o solicita un nuevo email de verificación.',
+      })
+    }
+
+    if (
+      errorMessage.includes('Invalid credentials') ||
+      errorMessage.includes('Invalid email or password')
+    ) {
+      return res.status(401).json({
+        error: 'INVALID_CREDENTIALS',
+        message: 'Email o contraseña incorrectos',
+      })
+    }
+
+    // ✅ ERROR GENÉRICO
+    console.log('🔍 [LOGIN_CONTROLLER] Tipo de error:', typeof error)
+    console.log('🔍 [LOGIN_CONTROLLER] Mensaje de error:', errorMessage)
+
+    return res.status(401).json({
+      error: 'LOGIN_FAILED',
+      message: 'Error al iniciar sesión',
+    })
   }
 }
 
@@ -180,7 +252,6 @@ export const handleGoogleCallback = async (req: Request, res: Response) => {
 
     const frontendUrl = getFrontendUrl()
 
-    // ✅ ESTE ES EL ORIGINAL - SIEMPRE CREA USUARIOS
     const { token, user } = await loginWithGoogleUseCase(
       {
         state: stateParam,
@@ -203,18 +274,29 @@ export const handleGoogleCallback = async (req: Request, res: Response) => {
       path: '/',
     })
 
-    // Redirigir según el rol
     if (user.role === 'WORKSHOP_OWNER') {
-      const workshop = await prisma.workshop.findFirst({
+      const existingWorkshop = await prisma.workshop.findFirst({
         where: { ownerId: user.id },
       })
-      if (!workshop) {
-        return res.redirect(`${frontendUrl}/create-workshop?firstTime=true`)
+
+      if (!existingWorkshop) {
+        console.log('🔧 [CALLBACK] Creando workshop para nuevo WORKSHOP_OWNER')
+        await prisma.workshop.create({
+          data: {
+            ownerId: user.id,
+            name: `Taller de ${user.name}`,
+            description: `Taller de ${user.name}`,
+            address: null,
+            city: null,
+            country: null,
+            phone: null,
+          },
+        })
+        console.log('✅ [CALLBACK] Workshop creado automáticamente')
       }
-      return res.redirect(`${frontendUrl}/dashboard`)
     }
 
-    return res.redirect(`${frontendUrl}/home`)
+    return res.redirect(`${frontendUrl}/auth/callback?token=${token}`)
   } catch (e) {
     const error = e as Error
     console.error('Google callback error:', error)
@@ -241,7 +323,12 @@ export const handleGoogleLogin = async (req: Request, res: Response) => {
 
     const frontendUrl = getFrontendUrl()
 
-    const u = await handleCallback(stateParam, code, codeVerifier)
+    const u = await handleCallback(
+      stateParam,
+      code,
+      codeVerifier,
+      process.env.GOOGLE_LOGIN_REDIRECT_URI
+    )
     if (!u.email) throw new Error('No email from Google')
 
     // ✅ SOLO VERIFICAR - NO CREAR
@@ -274,18 +361,17 @@ export const handleGoogleLogin = async (req: Request, res: Response) => {
       path: '/',
     })
 
-    // Redirigir según el rol
     if (existingUser.role === 'WORKSHOP_OWNER') {
       const workshop = await prisma.workshop.findFirst({
         where: { ownerId: existingUser.id },
       })
       if (!workshop) {
-        return res.redirect(`${frontendUrl}/create-workshop?firstTime=true`)
+        return res.redirect(`${frontendUrl}/auth/callback?token=${token}`)
       }
-      return res.redirect(`${frontendUrl}/dashboard`)
+      return res.redirect(`${frontendUrl}/auth/callback?token=${token}`)
     }
 
-    return res.redirect(`${frontendUrl}/home`)
+    return res.redirect(`${frontendUrl}/auth/callback?token=${token}`)
   } catch (e) {
     const error = e as Error
     console.error('Google login error:', error)
@@ -318,4 +404,75 @@ export const logout = (req: Request, res: Response) => {
     path: '/',
   })
   res.json({ message: 'Logged out successfully' })
+}
+
+export const resendVerification = async (req: Request, res: Response) => {
+  const { email } = req.body
+
+  if (!email) {
+    return res.status(400).json({
+      error: 'EMAIL_REQUIRED',
+      message: 'El email es requerido',
+    })
+  }
+
+  try {
+    console.log('🔐 [RESEND_VERIFICATION] Solicitado para:', email)
+
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    })
+
+    if (!user) {
+      console.log('❌ [RESEND_VERIFICATION] Usuario no encontrado:', email)
+      return res.status(404).json({
+        error: 'USER_NOT_FOUND',
+        message: 'Usuario no encontrado',
+      })
+    }
+
+    if (user.verified) {
+      console.log('❌ [RESEND_VERIFICATION] Usuario ya verificado:', email)
+      return res.status(400).json({
+        error: 'ALREADY_VERIFIED',
+        message: 'El usuario ya está verificado',
+      })
+    }
+
+    // Generar nuevo código de verificación
+    const verificationCode = Math.random().toString(36).substring(2, 15)
+    const codeExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 horas
+
+    await prisma.user.update({
+      where: { email: email.toLowerCase() },
+      data: {
+        verificationCode,
+        codeExpiresAt,
+      },
+    })
+
+    console.log('✅ [RESEND_VERIFICATION] Nuevo código generado para:', email)
+
+    // Enviar email de verificación
+    try {
+      await sendVerificationEmail(email, verificationCode)
+      console.log('✅ [RESEND_VERIFICATION] Email enviado a:', email)
+    } catch (emailError) {
+      console.error(
+        '❌ [RESEND_VERIFICATION] Error enviando email:',
+        emailError
+      )
+      // No fallamos la petición si el email falla, solo logueamos
+    }
+
+    return res.status(200).json({
+      message: 'Email de verificación reenviado. Revisa tu bandeja de entrada.',
+    })
+  } catch (error) {
+    console.error('❌ [RESEND_VERIFICATION] Error:', error)
+    return res.status(500).json({
+      error: 'INTERNAL_ERROR',
+      message: 'Error al reenviar el email de verificación',
+    })
+  }
 }

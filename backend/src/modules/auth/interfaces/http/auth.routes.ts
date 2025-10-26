@@ -3,7 +3,7 @@ import { verifyToken } from '../../interfaces/middlewares/auth.middleware'
 import {
   getCurrentUser,
   handleGoogleCallback,
-  handleGoogleLogin, // ← AÑADE esto
+  handleGoogleLogin,
   initiateGoogleLogin,
   loginUserController,
   logout,
@@ -19,6 +19,7 @@ import {
   forgotPasswordController,
   resetPasswordController,
 } from '../controllers/password-reset.controller'
+import { resendVerificationController } from '../controllers/verification.controller'
 
 const router = Router()
 
@@ -37,5 +38,6 @@ router.get('/me', getCurrentUser)
 router.post('/logout', logout)
 router.post('/forgot-password', forgotPasswordController)
 router.post('/reset-password', resetPasswordController)
+router.post('/resend-verification', resendVerificationController)
 
 export default router

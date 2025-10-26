@@ -41,18 +41,23 @@ export async function buildAuthUrl(state: string): Promise<string> {
 export async function handleCallback(
   state: string,
   code: string,
-  codeVerifier: string
+  codeVerifier?: string,
+  redirectUri?: string
 ) {
   const c = await getGoogleClient()
 
-  console.log('🔍 State:', state)
-  console.log('🔍 CodeVerifier recibido:', codeVerifier ? 'Sí' : 'No')
+  const verifier = codeVerifier || codeVerifierStore.get(state)
+  if (!verifier) throw new Error('Invalid state')
+
+  const uri = redirectUri || process.env.GOOGLE_REDIRECT_URI!
 
   const tokenSet = await c.callback(
-    process.env.GOOGLE_REDIRECT_URI!,
+    uri,
     { code, state },
-    { state, code_verifier: codeVerifier }
+    { state, code_verifier: verifier }
   )
+
+  codeVerifierStore.delete(state)
 
   const access = tokenSet.access_token
   if (!access) throw new Error('No access token from provider')

@@ -177,6 +177,9 @@ export const getProductById = async (
   next: NextFunction
 ) => {
   try {
+    console.log('🔧 [GET_MY_PRODUCTS] === INICIANDO ===')
+    console.log('🔧 [GET_MY_PRODUCTS] req.user:', req.user)
+    console.log('🔧 [GET_MY_PRODUCTS] req.user.id:', req.user?.id)
     const { id } = req.params
 
     const workshop = await getUserWorkshop(req.user!.id)
@@ -294,4 +297,3 @@ export const deleteProduct = async (
     next(e)
   }
 }
-  

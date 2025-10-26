@@ -1,4 +1,3 @@
-// frontend/src/shared/hooks/useDebounce.ts
 import { useEffect, useState } from 'react'
 
 export const useDebounce = <T>(value: T, delay: number = 300): T => {

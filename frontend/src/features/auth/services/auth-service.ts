@@ -4,33 +4,57 @@ import { API_URL, AUTH_ENDPOINTS } from '../../../constants/api'
 
 export const API = axios.create({
   baseURL: API_URL,
-  withCredentials: true, // por si usas cookie httpOnly en /me, google/callback, etc.
+  withCredentials: true,
 })
+
+// ✅ INTERCEPTOR PARA MANEJAR ERRORES ESPECÍFICOS
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (
+      error.response?.status === 403 &&
+      error.response?.data?.error === 'EMAIL_NOT_VERIFIED'
+    ) {
+      // Mantenemos el error pero con la data específica para que el componente lo maneje
+      return Promise.reject({
+        ...error,
+        isEmailNotVerified: true,
+        email: error.response?.data?.email, // Si el backend lo incluye
+      })
+    }
+    return Promise.reject(error)
+  }
+)
 
 // ---- Endpoints ----
 export async function register(input: {
   email: string
   password: string
   name: string
-  birthDate?: string // "YYYY-MM-DD"
+  birthDate?: string
   phone?: string
-  role?: 'USER' | 'WORKSHOP_OWNER' // AGREGAR ESTO
+  role?: 'USER' | 'WORKSHOP_OWNER'
 }) {
   const res = await API.post(AUTH_ENDPOINTS.REGISTER, input)
-  return res.data // { message, user }
+  return res.data
 }
 
 export async function login(email: string, password: string) {
   const res = await API.post(AUTH_ENDPOINTS.LOGIN, { email, password })
-  return res.data // { token, user }
+  return res.data
 }
 
 export async function verifyCode(email: string, code: string) {
   const res = await API.post(AUTH_ENDPOINTS.VERIFY, { email, code })
-  return res.data // { message, user? }
+  return res.data
 }
 
 export async function me() {
   const res = await API.get('/auth/me')
-  return res.data // { user } | { user: null }
+  return res.data
+}
+
+export async function resendVerification(email: string) {
+  const res = await API.post('/auth/resend-verification', { email })
+  return res.data
 }

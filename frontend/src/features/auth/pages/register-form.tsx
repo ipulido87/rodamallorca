@@ -460,7 +460,10 @@ export const Register = () => {
             </Button>
 
             <Divider sx={{ my: 3 }}>o</Divider>
-            <GoogleLoginButton />
+            <GoogleLoginButton
+              mode="register"
+              role={formData.role === 'owner' ? 'WORKSHOP_OWNER' : 'USER'}
+            />
 
             <Box textAlign="center" sx={{ mt: 2 }}>
               <Button variant="text" onClick={() => navigate('/login')}>

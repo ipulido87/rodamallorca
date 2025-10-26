@@ -3,6 +3,11 @@ import {
   Box,
   Button,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   Paper,
   TextField,
@@ -12,7 +17,7 @@ import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { GoogleLoginButton } from '../components/google-login-button'
-import { useAuth } from '../hooks/useAuth'
+import { useAuth } from '../hooks/useAuth' // ✅ USAR HOOK
 
 const loginSchema = z.object({
   email: z
@@ -29,23 +34,25 @@ type LoginFormData = z.infer<typeof loginSchema>
 
 export const LoginForm = () => {
   const navigate = useNavigate()
-  const { login, loading } = useAuth()
+  const auth = useAuth() // ✅ USAR HOOK
 
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
   })
-  const [error, setError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<
     Record<string, string>
   >({})
+
+  const [showVerificationDialog, setShowVerificationDialog] = useState(false)
+  const [pendingVerificationEmail, setPendingVerificationEmail] = useState('')
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
 
     // Limpiar errores al escribir
-    if (error) setError(null)
+    if (auth.authError) auth.clearError()
     if (validationErrors[name]) {
       setValidationErrors((prev) => ({ ...prev, [name]: '' }))
     }
@@ -53,7 +60,7 @@ export const LoginForm = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    setError(null)
+    auth.clearError()
     setValidationErrors({})
 
     // Validación con Zod
@@ -71,7 +78,7 @@ export const LoginForm = () => {
     }
 
     try {
-      await login(result.data.email, result.data.password)
+      await auth.login(result.data.email, result.data.password)
 
       setTimeout(() => {
         const user = JSON.parse(localStorage.getItem('user') || '{}')
@@ -84,13 +91,29 @@ export const LoginForm = () => {
           navigate('/catalog')
         }
       }, 100)
-    } catch (err: unknown) {
-      console.error('Login failed:', err)
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : 'Error al iniciar sesión. Verifica tus credenciales.'
-      setError(errorMessage)
+    } catch (error: unknown) {
+      console.error('Login failed:', error)
+
+      // ✅ MANEJAR ERROR DE EMAIL NO VERIFICADO
+      if (
+        error instanceof Error &&
+        error.message.startsWith('EMAIL_NOT_VERIFIED:')
+      ) {
+        const email = error.message.split(':')[1]
+        setPendingVerificationEmail(email)
+        setShowVerificationDialog(true)
+        return
+      }
+    }
+  }
+
+  const handleResendVerification = async () => {
+    try {
+      await auth.resendVerification(pendingVerificationEmail)
+      setShowVerificationDialog(false)
+    } catch (error: unknown) {
+      // El error ya fue seteado por el AuthProvider
+      console.error('Error reenviando verificación:', error)
     }
   }
 
@@ -111,7 +134,7 @@ export const LoginForm = () => {
             onChange={handleChange}
             margin="normal"
             required
-            disabled={loading}
+            disabled={auth.loading}
             error={!!validationErrors.email}
             helperText={validationErrors.email}
           />
@@ -124,14 +147,14 @@ export const LoginForm = () => {
             onChange={handleChange}
             margin="normal"
             required
-            disabled={loading}
+            disabled={auth.loading}
             error={!!validationErrors.password}
             helperText={validationErrors.password}
           />
 
-          {error && (
+          {auth.authError && (
             <Alert severity="error" sx={{ mt: 2 }}>
-              {error}
+              {auth.authError}
             </Alert>
           )}
 
@@ -140,9 +163,9 @@ export const LoginForm = () => {
             type="submit"
             variant="contained"
             sx={{ mt: 2 }}
-            disabled={loading}
+            disabled={auth.loading}
           >
-            {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+            {auth.loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </Button>
 
           <Button
@@ -150,24 +173,51 @@ export const LoginForm = () => {
             variant="text"
             sx={{ mt: 1 }}
             onClick={() => navigate('/forgot-password')}
+            disabled={auth.loading}
           >
             ¿Olvidaste tu contraseña?
           </Button>
 
           <Divider sx={{ my: 3 }}>o</Divider>
 
-          <GoogleLoginButton />
+          <GoogleLoginButton mode="login" />
 
           <Button
             fullWidth
             variant="text"
             sx={{ mt: 2 }}
             onClick={() => navigate('/')}
+            disabled={auth.loading}
           >
             Volver al inicio
           </Button>
         </Box>
       </Paper>
+
+      <Dialog
+        open={showVerificationDialog}
+        onClose={() => setShowVerificationDialog(false)}
+      >
+        <DialogTitle>Email No Verificado</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Tu email <strong>{pendingVerificationEmail}</strong> no ha sido
+            verificado. ¿Quieres que te reenviemos el email de verificación?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowVerificationDialog(false)}>
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleResendVerification}
+            variant="contained"
+            disabled={auth.loading}
+          >
+            Reenviar Verificación
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   )
 }

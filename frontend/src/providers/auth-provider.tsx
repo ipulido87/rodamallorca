@@ -1,15 +1,45 @@
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
-import { AuthContext, User } from '../features/auth/providers/auth-providers'
+import { AxiosError } from 'axios'
+import {
+  AuthContext,
+  User,
+  AuthContextType,
+} from '../features/auth/providers/auth-providers'
 import {
   API,
   login as apiLogin,
   me as apiMe,
   register as apiRegister,
   verifyCode as apiVerifyCode,
+  resendVerification as apiResendVerification, // ✅ AGREGAR
 } from '../features/auth/services/auth-service'
 
 // Key para localStorage
 const TOKEN_KEY = 'token'
+const USER_KEY = 'user'
+
+// ✅ HELPER PARA MANEJAR ERRORES DE API
+const handleApiError = (error: unknown): string => {
+  const axiosError = error as AxiosError<{
+    error?: string
+    message?: string
+    errors?: Array<{ message: string }>
+  }>
+
+  if (axiosError.response?.data?.message) {
+    return axiosError.response.data.message
+  }
+
+  if (axiosError.response?.data?.error) {
+    return axiosError.response.data.error
+  }
+
+  if (axiosError.response?.data?.errors?.[0]?.message) {
+    return axiosError.response.data.errors[0].message
+  }
+
+  return axiosError.message || 'Error de conexión'
+}
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(() =>
@@ -17,6 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   )
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [authError, setAuthError] = useState<string | null>(null) // ✅ ERROR CENTRALIZADO
 
   // ---- Interceptor: adjunta Authorization si hay token ----
   useEffect(() => {
@@ -43,20 +74,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refreshMe = useCallback(async () => {
     try {
       const data = await apiMe()
-      setUser(data?.user ?? null)
+      const fetchedUser = data?.user ?? null
+      setUser(fetchedUser)
+      if (fetchedUser) {
+        localStorage.setItem(USER_KEY, JSON.stringify(fetchedUser))
+      } else {
+        localStorage.removeItem(USER_KEY)
+      }
+      setAuthError(null) // ✅ LIMPIAR ERROR AL REFRESCAR
     } catch {
       setUser(null)
-      // Si falla /me, también limpia el token inválido
+      localStorage.removeItem(USER_KEY)
       persistToken(null)
     }
   }, [persistToken])
 
-  // Carga inicial: si hay token o cookie httpOnly, intenta hidratar /me
+  // Carga inicial
   useEffect(() => {
     ;(async () => {
       setLoading(true)
       try {
-        // Siempre intentar refreshMe por si hay cookie httpOnly o session del login con Google
         await refreshMe()
       } finally {
         setLoading(false)
@@ -64,28 +101,83 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     })()
   }, [refreshMe])
 
+  // ✅ LOGIN MEJORADO - MANEJA ERRORES ESPECÍFICOS
   const login = useCallback(
     async (email: string, password: string) => {
-      const { token: newToken, user: u } = await apiLogin(email, password)
-      persistToken(newToken)
-      setUser(u ?? null)
+      setLoading(true)
+      setAuthError(null)
+
+      try {
+        const { token: newToken, user: u } = await apiLogin(email, password)
+        persistToken(newToken)
+        setUser(u ?? null)
+        if (u) {
+          localStorage.setItem(USER_KEY, JSON.stringify(u))
+        }
+      } catch (error: unknown) {
+        console.error('Login error in AuthProvider:', error)
+
+        const errorMessage = handleApiError(error)
+        const axiosError = error as AxiosError<{ error?: string }>
+
+        // ✅ MANEJAR ERROR DE EMAIL NO VERIFICADO
+        if (
+          axiosError.response?.status === 403 &&
+          axiosError.response?.data?.error === 'EMAIL_NOT_VERIFIED'
+        ) {
+          setAuthError(errorMessage)
+          throw new Error(`EMAIL_NOT_VERIFIED:${email}`)
+        }
+
+        // ✅ MANEJAR ERROR DE CREDENCIALES INVÁLIDAS
+        if (
+          axiosError.response?.status === 401 &&
+          axiosError.response?.data?.error === 'INVALID_CREDENTIALS'
+        ) {
+          setAuthError(errorMessage)
+          throw new Error(errorMessage)
+        }
+
+        setAuthError(errorMessage)
+        throw new Error(errorMessage)
+      } finally {
+        setLoading(false)
+      }
     },
     [persistToken]
   )
 
+  // ✅ NUEVA FUNCIÓN PARA REENVIAR VERIFICACIÓN
+  const resendVerification = useCallback(async (email: string) => {
+    setLoading(true)
+    setAuthError(null)
+
+    try {
+      await apiResendVerification(email)
+      setAuthError(
+        '✅ Email de verificación reenviado. Revisa tu bandeja de entrada.'
+      )
+    } catch (error: unknown) {
+      const errorMessage = handleApiError(error)
+      setAuthError(errorMessage)
+      throw new Error(errorMessage)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   const logout = useCallback(async () => {
     try {
-      // Llamar al backend para limpiar cookies
       await API.post('/auth/logout')
     } catch (error) {
       console.warn('Backend logout failed:', error)
     }
 
-    // Limpiar estado local
     persistToken(null)
     setUser(null)
+    setAuthError(null)
+    localStorage.removeItem(USER_KEY)
 
-    // Forzar redirección para asegurar que sale de rutas protegidas
     setTimeout(() => {
       window.location.href = '/login'
     }, 100)
@@ -100,23 +192,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       phone?: string
       role?: 'USER' | 'WORKSHOP_OWNER'
     }) => {
-      await apiRegister(input)
-      // no seteamos token todavía; el user verificará su email
+      setLoading(true)
+      setAuthError(null)
+
+      try {
+        await apiRegister(input)
+        setAuthError(null)
+      } catch (error: unknown) {
+        const errorMessage = handleApiError(error)
+        setAuthError(errorMessage)
+        throw new Error(errorMessage)
+      } finally {
+        setLoading(false)
+      }
     },
     []
   )
 
   const verifyCode = useCallback(async (email: string, code: string) => {
-    await apiVerifyCode(email, code)
-    // tras verificar puedes redirigir a /login desde el componente
+    setLoading(true)
+    setAuthError(null)
+
+    try {
+      await apiVerifyCode(email, code)
+      setAuthError(null)
+    } catch (error: unknown) {
+      const errorMessage = handleApiError(error)
+      setAuthError(errorMessage)
+      throw new Error(errorMessage)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // ✅ FUNCIÓN PARA LIMPIAR ERRORES
+  const clearError = useCallback(() => {
+    setAuthError(null)
   }, [])
 
   // Auto-logout por inactividad
   useEffect(() => {
-    if (!user) return // Solo si está autenticado
+    if (!user) return
 
-    const INACTIVITY_TIMEOUT = 30 * 60 * 1000 // 30 minutos
-    let timeoutId: NodeJS.Timeout // ✅ Correcto
+    const INACTIVITY_TIMEOUT = 30 * 60 * 1000
+    let timeoutId: NodeJS.Timeout
 
     const resetTimeout = () => {
       clearTimeout(timeoutId)
@@ -126,7 +245,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }, INACTIVITY_TIMEOUT)
     }
 
-    // Eventos que resetean el timer
     const events = [
       'mousedown',
       'mousemove',
@@ -139,7 +257,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       document.addEventListener(event, resetTimeout, true)
     })
 
-    resetTimeout() // Iniciar el timer
+    resetTimeout()
 
     return () => {
       clearTimeout(timeoutId)
@@ -147,24 +265,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         document.removeEventListener(event, resetTimeout, true)
       })
     }
-  }, [user, logout]) // Dependencias: user y logout
+  }, [user, logout])
 
-  const value = useMemo(
+  const value: AuthContextType = useMemo(
     () => ({
       token,
       user,
-      // FIX: Para Google OAuth el token está en cookies, no localStorage
-      // Si hay user, está autenticado (independientemente del token local)
       isAuthenticated: !!user,
       isWorkshopOwner: user?.role === 'WORKSHOP_OWNER',
       loading,
+      authError,
       login,
       logout,
       register,
       verifyCode,
+      resendVerification,
       refreshMe,
+      persistToken,
+      clearError,
     }),
-    [token, user, loading, login, logout, register, verifyCode, refreshMe]
+    [
+      token,
+      user,
+      loading,
+      authError,
+      login,
+      logout,
+      register,
+      verifyCode,
+      resendVerification,
+      refreshMe,
+      persistToken,
+      clearError,
+    ]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

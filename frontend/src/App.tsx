@@ -18,6 +18,7 @@ import { Register } from './pages/register-user'
 import { AuthProvider } from './providers/auth-provider'
 import { ForgotPassword } from './features/auth/pages/forgot-password'
 import { ResetPassword } from './features/auth/pages/reset-password'
+import { GoogleCallbackHandler } from './pages/google-callback-handler'
 
 function App() {
   return (
@@ -51,6 +52,8 @@ function App() {
               </PublicLayout>
             }
           />
+
+          <Route path="/auth/callback" element={<GoogleCallbackHandler />} />
           {/* Rutas privadas con MainLayout */}
           <Route
             path="/*"

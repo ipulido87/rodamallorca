@@ -1,4 +1,3 @@
-// frontend/src/features/catalog/pages/Catalog.tsx
 import { Search } from '@mui/icons-material'
 import {
   Alert,
