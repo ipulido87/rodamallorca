@@ -16,7 +16,6 @@ import { LoginUserSchema } from '../http/schemas/login.schema'
 import { RegisterUserSchema } from '../http/schemas/register.schema'
 import { generators } from 'openid-client'
 import { signJwt } from '../../infrastructure/adapters/jwt/jwt.service'
-import { error } from 'console'
 
 interface PrismaError extends Error {
   code?: string
@@ -29,14 +28,13 @@ interface JWTPayload {
   role?: string
 }
 
-// Helper para redirects
 const getFrontendUrl = () => process.env.FRONTEND_URL ?? 'http://localhost:5173'
 
 export const registerUser = async (req: Request, res: Response) => {
-  console.log('🔐 [REGISTER] Body recibido:', req.body)
+  console.log('🔍 [REGISTER] Body recibido:', req.body)
 
   const parsed = RegisterUserSchema.safeParse(req.body)
-  console.log('🔐 [REGISTER] Parsed data:', parsed.data)
+  console.log('🔍 [REGISTER] Parsed data:', parsed.data)
 
   if (!parsed.success) {
     console.log('❌ [REGISTER] Validation errors:', parsed.error)
@@ -72,7 +70,8 @@ export const registerUser = async (req: Request, res: Response) => {
     }
 
     return res.status(201).json({
-      message: 'User registered successfully',
+      message:
+        'User registered successfully. Check your email to verify your account.',
       user: sanitizeUser(user),
     })
   } catch (err) {
@@ -101,7 +100,7 @@ export const loginUserController = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
+      maxAge: 7 * 24 * 60 * 60 * 1000,
       path: '/',
     })
 
@@ -109,7 +108,6 @@ export const loginUserController = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('❌ [LOGIN_CONTROLLER] Error completo:', error)
 
-    // ✅ DIFERENCIAR ENTRE TIPOS DE ERROR
     const errorMessage = error instanceof Error ? error.message : String(error)
 
     if (
@@ -119,7 +117,8 @@ export const loginUserController = async (req: Request, res: Response) => {
       return res.status(403).json({
         error: 'EMAIL_NOT_VERIFIED',
         message:
-          'Por favor verifica tu email antes de iniciar sesión. Revisa tu bandeja de entrada o solicita un nuevo email de verificación.',
+          'Por favor verifica tu email antes de iniciar sesión. Revisa tu bandeja de entrada.',
+        email: result.data.email, // ✅ AGREGAR EMAIL PARA REENVÍO
       })
     }
 
@@ -133,10 +132,6 @@ export const loginUserController = async (req: Request, res: Response) => {
       })
     }
 
-    // ✅ ERROR GENÉRICO
-    console.log('🔍 [LOGIN_CONTROLLER] Tipo de error:', typeof error)
-    console.log('🔍 [LOGIN_CONTROLLER] Mensaje de error:', errorMessage)
-
     return res.status(401).json({
       error: 'LOGIN_FAILED',
       message: 'Error al iniciar sesión',
@@ -144,25 +139,100 @@ export const loginUserController = async (req: Request, res: Response) => {
   }
 }
 
-export const verifyUser = async (req: Request, res: Response) => {
-  const email = String(req.body?.email).trim().toLowerCase()
-  const code = req.body?.code
+// ✅ ELIMINAR verifyUser - ya no se usa código manual
 
-  if (!email || !code)
-    return res.status(400).json({ message: 'missed data for verify' })
+// ✅ MEJORAR verifyByLink - único método de verificación
+export const verifyByLink = async (req: Request, res: Response) => {
+  const { email, code } = req.query as { email?: string; code?: string }
 
-  const result = await prisma.user.updateMany({
-    where: { email, verificationCode: code, verified: false },
-    data: { verified: true, verificationCode: null, codeExpiresAt: null },
-  })
+  console.log('🔍 [VERIFY_BY_LINK] Iniciando verificación:', { email, code })
 
-  if (result.count === 0)
-    return res
-      .status(400)
-      .json({ message: 'Código inválido, expirado o usuario ya verificado' })
-  return res
-    .status(200)
-    .json({ message: '✅ Usuario verificado correctamente' })
+  if (!email || !code) {
+    console.log('❌ [VERIFY_BY_LINK] Faltan datos')
+    return res.redirect(`${getFrontendUrl()}/verify?error=missing_data`)
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    })
+
+    if (!user) {
+      console.log('❌ [VERIFY_BY_LINK] Usuario no encontrado:', email)
+      return res.redirect(`${getFrontendUrl()}/verify?error=user_not_found`)
+    }
+
+    if (user.verified) {
+      console.log('⚠️ [VERIFY_BY_LINK] Usuario ya verificado:', email)
+
+      // ✅ SI YA ESTÁ VERIFICADO, GENERAR TOKEN Y LOGUEARLO
+      const token = signJwt({
+        id: user.id,
+        email: user.email,
+        role: user.role || undefined,
+      })
+
+      res.cookie('auth_token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: '/',
+      })
+
+      const redirectPath =
+        user.role === 'WORKSHOP_OWNER' ? '/dashboard' : '/home'
+      return res.redirect(`${getFrontendUrl()}${redirectPath}`)
+    }
+
+    if (user.verificationCode !== code) {
+      console.log('❌ [VERIFY_BY_LINK] Código inválido')
+      return res.redirect(
+        `${getFrontendUrl()}/verify?error=invalid_code&email=${email}`
+      )
+    }
+
+    if (user.codeExpiresAt && user.codeExpiresAt < new Date()) {
+      console.log('❌ [VERIFY_BY_LINK] Código expirado')
+      return res.redirect(
+        `${getFrontendUrl()}/verify?error=code_expired&email=${email}`
+      )
+    }
+
+    // ✅ VERIFICAR USUARIO
+    await prisma.user.update({
+      where: { email: email.toLowerCase() },
+      data: {
+        verified: true,
+        verificationCode: null,
+        codeExpiresAt: null,
+      },
+    })
+
+    // ✅ GENERAR TOKEN Y COOKIE
+    const token = signJwt({
+      id: user.id,
+      email: user.email,
+      role: user.role || undefined,
+    })
+
+    res.cookie('auth_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/',
+    })
+
+    console.log('✅ [VERIFY_BY_LINK] Usuario verificado y logueado:', email)
+
+    // ✅ REDIRIGIR DIRECTAMENTE A LA APP (sin pasar por callback)
+    const redirectPath = user.role === 'WORKSHOP_OWNER' ? '/dashboard' : '/home'
+    return res.redirect(`${getFrontendUrl()}${redirectPath}`)
+  } catch (error) {
+    console.error('❌ [VERIFY_BY_LINK] Error:', error)
+    return res.redirect(`${getFrontendUrl()}/verify?error=server_error`)
+  }
 }
 
 export const protectedRoute = (req: Request, res: Response) => {
@@ -173,8 +243,8 @@ export const initiateGoogleLogin = async (req: Request, res: Response) => {
   try {
     const isLogin = req.originalUrl.includes('/google/login')
 
-    console.log('🔐 [INITIATE_GOOGLE] URL:', req.originalUrl)
-    console.log('🔐 [INITIATE_GOOGLE] isLogin:', isLogin)
+    console.log('🔍 [INITIATE_GOOGLE] URL:', req.originalUrl)
+    console.log('🔍 [INITIATE_GOOGLE] isLogin:', isLogin)
     const role = req.query.role as string | undefined
 
     const stateData = {
@@ -204,13 +274,11 @@ export const initiateGoogleLogin = async (req: Request, res: Response) => {
 
     const client = await getGoogleClient()
 
-    // ✅ REDIRECT URIS DIFERENTES
     const redirectUri = isLogin
       ? process.env.GOOGLE_LOGIN_REDIRECT_URI!
       : process.env.GOOGLE_REDIRECT_URI!
 
-    console.log('🔐 [INITIATE_GOOGLE] Redirect URI:', redirectUri)
-    console.log('🔐 [INITIATE_GOOGLE] Esta URI ¿está en Google Console?')
+    console.log('🔍 [INITIATE_GOOGLE] Redirect URI:', redirectUri)
 
     const url = client.authorizationUrl({
       scope: 'openid email profile',
@@ -235,7 +303,7 @@ export const handleGoogleCallback = async (req: Request, res: Response) => {
     if (!stateParam || !code)
       return res.status(400).json({ error: 'Missing state or code' })
 
-    console.log('🔐 [CALLBACK] MODO REGISTRO - Creando usuario')
+    console.log('🔍 [CALLBACK] MODO REGISTRO - Creando usuario')
 
     let stateData: { id: string; role?: string }
     try {
@@ -308,7 +376,7 @@ export const handleGoogleCallback = async (req: Request, res: Response) => {
 
 export const handleGoogleLogin = async (req: Request, res: Response) => {
   try {
-    console.log('🔐 [LOGIN] MODO LOGIN - Solo verificando')
+    console.log('🔍 [LOGIN] MODO LOGIN - Solo verificando')
 
     const { state: stateParam, code } = req.query as {
       state?: string
@@ -331,11 +399,10 @@ export const handleGoogleLogin = async (req: Request, res: Response) => {
     )
     if (!u.email) throw new Error('No email from Google')
 
-    // ✅ SOLO VERIFICAR - NO CREAR
     const existingUser = await repo.findByEmail(u.email)
 
     if (!existingUser) {
-      console.log('🔐 [LOGIN] Usuario NO existe - redirigiendo a registro')
+      console.log('🔍 [LOGIN] Usuario NO existe - redirigiendo a registro')
       return res.redirect(
         `${frontendUrl}/register?message=Usuario no registrado. Por favor regístrate primero.&email=${encodeURIComponent(
           u.email
@@ -343,7 +410,6 @@ export const handleGoogleLogin = async (req: Request, res: Response) => {
       )
     }
 
-    // Usuario existe - hacer login
     const token = signJwt({
       id: existingUser.id,
       email: existingUser.email,
@@ -417,7 +483,7 @@ export const resendVerification = async (req: Request, res: Response) => {
   }
 
   try {
-    console.log('🔐 [RESEND_VERIFICATION] Solicitado para:', email)
+    console.log('🔍 [RESEND_VERIFICATION] Solicitado para:', email)
 
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
@@ -453,7 +519,6 @@ export const resendVerification = async (req: Request, res: Response) => {
 
     console.log('✅ [RESEND_VERIFICATION] Nuevo código generado para:', email)
 
-    // Enviar email de verificación
     try {
       await sendVerificationEmail(email, verificationCode)
       console.log('✅ [RESEND_VERIFICATION] Email enviado a:', email)
@@ -462,7 +527,6 @@ export const resendVerification = async (req: Request, res: Response) => {
         '❌ [RESEND_VERIFICATION] Error enviando email:',
         emailError
       )
-      // No fallamos la petición si el email falla, solo logueamos
     }
 
     return res.status(200).json({

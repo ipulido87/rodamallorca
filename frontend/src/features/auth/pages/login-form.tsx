@@ -17,7 +17,7 @@ import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { GoogleLoginButton } from '../components/google-login-button'
-import { useAuth } from '../hooks/useAuth' // ✅ USAR HOOK
+import { useAuth } from '../hooks/useAuth'
 
 const loginSchema = z.object({
   email: z
@@ -34,7 +34,7 @@ type LoginFormData = z.infer<typeof loginSchema>
 
 export const LoginForm = () => {
   const navigate = useNavigate()
-  const auth = useAuth() // ✅ USAR HOOK
+  const auth = useAuth()
 
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
@@ -46,12 +46,12 @@ export const LoginForm = () => {
 
   const [showVerificationDialog, setShowVerificationDialog] = useState(false)
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState('')
+  const [resendLoading, setResendLoading] = useState(false)
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
 
-    // Limpiar errores al escribir
     if (auth.authError) auth.clearError()
     if (validationErrors[name]) {
       setValidationErrors((prev) => ({ ...prev, [name]: '' }))
@@ -63,7 +63,6 @@ export const LoginForm = () => {
     auth.clearError()
     setValidationErrors({})
 
-    // Validación con Zod
     const result = loginSchema.safeParse(formData)
 
     if (!result.success) {
@@ -108,12 +107,22 @@ export const LoginForm = () => {
   }
 
   const handleResendVerification = async () => {
+    setResendLoading(true)
     try {
       await auth.resendVerification(pendingVerificationEmail)
       setShowVerificationDialog(false)
+
+      // ✅ MOSTRAR MENSAJE DE ÉXITO
+      auth.clearError()
+      setTimeout(() => {
+        alert(
+          '✅ Email de verificación reenviado. Revisa tu bandeja de entrada.'
+        )
+      }, 100)
     } catch (error: unknown) {
-      // El error ya fue seteado por el AuthProvider
       console.error('Error reenviando verificación:', error)
+    } finally {
+      setResendLoading(false)
     }
   }
 
@@ -194,27 +203,54 @@ export const LoginForm = () => {
         </Box>
       </Paper>
 
+      {/* ✅ DIÁLOGO MEJORADO DE VERIFICACIÓN */}
       <Dialog
         open={showVerificationDialog}
         onClose={() => setShowVerificationDialog(false)}
+        maxWidth="sm"
+        fullWidth
       >
-        <DialogTitle>Email No Verificado</DialogTitle>
+        <DialogTitle sx={{ textAlign: 'center' }}>
+          📧 Email No Verificado
+        </DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Tu email <strong>{pendingVerificationEmail}</strong> no ha sido
-            verificado. ¿Quieres que te reenviemos el email de verificación?
+          <DialogContentText sx={{ mb: 2 }}>
+            Tu email <strong>{pendingVerificationEmail}</strong> aún no ha sido
+            verificado.
           </DialogContentText>
+
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <Typography variant="body2" gutterBottom>
+              <strong>¿Qué hacer?</strong>
+            </Typography>
+            <Typography variant="body2">
+              1. Revisa tu bandeja de entrada
+              <br />
+              2. Busca el email de RodaMallorca
+              <br />
+              3. Haz clic en el botón de verificación
+              <br />
+              4. Vuelve aquí para iniciar sesión
+            </Typography>
+          </Alert>
+
+          <Typography variant="body2" color="text.secondary">
+            ¿No encuentras el email? Podemos reenviártelo.
+          </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowVerificationDialog(false)}>
-            Cancelar
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button
+            onClick={() => setShowVerificationDialog(false)}
+            disabled={resendLoading}
+          >
+            Cerrar
           </Button>
           <Button
             onClick={handleResendVerification}
             variant="contained"
-            disabled={auth.loading}
+            disabled={resendLoading}
           >
-            Reenviar Verificación
+            {resendLoading ? 'Reenviando...' : '📨 Reenviar Email'}
           </Button>
         </DialogActions>
       </Dialog>

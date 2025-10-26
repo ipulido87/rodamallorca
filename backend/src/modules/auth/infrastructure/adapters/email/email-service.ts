@@ -16,49 +16,76 @@ const transporter = nodemailer.createTransport({
 })
 
 export const sendVerificationEmail = async (email: string, code: string) => {
-  // ✅ MEJORAR LA URL - usar FRONTEND_URL en lugar de BACKEND
+  // ✅ SOLO LINK DIRECTO - NO CÓDIGO MANUAL
   const verifyUrl = `${
-    process.env.FRONTEND_URL || 'http://localhost:5173'
-  }/verify?email=${encodeURIComponent(email)}&code=${code}`
+    process.env.BACKEND_URL || 'http://localhost:4000'
+  }/api/auth/verify-link?email=${encodeURIComponent(email)}&code=${code}`
 
   try {
-    console.log('📧 [MAIL] Verificando conexión SMTP...')
     await transporter.verify()
-    console.log('📧 [MAIL] SMTP listo ✅')
-
-    console.log(`📧 [MAIL] Enviando email a: ${email}`)
-    console.log(`📧 [MAIL] Código de verificación: ${code}`)
+    console.log('[MAIL] SMTP listo ✅')
 
     const info = await transporter.sendMail({
-      from: '"RodaMallorca" <no-reply@rodamallorca.com>',
+      from: 'no-reply@rodamallorca.com',
       to: email,
       subject: 'Verifica tu cuenta - RodaMallorca',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #333;">Verifica tu cuenta en RodaMallorca</h2>
-          <p>Hola,</p>
-          <p>Para completar tu registro, por favor verifica tu cuenta usando el siguiente código:</p>
-          <div style="background: #f4f4f4; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
-            <h1 style="margin: 0; color: #333; font-size: 32px; letter-spacing: 5px;">${code}</h1>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #333; margin: 0;">🚴 RodaMallorca</h1>
           </div>
-          <p>O haz clic en el siguiente enlace:</p>
-          <a href="${verifyUrl}" 
-             style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
-            Verificar mi cuenta
-          </a>
-          <p style="margin-top: 30px; color: #666; font-size: 14px;">
-            Si no solicitaste este código, puedes ignorar este mensaje.
-          </p>
+          
+          <div style="background: #f8f9fa; border-radius: 10px; padding: 30px; margin-bottom: 20px;">
+            <h2 style="color: #333; margin-top: 0;">¡Bienvenido a RodaMallorca! 🎉</h2>
+            <p style="color: #666; font-size: 16px; line-height: 1.6;">
+              Estamos emocionados de tenerte con nosotros. Para completar tu registro y activar tu cuenta, 
+              solo tienes que hacer clic en el botón de abajo:
+            </p>
+          </div>
+
+          <div style="text-align: center; margin: 40px 0;">
+            <a href="${verifyUrl}" 
+               style="background: #007bff; 
+                      color: white; 
+                      padding: 16px 40px; 
+                      text-decoration: none; 
+                      border-radius: 8px; 
+                      font-size: 18px; 
+                      font-weight: bold;
+                      display: inline-block;
+                      box-shadow: 0 4px 6px rgba(0,123,255,0.3);">
+              ✅ Activar Mi Cuenta
+            </a>
+          </div>
+
+          <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 4px;">
+            <p style="margin: 0; color: #856404; font-size: 14px;">
+              <strong>⚠️ Importante:</strong> Este enlace expirará en 24 horas por seguridad.
+            </p>
+          </div>
+
+          <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px;">
+            <p style="color: #999; font-size: 13px; margin: 0;">
+              Si no te registraste en RodaMallorca, puedes ignorar este mensaje de forma segura.
+            </p>
+            <p style="color: #999; font-size: 13px; margin-top: 10px;">
+              Si tienes problemas con el botón, copia y pega este enlace en tu navegador:<br>
+              <a href="${verifyUrl}" style="color: #007bff; word-break: break-all;">${verifyUrl}</a>
+            </p>
+          </div>
+
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+            <p style="color: #999; font-size: 12px; margin: 0;">
+              © 2025 RodaMallorca - Tu marketplace de confianza para bicicletas
+            </p>
+          </div>
         </div>
       `,
     })
 
-    console.log('✅ [MAIL] Email enviado exitosamente')
-    console.log('📧 [MAIL] Message ID:', info.messageId)
-
-    return info
+    console.log('[MAIL] ✅ Email de verificación enviado:', info.messageId)
   } catch (err) {
-    console.error('❌ [MAIL] Error enviando correo:', err)
+    console.error('[MAIL] ❌ Error enviando correo:', err)
     throw err
   }
 }
