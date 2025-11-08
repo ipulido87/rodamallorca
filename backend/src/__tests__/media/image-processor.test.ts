@@ -9,10 +9,12 @@ jest.mock('uuid', () => ({
   v4: jest.fn(() => 'test-uuid-1234'),
 }));
 
+type MockFunction = ReturnType<typeof jest.fn>;
+
 interface MockSharpInstance {
-  resize: jest.Mock;
-  webp: jest.Mock;
-  toFile: jest.Mock;
+  resize: MockFunction;
+  webp: MockFunction;
+  toFile: MockFunction;
 }
 
 describe('Image Processor', () => {

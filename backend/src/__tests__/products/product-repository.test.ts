@@ -1,13 +1,15 @@
 import { ProductRepositoryPrisma } from '../../modules/products/infrastructure/persistence/prisma/product-repository-prisma';
 import { PrismaClient } from '@prisma/client';
 
+type MockFunction = ReturnType<typeof jest.fn>;
+
 interface MockPrismaClient {
   product: {
-    create: jest.Mock;
-    updateMany: jest.Mock;
-    findUnique: jest.Mock;
-    findMany: jest.Mock;
-    count: jest.Mock;
+    create: MockFunction;
+    updateMany: MockFunction;
+    findUnique: MockFunction;
+    findMany: MockFunction;
+    count: MockFunction;
   };
 }
 

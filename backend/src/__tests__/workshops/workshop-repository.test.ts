@@ -1,13 +1,15 @@
 import { WorkshopRepositoryPrisma } from '../../modules/workshops/infrastructure/persistence/prisma/workshop-repository-prisma';
 import { PrismaClient } from '@prisma/client';
 
+type MockFunction = ReturnType<typeof jest.fn>;
+
 interface MockPrismaClient {
   workshop: {
-    create: jest.Mock;
-    findUnique: jest.Mock;
-    findMany: jest.Mock;
-    update: jest.Mock;
-    delete: jest.Mock;
+    create: MockFunction;
+    findUnique: MockFunction;
+    findMany: MockFunction;
+    update: MockFunction;
+    delete: MockFunction;
   };
 }
 
