@@ -1,8 +1,18 @@
 import { ProductRepositoryPrisma } from '../../modules/products/infrastructure/persistence/prisma/product-repository-prisma';
 import { PrismaClient } from '@prisma/client';
 
+interface MockPrismaClient {
+  product: {
+    create: jest.Mock;
+    updateMany: jest.Mock;
+    findUnique: jest.Mock;
+    findMany: jest.Mock;
+    count: jest.Mock;
+  };
+}
+
 jest.mock('@prisma/client', () => {
-  const mockPrismaClient = {
+  const mockPrismaClient: MockPrismaClient = {
     product: {
       create: jest.fn(),
       updateMany: jest.fn(),
@@ -18,7 +28,7 @@ jest.mock('@prisma/client', () => {
 
 describe('Product Repository Prisma', () => {
   let repository: ProductRepositoryPrisma;
-  let prisma: any;
+  let prisma: MockPrismaClient;
 
   beforeEach(() => {
     repository = new ProductRepositoryPrisma();

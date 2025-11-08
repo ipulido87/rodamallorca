@@ -1,8 +1,18 @@
 import { WorkshopRepositoryPrisma } from '../../modules/workshops/infrastructure/persistence/prisma/workshop-repository-prisma';
 import { PrismaClient } from '@prisma/client';
 
+interface MockPrismaClient {
+  workshop: {
+    create: jest.Mock;
+    findUnique: jest.Mock;
+    findMany: jest.Mock;
+    update: jest.Mock;
+    delete: jest.Mock;
+  };
+}
+
 jest.mock('@prisma/client', () => {
-  const mockPrismaClient = {
+  const mockPrismaClient: MockPrismaClient = {
     workshop: {
       create: jest.fn(),
       findUnique: jest.fn(),
@@ -18,7 +28,7 @@ jest.mock('@prisma/client', () => {
 
 describe('Workshop Repository Prisma', () => {
   let repository: WorkshopRepositoryPrisma;
-  let prisma: any;
+  let prisma: MockPrismaClient;
 
   beforeEach(() => {
     repository = new WorkshopRepositoryPrisma();
