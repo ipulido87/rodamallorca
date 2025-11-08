@@ -72,12 +72,14 @@ describe('JWT Service', () => {
     it('should create tokens that expire in 7 days', () => {
       const jwt = require('jsonwebtoken');
       const token = signJwt(mockPayload);
-      const decoded = jwt.decode(token) as any;
+      const decoded = jwt.decode(token) as { exp: number; iat: number } | null;
 
-      const expirationTime = decoded.exp - decoded.iat;
-      const sevenDaysInSeconds = 7 * 24 * 60 * 60;
-
-      expect(expirationTime).toBe(sevenDaysInSeconds);
+      expect(decoded).not.toBeNull();
+      if (decoded) {
+        const expirationTime = decoded.exp - decoded.iat;
+        const sevenDaysInSeconds = 7 * 24 * 60 * 60;
+        expect(expirationTime).toBe(sevenDaysInSeconds);
+      }
     });
   });
 });

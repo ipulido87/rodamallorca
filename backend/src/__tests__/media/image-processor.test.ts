@@ -9,9 +9,15 @@ jest.mock('uuid', () => ({
   v4: jest.fn(() => 'test-uuid-1234'),
 }));
 
+interface MockSharpInstance {
+  resize: jest.Mock;
+  webp: jest.Mock;
+  toFile: jest.Mock;
+}
+
 describe('Image Processor', () => {
   let imageProcessor: ImageProcessor;
-  let mockSharpInstance: any;
+  let mockSharpInstance: MockSharpInstance;
 
   beforeEach(() => {
     jest.clearAllMocks();
