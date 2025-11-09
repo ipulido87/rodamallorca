@@ -13,6 +13,15 @@ enum UserRole {
   ADMIN
 }
 
+enum OrderStatus {
+  PENDING      // Pedido creado, esperando confirmación
+  CONFIRMED    // Confirmado por el taller
+  IN_PROGRESS  // En proceso de preparación
+  READY        // Listo para recoger/entregar
+  COMPLETED    // Completado
+  CANCELLED    // Cancelado
+}
+
 model User {
   id               String   @id @default(uuid())
   email            String   @unique
@@ -33,6 +42,7 @@ model User {
 
   // Relaciones
   workshops        Workshop[]
+  orders           Order[]       // Pedidos realizados por el usuario
 }
 
 model Workshop {
@@ -50,6 +60,7 @@ model Workshop {
   // Relaciones
   owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   products    Product[]
+  orders      Order[]   // Pedidos recibidos por este taller
 
   @@index([ownerId])
   @@index([city])
@@ -82,6 +93,7 @@ model Product {
   workshop    Workshop  @relation(fields: [workshopId], references: [id], onDelete: Cascade)
   category    Category? @relation(fields: [categoryId], references: [id])
   images      ProductImage[]
+  orderItems  OrderItem[] // Items de pedidos que referencian este producto
 
   @@index([workshopId])
   @@index([categoryId])
@@ -92,12 +104,53 @@ model Product {
 model ProductImage {
   id        String  @id @default(uuid())
   productId String
-  original  String  
-  medium    String  
-  thumbnail String  
+  original  String
+  medium    String
+  thumbnail String
   position  Int     @default(0)
 
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([productId, position])
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  userId      String      // Cliente que realiza el pedido
+  workshopId  String      // Taller que recibe el pedido
+  status      OrderStatus @default(PENDING)
+  totalAmount Int         // Total en céntimos
+  currency    String      @default("EUR")
+  notes       String?     // Notas del cliente
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relaciones
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workshop    Workshop    @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  items       OrderItem[]
+
+  @@index([userId])
+  @@index([workshopId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id           String   @id @default(uuid())
+  orderId      String
+  productId    String?  // Puede ser null si es un servicio personalizado
+  quantity     Int      @default(1)
+  priceAtOrder Int      // Precio en céntimos al momento del pedido
+  currency     String   @default("EUR")
+  description  String?  // Descripción del item (para servicios personalizados)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relaciones
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product      Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([productId])
 }
