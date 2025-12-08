@@ -38,6 +38,7 @@ export const verifyToken = (
   }
 
   try {
+<<<<<<< HEAD
     const decoded = jwt.verify(token, config.jwtSecret) as {
       userId: string
       email: string
@@ -57,6 +58,15 @@ export const verifyToken = (
 
     req.user = userPayload
     console.log('✅ [VERIFY_TOKEN] User payload construido:', req.user)
+=======
+    const decoded = jwt.verify(token, config.jwtSecret) as Express.UserPayload
+    console.log('✅ [VERIFY_TOKEN] Token válido.')
+    console.log('📋 [VERIFY_TOKEN] Payload completo:', JSON.stringify(decoded, null, 2))
+    console.log('🔑 [VERIFY_TOKEN] decoded.id:', decoded.id)
+    console.log('📧 [VERIFY_TOKEN] decoded.email:', decoded.email)
+    console.log('👤 [VERIFY_TOKEN] decoded.role:', decoded.role)
+    req.user = decoded
+>>>>>>> 157bb1c70093d90eb2fe7cc719433c127bd1c89c
     next()
   } catch (error) {
     console.log('❌ [VERIFY_TOKEN] Token inválido:', error)
