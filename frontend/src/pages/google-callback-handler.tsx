@@ -2,9 +2,11 @@ import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Box, CircularProgress, Typography } from '@mui/material'
 import { API } from '../features/auth/services/auth-service'
+import { useAuth } from '../features/auth/hooks/useAuth'
 
 export const GoogleCallbackHandler = () => {
   const [searchParams] = useSearchParams()
+  const { persistToken, refreshMe } = useAuth()
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -20,26 +22,21 @@ export const GoogleCallbackHandler = () => {
       if (token) {
         console.log('🔍 Token recibido:', token.substring(0, 30) + '...')
 
-        // ✅ GUARDAR token en localStorage
-        localStorage.setItem('token', token)
+        // ✅ GUARDAR token usando el AuthProvider
+        persistToken(token)
 
-        const saved = localStorage.getItem('token')
-        console.log('✅ Token guardado en localStorage:', saved ? 'SÍ' : 'NO')
+        console.log('✅ Token guardado usando AuthProvider')
 
         try {
-          // ✅ Obtener info del usuario
-          const { data } = await API.get('/auth/me', {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          })
+          // ✅ Refrescar usuario usando AuthProvider (ya maneja el token)
+          await refreshMe()
 
+          // Obtener el usuario actualizado para verificar el rol
+          const { data } = await API.get('/auth/me')
           const user = data?.user
           console.log('👤 Usuario:', user)
 
           if (user) {
-            // Guardar usuario en localStorage
-            localStorage.setItem('user', JSON.stringify(user))
 
             // ✅ Si es WORKSHOP_OWNER, verificar si tiene workshop
             if (user.role === 'WORKSHOP_OWNER') {
@@ -92,7 +89,7 @@ export const GoogleCallbackHandler = () => {
     }
 
     handleCallback()
-  }, [searchParams])
+  }, [searchParams, persistToken, refreshMe])
 
   return (
     <Box
