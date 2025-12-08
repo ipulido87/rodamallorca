@@ -1,12 +1,11 @@
 import { Box, Button, Container, Typography } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../features/auth/providers/auth-providers';
 
 export const Home = () => {
-  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
+    logout();
   };
 
   return (

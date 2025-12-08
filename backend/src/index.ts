@@ -8,6 +8,7 @@ import path from 'path'
 import authRoutes from './modules/auth/interfaces/http/auth.routes'
 import catalogRoutes from './modules/catalog/interfaces/http/catalog.routes'
 import mediaRoutes from './modules/media/interfaces/http/media.routes' // ← AGREGAR
+import orderRoutes from './modules/orders/interfaces/http/order.routes'
 import productRoutes from './modules/products/interfaces/http/products.routes'
 import workshopRoutes from './modules/workshops/interfaces/http/workshop.routes'
 
@@ -30,6 +31,7 @@ app.use(
 app.use('/api/auth', authRoutes)
 app.use('/api/catalog', catalogRoutes)
 app.use('/api/media', mediaRoutes) // ← AGREGAR
+app.use('/api/orders', orderRoutes)
 app.use('/api/owner', productRoutes)
 app.use('/api/owner', workshopRoutes)
 
