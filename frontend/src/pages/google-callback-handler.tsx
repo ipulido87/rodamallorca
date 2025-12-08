@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Box, CircularProgress, Typography } from '@mui/material'
 import { API } from '../features/auth/services/auth-service'
-import { useAuth } from '../features/auth/providers/auth-providers'
+import { useAuth } from '../features/auth/hooks/useAuth'
 
 export const GoogleCallbackHandler = () => {
   const [searchParams] = useSearchParams()

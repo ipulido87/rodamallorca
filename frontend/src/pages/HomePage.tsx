@@ -1,5 +1,5 @@
 import { Box, Button, Container, Typography } from '@mui/material';
-import { useAuth } from '../features/auth/providers/auth-providers';
+import { useAuth } from '../features/auth/hooks/useAuth';
 
 export const Home = () => {
   const { logout } = useAuth();
