@@ -55,7 +55,7 @@ describe('Login User Use Case', () => {
       });
       expect(bcrypt.compare).toHaveBeenCalledWith('password123', 'hashed_password');
       expect(jwt.sign).toHaveBeenCalledWith(
-        { userId: mockUser.id, email: mockUser.email },
+        { id: mockUser.id, email: mockUser.email, role: mockUser.role },
         'test-secret',
         { expiresIn: '24h' }
       );
