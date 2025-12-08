@@ -14,11 +14,15 @@ import { WorkshopDetail } from './features/workshops/pages/workshop-detail'
 import { MyOrders } from './features/orders/pages/my-orders'
 import { OrderDetail } from './features/orders/pages/order-detail'
 import { WorkshopOrders } from './features/orders/pages/workshop-orders'
+import { Orders } from './features/orders/pages/orders'
+import { Cart } from './features/cart/pages/Cart'
+import { Checkout } from './features/cart/pages/Checkout'
 import { Home } from './pages/HomePage'
 import { LandingPage } from './pages/LandingPage'
 import { LoginForm } from './features/auth/pages/login-form'
 import { Register } from './features/auth/pages/register-form'
 import { AuthProvider } from './providers/auth-provider'
+import { CartProvider } from './features/cart/contexts/CartContext'
 import { ForgotPassword } from './features/auth/pages/forgot-password'
 import { ResetPassword } from './features/auth/pages/reset-password'
 import { GoogleCallbackHandler } from './pages/google-callback-handler'
@@ -27,7 +31,8 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
+        <CartProvider>
+          <Routes>
           {/* Rutas públicas con PublicLayout */}
           <Route
             path="/"
@@ -75,6 +80,8 @@ function App() {
             {/* Rutas solo para USER */}
             <Route path="home" element={<Home />} />
             <Route path="my-orders" element={<MyOrders />} />
+            <Route path="cart" element={<Cart />} />
+            <Route path="checkout" element={<Checkout />} />
             <Route
               path="favorites"
               element={<div>Favoritos - Por implementar</div>}
@@ -142,6 +149,14 @@ function App() {
               }
             />
             <Route
+              path="orders"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <Orders />
+                </RoleRoute>
+              }
+            />
+            <Route
               path="services"
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
@@ -185,6 +200,7 @@ function App() {
             />
           </Route>
         </Routes>
+        </CartProvider>
       </AuthProvider>
     </BrowserRouter>
   )

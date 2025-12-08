@@ -23,6 +23,15 @@ export interface Order {
   createdAt: Date
   updatedAt: Date
   items?: OrderItem[]
+  workshop?: {
+    id: string
+    name: string
+    ownerId: string
+  }
+  user?: {
+    id: string
+    email: string
+  }
 }
 
 export interface CreateOrderInput {

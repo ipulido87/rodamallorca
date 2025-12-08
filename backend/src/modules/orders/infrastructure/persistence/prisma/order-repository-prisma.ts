@@ -54,7 +54,22 @@ export class OrderRepositoryPrisma implements OrderRepository {
   async findById(id: string, includeItems = false): Promise<Order | null> {
     const order = await this.prisma.order.findUnique({
       where: { id },
-      include: { items: includeItems },
+      include: {
+        items: includeItems,
+        workshop: {
+          select: {
+            id: true,
+            name: true,
+            ownerId: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+      },
     })
     return order ? this.mapToOrder(order) : null
   }
@@ -108,9 +123,7 @@ export class OrderRepositoryPrisma implements OrderRepository {
     await this.prisma.order.delete({ where: { id } })
   }
 
-  private mapToOrder(
-    order: PrismaOrderWithItems | PrismaOrderWithoutItems
-  ): Order {
+  private mapToOrder(order: any): Order {
     return {
       id: order.id,
       userId: order.userId,
@@ -123,7 +136,7 @@ export class OrderRepositoryPrisma implements OrderRepository {
       updatedAt: order.updatedAt,
       items:
         'items' in order && order.items
-          ? order.items.map((item) => ({
+          ? order.items.map((item: any) => ({
               id: item.id,
               orderId: item.orderId,
               productId: item.productId,
@@ -134,6 +147,21 @@ export class OrderRepositoryPrisma implements OrderRepository {
               createdAt: item.createdAt,
               updatedAt: item.updatedAt,
             }))
+          : undefined,
+      workshop:
+        'workshop' in order && order.workshop
+          ? {
+              id: order.workshop.id,
+              name: order.workshop.name,
+              ownerId: order.workshop.ownerId,
+            }
+          : undefined,
+      user:
+        'user' in order && order.user
+          ? {
+              id: order.user.id,
+              email: order.user.email,
+            }
           : undefined,
     }
   }

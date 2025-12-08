@@ -7,8 +7,7 @@ import path from 'path'
 
 import authRoutes from './modules/auth/interfaces/http/auth.routes'
 import catalogRoutes from './modules/catalog/interfaces/http/catalog.routes'
-import mediaRoutes from './modules/media/interfaces/http/media.routes' // ← AGREGAR
-import orderRoutes from './modules/orders/interfaces/http/order.routes'
+import mediaRoutes from './modules/media/interfaces/http/media.routes'
 import orderRoutes from './modules/orders/interfaces/http/order.routes'
 import productRoutes from './modules/products/interfaces/http/products.routes'
 import workshopRoutes from './modules/workshops/interfaces/http/workshop.routes'
