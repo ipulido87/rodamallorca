@@ -1,4 +1,4 @@
-import { OrderStatus } from '@prisma/client'
+import { OrderStatus } from '../enums/order-status'
 
 export interface OrderItem {
   id: string
@@ -29,15 +29,14 @@ export interface CreateOrderInput {
   userId: string
   workshopId: string
   notes?: string | null
-  items: {
+  items: Array<{
     productId?: string | null
     quantity: number
     priceAtOrder: number
     currency?: string
     description?: string | null
-  }[]
+  }>
 }
-
 export interface UpdateOrderStatusInput {
   status: OrderStatus
 }

@@ -1,4 +1,5 @@
-import { OrderStatus, PrismaClient } from '@prisma/client'
+import { OrderStatus } from '@prisma/client'
+import { PrismaClient } from '@prisma/client' // <-- en versiones <6
 import { beforeEach, describe, expect, it, jest } from '@jest/globals'
 import type { CreateOrderInput } from '../../modules/orders/domain/entities/order'
 import { OrderRepositoryPrisma } from '../../modules/orders/infrastructure/persistence/prisma/order-repository-prisma'
@@ -32,7 +33,9 @@ describe('OrderRepositoryPrisma', () => {
       },
     }
 
-    repository = new OrderRepositoryPrisma(mockPrisma as unknown as PrismaClient)
+    repository = new OrderRepositoryPrisma(
+      mockPrisma as unknown as PrismaClient
+    )
   })
 
   describe('create', () => {

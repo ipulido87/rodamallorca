@@ -25,22 +25,34 @@ export const createOrderController = async (
   next: NextFunction
 ) => {
   try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ error: 'Usuario no autenticado' })
+    }
+
     const body = createOrderSchema.parse(req.body)
+
     const result = await createOrder(
       {
-        userId: req.user!.id,
+        userId: req.user.id,
         workshopId: body.workshopId,
         notes: body.notes ?? null,
         items: body.items,
       },
-      { repo: orderRepo, authenticatedUserId: req.user!.id }
+      {
+        repo: orderRepo,
+        workshopRepo: workshopRepo,
+        authenticatedUserId: req.user.id,
+      }
     )
+
     res.status(201).json(result)
   } catch (e) {
+    console.error('Error in createOrderController:', e)
     next(e)
   }
 }
 
+// Los otros controladores permanecen igual...
 /**
  * GET /api/orders/:id
  * Obtener un pedido por ID
@@ -51,10 +63,14 @@ export const getOrderController = async (
   next: NextFunction
 ) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Usuario no autenticado' })
+    }
+
     const result = await getOrder(req.params.id, {
       repo: orderRepo,
-      authenticatedUserId: req.user!.id,
-      userRole: req.user!.role,
+      authenticatedUserId: req.user.id,
+      userRole: req.user.role,
     })
     res.json(result)
   } catch (e) {
@@ -72,10 +88,14 @@ export const getUserOrdersController = async (
   next: NextFunction
 ) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Usuario no autenticado' })
+    }
+
     const result = await getUserOrders(req.params.userId, {
       repo: orderRepo,
-      authenticatedUserId: req.user!.id,
-      userRole: req.user!.role,
+      authenticatedUserId: req.user.id,
+      userRole: req.user.role,
     })
     res.json(result)
   } catch (e) {
@@ -93,11 +113,15 @@ export const getWorkshopOrdersController = async (
   next: NextFunction
 ) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Usuario no autenticado' })
+    }
+
     const result = await getWorkshopOrders(req.params.workshopId, {
       repo: orderRepo,
       workshopRepo,
-      authenticatedUserId: req.user!.id,
-      userRole: req.user!.role,
+      authenticatedUserId: req.user.id,
+      userRole: req.user.role,
     })
     res.json(result)
   } catch (e) {
@@ -115,12 +139,16 @@ export const updateOrderStatusController = async (
   next: NextFunction
 ) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Usuario no autenticado' })
+    }
+
     const body = updateOrderStatusSchema.parse(req.body)
     const result = await updateOrderStatus(req.params.id, body, {
       repo: orderRepo,
       workshopRepo,
-      authenticatedUserId: req.user!.id,
-      userRole: req.user!.role,
+      authenticatedUserId: req.user.id,
+      userRole: req.user.role,
     })
     res.json(result)
   } catch (e) {
@@ -138,10 +166,14 @@ export const cancelOrderController = async (
   next: NextFunction
 ) => {
   try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Usuario no autenticado' })
+    }
+
     const result = await cancelOrder(req.params.id, {
       repo: orderRepo,
-      authenticatedUserId: req.user!.id,
-      userRole: req.user!.role,
+      authenticatedUserId: req.user.id,
+      userRole: req.user.role,
     })
     res.json(result)
   } catch (e) {

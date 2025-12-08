@@ -1,36 +1,23 @@
 import { Router } from 'express'
-import { asyncHandler } from '../../../../utils/async-handler'
-import { authenticate } from '../../../auth/interfaces/middlewares/auth.middleware'
 import {
-  cancelOrderController,
   createOrderController,
   getOrderController,
   getUserOrdersController,
   getWorkshopOrdersController,
   updateOrderStatusController,
+  cancelOrderController,
 } from '../controllers/order.controller'
+import { verifyToken } from '../../../../modules/auth/interfaces/middlewares/auth.middleware'
 
 const router = Router()
 
-// Todas las rutas requieren autenticación
-router.use(authenticate)
+router.use(verifyToken) // ✅ Usa verifyToken
 
-// Crear un nuevo pedido
-router.post('/', asyncHandler(createOrderController))
-
-// Obtener un pedido por ID
-router.get('/:id', asyncHandler(getOrderController))
-
-// Obtener pedidos de un usuario
-router.get('/user/:userId', asyncHandler(getUserOrdersController))
-
-// Obtener pedidos de un taller
-router.get('/workshop/:workshopId', asyncHandler(getWorkshopOrdersController))
-
-// Actualizar estado de un pedido
-router.patch('/:id/status', asyncHandler(updateOrderStatusController))
-
-// Cancelar un pedido
-router.post('/:id/cancel', asyncHandler(cancelOrderController))
+router.post('/', createOrderController)
+router.get('/:id', getOrderController)
+router.get('/user/:userId', getUserOrdersController)
+router.get('/workshop/:workshopId', getWorkshopOrdersController)
+router.patch('/:id/status', updateOrderStatusController)
+router.post('/:id/cancel', cancelOrderController)
 
 export default router

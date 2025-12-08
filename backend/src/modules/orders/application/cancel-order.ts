@@ -1,4 +1,4 @@
-import { OrderStatus } from '@prisma/client'
+import { OrderStatus } from '../domain/enums/order-status'
 import type { Order } from '../domain/entities/order'
 import type { OrderRepository } from '../domain/repositories/order-repository'
 

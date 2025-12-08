@@ -1,4 +1,4 @@
-import { OrderStatus } from '@prisma/client'
+import { OrderStatus } from '../domain/enums/order-status'
 import type { Order, UpdateOrderStatusInput } from '../domain/entities/order'
 import type { OrderRepository } from '../domain/repositories/order-repository'
 
@@ -75,22 +75,10 @@ function validateStatusTransition(
 
   // Validar flujo normal: PENDING -> CONFIRMED -> IN_PROGRESS -> READY -> COMPLETED
   const validTransitions: Record<OrderStatus, OrderStatus[]> = {
-    [OrderStatus.PENDING]: [
-      OrderStatus.CONFIRMED,
-      OrderStatus.CANCELLED,
-    ],
-    [OrderStatus.CONFIRMED]: [
-      OrderStatus.IN_PROGRESS,
-      OrderStatus.CANCELLED,
-    ],
-    [OrderStatus.IN_PROGRESS]: [
-      OrderStatus.READY,
-      OrderStatus.CANCELLED,
-    ],
-    [OrderStatus.READY]: [
-      OrderStatus.COMPLETED,
-      OrderStatus.CANCELLED,
-    ],
+    [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+    [OrderStatus.CONFIRMED]: [OrderStatus.IN_PROGRESS, OrderStatus.CANCELLED],
+    [OrderStatus.IN_PROGRESS]: [OrderStatus.READY, OrderStatus.CANCELLED],
+    [OrderStatus.READY]: [OrderStatus.COMPLETED, OrderStatus.CANCELLED],
     [OrderStatus.COMPLETED]: [],
     [OrderStatus.CANCELLED]: [],
   }
@@ -98,8 +86,6 @@ function validateStatusTransition(
   const allowedStatuses = validTransitions[currentStatus]
 
   if (!allowedStatuses.includes(newStatus)) {
-    throw new Error(
-      `No se puede cambiar de ${currentStatus} a ${newStatus}`
-    )
+    throw new Error(`No se puede cambiar de ${currentStatus} a ${newStatus}`)
   }
 }

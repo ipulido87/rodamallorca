@@ -74,7 +74,11 @@ describe('updateOrderStatus', () => {
       { status: OrderStatus.CONFIRMED },
       {
         repo: mockOrderRepo as unknown as OrderRepository,
-        workshopRepo: mockWorkshopRepo as { findById: (id: string) => Promise<{ id: string; ownerId: string } | null> },
+        workshopRepo: mockWorkshopRepo as {
+          findById: (
+            id: string
+          ) => Promise<{ id: string; ownerId: string } | null>
+        },
         authenticatedUserId: 'owner-123',
         userRole: 'WORKSHOP_OWNER',
       }
@@ -96,7 +100,11 @@ describe('updateOrderStatus', () => {
         { status: OrderStatus.CONFIRMED },
         {
           repo: mockOrderRepo as unknown as OrderRepository,
-          workshopRepo: mockWorkshopRepo as { findById: (id: string) => Promise<{ id: string; ownerId: string } | null> },
+          workshopRepo: mockWorkshopRepo as {
+            findById: (
+              id: string
+            ) => Promise<{ id: string; ownerId: string } | null>
+          },
           authenticatedUserId: 'owner-123',
           userRole: 'WORKSHOP_OWNER',
         }
@@ -126,7 +134,11 @@ describe('updateOrderStatus', () => {
         { status: OrderStatus.CONFIRMED },
         {
           repo: mockOrderRepo as unknown as OrderRepository,
-          workshopRepo: mockWorkshopRepo as { findById: (id: string) => Promise<{ id: string; ownerId: string } | null> },
+          workshopRepo: mockWorkshopRepo as {
+            findById: (
+              id: string
+            ) => Promise<{ id: string; ownerId: string } | null>
+          },
           authenticatedUserId: 'owner-123',
           userRole: 'WORKSHOP_OWNER',
         }
@@ -161,7 +173,11 @@ describe('updateOrderStatus', () => {
         { status: OrderStatus.CONFIRMED },
         {
           repo: mockOrderRepo as unknown as OrderRepository,
-          workshopRepo: mockWorkshopRepo as { findById: (id: string) => Promise<{ id: string; ownerId: string } | null> },
+          workshopRepo: mockWorkshopRepo as {
+            findById: (
+              id: string
+            ) => Promise<{ id: string; ownerId: string } | null>
+          },
           authenticatedUserId: 'different-user',
           userRole: 'WORKSHOP_OWNER',
         }
@@ -201,7 +217,11 @@ describe('updateOrderStatus', () => {
       { status: OrderStatus.CONFIRMED },
       {
         repo: mockOrderRepo as unknown as OrderRepository,
-        workshopRepo: mockWorkshopRepo as { findById: (id: string) => Promise<{ id: string; ownerId: string } | null> },
+        workshopRepo: mockWorkshopRepo as {
+          findById: (
+            id: string
+          ) => Promise<{ id: string; ownerId: string } | null>
+        },
         authenticatedUserId: 'admin-123',
         userRole: 'ADMIN',
       }
@@ -237,12 +257,18 @@ describe('updateOrderStatus', () => {
         { status: OrderStatus.PENDING },
         {
           repo: mockOrderRepo as unknown as OrderRepository,
-          workshopRepo: mockWorkshopRepo as { findById: (id: string) => Promise<{ id: string; ownerId: string } | null> },
+          workshopRepo: mockWorkshopRepo as {
+            findById: (
+              id: string
+            ) => Promise<{ id: string; ownerId: string } | null>
+          },
           authenticatedUserId: 'owner-123',
           userRole: 'WORKSHOP_OWNER',
         }
       )
-    ).rejects.toThrow('No se puede modificar un pedido que ya está completado o cancelado')
+    ).rejects.toThrow(
+      'No se puede modificar un pedido que ya está completado o cancelado'
+    )
   })
 
   it('debe rechazar cambio de PENDING a READY (saltar estados)', async () => {
@@ -272,7 +298,11 @@ describe('updateOrderStatus', () => {
         { status: OrderStatus.READY },
         {
           repo: mockOrderRepo as unknown as OrderRepository,
-          workshopRepo: mockWorkshopRepo as { findById: (id: string) => Promise<{ id: string; ownerId: string } | null> },
+          workshopRepo: mockWorkshopRepo as {
+            findById: (
+              id: string
+            ) => Promise<{ id: string; ownerId: string } | null>
+          },
           authenticatedUserId: 'owner-123',
           userRole: 'WORKSHOP_OWNER',
         }

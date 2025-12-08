@@ -30,7 +30,7 @@ app.use(
 // Rutas
 app.use('/api/auth', authRoutes)
 app.use('/api/catalog', catalogRoutes)
-app.use('/api/media', mediaRoutes) // ← AGREGAR
+app.use('/api/media', mediaRoutes)
 app.use('/api/orders', orderRoutes)
 app.use('/api/owner', productRoutes)
 app.use('/api/owner', workshopRoutes)

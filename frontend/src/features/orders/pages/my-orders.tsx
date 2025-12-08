@@ -1,9 +1,4 @@
-import {
-  Cancel,
-  Receipt,
-  ShoppingBag,
-  Visibility,
-} from '@mui/icons-material'
+import { Cancel, Receipt, ShoppingBag, Visibility } from '@mui/icons-material'
 import {
   Alert,
   Box,
@@ -21,9 +16,9 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../auth/context/auth-context'
+import { useAuth } from '../../auth/hooks/useAuth'
 import {
   cancelOrder,
   getMyOrders,
@@ -36,12 +31,15 @@ import {
 export const MyOrders = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
+
+  console.log('🔐 [MYORDERS] Usuario al cargar componente:', user)
+  console.log('🔐 [MYORDERS] User ID:', user?.id)
+
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [cancelLoading, setCancelLoading] = useState<string | null>(null)
 
-  // Estado para el modal de confirmación de cancelación
   const [cancelDialog, setCancelDialog] = useState<{
     open: boolean
     order: Order | null
@@ -50,23 +48,33 @@ export const MyOrders = () => {
     order: null,
   })
 
-  const loadOrders = async () => {
-    if (!user?.id) return
+  const loadOrders = useCallback(async () => {
+    console.log('🔄 [LOADORDERS] Ejecutando loadOrders...')
+
+    if (!user?.id) {
+      console.log('❌ [LOADORDERS] NO HAY USER.ID - cancelando')
+      return
+    }
 
     try {
       setLoading(true)
+      setError('')
+      console.log('📡 [LOADORDERS] Llamando getMyOrders con userId:', user.id)
+
       const data = await getMyOrders(user.id)
       setOrders(data)
     } catch {
+      console.error('❌ [LOADORDERS] Error en componente:', error)
+
       setError('Error al cargar los pedidos')
     } finally {
       setLoading(false)
     }
-  }
+  }, [user?.id])
 
   useEffect(() => {
-    loadOrders()
-  }, [user?.id])
+    void loadOrders()
+  }, [loadOrders])
 
   const handleCancelClick = (order: Order) => {
     setCancelDialog({ open: true, order })
@@ -115,6 +123,9 @@ export const MyOrders = () => {
     )
   }
 
+  console.log('🔐 Usuario en frontend:', user)
+  console.log('🔐 User ID en frontend:', user?.id)
+
   return (
     <Container maxWidth="lg">
       <Box sx={{ py: 4 }}>
@@ -138,7 +149,9 @@ export const MyOrders = () => {
         {/* Lista de pedidos */}
         {orders.length === 0 ? (
           <Box textAlign="center" py={10}>
-            <ShoppingBag sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+            <ShoppingBag
+              sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }}
+            />
             <Typography variant="h5" color="text.secondary">
               No tienes pedidos todavía
             </Typography>
@@ -157,7 +170,12 @@ export const MyOrders = () => {
                     }}
                   >
                     <Box>
-                      <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                        mb={1}
+                      >
                         <Receipt />
                         <Typography variant="h6">
                           Pedido #{order.id.slice(0, 8)}

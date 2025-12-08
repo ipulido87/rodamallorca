@@ -108,7 +108,9 @@ describe('createOrder', () => {
         repo: mockRepo as unknown as OrderRepository,
         authenticatedUserId: 'different-user',
       })
-    ).rejects.toThrow('No tienes permisos para crear pedidos en nombre de otro usuario')
+    ).rejects.toThrow(
+      'No tienes permisos para crear pedidos en nombre de otro usuario'
+    )
   })
 
   it('debe rechazar si el pedido no tiene items', async () => {
