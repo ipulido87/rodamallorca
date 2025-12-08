@@ -25,13 +25,10 @@ export async function getOrder(
 
   // Verificar permisos
   const isOwner = order.userId === authenticatedUserId
-  const isWorkshopOwner = order.workshopId === authenticatedUserId // Nota: necesitaríamos verificar esto de otra forma
+  const isWorkshopOwner = order.workshop?.ownerId === authenticatedUserId
   const isAdmin = userRole === 'ADMIN'
 
-  if (!isOwner && !isAdmin) {
-    // Verificar si el usuario es el dueño del taller
-    // Por ahora, permitimos solo al dueño del pedido o admin
-    // Más adelante se puede mejorar verificando el workshop.ownerId
+  if (!isOwner && !isWorkshopOwner && !isAdmin) {
     throw new Error('No tienes permisos para ver este pedido')
   }
 
