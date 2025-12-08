@@ -1,4 +1,11 @@
-import { ArrowBack, LocationOn, Store } from '@mui/icons-material'
+import {
+  Add,
+  ArrowBack,
+  LocationOn,
+  Remove,
+  ShoppingCart,
+  Store,
+} from '@mui/icons-material'
 import {
   Box,
   Button,
@@ -7,12 +14,15 @@ import {
   Chip,
   Container,
   IconButton,
+  TextField,
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ApiError } from '../../../shared/types/api'
 import { adaptProductImages } from '../../../utils/adapt-product-Images'
+import { useAuth } from '../../auth/hooks/useAuth'
+import { useCart } from '../../cart/hooks/useCart'
 import { getProductById } from '../../catalog/services/catalog-service'
 import type { PublicProduct } from '../../catalog/types/catalog'
 import { ProductImageGallery } from '../components/product-image-galery'
@@ -20,9 +30,12 @@ import { ProductImageGallery } from '../components/product-image-galery'
 export const ProductDetail = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const { addToCart, getItemCount } = useCart()
   const [product, setProduct] = useState<PublicProduct | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [quantity, setQuantity] = useState(1)
 
   useEffect(() => {
     if (!id) return
@@ -48,6 +61,32 @@ export const ProductDetail = () => {
 
   const formatPrice = (price: number) => {
     return `${(price / 100).toFixed(2)}€`
+  }
+
+  const handleAddToCart = () => {
+    if (!product) return
+
+    addToCart(
+      {
+        productId: product.id,
+        workshopId: product.workshop.id,
+        workshopName: product.workshop.name,
+        name: product.title,
+        description: product.description ?? null,
+        price: product.price,
+        currency: product.currency,
+      },
+      quantity
+    )
+
+    // Mostrar feedback visual
+    alert(`${quantity} ${product.title} added to cart!`)
+  }
+
+  const handleQuantityChange = (newQuantity: number) => {
+    if (newQuantity >= 1) {
+      setQuantity(newQuantity)
+    }
   }
 
   if (loading) {
@@ -180,19 +219,92 @@ export const ProductDetail = () => {
               </CardContent>
             </Card>
 
-            {/* Action Buttons */}
-            <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
-              <Button
-                variant="contained"
-                size="large"
-                sx={{ flex: 1 }}
-                disabled
-              >
-                Contact Workshop
-              </Button>
-              <Button variant="outlined" size="large" disabled>
-                Add to Favorites
-              </Button>
+            {/* Add to Cart Section */}
+            <Box sx={{ mt: 4 }}>
+              {product.status === 'PUBLISHED' && user && (
+                <>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      mb: 2,
+                    }}
+                  >
+                    <Typography variant="body1" fontWeight={500}>
+                      Quantity:
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <IconButton
+                        onClick={() => handleQuantityChange(quantity - 1)}
+                        disabled={quantity <= 1}
+                        size="small"
+                      >
+                        <Remove />
+                      </IconButton>
+                      <TextField
+                        type="number"
+                        value={quantity}
+                        onChange={(e) =>
+                          handleQuantityChange(parseInt(e.target.value) || 1)
+                        }
+                        inputProps={{
+                          min: 1,
+                          style: { textAlign: 'center', width: '60px' },
+                        }}
+                        size="small"
+                      />
+                      <IconButton
+                        onClick={() => handleQuantityChange(quantity + 1)}
+                        size="small"
+                      >
+                        <Add />
+                      </IconButton>
+                    </Box>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Button
+                      variant="contained"
+                      size="large"
+                      startIcon={<ShoppingCart />}
+                      onClick={handleAddToCart}
+                      sx={{ flex: 1 }}
+                    >
+                      Add to Cart
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      onClick={() => navigate('/cart')}
+                    >
+                      View Cart ({getItemCount()})
+                    </Button>
+                  </Box>
+                </>
+              )}
+
+              {product.status !== 'PUBLISHED' && (
+                <Box sx={{ textAlign: 'center', py: 2 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    This product is not available for purchase.
+                  </Typography>
+                </Box>
+              )}
+
+              {!user && (
+                <Box sx={{ textAlign: 'center', py: 2 }}>
+                  <Typography variant="body1" color="text.secondary" gutterBottom>
+                    Please log in to purchase this product.
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    onClick={() => navigate('/login')}
+                  >
+                    Log In
+                  </Button>
+                </Box>
+              )}
             </Box>
           </Box>
         </Box>
