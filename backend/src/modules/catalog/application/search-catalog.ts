@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Prisma } from '@prisma/client'
 
 interface SearchParams {
   q?: string
@@ -27,7 +27,7 @@ export async function searchCatalog(
   const skip = (page - 1) * size
 
   // Filtros para productos
-  const productWhere: any = {
+  const productWhere: Prisma.ProductWhereInput = {
     status: 'PUBLISHED',
   }
 

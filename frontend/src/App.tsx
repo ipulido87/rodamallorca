@@ -11,6 +11,9 @@ import { CreateWorkshop } from './features/workshops/pages/create-workshop'
 import { EditWorkshop } from './features/workshops/pages/edit-workshop'
 import { MyWorkshops } from './features/workshops/pages/my-work-shops'
 import { WorkshopDetail } from './features/workshops/pages/workshop-detail'
+import { MyOrders } from './features/orders/pages/my-orders'
+import { OrderDetail } from './features/orders/pages/order-detail'
+import { WorkshopOrders } from './features/orders/pages/workshop-orders'
 import { Home } from './pages/HomePage'
 import { LandingPage } from './pages/LandingPage'
 import { LoginForm } from './features/auth/pages/login-form'
@@ -67,13 +70,11 @@ function App() {
             <Route path="catalog" element={<Catalog />} />
             <Route path="product/:id" element={<ProductDetail />} />
             <Route path="workshop/:id" element={<WorkshopDetail />} />
+            <Route path="orders/:orderId" element={<OrderDetail />} />
 
             {/* Rutas solo para USER */}
             <Route path="home" element={<Home />} />
-            <Route
-              path="my-orders"
-              element={<div>Mis Pedidos - Por implementar</div>}
-            />
+            <Route path="my-orders" element={<MyOrders />} />
             <Route
               path="favorites"
               element={<div>Favoritos - Por implementar</div>}
@@ -149,10 +150,10 @@ function App() {
               }
             />
             <Route
-              path="orders"
+              path="workshop-orders/:workshopId"
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
-                  <div>Pedidos - Por implementar</div>
+                  <WorkshopOrders />
                 </RoleRoute>
               }
             />

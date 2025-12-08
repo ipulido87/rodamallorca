@@ -1,4 +1,4 @@
-import { Add } from '@mui/icons-material'
+import { Add, Delete, Edit } from '@mui/icons-material'
 import {
   Alert,
   Box,
@@ -10,9 +10,13 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
   Typography,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type MouseEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ModernWorkshopLayout } from '../../products/components/modern-product-layout'
 import {
@@ -27,6 +31,10 @@ export const MyWorkshops = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null)
+
+  // Estado para el menú contextual
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const [selectedWorkshop, setSelectedWorkshop] = useState<Workshop | null>(null)
 
   // Estado para el modal de confirmación
   const [deleteDialog, setDeleteDialog] = useState<{
@@ -76,6 +84,31 @@ export const MyWorkshops = () => {
 
   const handleDeleteCancel = () => {
     setDeleteDialog({ open: false, workshop: null })
+  }
+
+  const handleOpenMenu = (event: MouseEvent<HTMLElement>, workshop: Workshop) => {
+    event.stopPropagation()
+    setAnchorEl(event.currentTarget)
+    setSelectedWorkshop(workshop)
+  }
+
+  const handleCloseMenu = () => {
+    setAnchorEl(null)
+    setSelectedWorkshop(null)
+  }
+
+  const handleEdit = () => {
+    if (selectedWorkshop) {
+      navigate(`/edit-workshop/${selectedWorkshop.id}`)
+    }
+    handleCloseMenu()
+  }
+
+  const handleDelete = () => {
+    if (selectedWorkshop) {
+      setDeleteDialog({ open: true, workshop: selectedWorkshop })
+    }
+    handleCloseMenu()
   }
 
   if (loading) {
@@ -135,7 +168,30 @@ export const MyWorkshops = () => {
           loading={false} // Ya manejamos loading arriba
           error={undefined} // Ya manejamos error arriba
           emptyMessage="No tienes talleres registrados"
+          onOpenMenu={handleOpenMenu}
         />
+
+        {/* Menú contextual */}
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleCloseMenu}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        >
+          <MenuItem onClick={handleEdit}>
+            <ListItemIcon>
+              <Edit fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Editar</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={handleDelete}>
+            <ListItemIcon>
+              <Delete fontSize="small" color="error" />
+            </ListItemIcon>
+            <ListItemText sx={{ color: 'error.main' }}>Eliminar</ListItemText>
+          </MenuItem>
+        </Menu>
 
         {/* Modal de confirmación para eliminar */}
         <Dialog

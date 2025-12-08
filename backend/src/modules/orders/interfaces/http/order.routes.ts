@@ -1,32 +1,23 @@
-import { Router, Request, Response } from 'express'
+import { Router } from 'express'
 import {
-  requireUser,
-  verifyToken,
-} from '../../../auth/interfaces/middlewares/auth.middleware'
+  createOrderController,
+  getOrderController,
+  getUserOrdersController,
+  getWorkshopOrdersController,
+  updateOrderStatusController,
+  cancelOrderController,
+} from '../controllers/order.controller'
+import { verifyToken } from '../../../../modules/auth/interfaces/middlewares/auth.middleware'
 
 const router = Router()
 
-// GET /api/orders - Obtener pedidos del usuario autenticado
-router.get('/', verifyToken, requireUser, (req: Request, res: Response) => {
-  // TODO: Implementar obtención de pedidos
-  res.status(501).json({
-    message: 'Módulo de pedidos en desarrollo',
-    info: 'Esta funcionalidad estará disponible próximamente',
-  })
-})
+router.use(verifyToken) // ✅ Usa verifyToken
 
-// GET /api/orders/:id - Obtener un pedido específico
-router.get(
-  '/:id',
-  verifyToken,
-  requireUser,
-  (req: Request, res: Response) => {
-    // TODO: Implementar obtención de pedido específico
-    res.status(501).json({
-      message: 'Módulo de pedidos en desarrollo',
-      info: 'Esta funcionalidad estará disponible próximamente',
-    })
-  }
-)
+router.post('/', createOrderController)
+router.get('/:id', getOrderController)
+router.get('/user/:userId', getUserOrdersController)
+router.get('/workshop/:workshopId', getWorkshopOrdersController)
+router.patch('/:id/status', updateOrderStatusController)
+router.post('/:id/cancel', cancelOrderController)
 
 export default router

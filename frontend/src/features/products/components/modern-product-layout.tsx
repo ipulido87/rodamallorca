@@ -250,7 +250,13 @@ const ProductCard = ({
 }
 
 /* -------------------- Workshop Card -------------------- */
-const WorkshopCard = ({ workshop }: { workshop: CardWorkshop }) => {
+const WorkshopCard = ({
+  workshop,
+  onOpenMenu,
+}: {
+  workshop: CardWorkshop
+  onOpenMenu?: OnOpenMenuHandler
+}) => {
   const navigate = useNavigate()
   const theme = useTheme()
   const [isHovered, setIsHovered] = useState(false)
@@ -269,8 +275,30 @@ const WorkshopCard = ({ workshop }: { workshop: CardWorkshop }) => {
         boxShadow: isHovered
           ? `0 12px 24px ${alpha(theme.palette.common.black, 0.2)}`
           : theme.shadows[1],
+        position: 'relative',
       }}
     >
+      {/* Botón ⋮ para el menú contextual */}
+      {onOpenMenu && (
+        <IconButton
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation()
+            onOpenMenu(e, workshop)
+          }}
+          sx={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            zIndex: 2,
+            bgcolor: 'rgba(255,255,255,0.95)',
+            '&:hover': { bgcolor: 'white' },
+          }}
+        >
+          <MoreVert />
+        </IconButton>
+      )}
+
       <Box
         sx={{
           height: 200,
@@ -383,7 +411,7 @@ export const ModernLayout = ({
               onOpenMenu={onOpenMenu}
             />
           ) : type === 'workshop' && isWorkshop(item) ? (
-            <WorkshopCard key={item.id} workshop={item} />
+            <WorkshopCard key={item.id} workshop={item} onOpenMenu={onOpenMenu} />
           ) : null
         )}
       </Box>
@@ -401,5 +429,5 @@ export const ModernProductLayout = (
 export const ModernWorkshopLayout = (
   props: {
     workshops: CardWorkshop[]
-  } & ModernLayoutCommonProps
+  } & ModernLayoutCommonProps & { onOpenMenu?: OnOpenMenuHandler }
 ) => <ModernLayout {...props} items={props.workshops} type="workshop" />

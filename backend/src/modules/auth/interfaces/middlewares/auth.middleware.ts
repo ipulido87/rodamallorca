@@ -39,11 +39,7 @@ export const verifyToken = (
 
   try {
     const decoded = jwt.verify(token, config.jwtSecret) as Express.UserPayload
-    console.log('✅ [VERIFY_TOKEN] Token válido.')
-    console.log('📋 [VERIFY_TOKEN] Payload completo:', JSON.stringify(decoded, null, 2))
-    console.log('🔑 [VERIFY_TOKEN] decoded.id:', decoded.id)
-    console.log('📧 [VERIFY_TOKEN] decoded.email:', decoded.email)
-    console.log('👤 [VERIFY_TOKEN] decoded.role:', decoded.role)
+    console.log('✅ [VERIFY_TOKEN] Token válido. User:', decoded.email)
     req.user = decoded
     next()
   } catch (error) {
@@ -70,7 +66,6 @@ export const requireRole = (
     console.log('🔍 [requireRole] User role:', req.user?.role)
 
     if (!req.user) return res.status(401).json({ message: 'Not authenticated' })
-    // Si tu JWT aún no trae role, esto te protege de undefined
     if (!req.user.role || !roles.includes(req.user.role)) {
       return res.status(403).json({ message: 'Forbidden' })
     }
