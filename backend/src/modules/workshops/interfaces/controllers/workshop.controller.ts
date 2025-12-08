@@ -32,10 +32,19 @@ export const createWorkshopController = async (
   next: NextFunction
 ) => {
   try {
+    // ✅ VALIDACIÓN: Verificar que req.user.id exista
+    if (!req.user?.id) {
+      console.error('❌ [createWorkshopController] req.user.id es undefined!')
+      console.error('req.user:', req.user)
+      return res.status(401).json({
+        error: 'Token inválido: falta ID de usuario. Por favor, vuelve a iniciar sesión.'
+      })
+    }
+
     const body = createWorkshopSchema.parse(req.body)
     const result = await createWorkshop(
-      { ownerId: req.user!.id, ...body },
-      { repo, authenticatedUserId: req.user!.id }
+      { ownerId: req.user.id, ...body },
+      { repo, authenticatedUserId: req.user.id }
     )
     res.status(201).json(result)
   } catch (e) {
@@ -76,7 +85,16 @@ export const getMyWorkshopsController = async (
   next: NextFunction
 ) => {
   try {
-    const workshops = await repo.findByOwnerId(req.user!.id)
+    // ✅ VALIDACIÓN: Verificar que req.user.id exista
+    if (!req.user?.id) {
+      console.error('❌ [getMyWorkshopsController] req.user.id es undefined!')
+      console.error('req.user:', req.user)
+      return res.status(401).json({
+        error: 'Token inválido: falta ID de usuario. Por favor, vuelve a iniciar sesión.'
+      })
+    }
+
+    const workshops = await repo.findByOwnerId(req.user.id)
     res.json(workshops)
   } catch (e) {
     next(e)
@@ -89,6 +107,15 @@ export const updateWorkshopController = async (
   next: NextFunction
 ) => {
   try {
+    // ✅ VALIDACIÓN: Verificar que req.user.id exista
+    if (!req.user?.id) {
+      console.error('❌ [updateWorkshopController] req.user.id es undefined!')
+      console.error('req.user:', req.user)
+      return res.status(401).json({
+        error: 'Token inválido: falta ID de usuario. Por favor, vuelve a iniciar sesión.'
+      })
+    }
+
     const body = updateWorkshopSchema.parse(req.body)
 
     // Verificar que el taller pertenece al usuario
@@ -96,7 +123,7 @@ export const updateWorkshopController = async (
     if (!existingWorkshop) {
       return res.status(404).json({ error: 'Workshop no encontrado' })
     }
-    if (existingWorkshop.ownerId !== req.user!.id) {
+    if (existingWorkshop.ownerId !== req.user.id) {
       return res
         .status(403)
         .json({ error: 'No tienes permisos para editar este taller' })
@@ -115,12 +142,21 @@ export const deleteWorkshopController = async (
   next: NextFunction
 ) => {
   try {
+    // ✅ VALIDACIÓN: Verificar que req.user.id exista
+    if (!req.user?.id) {
+      console.error('❌ [deleteWorkshopController] req.user.id es undefined!')
+      console.error('req.user:', req.user)
+      return res.status(401).json({
+        error: 'Token inválido: falta ID de usuario. Por favor, vuelve a iniciar sesión.'
+      })
+    }
+
     // Verificar que el taller pertenece al usuario
     const existingWorkshop = await repo.findById(req.params.id)
     if (!existingWorkshop) {
       return res.status(404).json({ error: 'Workshop no encontrado' })
     }
-    if (existingWorkshop.ownerId !== req.user!.id) {
+    if (existingWorkshop.ownerId !== req.user.id) {
       return res
         .status(403)
         .json({ error: 'No tienes permisos para eliminar este taller' })
