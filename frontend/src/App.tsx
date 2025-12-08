@@ -14,6 +14,7 @@ import { WorkshopDetail } from './features/workshops/pages/workshop-detail'
 import { MyOrders } from './features/orders/pages/my-orders'
 import { OrderDetail } from './features/orders/pages/order-detail'
 import { WorkshopOrders } from './features/orders/pages/workshop-orders'
+import { Orders } from './features/orders/pages/orders'
 import { Cart } from './features/cart/pages/Cart'
 import { Checkout } from './features/cart/pages/Checkout'
 import { Home } from './pages/HomePage'
@@ -144,6 +145,14 @@ function App() {
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
                   <EditProduct />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="orders"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <Orders />
                 </RoleRoute>
               }
             />
