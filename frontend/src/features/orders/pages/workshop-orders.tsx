@@ -109,14 +109,23 @@ export const WorkshopOrders = () => {
       let errorMessage = 'Error al actualizar el estado del pedido'
 
       if (err && typeof err === 'object' && 'response' in err) {
-        const responseMessage = (err as any).response?.data?.message
+        const response = (err as any).response
 
-        // Mensaje más claro para pedidos en estado final
-        if (responseMessage?.includes('completado') || responseMessage?.includes('cancelado')) {
-          errorMessage = 'Este pedido ya está en estado final y no puede ser modificado'
-        } else {
-          errorMessage = responseMessage || errorMessage
+        // El backend ahora devuelve JSON con { error, message }
+        const backendMessage = response?.data?.message || response?.data?.error
+
+        if (backendMessage) {
+          // Mejorar mensajes específicos
+          if (backendMessage.includes('completado') || backendMessage.includes('cancelado')) {
+            errorMessage = '⚠️ Este pedido ya está en estado final y no puede ser modificado'
+          } else if (backendMessage.includes('no se puede cambiar')) {
+            errorMessage = `⚠️ ${backendMessage}`
+          } else {
+            errorMessage = backendMessage
+          }
         }
+      } else if (err instanceof Error) {
+        errorMessage = err.message
       }
 
       showError(errorMessage)
