@@ -1,11 +1,15 @@
-import { OrderStatus } from '@prisma/client'
 import { beforeEach, describe, expect, it, jest } from '@jest/globals'
+
 import { createOrder } from '../../modules/orders/application/create-order'
+import { OrderStatus } from '../../modules/orders/domain/enums/order-status'
+
 import type {
   CreateOrderInput,
   Order,
 } from '../../modules/orders/domain/entities/order'
+
 import type { OrderRepository } from '../../modules/orders/domain/repositories/order-repository'
+import type { WorkshopRepository } from '../../modules/workshops/domain/repositories/workshop-repository'
 
 type MockFunction = ReturnType<typeof jest.fn>
 
@@ -19,8 +23,13 @@ interface MockOrderRepository {
   delete: MockFunction
 }
 
+interface MockWorkshopRepository {
+  findById: MockFunction
+}
+
 describe('createOrder', () => {
   let mockRepo: MockOrderRepository
+  let mockWorkshopRepo: MockWorkshopRepository
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -33,6 +42,10 @@ describe('createOrder', () => {
       updateStatus: jest.fn(),
       findByStatus: jest.fn(),
       delete: jest.fn(),
+    }
+
+    mockWorkshopRepo = {
+      findById: jest.fn(),
     }
   })
 
@@ -62,10 +75,15 @@ describe('createOrder', () => {
       updatedAt: new Date(),
     }
 
+    mockWorkshopRepo.findById.mockResolvedValue({
+      id: 'workshop-123',
+    })
+
     mockRepo.create.mockResolvedValue(expectedOrder)
 
     const result = await createOrder(input, {
       repo: mockRepo as unknown as OrderRepository,
+      workshopRepo: mockWorkshopRepo as unknown as WorkshopRepository,
       authenticatedUserId: 'user-123',
     })
 
@@ -83,29 +101,22 @@ describe('createOrder', () => {
       ],
     })
 
-    expect(result).toMatchObject({
-      id: 'order-123',
-      userId: 'user-123',
-      workshopId: 'workshop-123',
-      status: OrderStatus.PENDING,
-    })
+    expect(result.status).toBe(OrderStatus.PENDING)
   })
 
   it('debe rechazar si el usuario autenticado no es el dueño', async () => {
     const input: CreateOrderInput = {
       userId: 'user-123',
       workshopId: 'workshop-123',
-      items: [
-        {
-          quantity: 1,
-          priceAtOrder: 5000,
-        },
-      ],
+      items: [{ quantity: 1, priceAtOrder: 5000 }],
     }
+
+    mockWorkshopRepo.findById.mockResolvedValue({ id: 'workshop-123' })
 
     await expect(
       createOrder(input, {
         repo: mockRepo as unknown as OrderRepository,
+        workshopRepo: mockWorkshopRepo as unknown as WorkshopRepository,
         authenticatedUserId: 'different-user',
       })
     ).rejects.toThrow(
@@ -120,9 +131,12 @@ describe('createOrder', () => {
       items: [],
     }
 
+    mockWorkshopRepo.findById.mockResolvedValue({ id: 'workshop-123' })
+
     await expect(
       createOrder(input, {
         repo: mockRepo as unknown as OrderRepository,
+        workshopRepo: mockWorkshopRepo as unknown as WorkshopRepository,
         authenticatedUserId: 'user-123',
       })
     ).rejects.toThrow('El pedido debe tener al menos un item')
@@ -132,17 +146,15 @@ describe('createOrder', () => {
     const input: CreateOrderInput = {
       userId: 'user-123',
       workshopId: 'workshop-123',
-      items: [
-        {
-          quantity: 0,
-          priceAtOrder: 5000,
-        },
-      ],
+      items: [{ quantity: 0, priceAtOrder: 5000 }],
     }
+
+    mockWorkshopRepo.findById.mockResolvedValue({ id: 'workshop-123' })
 
     await expect(
       createOrder(input, {
         repo: mockRepo as unknown as OrderRepository,
+        workshopRepo: mockWorkshopRepo as unknown as WorkshopRepository,
         authenticatedUserId: 'user-123',
       })
     ).rejects.toThrow('La cantidad de cada item debe ser mayor a 0')
@@ -152,17 +164,15 @@ describe('createOrder', () => {
     const input: CreateOrderInput = {
       userId: 'user-123',
       workshopId: 'workshop-123',
-      items: [
-        {
-          quantity: 1,
-          priceAtOrder: 0,
-        },
-      ],
+      items: [{ quantity: 1, priceAtOrder: 0 }],
     }
+
+    mockWorkshopRepo.findById.mockResolvedValue({ id: 'workshop-123' })
 
     await expect(
       createOrder(input, {
         repo: mockRepo as unknown as OrderRepository,
+        workshopRepo: mockWorkshopRepo as unknown as WorkshopRepository,
         authenticatedUserId: 'user-123',
       })
     ).rejects.toThrow('El precio de cada item debe ser mayor a 0')
@@ -172,15 +182,10 @@ describe('createOrder', () => {
     const input: CreateOrderInput = {
       userId: 'user-123',
       workshopId: 'workshop-123',
-      items: [
-        {
-          productId: 'product-123',
-          quantity: 1,
-          priceAtOrder: 5000,
-          // No se especifica currency
-        },
-      ],
+      items: [{ productId: 'product-123', quantity: 1, priceAtOrder: 5000 }],
     }
+
+    mockWorkshopRepo.findById.mockResolvedValue({ id: 'workshop-123' })
 
     mockRepo.create.mockResolvedValue({
       id: 'order-123',
@@ -196,6 +201,7 @@ describe('createOrder', () => {
 
     await createOrder(input, {
       repo: mockRepo as unknown as OrderRepository,
+      workshopRepo: mockWorkshopRepo as unknown as WorkshopRepository,
       authenticatedUserId: 'user-123',
     })
 

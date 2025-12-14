@@ -1,4 +1,4 @@
-import { OrderStatus } from '@prisma/client'
+import { OrderStatus } from '../../modules/orders/domain/enums/order-status'
 import { beforeEach, describe, expect, it, jest } from '@jest/globals'
 import { updateOrderStatus } from '../../modules/orders/application/update-order-status'
 import type { Order } from '../../modules/orders/domain/entities/order'
