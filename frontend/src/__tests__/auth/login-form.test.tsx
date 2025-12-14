@@ -2,28 +2,46 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@/__tests__/test-utils'
 import userEvent from '@testing-library/user-event'
 import { LoginForm } from '@/features/auth/pages/login-form'
-import * as authHook from '@/features/auth/hooks/useAuth'
+import type { AuthContextType } from '@/features/auth/providers/auth-providers'
 
-// Mock del hook useAuth
-const mockLogin = vi.fn()
-const mockClearError = vi.fn()
-
+// Mock del módulo useAuth
 vi.mock('@/features/auth/hooks/useAuth', () => ({
   useAuth: vi.fn(),
 }))
 
+// Importar después del mock
+const { useAuth } = await import('@/features/auth/hooks/useAuth')
+
+// Helper para crear mocks de AuthContext con valores por defecto
+const createMockAuthContext = (overrides: Partial<AuthContextType> = {}): AuthContextType => ({
+  token: null,
+  user: null,
+  isAuthenticated: false,
+  isWorkshopOwner: false,
+  loading: false,
+  authError: null,
+  login: vi.fn(),
+  logout: vi.fn(),
+  register: vi.fn(),
+  verifyCode: vi.fn(),
+  resendVerification: vi.fn(),
+  refreshMe: vi.fn(),
+  persistToken: vi.fn(),
+  clearError: vi.fn(),
+  ...overrides,
+})
+
 describe('LoginForm', () => {
+  let mockLogin: ReturnType<typeof vi.fn>
+  let mockClearError: ReturnType<typeof vi.fn>
+
   beforeEach(() => {
-    vi.clearAllMocks()
-    vi.mocked(authHook.useAuth).mockReturnValue({
+    mockLogin = vi.fn()
+    mockClearError = vi.fn()
+    vi.mocked(useAuth).mockReturnValue(createMockAuthContext({
       login: mockLogin,
       clearError: mockClearError,
-      authError: null,
-      loading: false,
-      user: null,
-      logout: vi.fn(),
-      register: vi.fn(),
-    } as any)
+    }))
   })
 
   it('should render login form with email and password fields', () => {
@@ -77,7 +95,7 @@ describe('LoginForm', () => {
 
   it('should call login function with correct credentials', async () => {
     const user = userEvent.setup()
-    mockLogin.mockResolvedValue({ success: true })
+    mockLogin.mockResolvedValue(undefined)
 
     render(<LoginForm />)
 
@@ -96,15 +114,11 @@ describe('LoginForm', () => {
 
   it('should clear previous errors when user types', async () => {
     const user = userEvent.setup()
-    vi.mocked(authHook.useAuth).mockReturnValue({
+    vi.mocked(useAuth).mockReturnValue(createMockAuthContext({
       login: mockLogin,
       clearError: mockClearError,
       authError: 'Previous error',
-      loading: false,
-      user: null,
-      logout: vi.fn(),
-      register: vi.fn(),
-    } as any)
+    }))
 
     render(<LoginForm />)
 
@@ -115,15 +129,11 @@ describe('LoginForm', () => {
   })
 
   it('should display error message when login fails', () => {
-    vi.mocked(authHook.useAuth).mockReturnValue({
+    vi.mocked(useAuth).mockReturnValue(createMockAuthContext({
       login: mockLogin,
       clearError: mockClearError,
       authError: 'Invalid credentials',
-      loading: false,
-      user: null,
-      logout: vi.fn(),
-      register: vi.fn(),
-    } as any)
+    }))
 
     render(<LoginForm />)
 
@@ -131,15 +141,11 @@ describe('LoginForm', () => {
   })
 
   it('should show loading state during login', () => {
-    vi.mocked(authHook.useAuth).mockReturnValue({
+    vi.mocked(useAuth).mockReturnValue(createMockAuthContext({
       login: mockLogin,
       clearError: mockClearError,
-      authError: null,
       loading: true,
-      user: null,
-      logout: vi.fn(),
-      register: vi.fn(),
-    } as any)
+    }))
 
     render(<LoginForm />)
 
