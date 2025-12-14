@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@/test/test-utils'
+import { render, screen, waitFor } from '@/__tests__/test-utils'
 import userEvent from '@testing-library/user-event'
-import { LoginForm } from './login-form'
-import * as authHook from '../hooks/useAuth'
+import { LoginForm } from '@/features/auth/pages/login-form'
+import * as authHook from '@/features/auth/hooks/useAuth'
 
 // Mock del hook useAuth
 const mockLogin = vi.fn()
 const mockClearError = vi.fn()
 
-vi.mock('../hooks/useAuth', () => ({
+vi.mock('@/features/auth/hooks/useAuth', () => ({
   useAuth: vi.fn(),
 }))
 

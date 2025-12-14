@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { CartProvider, CartContext, CartItem } from './CartContext'
+import { CartProvider, CartContext, CartItem } from '@/features/cart/contexts/CartContext'
 import { useContext } from 'react'
 
 // Mock localStorage

@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@/test/test-utils'
+import { render, screen } from '@/__tests__/test-utils'
 import userEvent from '@testing-library/user-event'
-import { Cart } from './Cart'
-import * as authHook from '../../auth/hooks/useAuth'
-import * as cartHook from '../hooks/useCart'
+import { Cart } from '@/features/cart/pages/Cart'
+import * as authHook from '@/features/auth/hooks/useAuth'
+import * as cartHook from '@/features/cart/hooks/useCart'
 
 const mockNavigate = vi.fn()
 
@@ -15,11 +15,11 @@ vi.mock('react-router-dom', async () => {
   }
 })
 
-vi.mock('../../auth/hooks/useAuth', () => ({
+vi.mock('@/features/auth/hooks/useAuth', () => ({
   useAuth: vi.fn(),
 }))
 
-vi.mock('../hooks/useCart', () => ({
+vi.mock('@/features/cart/hooks/useCart', () => ({
   useCart: vi.fn(),
 }))
 
