@@ -16,6 +16,8 @@ import {
   productFilterConfig,
   workshopFilterConfig,
 } from '../../../shared/constants/product-filters'
+import { ProductSkeletonGrid } from '../../../shared/components/ProductSkeleton'
+import { WorkshopSkeletonGrid } from '../../../shared/components/WorkshopSkeleton'
 import { adaptProductImages } from '../../../utils/adapt-product-Images'
 import { useAuth } from '../../auth/hooks/useAuth'
 import {
@@ -147,18 +149,24 @@ export const Catalog = () => {
         </Alert>
       )}
 
-      <ModernWorkshopLayout
-        workshops={workshops}
-        loading={workshopsLoading}
-        emptyMessage="No se encontraron talleres"
-      />
+      {workshopsLoading ? (
+        <WorkshopSkeletonGrid count={6} />
+      ) : (
+        <>
+          <ModernWorkshopLayout
+            workshops={workshops}
+            loading={false}
+            emptyMessage="No se encontraron talleres"
+          />
 
-      {workshopsPagination.total > 0 && (
-        <Box textAlign="center" sx={{ mt: 4 }}>
-          <Typography variant="body2" color="text.secondary">
-            Mostrando {workshops.length} de {workshopsPagination.total} talleres
-          </Typography>
-        </Box>
+          {workshopsPagination.total > 0 && (
+            <Box textAlign="center" sx={{ mt: 4 }}>
+              <Typography variant="body2" color="text.secondary">
+                Mostrando {workshops.length} de {workshopsPagination.total} talleres
+              </Typography>
+            </Box>
+          )}
+        </>
       )}
     </Box>
   )
@@ -171,21 +179,27 @@ export const Catalog = () => {
         </Alert>
       )}
 
-      <ModernProductLayout
-        products={products.map(adaptCatalogProductForLayout)}
-        loading={productsLoading}
-        error={productsError ?? undefined}
-        emptyMessage="No se encontraron productos"
-        onFavoriteToggle={handleFavoriteToggle}
-        favoriteIds={[]}
-      />
+      {productsLoading ? (
+        <ProductSkeletonGrid count={8} />
+      ) : (
+        <>
+          <ModernProductLayout
+            products={products.map(adaptCatalogProductForLayout)}
+            loading={false}
+            error={productsError ?? undefined}
+            emptyMessage="No se encontraron productos"
+            onFavoriteToggle={handleFavoriteToggle}
+            favoriteIds={[]}
+          />
 
-      {productsPagination.total > 0 && (
-        <Box textAlign="center" sx={{ mt: 4 }}>
-          <Typography variant="body2" color="text.secondary">
-            Mostrando {products.length} de {productsPagination.total} productos
-          </Typography>
-        </Box>
+          {productsPagination.total > 0 && (
+            <Box textAlign="center" sx={{ mt: 4 }}>
+              <Typography variant="body2" color="text.secondary">
+                Mostrando {products.length} de {productsPagination.total} productos
+              </Typography>
+            </Box>
+          )}
+        </>
       )}
     </Box>
   )
