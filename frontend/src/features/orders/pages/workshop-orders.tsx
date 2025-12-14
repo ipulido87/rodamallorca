@@ -105,9 +105,20 @@ export const WorkshopOrders = () => {
       showSuccess('✓ Estado del pedido actualizado correctamente')
     } catch (err) {
       console.error('❌ [WORKSHOP_ORDERS] Error actualizando estado:', err)
-      const errorMessage = err && typeof err === 'object' && 'response' in err
-        ? (err as any).response?.data?.message || 'Error al actualizar el estado del pedido'
-        : 'Error al actualizar el estado del pedido'
+
+      let errorMessage = 'Error al actualizar el estado del pedido'
+
+      if (err && typeof err === 'object' && 'response' in err) {
+        const responseMessage = (err as any).response?.data?.message
+
+        // Mensaje más claro para pedidos en estado final
+        if (responseMessage?.includes('completado') || responseMessage?.includes('cancelado')) {
+          errorMessage = 'Este pedido ya está en estado final y no puede ser modificado'
+        } else {
+          errorMessage = responseMessage || errorMessage
+        }
+      }
+
       showError(errorMessage)
       setError(errorMessage)
     } finally {
@@ -257,8 +268,8 @@ export const WorkshopOrders = () => {
                     >
                       Ver Detalles
                     </Button>
-                    {order.status !== OrderStatus.COMPLETED &&
-                      order.status !== OrderStatus.CANCELLED && (
+                    {order.status !== 'COMPLETED' &&
+                      order.status !== 'CANCELLED' && (
                         <Button
                           variant="contained"
                           startIcon={<Settings />}

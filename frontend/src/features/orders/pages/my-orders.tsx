@@ -86,7 +86,7 @@ export const MyOrders = () => {
       setOrders((prev) =>
         prev.map((o) =>
           o.id === cancelDialog.order?.id
-            ? { ...o, status: OrderStatus.CANCELLED }
+            ? { ...o, status: 'CANCELLED' as any }
             : o
         )
       )
@@ -215,8 +215,8 @@ export const MyOrders = () => {
                     >
                       Ver Detalles
                     </Button>
-                    {order.status !== OrderStatus.COMPLETED &&
-                      order.status !== OrderStatus.CANCELLED && (
+                    {order.status !== 'COMPLETED' &&
+                      order.status !== 'CANCELLED' && (
                         <Button
                           variant="outlined"
                           color="error"
