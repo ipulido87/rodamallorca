@@ -26,7 +26,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   getOrderStatusColor,
@@ -56,23 +56,25 @@ export const WorkshopOrders = () => {
     newStatus: null,
   })
 
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     if (!workshopId) return
 
     try {
       setLoading(true)
+      setError('')
       const data = await getWorkshopOrders(workshopId)
       setOrders(data)
-    } catch {
+    } catch (e) {
+      console.error('❌ [WORKSHOP_ORDERS] Error cargando pedidos:', e)
       setError('Error al cargar los pedidos del taller')
     } finally {
       setLoading(false)
     }
-  }
+  }, [workshopId])
 
   useEffect(() => {
-    loadOrders()
-  }, [workshopId])
+    void loadOrders()
+  }, [loadOrders])
 
   const handleStatusChangeClick = (order: Order) => {
     setUpdateDialog({ open: true, order, newStatus: null })
@@ -87,7 +89,6 @@ export const WorkshopOrders = () => {
         status: updateDialog.newStatus,
       })
 
-      // Actualizar la lista local
       setOrders((prev) =>
         prev.map((o) =>
           o.id === updateDialog.order?.id
@@ -193,7 +194,12 @@ export const WorkshopOrders = () => {
                     }}
                   >
                     <Box>
-                      <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                        mb={1}
+                      >
                         {getStatusIcon(order.status)}
                         <Typography variant="h6">
                           Pedido #{order.id.slice(0, 8)}
@@ -293,7 +299,10 @@ export const WorkshopOrders = () => {
             </FormControl>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleUpdateDialogClose} disabled={updateLoading !== null}>
+            <Button
+              onClick={handleUpdateDialogClose}
+              disabled={updateLoading !== null}
+            >
               Cancelar
             </Button>
             <Button

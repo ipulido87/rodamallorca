@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@/__tests__/test-utils'
+import { render } from '@/__tests__/test-utils'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { LoginForm } from '@/features/auth/pages/login-form'
 import type { AuthContextType } from '@/features/auth/providers/auth-providers'
@@ -11,37 +12,46 @@ vi.mock('@/features/auth/hooks/useAuth', () => ({
 
 // Importar después del mock
 const { useAuth } = await import('@/features/auth/hooks/useAuth')
+const mockedUseAuth = vi.mocked(useAuth)
 
 // Helper para crear mocks de AuthContext con valores por defecto
-const createMockAuthContext = (overrides: Partial<AuthContextType> = {}): AuthContextType => ({
+const createMockAuthContext = (
+  overrides: Partial<AuthContextType> = {}
+): AuthContextType => ({
   token: null,
   user: null,
   isAuthenticated: false,
   isWorkshopOwner: false,
   loading: false,
   authError: null,
-  login: vi.fn(),
-  logout: vi.fn(),
-  register: vi.fn(),
-  verifyCode: vi.fn(),
-  resendVerification: vi.fn(),
-  refreshMe: vi.fn(),
-  persistToken: vi.fn(),
-  clearError: vi.fn(),
+
+  // ✅ cada fn tipada con LA FIRMA COMPLETA
+  login: vi.fn<AuthContextType['login']>(),
+  logout: vi.fn<AuthContextType['logout']>(),
+  register: vi.fn<AuthContextType['register']>(),
+  verifyCode: vi.fn<AuthContextType['verifyCode']>(),
+  resendVerification: vi.fn<AuthContextType['resendVerification']>(),
+  refreshMe: vi.fn<AuthContextType['refreshMe']>(),
+  persistToken: vi.fn<AuthContextType['persistToken']>(),
+  clearError: vi.fn<AuthContextType['clearError']>(),
+
   ...overrides,
 })
 
 describe('LoginForm', () => {
-  let mockLogin: ReturnType<typeof vi.fn<(email: string, password: string) => Promise<void>>>
-  let mockClearError: ReturnType<typeof vi.fn<() => void>>
+  let mockLogin: ReturnType<typeof vi.fn<AuthContextType['login']>>
+  let mockClearError: ReturnType<typeof vi.fn<AuthContextType['clearError']>>
 
   beforeEach(() => {
-    mockLogin = vi.fn<(email: string, password: string) => Promise<void>>()
-    mockClearError = vi.fn<() => void>()
-    vi.mocked(useAuth).mockReturnValue(createMockAuthContext({
-      login: mockLogin as any,
-      clearError: mockClearError as any,
-    }))
+    mockLogin = vi.fn<AuthContextType['login']>()
+    mockClearError = vi.fn<AuthContextType['clearError']>()
+
+    mockedUseAuth.mockReturnValue(
+      createMockAuthContext({
+        login: mockLogin,
+        clearError: mockClearError,
+      })
+    )
   })
 
   it('should render login form with email and password fields', () => {
@@ -49,7 +59,9 @@ describe('LoginForm', () => {
 
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/contraseña/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /iniciar sesión/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /iniciar sesión/i })
+    ).toBeInTheDocument()
   })
 
   it('should prevent login when email is invalid', async () => {
@@ -59,32 +71,24 @@ describe('LoginForm', () => {
     const emailInput = screen.getByLabelText(/email/i)
     const passwordInput = screen.getByLabelText(/contraseña/i)
 
-    // Type valid password but invalid email (without @)
     await user.type(emailInput, 'notanemail')
     await user.type(passwordInput, 'password123')
 
     const form = emailInput.closest('form')
-    if (form) {
-      form.submit()
-    }
+    form?.submit()
 
-    // Login should not be called with invalid email
     await waitFor(() => {
       expect(mockLogin).not.toHaveBeenCalled()
-    }, { timeout: 1000 })
+    })
   })
 
   it('should show validation error when password is too short', async () => {
     const user = userEvent.setup()
     render(<LoginForm />)
 
-    const emailInput = screen.getByLabelText(/email/i)
-    const passwordInput = screen.getByLabelText(/contraseña/i)
-    const submitButton = screen.getByRole('button', { name: /iniciar sesión/i })
-
-    await user.type(emailInput, 'test@example.com')
-    await user.type(passwordInput, '123')
-    await user.click(submitButton)
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
+    await user.type(screen.getByLabelText(/contraseña/i), '123')
+    await user.click(screen.getByRole('button', { name: /iniciar sesión/i }))
 
     await waitFor(() => {
       expect(
@@ -99,13 +103,9 @@ describe('LoginForm', () => {
 
     render(<LoginForm />)
 
-    const emailInput = screen.getByLabelText(/email/i)
-    const passwordInput = screen.getByLabelText(/contraseña/i)
-    const submitButton = screen.getByRole('button', { name: /iniciar sesión/i })
-
-    await user.type(emailInput, 'test@example.com')
-    await user.type(passwordInput, 'password123')
-    await user.click(submitButton)
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
+    await user.type(screen.getByLabelText(/contraseña/i), 'password123')
+    await user.click(screen.getByRole('button', { name: /iniciar sesión/i }))
 
     await waitFor(() => {
       expect(mockLogin).toHaveBeenCalledWith('test@example.com', 'password123')
@@ -114,42 +114,47 @@ describe('LoginForm', () => {
 
   it('should clear previous errors when user types', async () => {
     const user = userEvent.setup()
-    vi.mocked(useAuth).mockReturnValue(createMockAuthContext({
-      login: mockLogin,
-      clearError: mockClearError,
-      authError: 'Previous error',
-    }))
+
+    mockedUseAuth.mockReturnValue(
+      createMockAuthContext({
+        login: mockLogin,
+        clearError: mockClearError,
+        authError: 'Previous error',
+      })
+    )
 
     render(<LoginForm />)
 
-    const emailInput = screen.getByLabelText(/email/i)
-    await user.type(emailInput, 'a')
-
+    await user.type(screen.getByLabelText(/email/i), 'a')
     expect(mockClearError).toHaveBeenCalled()
   })
 
   it('should display error message when login fails', () => {
-    vi.mocked(useAuth).mockReturnValue(createMockAuthContext({
-      login: mockLogin,
-      clearError: mockClearError,
-      authError: 'Invalid credentials',
-    }))
+    mockedUseAuth.mockReturnValue(
+      createMockAuthContext({
+        login: mockLogin,
+        clearError: mockClearError,
+        authError: 'Invalid credentials',
+      })
+    )
 
     render(<LoginForm />)
-
     expect(screen.getByText(/invalid credentials/i)).toBeInTheDocument()
   })
 
   it('should show loading state during login', () => {
-    vi.mocked(useAuth).mockReturnValue(createMockAuthContext({
-      login: mockLogin,
-      clearError: mockClearError,
-      loading: true,
-    }))
+    mockedUseAuth.mockReturnValue(
+      createMockAuthContext({
+        login: mockLogin,
+        clearError: mockClearError,
+        loading: true,
+      })
+    )
 
     render(<LoginForm />)
 
-    const submitButton = screen.getByRole('button', { name: /iniciando sesión\.\.\./i })
-    expect(submitButton).toBeDisabled()
+    expect(
+      screen.getByRole('button', { name: /iniciando sesión\.\.\./i })
+    ).toBeDisabled()
   })
 })

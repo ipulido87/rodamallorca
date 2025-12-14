@@ -24,7 +24,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   cancelOrder,
@@ -46,23 +46,24 @@ export const OrderDetail = () => {
   // Estado para el modal de confirmación de cancelación
   const [cancelDialog, setCancelDialog] = useState(false)
 
-  const loadOrder = async () => {
+  const loadOrder = useCallback(async () => {
     if (!orderId) return
-
     try {
       setLoading(true)
+      setError('')
       const data = await getOrderById(orderId)
       setOrder(data)
-    } catch {
+    } catch (e) {
+      console.error('❌ [ORDER_DETAIL] Error cargando pedido:', e)
       setError('Error al cargar el pedido')
     } finally {
       setLoading(false)
     }
-  }
+  }, [orderId])
 
   useEffect(() => {
-    loadOrder()
-  }, [orderId])
+    void loadOrder()
+  }, [loadOrder])
 
   const handleCancelClick = () => {
     setCancelDialog(true)
@@ -232,7 +233,8 @@ export const OrderDetail = () => {
                   {order.items?.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell>
-                        {item.description || `Producto ${item.productId?.slice(0, 8)}`}
+                        {item.description ||
+                          `Producto ${item.productId?.slice(0, 8)}`}
                       </TableCell>
                       <TableCell align="right">{item.quantity}</TableCell>
                       <TableCell align="right">
@@ -248,7 +250,11 @@ export const OrderDetail = () => {
                       <Typography variant="h6">Total</Typography>
                     </TableCell>
                     <TableCell align="right">
-                      <Typography variant="h6" color="primary" fontWeight="bold">
+                      <Typography
+                        variant="h6"
+                        color="primary"
+                        fontWeight="bold"
+                      >
                         {formatPrice(order.totalAmount)}
                       </Typography>
                     </TableCell>

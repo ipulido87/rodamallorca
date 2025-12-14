@@ -52,20 +52,15 @@ export const MyOrders = () => {
     console.log('🔄 [LOADORDERS] Ejecutando loadOrders...')
 
     if (!user?.id) {
-      console.log('❌ [LOADORDERS] NO HAY USER.ID - cancelando')
       return
     }
 
     try {
       setLoading(true)
       setError('')
-      console.log('📡 [LOADORDERS] Llamando getMyOrders con userId:', user.id)
-
       const data = await getMyOrders(user.id)
       setOrders(data)
     } catch {
-      console.error('❌ [LOADORDERS] Error en componente:', error)
-
       setError('Error al cargar los pedidos')
     } finally {
       setLoading(false)
