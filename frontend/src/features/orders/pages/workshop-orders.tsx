@@ -85,6 +85,8 @@ export const WorkshopOrders = () => {
 
     try {
       setUpdateLoading(updateDialog.order.id)
+      setError('') // Limpiar errores previos
+
       await updateOrderStatus(updateDialog.order.id, {
         status: updateDialog.newStatus,
       })
@@ -98,8 +100,12 @@ export const WorkshopOrders = () => {
       )
 
       setUpdateDialog({ open: false, order: null, newStatus: null })
-    } catch {
-      setError('Error al actualizar el estado del pedido')
+    } catch (err) {
+      console.error('❌ [WORKSHOP_ORDERS] Error actualizando estado:', err)
+      const errorMessage = err && typeof err === 'object' && 'response' in err
+        ? (err as any).response?.data?.message || 'Error al actualizar el estado del pedido'
+        : 'Error al actualizar el estado del pedido'
+      setError(errorMessage)
     } finally {
       setUpdateLoading(null)
     }

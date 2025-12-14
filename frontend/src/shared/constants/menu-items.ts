@@ -74,7 +74,7 @@ export const menuItems: MenuItem[] = [
     text: 'Mis Pedidos',
     icon: 'ShoppingCart',
     path: '/my-orders',
-    roles: ['USER'],
+    roles: ['USER', 'WORKSHOP_OWNER'],
   },
   {
     id: 'favorites',
