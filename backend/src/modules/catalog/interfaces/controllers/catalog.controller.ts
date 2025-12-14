@@ -91,10 +91,7 @@ export const getProductByIdController = async (
     const { id } = req.params
 
     const product = await prisma.product.findUnique({
-      where: {
-        id,
-        status: 'PUBLISHED',
-      },
+      where: { id },
       include: {
         workshop: {
           select: { id: true, name: true, city: true, country: true },
