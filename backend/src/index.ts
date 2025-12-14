@@ -12,6 +12,7 @@ import mediaRoutes from './modules/media/interfaces/http/media.routes'
 import orderRoutes from './modules/orders/interfaces/http/order.routes'
 import productRoutes from './modules/products/interfaces/http/products.routes'
 import workshopRoutes from './modules/workshops/interfaces/http/workshop.routes'
+import serviceRoutes from './modules/services/interfaces/http/service.routes'
 
 dotenv.config()
 
@@ -31,10 +32,11 @@ app.use(
 // Rutas
 app.use('/api/auth', authRoutes)
 app.use('/api/catalog', catalogRoutes)
-app.use('/api/media', mediaRoutes) // ← AGREGAR
+app.use('/api/media', mediaRoutes)
 app.use('/api/orders', orderRoutes)
 app.use('/api/owner', productRoutes)
 app.use('/api/owner', workshopRoutes)
+app.use('/api', serviceRoutes) // Rutas de servicios (públicas y protegidas)
 
 // Servir archivos estáticos
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
