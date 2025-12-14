@@ -21,7 +21,8 @@ import {
 
 import { Build, Person, Email } from '@mui/icons-material'
 import axios, { AxiosError } from 'axios'
-import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
+import type { ChangeEvent, FormEvent } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 import { PASSWORD_MIN_LENGTH } from '../../../shared/constants/validation'

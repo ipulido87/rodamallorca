@@ -1,5 +1,5 @@
 import { API } from '../../../features/auth/services/auth-service'
-import { ProcessedImage } from '../../media/services/media-service'
+import type { ProcessedImage } from '../../media/services/media-service'
 
 export interface CreateProductData {
   title: string

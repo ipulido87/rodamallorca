@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../features/auth/hooks/useAuth' // Ajustar ruta según donde tengas el hook
 import { getMenuItemsForRole } from '../../shared/constants/menu-items'
-import { MainLayoutProps } from '../../shared/types/layout'
+import type { MainLayoutProps } from '../../shared/types/layout'
 import { Sidebar } from './side-bar'
 import { TopBar } from './top-bar'
 

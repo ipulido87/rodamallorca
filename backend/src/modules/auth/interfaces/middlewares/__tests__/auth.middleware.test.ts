@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, jest, beforeEach } from '@jest/globals'
 import { Request, Response, NextFunction } from 'express'
 import { verifyToken, requireRole } from '../auth.middleware'
 import jwt from 'jsonwebtoken'
 
-vi.mock('jsonwebtoken')
-vi.mock('../../../../../config/config', () => ({
+jest.mock('jsonwebtoken')
+jest.mock('../../../../../config/config', () => ({
   config: {
     jwtSecret: 'test-secret',
   },
@@ -14,13 +14,13 @@ describe('Auth Middleware', () => {
   let mockRequest: Partial<Request>
   let mockResponse: Partial<Response>
   let mockNext: NextFunction
-  let mockJson: ReturnType<typeof vi.fn>
-  let mockStatus: ReturnType<typeof vi.fn>
+  let mockJson: ReturnType<typeof jest.fn>
+  let mockStatus: ReturnType<typeof jest.fn>
 
   beforeEach(() => {
-    mockJson = vi.fn()
-    mockStatus = vi.fn().mockReturnValue({ json: mockJson })
-    mockNext = vi.fn()
+    mockJson = jest.fn()
+    mockStatus = jest.fn().mockReturnValue({ json: mockJson })
+    mockNext = jest.fn()
 
     mockRequest = {
       headers: {},
@@ -32,7 +32,7 @@ describe('Auth Middleware', () => {
       json: mockJson,
     }
 
-    vi.clearAllMocks()
+    jest.clearAllMocks()
   })
 
   describe('verifyToken', () => {
@@ -47,7 +47,7 @@ describe('Auth Middleware', () => {
         authorization: 'Bearer valid-token',
       }
 
-      vi.mocked(jwt.verify).mockReturnValue(mockPayload as any)
+      jest.mocked(jwt.verify).mockReturnValue(mockPayload as any)
 
       verifyToken(mockRequest as Request, mockResponse as Response, mockNext)
 
@@ -67,7 +67,7 @@ describe('Auth Middleware', () => {
         auth_token: 'cookie-token',
       }
 
-      vi.mocked(jwt.verify).mockReturnValue(mockPayload as any)
+      jest.mocked(jwt.verify).mockReturnValue(mockPayload as any)
 
       verifyToken(mockRequest as Request, mockResponse as Response, mockNext)
 
@@ -90,7 +90,7 @@ describe('Auth Middleware', () => {
         authorization: 'Bearer invalid-token',
       }
 
-      vi.mocked(jwt.verify).mockImplementation(() => {
+      jest.mocked(jwt.verify).mockImplementation(() => {
         throw new Error('Invalid token')
       })
 

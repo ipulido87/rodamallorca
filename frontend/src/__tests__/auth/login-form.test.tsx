@@ -32,15 +32,15 @@ const createMockAuthContext = (overrides: Partial<AuthContextType> = {}): AuthCo
 })
 
 describe('LoginForm', () => {
-  let mockLogin: ReturnType<typeof vi.fn>
-  let mockClearError: ReturnType<typeof vi.fn>
+  let mockLogin: ReturnType<typeof vi.fn<(email: string, password: string) => Promise<void>>>
+  let mockClearError: ReturnType<typeof vi.fn<() => void>>
 
   beforeEach(() => {
-    mockLogin = vi.fn()
-    mockClearError = vi.fn()
+    mockLogin = vi.fn<(email: string, password: string) => Promise<void>>()
+    mockClearError = vi.fn<() => void>()
     vi.mocked(useAuth).mockReturnValue(createMockAuthContext({
-      login: mockLogin,
-      clearError: mockClearError,
+      login: mockLogin as any,
+      clearError: mockClearError as any,
     }))
   })
 

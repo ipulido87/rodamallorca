@@ -1,6 +1,6 @@
 // config/menuItems.ts
 
-import { MenuItem, UserRole } from '../types/layout'
+import type { MenuItem, UserRole } from '../types/layout'
 
 export const menuItems: MenuItem[] = [
   // Menú para Talleres (WORKSHOP_OWNER)

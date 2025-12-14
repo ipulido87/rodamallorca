@@ -13,7 +13,7 @@ import { AxiosError } from 'axios'
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ImageUpload } from '../../media/components/image-downloads'
-import { ProcessedImage } from '../../media/services/media-service'
+import type { ProcessedImage } from '../../media/services/media-service'
 import {
   createProduct,
   type CreateProductData,

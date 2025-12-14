@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ApiError } from '../../../shared/types/api'
+import type { ApiError } from '../../../shared/types/api'
 import {
   createWorkshop,
   type CreateWorkshopData,

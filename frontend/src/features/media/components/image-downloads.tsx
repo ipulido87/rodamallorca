@@ -11,9 +11,11 @@ import {
   ImageListItem,
   Typography,
 } from '@mui/material'
-import { ChangeEvent, useRef, useState } from 'react'
+import type { ChangeEvent } from 'react'
+import { useRef, useState } from 'react'
 import { getImageUrl } from '../../../utils/api-urls'
-import { ProcessedImage, uploadMultipleImages } from '../services/media-service'
+import type { ProcessedImage } from '../services/media-service'
+import { uploadMultipleImages } from '../services/media-service'
 
 interface ImageUploadProps {
   maxImages?: number

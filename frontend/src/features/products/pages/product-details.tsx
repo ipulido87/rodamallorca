@@ -19,7 +19,7 @@ import {
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ApiError } from '../../../shared/types/api'
+import type { ApiError } from '../../../shared/types/api'
 import { adaptProductImages } from '../../../utils/adapt-product-Images'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useCart } from '../../cart/hooks/useCart'
