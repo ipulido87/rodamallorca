@@ -15,6 +15,7 @@ import { MyOrders } from './features/orders/pages/my-orders'
 import { OrderDetail } from './features/orders/pages/order-detail'
 import { WorkshopOrders } from './features/orders/pages/workshop-orders'
 import { Orders } from './features/orders/pages/orders'
+import { WorkshopServices } from './features/services/pages/workshop-services'
 import { Cart } from './features/cart/pages/Cart'
 import { Checkout } from './features/cart/pages/Checkout'
 import { Home } from './pages/HomePage'
@@ -159,10 +160,10 @@ function App() {
               }
             />
             <Route
-              path="services"
+              path="services/:workshopId"
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
-                  <div>Servicios - Por implementar</div>
+                  <WorkshopServices />
                 </RoleRoute>
               }
             />

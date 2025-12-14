@@ -31,8 +31,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const location = useLocation()
   const { user } = useAuth()
 
-  const handleNavigation = (path: string) => {
-    navigate(path)
+  const handleNavigation = async (path: string) => {
+    // Manejar rutas dinámicas que necesitan workshopId
+    if (path === '/services' && user?.role === 'WORKSHOP_OWNER') {
+      try {
+        // Obtener el primer taller del usuario
+        const response = await fetch('http://localhost:4000/api/owner/workshops/mine', {
+          credentials: 'include',
+        })
+        if (response.ok) {
+          const workshops = await response.json()
+          if (workshops.length > 0) {
+            navigate(`/services/${workshops[0].id}`)
+          } else {
+            navigate('/my-workshops') // Redirigir a crear taller si no tiene
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching workshop:', error)
+        navigate('/my-workshops')
+      }
+    } else {
+      navigate(path)
+    }
+
     if (isMobile) {
       onClose()
     }
