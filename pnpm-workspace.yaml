@@ -1,3 +1,10 @@
 packages:
-  - 'backend'
-  - 'frontend'
+  - backend
+  - frontend
+
+ignoredBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
+  - esbuild
+  - prisma
+  - sharp
