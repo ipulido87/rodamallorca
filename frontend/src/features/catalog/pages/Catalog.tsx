@@ -16,6 +16,7 @@ import {
   productFilterConfig,
   workshopFilterConfig,
 } from '../../../shared/constants/product-filters'
+import { adaptProductImages } from '../../../utils/adapt-product-Images'
 import { useAuth } from '../../auth/hooks/useAuth'
 import {
   ModernProductLayout,
@@ -42,21 +43,18 @@ const TabPanel = ({ children, value, index, ...other }: TabPanelProps) => (
 )
 
 // Adaptador para productos del catálogo
-const adaptCatalogProductForLayout = (product: Product) => {
-  const { adaptProductImages } = require('../../../utils/adapt-product-Images')
-  return {
-    id: product.id,
-    title: product.title,
-    price: product.price,
-    condition: 'used' as const,
-    status: product.status,
-    images: adaptProductImages(product.images),
-    workshop: {
-      name: product.workshop.name,
-      city: product.workshop.city ?? undefined,
-    },
-  }
-}
+const adaptCatalogProductForLayout = (product: Product) => ({
+  id: product.id,
+  title: product.title,
+  price: product.price,
+  condition: 'used' as const,
+  status: product.status,
+  images: adaptProductImages(product.images),
+  workshop: {
+    name: product.workshop.name,
+    city: product.workshop.city ?? undefined,
+  },
+})
 
 export const Catalog = () => {
   const { user } = useAuth()
