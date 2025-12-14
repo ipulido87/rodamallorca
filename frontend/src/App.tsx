@@ -23,6 +23,7 @@ import { LoginForm } from './features/auth/pages/login-form'
 import { Register } from './features/auth/pages/register-form'
 import { AuthProvider } from './providers/auth-provider'
 import { CartProvider } from './features/cart/contexts/CartContext'
+import { SnackbarProvider } from './shared/hooks/use-snackbar'
 import { ForgotPassword } from './features/auth/pages/forgot-password'
 import { ResetPassword } from './features/auth/pages/reset-password'
 import { GoogleCallbackHandler } from './pages/google-callback-handler'
@@ -32,7 +33,8 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
-          <Routes>
+          <SnackbarProvider>
+            <Routes>
           {/* Rutas públicas con PublicLayout */}
           <Route
             path="/"
@@ -200,6 +202,7 @@ function App() {
             />
           </Route>
         </Routes>
+          </SnackbarProvider>
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>

@@ -23,6 +23,7 @@ import type { ApiError } from '../../../shared/types/api'
 import { adaptProductImages } from '../../../utils/adapt-product-Images'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useCart } from '../../cart/hooks/useCart'
+import { useSnackbar } from '../../../shared/hooks/use-snackbar'
 import { getProductById } from '../../catalog/services/catalog-service'
 import type { PublicProduct } from '../../catalog/types/catalog'
 import { ProductImageGallery } from '../components/product-image-galery'
@@ -32,6 +33,7 @@ export const ProductDetail = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { addToCart, getItemCount } = useCart()
+  const { showSuccess } = useSnackbar()
   const [product, setProduct] = useState<PublicProduct | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -79,8 +81,8 @@ export const ProductDetail = () => {
       quantity
     )
 
-    // Mostrar feedback visual
-    alert(`${quantity} ${product.title} added to cart!`)
+    // Mostrar feedback visual con snackbar
+    showSuccess(`✓ ${quantity} ${product.title} añadido al carrito`)
   }
 
   const handleQuantityChange = (newQuantity: number) => {

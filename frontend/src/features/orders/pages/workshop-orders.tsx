@@ -28,6 +28,7 @@ import {
 } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useSnackbar } from '../../../shared/hooks/use-snackbar'
 import {
   getOrderStatusColor,
   getOrderStatusLabel,
@@ -40,6 +41,7 @@ import {
 export const WorkshopOrders = () => {
   const { workshopId } = useParams<{ workshopId: string }>()
   const navigate = useNavigate()
+  const { showSuccess, showError } = useSnackbar()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -100,11 +102,13 @@ export const WorkshopOrders = () => {
       )
 
       setUpdateDialog({ open: false, order: null, newStatus: null })
+      showSuccess('✓ Estado del pedido actualizado correctamente')
     } catch (err) {
       console.error('❌ [WORKSHOP_ORDERS] Error actualizando estado:', err)
       const errorMessage = err && typeof err === 'object' && 'response' in err
         ? (err as any).response?.data?.message || 'Error al actualizar el estado del pedido'
         : 'Error al actualizar el estado del pedido'
+      showError(errorMessage)
       setError(errorMessage)
     } finally {
       setUpdateLoading(null)
