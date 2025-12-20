@@ -26,6 +26,7 @@ export const generateInvoiceFromOrder = async (
       items: {
         include: {
           product: true,
+          service: true,
         },
       },
       workshop: true,
@@ -81,9 +82,9 @@ export const generateInvoiceFromOrder = async (
 
   // 4. Preparar items de factura desde items del pedido
   const invoiceItems = order.items.map((orderItem) => ({
-    description: orderItem.product.name,
+    description: orderItem.product?.name || orderItem.service?.name || orderItem.description || 'Item sin descripción',
     quantity: orderItem.quantity,
-    unitPrice: orderItem.price, // Ya viene en céntimos
+    unitPrice: orderItem.priceAtOrder, // Ya viene en céntimos
     discount: 0,
     taxRate: 21, // IVA por defecto 21%
   }))

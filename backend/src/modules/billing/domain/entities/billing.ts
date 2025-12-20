@@ -134,6 +134,7 @@ export interface CreateInvoiceInput {
   workshopId: string
   customerId?: string
   seriesId: string
+  orderId?: string // ID del pedido que generó esta factura (opcional)
   issueDate?: Date
   dueDate?: Date
   status?: InvoiceStatus
