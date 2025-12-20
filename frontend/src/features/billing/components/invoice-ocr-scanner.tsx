@@ -96,8 +96,8 @@ export const InvoiceOcrScanner = ({ open, onClose, onDataExtracted }: InvoiceOcr
 
     // Buscar número de factura (patrones comunes)
     const invoiceNumberPatterns = [
-      /(?:FACTURA|INVOICE|N[°ºª]?)[:\s]*([A-Z0-9\-\/]+)/i,
-      /(?:F|FA|INV)[:\s\-]*(\d{4,})/i,
+      /(?:FACTURA|INVOICE|N[°ºª]?)[:\s]*([A-Z0-9/-]+)/i,
+      /(?:F|FA|INV)[:\s-]*(\d{4,})/i,
     ]
     for (const pattern of invoiceNumberPatterns) {
       const match = text.match(pattern)
@@ -109,8 +109,8 @@ export const InvoiceOcrScanner = ({ open, onClose, onDataExtracted }: InvoiceOcr
 
     // Buscar fecha (varios formatos)
     const datePatterns = [
-      /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/,
-      /(\d{2,4}[\/\-]\d{1,2}[\/\-]\d{1,2})/,
+      /(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})/,
+      /(\d{2,4}[/-]\d{1,2}[/-]\d{1,2})/,
     ]
     for (const pattern of datePatterns) {
       const match = text.match(pattern)
