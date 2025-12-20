@@ -6,7 +6,6 @@ import {
   CardContent,
   Container,
   Divider,
-  Paper,
   Table,
   TableBody,
   TableCell,

@@ -40,7 +40,7 @@ export interface CardWorkshop {
 /** Handler para abrir el menú contextual desde la card */
 export type OnOpenMenuHandler = (
   e: MouseEvent<HTMLElement>,
-  product: CardProduct
+  item: CardProduct | CardWorkshop
 ) => void
 
 /** Props comunes para el layout moderno */

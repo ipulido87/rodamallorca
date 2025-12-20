@@ -1,6 +1,6 @@
 // config/menuItems.ts
 
-import { MenuItem, UserRole } from '../types/layout'
+import type { MenuItem, UserRole } from '../types/layout'
 
 export const menuItems: MenuItem[] = [
   // Menú para Talleres (WORKSHOP_OWNER)
@@ -74,7 +74,7 @@ export const menuItems: MenuItem[] = [
     text: 'Mis Pedidos',
     icon: 'ShoppingCart',
     path: '/my-orders',
-    roles: ['USER'],
+    roles: ['USER', 'WORKSHOP_OWNER'],
   },
   {
     id: 'favorites',

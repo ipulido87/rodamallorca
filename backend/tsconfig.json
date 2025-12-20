@@ -6,6 +6,7 @@
     "types": ["node", "jest"], // 👈 esto habilita process, __dirname, jest, etc.
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "strict": true
+    "strict": true,
+    "isolatedModules": true
   }
 }

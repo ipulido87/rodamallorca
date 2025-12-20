@@ -26,7 +26,6 @@ export async function searchCatalog(
 
   const skip = (page - 1) * size
 
-  // Filtros para productos
   const productWhere: Prisma.ProductWhereInput = {
     status: 'PUBLISHED',
   }
@@ -34,15 +33,19 @@ export async function searchCatalog(
   if (q) {
     productWhere.title = { contains: q, mode: 'insensitive' }
   }
+
   if (categoryId) {
     productWhere.categoryId = categoryId
   }
-  if (minPrice !== undefined) {
-    productWhere.price = { ...productWhere.price, gte: minPrice }
+
+  // ✅ filtro de precio separado (sin spread)
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    productWhere.price = {
+      ...(minPrice !== undefined ? { gte: minPrice } : {}),
+      ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
+    }
   }
-  if (maxPrice !== undefined) {
-    productWhere.price = { ...productWhere.price, lte: maxPrice }
-  }
+
   if (city) {
     productWhere.workshop = {
       city: { contains: city, mode: 'insensitive' },

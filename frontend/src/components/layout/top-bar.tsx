@@ -2,7 +2,7 @@ import { Menu as MenuIcon } from '@mui/icons-material'
 import { AppBar, Avatar, IconButton, Toolbar, Typography } from '@mui/material'
 import { useState } from 'react'
 import { useAuth } from '../../features/auth/hooks/useAuth' // Ajustar ruta según donde tengas el hook
-import { TopBarProps } from '../../shared/types/layout'
+import type { TopBarProps } from '../../shared/types/layout'
 import { UserProfileMenu } from './user-profile-menu'
 
 const DRAWER_WIDTH = 280

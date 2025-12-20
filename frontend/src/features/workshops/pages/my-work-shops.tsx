@@ -86,10 +86,18 @@ export const MyWorkshops = () => {
     setDeleteDialog({ open: false, workshop: null })
   }
 
-  const handleOpenMenu = (event: MouseEvent<HTMLElement>, workshop: Workshop) => {
+  const handleOpenMenu = (
+    event: MouseEvent<HTMLElement>,
+    item: import('../../products/types/products-types').CardProduct | import('../../products/types/products-types').CardWorkshop
+  ) => {
     event.stopPropagation()
     setAnchorEl(event.currentTarget)
-    setSelectedWorkshop(workshop)
+    // Type guard: if it doesn't have 'price', it's a workshop
+    if (!('price' in item)) {
+      // Find the full Workshop object from our workshops array
+      const workshop = workshops.find((w) => w.id === item.id) || null
+      setSelectedWorkshop(workshop)
+    }
   }
 
   const handleCloseMenu = () => {

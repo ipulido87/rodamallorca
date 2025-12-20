@@ -13,11 +13,11 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  SelectChangeEvent,
   Stack,
   TextField,
   Typography,
 } from '@mui/material'
+import type { SelectChangeEvent } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { z } from 'zod'

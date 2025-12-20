@@ -138,5 +138,107 @@ describe('Product Repository Prisma', () => {
     prisma = new PrismaClient() as unknown as MockPrismaClient
   })
 
-  // ... tus casos (createDraft, publish, update, findById, search)
+  describe('createDraft', () => {
+    it('should create a draft product with default values', async () => {
+      const mockProduct: ProductRecord = {
+        id: 'prod-1',
+        workshopId: 'workshop-1',
+        title: 'Test Product',
+        price: 100,
+        currency: 'EUR',
+        status: 'DRAFT',
+        condition: 'used',
+        categoryId: null,
+        description: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+
+      prisma.product.create.mockResolvedValue(mockProduct)
+
+      const result = await repository.createDraft({
+        workshopId: 'workshop-1',
+        title: 'Test Product',
+        price: 100,
+      })
+
+      expect(prisma.product.create).toHaveBeenCalledWith({
+        data: {
+          workshopId: 'workshop-1',
+          title: 'Test Product',
+          price: 100,
+          currency: 'EUR',
+          condition: 'used',
+          categoryId: null,
+          description: null,
+          status: 'DRAFT',
+        },
+      })
+
+      expect(result).toEqual({
+        id: 'prod-1',
+        workshopId: 'workshop-1',
+        title: 'Test Product',
+        price: 100,
+        currency: 'EUR',
+        status: 'DRAFT',
+        condition: 'used',
+        categoryId: null,
+      })
+    })
+  })
+
+  describe('publish', () => {
+    it('should publish a draft product', async () => {
+      prisma.product.updateMany.mockResolvedValue({ count: 1 })
+
+      await repository.publish('prod-1', 'workshop-1')
+
+      expect(prisma.product.updateMany).toHaveBeenCalledWith({
+        where: { id: 'prod-1', workshopId: 'workshop-1' },
+        data: { status: 'PUBLISHED' },
+      })
+    })
+  })
+
+  describe('findById', () => {
+    it('should return a product when found', async () => {
+      const mockProduct: ProductRecord = {
+        id: 'prod-1',
+        workshopId: 'workshop-1',
+        title: 'Test Product',
+        price: 100,
+        currency: 'EUR',
+        status: 'PUBLISHED',
+        condition: 'new',
+        categoryId: 'cat-1',
+        description: 'Test description',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+
+      prisma.product.findUnique.mockResolvedValue(mockProduct)
+
+      const result = await repository.findById('prod-1')
+
+      expect(result).toEqual({
+        id: 'prod-1',
+        workshopId: 'workshop-1',
+        title: 'Test Product',
+        price: 100,
+        currency: 'EUR',
+        status: 'PUBLISHED',
+        condition: 'new',
+        categoryId: 'cat-1',
+      })
+    })
+
+    it('should return null when product not found', async () => {
+      prisma.product.findUnique.mockResolvedValue(null)
+
+      const result = await repository.findById('non-existent')
+
+      expect(result).toBeNull()
+    })
+  })
 })

@@ -73,7 +73,7 @@ export const Orders = () => {
         if (data.length === 1) {
           setSelectedWorkshopId(data[0].id)
         }
-      } catch (err) {
+      } catch {
         setError('Error al cargar tus talleres')
       } finally {
         setLoading(false)
@@ -93,7 +93,7 @@ export const Orders = () => {
         const data = await getWorkshopOrders(selectedWorkshopId)
         setOrders(data)
         setError('')
-      } catch (err) {
+      } catch {
         setError('Error al cargar los pedidos del taller')
       } finally {
         setOrdersLoading(false)
@@ -126,7 +126,7 @@ export const Orders = () => {
       )
 
       setUpdateDialog({ open: false, order: null, newStatus: null })
-    } catch (err) {
+    } catch {
       setError('Error al actualizar el estado del pedido')
     } finally {
       setUpdateLoading(null)

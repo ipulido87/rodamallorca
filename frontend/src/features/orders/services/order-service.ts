@@ -1,13 +1,15 @@
 import { API } from '../../auth/services/auth-service'
 
-export enum OrderStatus {
-  PENDING = 'PENDING',
-  CONFIRMED = 'CONFIRMED',
-  IN_PROGRESS = 'IN_PROGRESS',
-  READY = 'READY',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED',
-}
+export const OrderStatus = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  READY: 'READY',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+} as const
+
+export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus]
 
 export interface OrderItem {
   id: string
@@ -32,6 +34,9 @@ export interface Order {
   createdAt: string
   updatedAt: string
   items?: OrderItem[]
+  user?: {
+    email: string
+  }
 }
 
 export interface CreateOrderItemData {

@@ -27,7 +27,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { adaptProductImages } from '../../../utils/adapt-product-Images'
 import { ModernProductLayout } from '../components/modern-product-layout'
-import { Product } from '../services/product-service'
+import type { Product } from '../services/product-service'
 import type { CardProduct } from '../types/products-types'
 import axios, { AxiosError } from 'axios'
 
@@ -185,12 +185,16 @@ export const MyProducts = () => {
   // abrir menú desde la card (⋮)
   const handleOpenMenuFromCard = (
     e: React.MouseEvent<HTMLElement>,
-    cardProduct: CardProduct
+    item: CardProduct | import('../types/products-types').CardWorkshop
   ) => {
     e.stopPropagation()
-    const original = products.find((p) => p.id === cardProduct.id) || null
-    setSelectedProduct(original)
-    setAnchorEl(e.currentTarget)
+    // Type guard to ensure it's a CardProduct
+    if ('price' in item) {
+      const cardProduct = item as CardProduct
+      const original = products.find((p) => p.id === cardProduct.id) || null
+      setSelectedProduct(original)
+      setAnchorEl(e.currentTarget)
+    }
   }
 
   const handleCloseMenu = () => {

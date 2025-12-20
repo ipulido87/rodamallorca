@@ -1,10 +1,8 @@
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
 import { AxiosError } from 'axios'
-import {
-  AuthContext,
-  User,
-  AuthContextType,
-} from '../features/auth/providers/auth-providers'
+import { AuthContext } from '../features/auth/providers/auth-providers'
+import type { User, AuthContextType } from '../features/auth/providers/auth-providers'
 import {
   API,
   login as apiLogin,

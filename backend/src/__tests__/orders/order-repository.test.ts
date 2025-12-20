@@ -1,8 +1,12 @@
-import { OrderStatus } from '@prisma/client'
-import { PrismaClient } from '@prisma/client' // <-- en versiones <6
+import { PrismaClient, OrderStatus as PrismaOrderStatus } from '@prisma/client'
 import { beforeEach, describe, expect, it, jest } from '@jest/globals'
-import type { CreateOrderInput } from '../../modules/orders/domain/entities/order'
+
 import { OrderRepositoryPrisma } from '../../modules/orders/infrastructure/persistence/prisma/order-repository-prisma'
+
+// Dominio (para asserts)
+import { OrderStatus as DomainOrderStatus } from '../../modules/orders/domain/enums/order-status'
+
+import type { CreateOrderRepoInput } from '../../modules/orders/domain/repositories/order-repository'
 
 type MockFunction = ReturnType<typeof jest.fn>
 
@@ -40,9 +44,10 @@ describe('OrderRepositoryPrisma', () => {
 
   describe('create', () => {
     it('debe crear un pedido con items correctamente', async () => {
-      const input: CreateOrderInput = {
+      const input: CreateOrderRepoInput = {
         userId: 'user-123',
         workshopId: 'workshop-123',
+        totalAmount: 13000,
         notes: 'Test order',
         items: [
           {
@@ -50,22 +55,24 @@ describe('OrderRepositoryPrisma', () => {
             quantity: 2,
             priceAtOrder: 5000,
             currency: 'EUR',
+            description: null,
           },
           {
             productId: 'product-456',
             quantity: 1,
             priceAtOrder: 3000,
             currency: 'EUR',
+            description: null,
           },
         ],
       }
 
-      const mockOrder = {
+      const mockOrderFromPrisma = {
         id: 'order-123',
         userId: 'user-123',
         workshopId: 'workshop-123',
-        status: OrderStatus.PENDING,
-        totalAmount: 13000, // (2 * 5000) + (1 * 3000)
+        status: PrismaOrderStatus.PENDING,
+        totalAmount: 13000,
         currency: 'EUR',
         notes: 'Test order',
         createdAt: new Date(),
@@ -96,7 +103,7 @@ describe('OrderRepositoryPrisma', () => {
         ],
       }
 
-      mockPrisma.order.create.mockResolvedValue(mockOrder)
+      mockPrisma.order.create.mockResolvedValue(mockOrderFromPrisma)
 
       const result = await repository.create(input)
 
@@ -104,7 +111,7 @@ describe('OrderRepositoryPrisma', () => {
         data: {
           userId: 'user-123',
           workshopId: 'workshop-123',
-          status: OrderStatus.PENDING,
+          status: PrismaOrderStatus.PENDING,
           totalAmount: 13000,
           currency: 'EUR',
           notes: 'Test order',
@@ -127,26 +134,18 @@ describe('OrderRepositoryPrisma', () => {
             ],
           },
         },
-        include: {
-          items: true,
-        },
+        include: { items: true },
       })
 
       expect(result).toMatchObject({
         id: 'order-123',
         userId: 'user-123',
         workshopId: 'workshop-123',
-        status: OrderStatus.PENDING,
+        status: DomainOrderStatus.PENDING,
         totalAmount: 13000,
         items: expect.arrayContaining([
-          expect.objectContaining({
-            productId: 'product-123',
-            quantity: 2,
-          }),
-          expect.objectContaining({
-            productId: 'product-456',
-            quantity: 1,
-          }),
+          expect.objectContaining({ productId: 'product-123', quantity: 2 }),
+          expect.objectContaining({ productId: 'product-456', quantity: 1 }),
         ]),
       })
     })
@@ -154,11 +153,11 @@ describe('OrderRepositoryPrisma', () => {
 
   describe('findById', () => {
     it('debe encontrar un pedido por ID con items', async () => {
-      const mockOrder = {
+      const mockOrderFromPrisma = {
         id: 'order-123',
         userId: 'user-123',
         workshopId: 'workshop-123',
-        status: OrderStatus.PENDING,
+        status: PrismaOrderStatus.PENDING,
         totalAmount: 10000,
         currency: 'EUR',
         notes: null,
@@ -179,7 +178,7 @@ describe('OrderRepositoryPrisma', () => {
         ],
       }
 
-      mockPrisma.order.findUnique.mockResolvedValue(mockOrder)
+      mockPrisma.order.findUnique.mockResolvedValue(mockOrderFromPrisma)
 
       const result = await repository.findById('order-123', true)
 
@@ -190,6 +189,7 @@ describe('OrderRepositoryPrisma', () => {
 
       expect(result).toMatchObject({
         id: 'order-123',
+        status: DomainOrderStatus.PENDING,
         items: expect.arrayContaining([
           expect.objectContaining({ productId: 'product-123' }),
         ]),
@@ -207,12 +207,12 @@ describe('OrderRepositoryPrisma', () => {
 
   describe('findByUserId', () => {
     it('debe encontrar todos los pedidos de un usuario', async () => {
-      const mockOrders = [
+      const mockOrdersFromPrisma = [
         {
           id: 'order-1',
           userId: 'user-123',
           workshopId: 'workshop-123',
-          status: OrderStatus.PENDING,
+          status: PrismaOrderStatus.PENDING,
           totalAmount: 10000,
           currency: 'EUR',
           notes: null,
@@ -224,7 +224,7 @@ describe('OrderRepositoryPrisma', () => {
           id: 'order-2',
           userId: 'user-123',
           workshopId: 'workshop-456',
-          status: OrderStatus.COMPLETED,
+          status: PrismaOrderStatus.COMPLETED,
           totalAmount: 20000,
           currency: 'EUR',
           notes: null,
@@ -234,7 +234,7 @@ describe('OrderRepositoryPrisma', () => {
         },
       ]
 
-      mockPrisma.order.findMany.mockResolvedValue(mockOrders)
+      mockPrisma.order.findMany.mockResolvedValue(mockOrdersFromPrisma)
 
       const result = await repository.findByUserId('user-123', true)
 
@@ -245,18 +245,18 @@ describe('OrderRepositoryPrisma', () => {
       })
 
       expect(result).toHaveLength(2)
-      expect(result[0].id).toBe('order-1')
-      expect(result[1].id).toBe('order-2')
+      expect(result[0].status).toBe(DomainOrderStatus.PENDING)
+      expect(result[1].status).toBe(DomainOrderStatus.COMPLETED)
     })
   })
 
   describe('updateStatus', () => {
     it('debe actualizar el estado de un pedido', async () => {
-      const mockUpdatedOrder = {
+      const mockUpdatedOrderFromPrisma = {
         id: 'order-123',
         userId: 'user-123',
         workshopId: 'workshop-123',
-        status: OrderStatus.CONFIRMED,
+        status: PrismaOrderStatus.CONFIRMED,
         totalAmount: 10000,
         currency: 'EUR',
         notes: null,
@@ -265,19 +265,19 @@ describe('OrderRepositoryPrisma', () => {
         items: [],
       }
 
-      mockPrisma.order.update.mockResolvedValue(mockUpdatedOrder)
+      mockPrisma.order.update.mockResolvedValue(mockUpdatedOrderFromPrisma)
 
       const result = await repository.updateStatus('order-123', {
-        status: OrderStatus.CONFIRMED,
+        status: DomainOrderStatus.CONFIRMED,
       })
 
       expect(mockPrisma.order.update).toHaveBeenCalledWith({
         where: { id: 'order-123' },
-        data: { status: OrderStatus.CONFIRMED },
+        data: { status: PrismaOrderStatus.CONFIRMED },
         include: { items: true },
       })
 
-      expect(result.status).toBe(OrderStatus.CONFIRMED)
+      expect(result.status).toBe(DomainOrderStatus.CONFIRMED)
     })
   })
 
@@ -287,7 +287,7 @@ describe('OrderRepositoryPrisma', () => {
         id: 'order-123',
         userId: 'user-123',
         workshopId: 'workshop-123',
-        status: OrderStatus.CANCELLED,
+        status: PrismaOrderStatus.CANCELLED,
         totalAmount: 10000,
         currency: 'EUR',
         notes: null,

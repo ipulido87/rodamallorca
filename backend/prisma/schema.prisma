@@ -22,6 +22,18 @@ enum OrderStatus {
   CANCELLED    // Cancelado
 }
 
+enum VehicleType {
+  BICYCLE      // Bicicleta convencional
+  E_BIKE       // Bicicleta eléctrica
+  E_SCOOTER    // Patinete eléctrico
+  ALL          // Aplica a todos los tipos
+}
+
+enum ServiceStatus {
+  ACTIVE       // Servicio activo y disponible
+  INACTIVE     // Servicio desactivado temporalmente
+}
+
 model User {
   id               String   @id @default(uuid())
   email            String   @unique
@@ -58,8 +70,9 @@ model Workshop {
   updatedAt   DateTime @updatedAt
 
   // Relaciones
-  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner       User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   products    Product[]
+  services    Service[] // Servicios ofrecidos por el taller
   orders      Order[]   // Pedidos recibidos por este taller
 
   @@index([ownerId])
@@ -139,7 +152,8 @@ model Order {
 model OrderItem {
   id           String   @id @default(uuid())
   orderId      String
-  productId    String?  // Puede ser null si es un servicio personalizado
+  productId    String?  // Puede ser null si es un servicio
+  serviceId    String?  // Puede ser null si es un producto
   quantity     Int      @default(1)
   priceAtOrder Int      // Precio en céntimos al momento del pedido
   currency     String   @default("EUR")
@@ -150,7 +164,51 @@ model OrderItem {
   // Relaciones
   order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product      Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  service      Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
 
   @@index([orderId])
   @@index([productId])
+  @@index([serviceId])
+}
+
+// Categorías de servicios (Ruedas, Transmisión, Frenos, etc.)
+model ServiceCategory {
+  id          String    @id @default(uuid())
+  name        String    @unique // "Ruedas y neumáticos", "Transmisión", etc.
+  description String?
+  icon        String?   // Nombre del icono para la UI
+  position    Int       @default(0) // Para ordenar las categorías
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  services    Service[]
+
+  @@index([position])
+}
+
+// Servicios ofrecidos por cada taller
+model Service {
+  id                String        @id @default(uuid())
+  workshopId        String
+  serviceCategoryId String
+  name              String        // "Cambio de cubiertas y cámaras"
+  description       String?       // Descripción detallada del servicio
+  price             Int           // Precio en céntimos
+  currency          String        @default("EUR")
+  duration          Int?          // Duración estimada en minutos
+  vehicleType       VehicleType   @default(ALL) // Tipo de vehículo
+  status            ServiceStatus @default(ACTIVE)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  // Relaciones
+  workshop        Workshop        @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  serviceCategory ServiceCategory @relation(fields: [serviceCategoryId], references: [id])
+  orderItems      OrderItem[]     // Items de pedidos que referencian este servicio
+
+  @@index([workshopId])
+  @@index([serviceCategoryId])
+  @@index([status])
+  @@index([vehicleType])
+  @@index([createdAt])
 }

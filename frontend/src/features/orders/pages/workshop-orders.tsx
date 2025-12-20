@@ -26,8 +26,9 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useSnackbar } from '../../../shared/hooks/use-snackbar'
 import {
   getOrderStatusColor,
   getOrderStatusLabel,
@@ -40,6 +41,7 @@ import {
 export const WorkshopOrders = () => {
   const { workshopId } = useParams<{ workshopId: string }>()
   const navigate = useNavigate()
+  const { showSuccess, showError } = useSnackbar()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -56,23 +58,25 @@ export const WorkshopOrders = () => {
     newStatus: null,
   })
 
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     if (!workshopId) return
 
     try {
       setLoading(true)
+      setError('')
       const data = await getWorkshopOrders(workshopId)
       setOrders(data)
-    } catch {
+    } catch (e) {
+      console.error('❌ [WORKSHOP_ORDERS] Error cargando pedidos:', e)
       setError('Error al cargar los pedidos del taller')
     } finally {
       setLoading(false)
     }
-  }
+  }, [workshopId])
 
   useEffect(() => {
-    loadOrders()
-  }, [workshopId])
+    void loadOrders()
+  }, [loadOrders])
 
   const handleStatusChangeClick = (order: Order) => {
     setUpdateDialog({ open: true, order, newStatus: null })
@@ -83,11 +87,12 @@ export const WorkshopOrders = () => {
 
     try {
       setUpdateLoading(updateDialog.order.id)
+      setError('') // Limpiar errores previos
+
       await updateOrderStatus(updateDialog.order.id, {
         status: updateDialog.newStatus,
       })
 
-      // Actualizar la lista local
       setOrders((prev) =>
         prev.map((o) =>
           o.id === updateDialog.order?.id
@@ -97,8 +102,34 @@ export const WorkshopOrders = () => {
       )
 
       setUpdateDialog({ open: false, order: null, newStatus: null })
-    } catch {
-      setError('Error al actualizar el estado del pedido')
+      showSuccess('✓ Estado del pedido actualizado correctamente')
+    } catch (err) {
+      console.error('❌ [WORKSHOP_ORDERS] Error actualizando estado:', err)
+
+      let errorMessage = 'Error al actualizar el estado del pedido'
+
+      if (err && typeof err === 'object' && 'response' in err) {
+        const response = (err as any).response
+
+        // El backend ahora devuelve JSON con { error, message }
+        const backendMessage = response?.data?.message || response?.data?.error
+
+        if (backendMessage) {
+          // Mejorar mensajes específicos
+          if (backendMessage.includes('completado') || backendMessage.includes('cancelado')) {
+            errorMessage = '⚠️ Este pedido ya está en estado final y no puede ser modificado'
+          } else if (backendMessage.includes('no se puede cambiar')) {
+            errorMessage = `⚠️ ${backendMessage}`
+          } else {
+            errorMessage = backendMessage
+          }
+        }
+      } else if (err instanceof Error) {
+        errorMessage = err.message
+      }
+
+      showError(errorMessage)
+      setError(errorMessage)
     } finally {
       setUpdateLoading(null)
     }
@@ -193,7 +224,12 @@ export const WorkshopOrders = () => {
                     }}
                   >
                     <Box>
-                      <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                        mb={1}
+                      >
                         {getStatusIcon(order.status)}
                         <Typography variant="h6">
                           Pedido #{order.id.slice(0, 8)}
@@ -241,8 +277,8 @@ export const WorkshopOrders = () => {
                     >
                       Ver Detalles
                     </Button>
-                    {order.status !== OrderStatus.COMPLETED &&
-                      order.status !== OrderStatus.CANCELLED && (
+                    {order.status !== 'COMPLETED' &&
+                      order.status !== 'CANCELLED' && (
                         <Button
                           variant="contained"
                           startIcon={<Settings />}
@@ -293,7 +329,10 @@ export const WorkshopOrders = () => {
             </FormControl>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleUpdateDialogClose} disabled={updateLoading !== null}>
+            <Button
+              onClick={handleUpdateDialogClose}
+              disabled={updateLoading !== null}
+            >
               Cancelar
             </Button>
             <Button

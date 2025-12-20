@@ -19,6 +19,7 @@ import {
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
+import { useSnackbar } from '../../../shared/hooks/use-snackbar'
 import {
   cancelOrder,
   getMyOrders,
@@ -31,6 +32,7 @@ import {
 export const MyOrders = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { showSuccess, showError } = useSnackbar()
 
   console.log('🔐 [MYORDERS] Usuario al cargar componente:', user)
   console.log('🔐 [MYORDERS] User ID:', user?.id)
@@ -52,20 +54,15 @@ export const MyOrders = () => {
     console.log('🔄 [LOADORDERS] Ejecutando loadOrders...')
 
     if (!user?.id) {
-      console.log('❌ [LOADORDERS] NO HAY USER.ID - cancelando')
       return
     }
 
     try {
       setLoading(true)
       setError('')
-      console.log('📡 [LOADORDERS] Llamando getMyOrders con userId:', user.id)
-
       const data = await getMyOrders(user.id)
       setOrders(data)
     } catch {
-      console.error('❌ [LOADORDERS] Error en componente:', error)
-
       setError('Error al cargar los pedidos')
     } finally {
       setLoading(false)
@@ -85,20 +82,48 @@ export const MyOrders = () => {
 
     try {
       setCancelLoading(cancelDialog.order.id)
+      setError('') // Limpiar errores previos
+
       await cancelOrder(cancelDialog.order.id)
 
       // Actualizar la lista local
       setOrders((prev) =>
         prev.map((o) =>
           o.id === cancelDialog.order?.id
-            ? { ...o, status: OrderStatus.CANCELLED }
+            ? { ...o, status: 'CANCELLED' as any }
             : o
         )
       )
 
       setCancelDialog({ open: false, order: null })
-    } catch {
-      setError('Error al cancelar el pedido')
+      showSuccess('✓ Pedido cancelado correctamente')
+    } catch (err) {
+      console.error('❌ [MY_ORDERS] Error cancelando pedido:', err)
+
+      let errorMessage = 'Error al cancelar el pedido'
+
+      if (err && typeof err === 'object' && 'response' in err) {
+        const response = (err as any).response
+
+        // El backend ahora devuelve JSON con { error, message }
+        const backendMessage = response?.data?.message || response?.data?.error
+
+        if (backendMessage) {
+          // Mejorar mensajes específicos
+          if (backendMessage.includes('completado') || backendMessage.includes('cancelado')) {
+            errorMessage = '⚠️ Este pedido ya está en estado final y no puede ser modificado'
+          } else if (backendMessage.includes('no se puede')) {
+            errorMessage = `⚠️ ${backendMessage}`
+          } else {
+            errorMessage = backendMessage
+          }
+        }
+      } else if (err instanceof Error) {
+        errorMessage = err.message
+      }
+
+      showError(errorMessage)
+      setError(errorMessage)
     } finally {
       setCancelLoading(null)
     }
@@ -220,8 +245,8 @@ export const MyOrders = () => {
                     >
                       Ver Detalles
                     </Button>
-                    {order.status !== OrderStatus.COMPLETED &&
-                      order.status !== OrderStatus.CANCELLED && (
+                    {order.status !== 'COMPLETED' &&
+                      order.status !== 'CANCELLED' && (
                         <Button
                           variant="outlined"
                           color="error"

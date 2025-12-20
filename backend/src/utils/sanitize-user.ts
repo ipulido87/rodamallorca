@@ -1,20 +1,20 @@
 interface UserWithSensitiveData {
   id: string
   email: string
-  name: string
-  picture?: string | null
-  birthDate?: Date | null
-  phone?: string | null
+  name: string | null
+  picture: string | null
+  birthDate: Date | null
+  phone: string | null
   verified: boolean
   role: string
   createdAt: Date
   updatedAt: Date
-  password?: string
-  verificationCode?: string
-  codeExpiresAt?: Date
-  resetToken?: string | null
-  resetTokenExpiresAt?: Date | null
-  googleId?: string | null
+  password: string | null
+  verificationCode: string | null
+  codeExpiresAt: Date | null
+  resetToken: string | null
+  resetTokenExpiresAt: Date | null
+  googleId: string | null
 }
 
 export function sanitizeUser(u: UserWithSensitiveData) {

@@ -19,10 +19,11 @@ import {
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ApiError } from '../../../shared/types/api'
+import type { ApiError } from '../../../shared/types/api'
 import { adaptProductImages } from '../../../utils/adapt-product-Images'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useCart } from '../../cart/hooks/useCart'
+import { useSnackbar } from '../../../shared/hooks/use-snackbar'
 import { getProductById } from '../../catalog/services/catalog-service'
 import type { PublicProduct } from '../../catalog/types/catalog'
 import { ProductImageGallery } from '../components/product-image-galery'
@@ -32,6 +33,7 @@ export const ProductDetail = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { addToCart, getItemCount } = useCart()
+  const { showSuccess } = useSnackbar()
   const [product, setProduct] = useState<PublicProduct | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -79,8 +81,8 @@ export const ProductDetail = () => {
       quantity
     )
 
-    // Mostrar feedback visual
-    alert(`${quantity} ${product.title} added to cart!`)
+    // Mostrar feedback visual con snackbar
+    showSuccess(`✓ ${quantity} ${product.title} añadido al carrito`)
   }
 
   const handleQuantityChange = (newQuantity: number) => {
@@ -221,7 +223,7 @@ export const ProductDetail = () => {
 
             {/* Add to Cart Section */}
             <Box sx={{ mt: 4 }}>
-              {product.status === 'PUBLISHED' && user && (
+              {product.status.toUpperCase() === 'PUBLISHED' && user && (
                 <>
                   <Box
                     sx={{
@@ -232,7 +234,7 @@ export const ProductDetail = () => {
                     }}
                   >
                     <Typography variant="body1" fontWeight={500}>
-                      Quantity:
+                      Cantidad:
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <IconButton
@@ -271,23 +273,26 @@ export const ProductDetail = () => {
                       onClick={handleAddToCart}
                       sx={{ flex: 1 }}
                     >
-                      Add to Cart
+                      Añadir al Carrito
                     </Button>
                     <Button
                       variant="outlined"
                       size="large"
                       onClick={() => navigate('/cart')}
                     >
-                      View Cart ({getItemCount()})
+                      Ver Carrito ({getItemCount()})
                     </Button>
                   </Box>
                 </>
               )}
 
-              {product.status !== 'PUBLISHED' && (
+              {product.status.toUpperCase() !== 'PUBLISHED' && user && (
                 <Box sx={{ textAlign: 'center', py: 2 }}>
-                  <Typography variant="body1" color="text.secondary">
-                    This product is not available for purchase.
+                  <Typography variant="body1" color="warning.main" gutterBottom>
+                    Este producto está en estado {product.status} y no está disponible para compra.
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Solo los productos publicados pueden ser añadidos al carrito.
                   </Typography>
                 </Box>
               )}
@@ -295,13 +300,13 @@ export const ProductDetail = () => {
               {!user && (
                 <Box sx={{ textAlign: 'center', py: 2 }}>
                   <Typography variant="body1" color="text.secondary" gutterBottom>
-                    Please log in to purchase this product.
+                    Por favor inicia sesión para comprar este producto.
                   </Typography>
                   <Button
                     variant="contained"
                     onClick={() => navigate('/login')}
                   >
-                    Log In
+                    Iniciar Sesión
                   </Button>
                 </Box>
               )}
