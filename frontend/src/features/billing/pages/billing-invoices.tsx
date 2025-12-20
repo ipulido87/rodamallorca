@@ -181,7 +181,7 @@ export const BillingInvoices = () => {
                         <Button
                           size="small"
                           startIcon={<Visibility />}
-                          onClick={() => navigate(`/billing/invoice/${invoice.id}`)}
+                          onClick={() => navigate(`/billing/${workshopId}/invoice/${invoice.id}`)}
                         >
                           Ver Detalles
                         </Button>

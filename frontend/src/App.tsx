@@ -18,6 +18,7 @@ import { Orders } from './features/orders/pages/orders'
 import { WorkshopServices } from './features/services/pages/workshop-services'
 import { BillingInvoices } from './features/billing/pages/billing-invoices'
 import { CreateInvoice } from './features/billing/pages/create-invoice'
+import { InvoiceDetails } from './features/billing/pages/invoice-details'
 import { Cart } from './features/cart/pages/Cart'
 import { Checkout } from './features/cart/pages/Checkout'
 import { Home } from './pages/HomePage'
@@ -190,6 +191,14 @@ function App() {
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
                   <BillingInvoices />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="billing/:workshopId/invoice/:invoiceId"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <InvoiceDetails />
                 </RoleRoute>
               }
             />
