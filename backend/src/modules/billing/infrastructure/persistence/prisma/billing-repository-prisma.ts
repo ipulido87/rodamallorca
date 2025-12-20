@@ -153,6 +153,7 @@ export const billingRepositoryPrisma: BillingRepository = {
         workshopId: data.workshopId,
         customerId: data.customerId,
         seriesId: data.seriesId,
+        orderId: data.orderId, // Vincular con el pedido si existe
         invoiceNumber,
         issueDate: data.issueDate || new Date(),
         dueDate: data.dueDate,
