@@ -1,7 +1,18 @@
-import { Resend } from 'resend'
+import nodemailer from 'nodemailer'
 
-// Inicializar Resend solo si hay API key configurada
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+const { MAILTRAP_USER, MAILTRAP_PASS } = process.env
+
+// Usar la misma configuración de Mailtrap que ya tienes
+const transporter = MAILTRAP_USER && MAILTRAP_PASS
+  ? nodemailer.createTransport({
+      host: 'sandbox.smtp.mailtrap.io',
+      port: 2525,
+      auth: {
+        user: MAILTRAP_USER,
+        pass: MAILTRAP_PASS,
+      },
+    })
+  : null
 
 interface NewOrderEmailData {
   workshopName: string
@@ -19,15 +30,15 @@ interface NewOrderEmailData {
  */
 export const sendNewOrderEmail = async (data: NewOrderEmailData): Promise<void> => {
   try {
-    // Si no hay API key configurada, solo logear (no bloquear la app)
-    if (!process.env.RESEND_API_KEY) {
-      console.warn('⚠️  [EMAIL] RESEND_API_KEY no configurada. Email no enviado.')
+    // Si no hay configuración de email, solo logear (no bloquear la app)
+    if (!transporter) {
+      console.warn('⚠️  [EMAIL] Mailtrap no configurado. Email no enviado.')
       console.log(`📧 [EMAIL] Se hubiera enviado email a ${data.workshopOwnerEmail}:`, data)
       return
     }
 
-    await resend.emails.send({
-      from: 'Taller Notificaciones <onboarding@resend.dev>', // Cambiar en producción
+    await transporter.sendMail({
+      from: 'no-reply@rodamallorca.com',
       to: data.workshopOwnerEmail,
       subject: `🔔 Nuevo Pedido #${data.orderNumber} - ${data.workshopName}`,
       html: `
@@ -108,9 +119,6 @@ export const sendNewOrderEmail = async (data: NewOrderEmailData): Promise<void> 
               display: block;
               width: fit-content;
             }
-            .button:hover {
-              background-color: #1565c0;
-            }
             .footer {
               text-align: center;
               margin-top: 30px;
@@ -169,7 +177,7 @@ export const sendNewOrderEmail = async (data: NewOrderEmailData): Promise<void> 
 
             <div class="footer">
               <p>Este email fue enviado automáticamente por el sistema de notificaciones.</p>
-              <p>© ${new Date().getFullYear()} Tu Taller. Todos los derechos reservados.</p>
+              <p>© ${new Date().getFullYear()} RodaMallorca. Todos los derechos reservados.</p>
             </div>
           </div>
         </body>
