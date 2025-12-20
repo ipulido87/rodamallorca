@@ -21,6 +21,7 @@ import { CreateInvoice } from './features/billing/pages/create-invoice'
 import { InvoiceDetails } from './features/billing/pages/invoice-details'
 import { Cart } from './features/cart/pages/Cart'
 import { Checkout } from './features/cart/pages/Checkout'
+import { Favorites } from './features/favorites/pages/favorites'
 import { Home } from './pages/HomePage'
 import { LandingPage } from './pages/LandingPage'
 import { LoginForm } from './features/auth/pages/login-form'
@@ -88,10 +89,7 @@ function App() {
             <Route path="my-orders" element={<MyOrders />} />
             <Route path="cart" element={<Cart />} />
             <Route path="checkout" element={<Checkout />} />
-            <Route
-              path="favorites"
-              element={<div>Favoritos - Por implementar</div>}
-            />
+            <Route path="favorites" element={<Favorites />} />
             <Route
               path="repairs"
               element={<div>Reparaciones - Por implementar</div>}
