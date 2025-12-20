@@ -158,6 +158,7 @@ model Order {
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   workshop    Workshop    @relation(fields: [workshopId], references: [id], onDelete: Cascade)
   items       OrderItem[]
+  invoice     Invoice?    // Factura generada automáticamente (si existe)
 
   @@index([userId])
   @@index([workshopId])
@@ -279,6 +280,7 @@ model Invoice {
   workshopId      String
   customerId      String?       // Puede ser null para facturas sin cliente específico
   seriesId        String
+  orderId         String?       @unique // Pedido del que se generó (si aplica)
   invoiceNumber   String        // ej: "F-2025-001"
   issueDate       DateTime      @default(now())
   dueDate         DateTime?     // Fecha de vencimiento
@@ -304,12 +306,14 @@ model Invoice {
   workshop        Workshop      @relation(fields: [workshopId], references: [id], onDelete: Cascade)
   customer        Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
   series          InvoiceSeries @relation(fields: [seriesId], references: [id])
+  order           Order?        @relation(fields: [orderId], references: [id], onDelete: SetNull)
   items           InvoiceItem[]
 
   @@unique([workshopId, invoiceNumber])
   @@index([workshopId])
   @@index([customerId])
   @@index([seriesId])
+  @@index([orderId])
   @@index([status])
   @@index([issueDate])
   @@index([dueDate])
