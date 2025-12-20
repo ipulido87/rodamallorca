@@ -14,6 +14,7 @@ import productRoutes from './modules/products/interfaces/http/products.routes'
 import workshopRoutes from './modules/workshops/interfaces/http/workshop.routes'
 import serviceRoutes from './modules/services/interfaces/http/service.routes'
 import billingRoutes from './modules/billing/interfaces/http/billing.routes'
+import favoriteRoutes from './modules/favorites/interfaces/http/favorite.routes'
 
 dotenv.config()
 
@@ -39,6 +40,7 @@ app.use('/api/owner', productRoutes)
 app.use('/api/owner', workshopRoutes)
 app.use('/api', serviceRoutes) // Rutas de servicios (públicas y protegidas)
 app.use('/api', billingRoutes) // Rutas de facturación
+app.use('/api/favorites', favoriteRoutes) // Rutas de favoritos
 
 // Servir archivos estáticos
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))

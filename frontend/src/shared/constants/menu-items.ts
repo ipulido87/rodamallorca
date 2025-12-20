@@ -27,7 +27,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     id: 'orders',
-    text: 'Pedidos',
+    text: 'Pedidos y Reparaciones',
     icon: 'ShoppingCart',
     path: '/orders',
     roles: ['WORKSHOP_OWNER'],
@@ -71,7 +71,7 @@ export const menuItems: MenuItem[] = [
   },
   {
     id: 'my-orders',
-    text: 'Mis Pedidos',
+    text: 'Mis Pedidos y Reparaciones',
     icon: 'ShoppingCart',
     path: '/my-orders',
     roles: ['USER', 'WORKSHOP_OWNER'],
@@ -81,13 +81,6 @@ export const menuItems: MenuItem[] = [
     text: 'Favoritos',
     icon: 'FavoriteBorder',
     path: '/favorites',
-    roles: ['USER'],
-  },
-  {
-    id: 'repairs',
-    text: 'Reparaciones',
-    icon: 'Build',
-    path: '/repairs',
     roles: ['USER'],
   },
 ]
