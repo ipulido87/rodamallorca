@@ -159,7 +159,20 @@ export const listInvoiceSeriesController = async (
     }
 
     const { workshopId } = req.params
-    const series = await repo.findInvoiceSeriesByWorkshop(workshopId)
+    let series = await repo.findInvoiceSeriesByWorkshop(workshopId)
+
+    // Si no existe ninguna serie, crear una por defecto automáticamente
+    if (series.length === 0) {
+      const currentYear = new Date().getFullYear()
+      const defaultSeries = await repo.createInvoiceSeries({
+        workshopId,
+        name: 'Serie Principal',
+        prefix: 'F',
+        year: currentYear,
+        isDefault: true,
+      })
+      series = [defaultSeries]
+    }
 
     res.json(series)
   } catch (e) {

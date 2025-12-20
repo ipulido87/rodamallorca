@@ -1,4 +1,4 @@
-import { Add, Delete, ArrowBack } from '@mui/icons-material'
+import { Add, Delete, ArrowBack, CameraAlt } from '@mui/icons-material'
 import {
   Box,
   Button,
@@ -6,7 +6,7 @@ import {
   CardContent,
   Container,
   FormControl,
-  Grid,
+  GridLegacy as Grid,
   IconButton,
   InputLabel,
   MenuItem,
@@ -27,6 +27,7 @@ import {
   type InvoiceSeries,
   type InvoiceItem,
 } from '../services/billing-service'
+import { InvoiceOcrScanner, type OcrInvoiceData } from '../components/invoice-ocr-scanner'
 
 export const CreateInvoice = () => {
   const { workshopId } = useParams<{ workshopId: string }>()
@@ -36,6 +37,7 @@ export const CreateInvoice = () => {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [series, setSeries] = useState<InvoiceSeries[]>([])
   const [loading, setLoading] = useState(false)
+  const [ocrDialogOpen, setOcrDialogOpen] = useState(false)
 
   const [formData, setFormData] = useState({
     customerId: '',
@@ -122,6 +124,46 @@ export const CreateInvoice = () => {
     return { subtotal, taxAmount, total: subtotal + taxAmount }
   }
 
+  const handleOcrDataExtracted = (data: OcrInvoiceData) => {
+    // Aplicar datos extraídos del OCR al formulario
+    if (data.providerName && !formData.notes) {
+      setFormData((prev) => ({
+        ...prev,
+        notes: `Proveedor: ${data.providerName}${data.taxId ? `\nNIF/CIF: ${data.taxId}` : ''}`,
+      }))
+    }
+
+    // Si hay conceptos extraídos, añadirlos como items
+    if (data.concepts && data.concepts.length > 0) {
+      const newItems = data.concepts.map((concept) => ({
+        description: concept,
+        quantity: 1,
+        unitPrice: data.amounts?.total
+          ? Math.round(data.amounts.total / data.concepts!.length)
+          : 0,
+        discount: 0,
+        taxRate: 21,
+      }))
+      setItems(newItems)
+    }
+
+    // Si hay un total, ajustar el primer item
+    if (data.amounts?.total && items.length > 0) {
+      const total = data.amounts.total
+      const subtotal = data.amounts.subtotal || total / 1.21
+      setItems([
+        {
+          ...items[0],
+          description: items[0].description || 'Servicio',
+          unitPrice: subtotal,
+        },
+      ])
+    }
+
+    setOcrDialogOpen(false)
+    showSuccess('✓ Datos extraídos del OCR aplicados al formulario')
+  }
+
   const handleSubmit = async () => {
     if (!workshopId) return
 
@@ -173,9 +215,26 @@ export const CreateInvoice = () => {
           <Button startIcon={<ArrowBack />} onClick={() => navigate(`/billing/${workshopId}`)}>
             Volver
           </Button>
-          <Typography variant="h4" fontWeight="bold" gutterBottom sx={{ mt: 2 }}>
-            Nueva Factura
-          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mt: 2,
+            }}
+          >
+            <Typography variant="h4" fontWeight="bold">
+              Nueva Factura
+            </Typography>
+            <Button
+              variant="outlined"
+              startIcon={<CameraAlt />}
+              onClick={() => setOcrDialogOpen(true)}
+              color="secondary"
+            >
+              Escanear Factura (OCR)
+            </Button>
+          </Box>
         </Box>
 
         <Grid container spacing={3}>
@@ -405,6 +464,13 @@ export const CreateInvoice = () => {
           </Grid>
         </Grid>
       </Box>
+
+      {/* OCR Scanner Dialog */}
+      <InvoiceOcrScanner
+        open={ocrDialogOpen}
+        onClose={() => setOcrDialogOpen(false)}
+        onDataExtracted={handleOcrDataExtracted}
+      />
     </Container>
   )
 }
