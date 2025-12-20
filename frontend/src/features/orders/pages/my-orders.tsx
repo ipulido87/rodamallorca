@@ -26,7 +26,6 @@ import {
   getOrderStatusColor,
   getOrderStatusLabel,
   type Order,
-  OrderStatus,
 } from '../services/order-service'
 
 export const MyOrders = () => {
