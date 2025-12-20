@@ -34,6 +34,19 @@ enum ServiceStatus {
   INACTIVE     // Servicio desactivado temporalmente
 }
 
+enum InvoiceStatus {
+  DRAFT        // Borrador (sin enviar)
+  SENT         // Enviada al cliente
+  PAID         // Pagada
+  OVERDUE      // Vencida (no pagada)
+  CANCELLED    // Cancelada
+}
+
+enum CustomerType {
+  INDIVIDUAL   // Particular
+  BUSINESS     // Empresa
+}
+
 model User {
   id               String   @id @default(uuid())
   email            String   @unique
@@ -74,6 +87,9 @@ model Workshop {
   products    Product[]
   services    Service[] // Servicios ofrecidos por el taller
   orders      Order[]   // Pedidos recibidos por este taller
+  invoices    Invoice[] // Facturas emitidas por este taller
+  customers   Customer[] // Clientes del taller
+  invoiceSeries InvoiceSeries[] // Series de facturación del taller
 
   @@index([ownerId])
   @@index([city])
@@ -211,4 +227,112 @@ model Service {
   @@index([status])
   @@index([vehicleType])
   @@index([createdAt])
+}// Clientes para facturación
+model Customer {
+  id           String       @id @default(uuid())
+  workshopId   String
+  type         CustomerType @default(INDIVIDUAL)
+  name         String       // Nombre o razón social
+  taxId        String?      // NIF/CIF/VAT
+  email        String?
+  phone        String?
+  address      String?
+  city         String?
+  postalCode   String?
+  country      String?      @default("España")
+  notes        String?      // Notas internas
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Relaciones
+  workshop     Workshop     @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  invoices     Invoice[]
+
+  @@index([workshopId])
+  @@index([taxId])
+  @@index([email])
+}
+
+// Series de facturación (para numeración automática)
+model InvoiceSeries {
+  id          String    @id @default(uuid())
+  workshopId  String
+  name        String    // ej: "2025", "Facturas Generales"
+  prefix      String    // ej: "F", "INV"
+  nextNumber  Int       @default(1)
+  year        Int       // Año de la serie
+  isDefault   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relaciones
+  workshop    Workshop  @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  invoices    Invoice[]
+
+  @@unique([workshopId, prefix, year])
+  @@index([workshopId])
+}
+
+// Facturas
+model Invoice {
+  id              String        @id @default(uuid())
+  workshopId      String
+  customerId      String?       // Puede ser null para facturas sin cliente específico
+  seriesId        String
+  invoiceNumber   String        // ej: "F-2025-001"
+  issueDate       DateTime      @default(now())
+  dueDate         DateTime?     // Fecha de vencimiento
+  status          InvoiceStatus @default(DRAFT)
+
+  // Totales
+  subtotal        Int           // Subtotal en céntimos (antes de impuestos)
+  taxAmount       Int           // Total de impuestos en céntimos
+  total           Int           // Total en céntimos
+  currency        String        @default("EUR")
+
+  // Datos adicionales
+  notes           String?       // Notas visibles en la factura
+  internalNotes   String?       // Notas internas (no visibles en PDF)
+  pdfUrl          String?       // URL del PDF generado
+  paymentMethod   String?       // Efectivo, Tarjeta, Transferencia, etc.
+  paidAt          DateTime?     // Fecha de pago
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relaciones
+  workshop        Workshop      @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  customer        Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  series          InvoiceSeries @relation(fields: [seriesId], references: [id])
+  items           InvoiceItem[]
+
+  @@unique([workshopId, invoiceNumber])
+  @@index([workshopId])
+  @@index([customerId])
+  @@index([seriesId])
+  @@index([status])
+  @@index([issueDate])
+  @@index([dueDate])
+}
+
+// Líneas de factura
+model InvoiceItem {
+  id          String   @id @default(uuid())
+  invoiceId   String
+  description String   // Descripción del concepto
+  quantity    Decimal  @default(1) @db.Decimal(10, 2)
+  unitPrice   Int      // Precio unitario en céntimos
+  discount    Int      @default(0) // Descuento en céntimos
+  taxRate     Decimal  @default(21) @db.Decimal(5, 2) // % de IVA (ej: 21.00)
+  subtotal    Int      // Subtotal sin impuestos en céntimos
+  taxAmount   Int      // Impuestos de esta línea en céntimos
+  total       Int      // Total de esta línea en céntimos
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
 }

@@ -44,20 +44,20 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
 app.get('/api/health', (_req, res) => res.send('ok'))
 
 // Middleware de manejo de errores global (debe ir al final)
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   console.error('❌ Error:', err)
 
   // Errores de validación de Zod
-  if (err instanceof ZodError) {
+  if (err?.name === 'ZodError' || err?.issues) {
     return res.status(400).json({
       error: 'Error de validación',
-      message: err.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', '),
-      details: err.errors,
+      message: err.issues?.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ') || err.message,
+      details: err.issues,
     })
   }
 
   // Errores de negocio (mensajes en español)
-  if (err.message) {
+  if (err?.message) {
     // Determinar el código de estado basado en el mensaje
     let statusCode = 500
 
