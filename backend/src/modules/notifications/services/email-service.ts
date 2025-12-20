@@ -1,7 +1,7 @@
 import { Resend } from 'resend'
 
-// Inicializar Resend con la API key desde variables de entorno
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Inicializar Resend solo si hay API key configurada
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
 interface NewOrderEmailData {
   workshopName: string
