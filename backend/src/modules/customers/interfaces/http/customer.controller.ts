@@ -1,11 +1,20 @@
 // backend/src/modules/customers/interfaces/http/customer.controller.ts
 import type { Request, Response, NextFunction } from 'express'
+import { prisma } from '../../../../lib/prisma'
 import { customerRepositoryPrisma } from '../../infrastructure/persistence/prisma/customer-repository-prisma'
 import { getCustomers } from '../../application/get-customers'
 import { getCustomerById } from '../../application/get-customer-by-id'
 import { createCustomer } from '../../application/create-customer'
 import { updateCustomer } from '../../application/update-customer'
 import { deleteCustomer } from '../../application/delete-customer'
+
+// Helper function to get user's workshop
+async function getUserWorkshop(userId: string) {
+  return prisma.workshop.findFirst({
+    where: { ownerId: userId },
+    select: { id: true },
+  })
+}
 
 // GET /api/customers - Listar clientes del taller
 export const getCustomersController = async (
@@ -14,15 +23,19 @@ export const getCustomersController = async (
   next: NextFunction
 ) => {
   try {
-    const workshopId = req.user?.workshopId
+    const userId = req.user?.id
+    if (!userId) {
+      return res.status(401).json({ message: 'No autenticado' })
+    }
 
-    if (!workshopId) {
+    const workshop = await getUserWorkshop(userId)
+    if (!workshop) {
       return res.status(403).json({ message: 'No tienes un taller asignado' })
     }
 
     const customers = await getCustomers({
       customerRepository: customerRepositoryPrisma,
-      workshopId,
+      workshopId: workshop.id,
     })
 
     res.json(customers)
@@ -39,15 +52,19 @@ export const getCustomerByIdController = async (
 ) => {
   try {
     const { id } = req.params
-    const workshopId = req.user?.workshopId
+    const userId = req.user?.id
+    if (!userId) {
+      return res.status(401).json({ message: 'No autenticado' })
+    }
 
-    if (!workshopId) {
+    const workshop = await getUserWorkshop(userId)
+    if (!workshop) {
       return res.status(403).json({ message: 'No tienes un taller asignado' })
     }
 
     const customer = await getCustomerById(id, {
       customerRepository: customerRepositoryPrisma,
-      workshopId,
+      workshopId: workshop.id,
     })
 
     if (!customer) {
@@ -67,16 +84,20 @@ export const createCustomerController = async (
   next: NextFunction
 ) => {
   try {
-    const workshopId = req.user?.workshopId
+    const userId = req.user?.id
+    if (!userId) {
+      return res.status(401).json({ message: 'No autenticado' })
+    }
 
-    if (!workshopId) {
+    const workshop = await getUserWorkshop(userId)
+    if (!workshop) {
       return res.status(403).json({ message: 'No tienes un taller asignado' })
     }
 
     const customer = await createCustomer(
       {
         ...req.body,
-        workshopId,
+        workshopId: workshop.id,
       },
       {
         customerRepository: customerRepositoryPrisma,
@@ -97,15 +118,19 @@ export const updateCustomerController = async (
 ) => {
   try {
     const { id } = req.params
-    const workshopId = req.user?.workshopId
+    const userId = req.user?.id
+    if (!userId) {
+      return res.status(401).json({ message: 'No autenticado' })
+    }
 
-    if (!workshopId) {
+    const workshop = await getUserWorkshop(userId)
+    if (!workshop) {
       return res.status(403).json({ message: 'No tienes un taller asignado' })
     }
 
     const customer = await updateCustomer(id, req.body, {
       customerRepository: customerRepositoryPrisma,
-      workshopId,
+      workshopId: workshop.id,
     })
 
     res.json(customer)
@@ -122,15 +147,19 @@ export const deleteCustomerController = async (
 ) => {
   try {
     const { id } = req.params
-    const workshopId = req.user?.workshopId
+    const userId = req.user?.id
+    if (!userId) {
+      return res.status(401).json({ message: 'No autenticado' })
+    }
 
-    if (!workshopId) {
+    const workshop = await getUserWorkshop(userId)
+    if (!workshop) {
       return res.status(403).json({ message: 'No tienes un taller asignado' })
     }
 
     await deleteCustomer(id, {
       customerRepository: customerRepositoryPrisma,
-      workshopId,
+      workshopId: workshop.id,
     })
 
     res.status(204).send()
