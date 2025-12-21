@@ -8,16 +8,13 @@ import {
 
 const router = Router()
 
-// Todas las rutas requieren autenticación
-router.use(verifyToken)
-
 // GET /api/favorites - Obtener favoritos del usuario
-router.get('/', getUserFavoritesController)
+router.get('/', verifyToken, getUserFavoritesController)
 
 // GET /api/favorites/check/:workshopId - Verificar si es favorito
-router.get('/check/:workshopId', checkFavoriteController)
+router.get('/check/:workshopId', verifyToken, checkFavoriteController)
 
 // POST /api/favorites/:workshopId - Toggle favorito
-router.post('/:workshopId', toggleFavoriteController)
+router.post('/:workshopId', verifyToken, toggleFavoriteController)
 
 export default router
