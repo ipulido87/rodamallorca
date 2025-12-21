@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { authenticate } from '../../../auth/interfaces/middlewares/auth.middleware'
+import { verifyToken } from '../../../auth/interfaces/middlewares/auth.middleware'
 import {
   toggleFavoriteController,
   getUserFavoritesController,
@@ -9,7 +9,7 @@ import {
 const router = Router()
 
 // Todas las rutas requieren autenticación
-router.use(authenticate)
+router.use(verifyToken)
 
 // GET /api/favorites - Obtener favoritos del usuario
 router.get('/', getUserFavoritesController)
