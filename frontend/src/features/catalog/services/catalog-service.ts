@@ -5,6 +5,8 @@ import type {
   Product,
   ProductSearchParams,
   PublicProduct,
+  Service,
+  ServiceSearchParams,
   Workshop,
   WorkshopSearchParams,
 } from '../types/catalog'
@@ -46,6 +48,17 @@ export const searchWorkshops = async (
   return data
 }
 
+// Buscar servicios públicamente
+export const searchServices = async (
+  params?: ServiceSearchParams
+): Promise<PaginatedResponse<Service>> => {
+  const queryString = params ? buildQueryString(params) : ''
+  const url = `/catalog/services${queryString ? `?${queryString}` : ''}`
+
+  const { data } = await API.get<PaginatedResponse<Service>>(url)
+  return data
+}
+
 // Obtener detalle de producto
 export const getProduct = async (id: string): Promise<PublicProduct> => {
   const { data } = await API.get<PublicProduct>(`/catalog/products/${id}`)
@@ -65,6 +78,7 @@ export const getProductById = getProduct
 export const catalogService = {
   searchProducts,
   searchWorkshops,
+  searchServices,
   getProduct,
   getProductById,
   getWorkshopById,

@@ -37,10 +37,30 @@ export interface CardWorkshop {
   createdAt: string
 }
 
+/** Modelo que usan las *cards* de servicio (UI) */
+export interface CardService {
+  id: string
+  name: string
+  description?: string
+  price: number // céntimos
+  duration?: number // minutos
+  vehicleType: 'BICYCLE' | 'E_BIKE' | 'E_SCOOTER' | 'ALL'
+  workshop: {
+    id: string
+    name: string
+    city?: string
+  }
+  serviceCategory: {
+    id: string
+    name: string
+    icon?: string
+  }
+}
+
 /** Handler para abrir el menú contextual desde la card */
 export type OnOpenMenuHandler = (
   e: MouseEvent<HTMLElement>,
-  item: CardProduct | CardWorkshop
+  item: CardProduct | CardWorkshop | CardService
 ) => void
 
 /** Props comunes para el layout moderno */
