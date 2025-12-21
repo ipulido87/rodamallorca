@@ -253,9 +253,13 @@ const ProductCard = ({
 const WorkshopCard = ({
   workshop,
   onOpenMenu,
+  onFavoriteToggle,
+  isFavorite = false,
 }: {
   workshop: CardWorkshop
   onOpenMenu?: OnOpenMenuHandler
+  onFavoriteToggle?: (id: string) => void
+  isFavorite?: boolean
 }) => {
   const navigate = useNavigate()
   const theme = useTheme()
@@ -278,26 +282,48 @@ const WorkshopCard = ({
         position: 'relative',
       }}
     >
-      {/* Botón ⋮ para el menú contextual */}
-      {onOpenMenu && (
-        <IconButton
-          size="small"
-          onClick={(e) => {
-            e.stopPropagation()
-            onOpenMenu(e, workshop)
-          }}
-          sx={{
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            zIndex: 2,
-            bgcolor: 'rgba(255,255,255,0.95)',
-            '&:hover': { bgcolor: 'white' },
-          }}
-        >
-          <MoreVert />
-        </IconButton>
-      )}
+      {/* Botones de acción */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          zIndex: 2,
+          display: 'flex',
+          gap: 1,
+        }}
+      >
+        {onFavoriteToggle && (
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation()
+              onFavoriteToggle(workshop.id)
+            }}
+            sx={{
+              bgcolor: 'rgba(255,255,255,0.95)',
+              '&:hover': { bgcolor: 'white' },
+            }}
+          >
+            {isFavorite ? <Favorite color="error" /> : <FavoriteBorder />}
+          </IconButton>
+        )}
+        {onOpenMenu && (
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation()
+              onOpenMenu(e, workshop)
+            }}
+            sx={{
+              bgcolor: 'rgba(255,255,255,0.95)',
+              '&:hover': { bgcolor: 'white' },
+            }}
+          >
+            <MoreVert />
+          </IconButton>
+        )}
+      </Box>
 
       <Box
         sx={{
@@ -411,7 +437,13 @@ export const ModernLayout = ({
               onOpenMenu={onOpenMenu}
             />
           ) : type === 'workshop' && isWorkshop(item) ? (
-            <WorkshopCard key={item.id} workshop={item} onOpenMenu={onOpenMenu} />
+            <WorkshopCard
+              key={item.id}
+              workshop={item}
+              onOpenMenu={onOpenMenu}
+              onFavoriteToggle={onFavoriteToggle}
+              isFavorite={favoriteIds.includes(item.id)}
+            />
           ) : null
         )}
       </Box>
