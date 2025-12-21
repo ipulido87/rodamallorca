@@ -1,6 +1,6 @@
 // backend/src/modules/customers/interfaces/http/customer.controller.ts
 import type { Request, Response, NextFunction } from 'express'
-import { prisma } from '../../../../lib/prisma'
+import prisma from '../../../../lib/prisma'
 import { customerRepositoryPrisma } from '../../infrastructure/persistence/prisma/customer-repository-prisma'
 import { getCustomers } from '../../application/get-customers'
 import { getCustomerById } from '../../application/get-customer-by-id'
