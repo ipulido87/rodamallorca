@@ -13,6 +13,10 @@ import { useEffect, useState } from 'react'
 import { useDebounce } from '../../../features/../shared/hooks/use-debounce'
 import { FilterBar } from '../../../shared/components/FilterBar'
 import {
+  getUserFavorites,
+  toggleFavorite,
+} from '../../favorites/services/favorite-service'
+import {
   productFilterConfig,
   workshopFilterConfig,
 } from '../../../shared/constants/product-filters'
@@ -67,6 +71,7 @@ export const Catalog = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [productFilters, setProductFilters] = useState<FilterValues>({})
   const [workshopFilters, setWorkshopFilters] = useState<FilterValues>({})
+  const [favoriteWorkshopIds, setFavoriteWorkshopIds] = useState<string[]>([])
 
   // Hook personalizado
   const {
@@ -121,6 +126,21 @@ export const Catalog = () => {
     loadProducts()
   }, [loadProducts, loadWorkshops])
 
+  // Cargar favoritos del usuario
+  useEffect(() => {
+    const loadFavorites = async () => {
+      if (user) {
+        try {
+          const favorites = await getUserFavorites()
+          setFavoriteWorkshopIds(favorites.map((f) => f.workshopId))
+        } catch (error) {
+          console.error('Error loading favorites:', error)
+        }
+      }
+    }
+    loadFavorites()
+  }, [user])
+
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue)
   }
@@ -136,9 +156,22 @@ export const Catalog = () => {
   const clearProductFilters = () => setProductFilters({})
   const clearWorkshopFilters = () => setWorkshopFilters({})
 
-  const handleFavoriteToggle = (productId: string) => {
-    console.log('Toggle favorite:', productId)
-    // TODO: Implementar lógica de favoritos
+  const handleProductFavoriteToggle = (productId: string) => {
+    console.log('Toggle product favorite:', productId)
+    // TODO: Implementar lógica de favoritos para productos
+  }
+
+  const handleWorkshopFavoriteToggle = async (workshopId: string) => {
+    try {
+      const result = await toggleFavorite(workshopId)
+      if (result.added) {
+        setFavoriteWorkshopIds((prev) => [...prev, workshopId])
+      } else {
+        setFavoriteWorkshopIds((prev) => prev.filter((id) => id !== workshopId))
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error)
+    }
   }
 
   const renderWorkshopsContent = () => (
@@ -157,6 +190,8 @@ export const Catalog = () => {
             workshops={workshops}
             loading={false}
             emptyMessage="No se encontraron talleres"
+            onFavoriteToggle={handleWorkshopFavoriteToggle}
+            favoriteIds={favoriteWorkshopIds}
           />
 
           {workshopsPagination.total > 0 && (
@@ -188,7 +223,7 @@ export const Catalog = () => {
             loading={false}
             error={productsError ?? undefined}
             emptyMessage="No se encontraron productos"
-            onFavoriteToggle={handleFavoriteToggle}
+            onFavoriteToggle={handleProductFavoriteToggle}
             favoriteIds={[]}
           />
 

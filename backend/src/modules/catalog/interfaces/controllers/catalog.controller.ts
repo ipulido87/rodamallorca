@@ -112,3 +112,47 @@ export const getProductByIdController = async (
     next(e)
   }
 }
+
+export const searchServicesController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { q, categoryId, city, vehicleType, page = '1', size = '12' } = req.query
+    const take = Math.min(Number(size), 50)
+    const skip = (Number(page) - 1) * take
+
+    const where: Prisma.ServiceWhereInput = {
+      status: 'ACTIVE',
+      ...(q ? { name: { contains: String(q), mode: 'insensitive' } } : {}),
+      ...(categoryId ? { serviceCategoryId: String(categoryId) } : {}),
+      ...(vehicleType && vehicleType !== 'ALL' ? { vehicleType: String(vehicleType) } : {}),
+      ...(city
+        ? {
+            workshop: { city: { contains: String(city), mode: 'insensitive' } },
+          }
+        : {}),
+    }
+
+    const [items, total] = await Promise.all([
+      prisma.service.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          workshop: {
+            select: { id: true, name: true, city: true, country: true },
+          },
+          serviceCategory: { select: { id: true, name: true, icon: true } },
+        },
+      }),
+      prisma.service.count({ where }),
+    ])
+
+    res.json({ items, total, page: Number(page), size: take })
+  } catch (e) {
+    next(e)
+  }
+}

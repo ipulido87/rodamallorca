@@ -3,6 +3,7 @@ import {
   getProductByIdController,
   searchProductsController,
   searchWorkshopsController,
+  searchServicesController,
 } from '../controllers/catalog.controller'
 
 const r = Router()
@@ -15,5 +16,8 @@ r.get('/products', searchProductsController)
 
 // GET /api/catalog/products/:id
 r.get('/products/:id', getProductByIdController)
+
+// GET /api/catalog/services
+r.get('/services', searchServicesController)
 
 export default r
