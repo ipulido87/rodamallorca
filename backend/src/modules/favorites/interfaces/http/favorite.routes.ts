@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { authenticate } from '../../../auth/infrastructure/middlewares/auth.middleware'
+import { authenticate } from '../../../auth/interfaces/middlewares/auth.middleware'
 import {
   toggleFavoriteController,
   getUserFavoritesController,
