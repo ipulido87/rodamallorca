@@ -22,6 +22,7 @@ import { InvoiceDetails } from './features/billing/pages/invoice-details'
 import { Cart } from './features/cart/pages/Cart'
 import { Checkout } from './features/cart/pages/Checkout'
 import { Favorites } from './features/favorites/pages/favorites'
+import { Customers } from './features/customers/pages/customers'
 import { Home } from './pages/HomePage'
 import { LandingPage } from './pages/LandingPage'
 import { LoginForm } from './features/auth/pages/login-form'
@@ -180,7 +181,7 @@ function App() {
               path="customers"
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
-                  <div>Clientes - Por implementar</div>
+                  <Customers />
                 </RoleRoute>
               }
             />
