@@ -105,6 +105,7 @@ export const getUserOrdersController = async (
 
 /**
  * GET /api/orders/workshop/:workshopId
+ * También GET /api/owner/workshops/:id/orders
  * Obtener todos los pedidos de un taller
  */
 export const getWorkshopOrdersController = async (
@@ -117,7 +118,10 @@ export const getWorkshopOrdersController = async (
       return res.status(401).json({ error: 'Usuario no autenticado' })
     }
 
-    const result = await getWorkshopOrders(req.params.workshopId, {
+    // Soportar ambos formatos de parámetros: :workshopId o :id
+    const workshopId = req.params.workshopId || req.params.id
+
+    const result = await getWorkshopOrders(workshopId, {
       repo: orderRepo,
       workshopRepo,
       authenticatedUserId: req.user.id,
