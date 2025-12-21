@@ -1,5 +1,5 @@
 // backend/src/modules/customers/infrastructure/persistence/prisma/customer-repository-prisma.ts
-import { prisma } from '../../../../../lib/prisma'
+import prisma from '../../../../../lib/prisma'
 import type { CustomerRepository } from '../../../domain/repositories/customer-repository'
 import type {
   CreateCustomerInput,
