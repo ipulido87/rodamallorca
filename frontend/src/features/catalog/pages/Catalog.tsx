@@ -26,6 +26,7 @@ import { adaptProductImages } from '../../../utils/adapt-product-Images'
 import { useAuth } from '../../auth/hooks/useAuth'
 import {
   ModernProductLayout,
+  ModernServiceLayout,
   ModernWorkshopLayout,
 } from '../../products/components/modern-product-layout'
 import { useCatalogSearch } from '../hooks/use-catalog-search'
@@ -71,6 +72,7 @@ export const Catalog = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [productFilters, setProductFilters] = useState<FilterValues>({})
   const [workshopFilters, setWorkshopFilters] = useState<FilterValues>({})
+  const [serviceFilters, setServiceFilters] = useState<FilterValues>({})
   const [favoriteWorkshopIds, setFavoriteWorkshopIds] = useState<string[]>([])
 
   // Hook personalizado
@@ -85,6 +87,11 @@ export const Catalog = () => {
     workshopsError,
     workshopsPagination,
     loadWorkshops,
+    services,
+    servicesLoading,
+    servicesError,
+    servicesPagination,
+    loadServices,
   } = useCatalogSearch()
 
   // Debounce para búsqueda
@@ -103,7 +110,7 @@ export const Catalog = () => {
         title: 'RodaMallorca Marketplace',
         subtitle: 'Encuentra talleres de confianza y productos para tu bici',
         searchPlaceholder: 'Buscar talleres, productos, servicios...',
-        tabs: ['Talleres', 'Productos'],
+        tabs: ['Talleres', 'Productos', 'Servicios'],
         searchButtonText: 'Buscar',
       }
 
@@ -120,11 +127,18 @@ export const Catalog = () => {
     }
   }, [debouncedQuery, productFilters, tabValue, loadProducts])
 
+  useEffect(() => {
+    if (tabValue === 2 && !isWorkshopOwner) {
+      loadServices(debouncedQuery, serviceFilters)
+    }
+  }, [debouncedQuery, serviceFilters, tabValue, loadServices, isWorkshopOwner])
+
   // Carga inicial
   useEffect(() => {
     loadWorkshops()
     loadProducts()
-  }, [loadProducts, loadWorkshops])
+    loadServices()
+  }, [loadProducts, loadServices, loadWorkshops])
 
   // Cargar favoritos del usuario
   useEffect(() => {
@@ -153,8 +167,13 @@ export const Catalog = () => {
     setWorkshopFilters((prev) => ({ ...prev, [key]: value }))
   }
 
+  const handleServiceFilterChange = (key: string, value: FilterValue) => {
+    setServiceFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
   const clearProductFilters = () => setProductFilters({})
   const clearWorkshopFilters = () => setWorkshopFilters({})
+  const clearServiceFilters = () => setServiceFilters({})
 
   const handleProductFavoriteToggle = (productId: string) => {
     console.log('Toggle product favorite:', productId)
@@ -231,6 +250,37 @@ export const Catalog = () => {
             <Box textAlign="center" sx={{ mt: 4 }}>
               <Typography variant="body2" color="text.secondary">
                 Mostrando {products.length} de {productsPagination.total} productos
+              </Typography>
+            </Box>
+          )}
+        </>
+      )}
+    </Box>
+  )
+
+  const renderServicesContent = () => (
+    <Box>
+      {servicesError && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {servicesError}
+        </Alert>
+      )}
+
+      {servicesLoading ? (
+        <ProductSkeletonGrid count={8} />
+      ) : (
+        <>
+          <ModernServiceLayout
+            services={services}
+            loading={false}
+            error={servicesError ?? undefined}
+            emptyMessage="No se encontraron servicios"
+          />
+
+          {servicesPagination.total > 0 && (
+            <Box textAlign="center" sx={{ mt: 4 }}>
+              <Typography variant="body2" color="text.secondary">
+                Mostrando {services.length} de {servicesPagination.total} servicios
               </Typography>
             </Box>
           )}
@@ -330,6 +380,9 @@ export const Catalog = () => {
               onClear={clearProductFilters}
             />
             {renderProductsContent()}
+          </TabPanel>
+          <TabPanel value={tabValue} index={2}>
+            {renderServicesContent()}
           </TabPanel>
         </>
       )}

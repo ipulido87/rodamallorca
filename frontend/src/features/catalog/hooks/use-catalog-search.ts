@@ -1,10 +1,16 @@
 // frontend/src/features/catalog/hooks/useCatalogSearch.ts
 import { useCallback, useState } from 'react'
-import { searchProducts, searchWorkshops } from '../services/catalog-service'
+import {
+  searchProducts,
+  searchServices,
+  searchWorkshops,
+} from '../services/catalog-service'
 import type {
   FilterValues,
   Product,
   ProductSearchParams,
+  Service,
+  ServiceSearchParams,
   Workshop,
   WorkshopSearchParams,
 } from '../types/catalog'
@@ -38,6 +44,17 @@ interface UseCatalogSearchResult {
     filters?: FilterValues,
     page?: number
   ) => Promise<void>
+
+  // Services
+  services: Service[]
+  servicesLoading: boolean
+  servicesError: string | null
+  servicesPagination: Pagination
+  loadServices: (
+    query?: string,
+    filters?: FilterValues,
+    page?: number
+  ) => Promise<void>
 }
 
 export const useCatalogSearch = (): UseCatalogSearchResult => {
@@ -57,6 +74,17 @@ export const useCatalogSearch = (): UseCatalogSearchResult => {
   const [workshopsLoading, setWorkshopsLoading] = useState(false)
   const [workshopsError, setWorkshopsError] = useState<string | null>(null)
   const [workshopsPagination, setWorkshopsPagination] = useState<Pagination>({
+    total: 0,
+    page: 1,
+    size: 12,
+    hasMore: false,
+  })
+
+  // Services state
+  const [services, setServices] = useState<Service[]>([])
+  const [servicesLoading, setServicesLoading] = useState(false)
+  const [servicesError, setServicesError] = useState<string | null>(null)
+  const [servicesPagination, setServicesPagination] = useState<Pagination>({
     total: 0,
     page: 1,
     size: 12,
@@ -141,6 +169,44 @@ export const useCatalogSearch = (): UseCatalogSearchResult => {
     []
   )
 
+  const loadServices = useCallback(
+    async (query?: string, filters?: FilterValues, page: number = 1) => {
+      setServicesLoading(true)
+      setServicesError(null)
+
+      try {
+        const params: ServiceSearchParams = {
+          page,
+          size: 12,
+        }
+
+        if (query) params.q = query
+        if (filters?.city && typeof filters.city === 'string')
+          params.city = filters.city
+        if (filters?.categoryId && typeof filters.categoryId === 'string')
+          params.categoryId = filters.categoryId
+        if (filters?.vehicleType && typeof filters.vehicleType === 'string')
+          params.vehicleType = filters.vehicleType as ServiceSearchParams['vehicleType']
+
+        const response = await searchServices(params)
+
+        setServices(response.items)
+        setServicesPagination({
+          total: response.total,
+          page: response.page,
+          size: response.size,
+          hasMore: response.page * response.size < response.total,
+        })
+      } catch (error) {
+        setServicesError('Error al cargar servicios')
+        console.error('Error loading services:', error)
+      } finally {
+        setServicesLoading(false)
+      }
+    },
+    []
+  )
+
   return {
     products,
     productsLoading,
@@ -153,5 +219,11 @@ export const useCatalogSearch = (): UseCatalogSearchResult => {
     workshopsError,
     workshopsPagination,
     loadWorkshops,
+
+    services,
+    servicesLoading,
+    servicesError,
+    servicesPagination,
+    loadServices,
   }
 }

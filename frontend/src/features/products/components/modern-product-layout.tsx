@@ -1,11 +1,14 @@
 import {
+  Build,
   Business,
   Favorite,
   FavoriteBorder,
   LocationOn,
   MoreVert,
+  Schedule,
   ShoppingCart,
   Store,
+  TwoWheeler,
   Visibility,
 } from '@mui/icons-material'
 import {
@@ -30,16 +33,26 @@ import { useNavigate } from 'react-router-dom'
 
 import type {
   CardProduct,
+  CardService,
   CardWorkshop,
   ModernLayoutCommonProps,
   OnOpenMenuHandler,
 } from '../types/products-types'
 
 /* -------------------- Type guards -------------------- */
-const isProduct = (item: CardProduct | CardWorkshop): item is CardProduct =>
-  (item as CardProduct).price !== undefined
-const isWorkshop = (item: CardProduct | CardWorkshop): item is CardWorkshop =>
-  (item as CardWorkshop).address !== undefined
+const isProduct = (
+  item: CardProduct | CardWorkshop | CardService
+): item is CardProduct =>
+  (item as CardProduct).price !== undefined &&
+  (item as CardProduct).condition !== undefined
+const isWorkshop = (
+  item: CardProduct | CardWorkshop | CardService
+): item is CardWorkshop => (item as CardWorkshop).address !== undefined
+const isService = (
+  item: CardProduct | CardWorkshop | CardService
+): item is CardService =>
+  (item as CardService).price !== undefined &&
+  (item as CardService).serviceCategory !== undefined
 
 /* -------------------- Product Card -------------------- */
 const ProductCard = ({
@@ -350,6 +363,160 @@ const WorkshopCard = ({
   )
 }
 
+/* -------------------- Service Card -------------------- */
+const ServiceCard = ({ service }: { service: CardService }) => {
+  const navigate = useNavigate()
+  const theme = useTheme()
+  const [isHovered, setIsHovered] = useState(false)
+
+  const formatPrice = (price: number) => `${(price / 100).toFixed(2)}€`
+
+  const getVehicleTypeLabel = (type: CardService['vehicleType']) => {
+    switch (type) {
+      case 'BICYCLE':
+        return 'Bicicleta'
+      case 'E_BIKE':
+        return 'Bici eléctrica'
+      case 'E_SCOOTER':
+        return 'Patinete eléctrico'
+      case 'ALL':
+        return 'Todos'
+      default:
+        return type
+    }
+  }
+
+  const getVehicleTypeColor = (type: CardService['vehicleType']) => {
+    switch (type) {
+      case 'BICYCLE':
+        return 'success'
+      case 'E_BIKE':
+        return 'info'
+      case 'E_SCOOTER':
+        return 'warning'
+      case 'ALL':
+        return 'default'
+      default:
+        return 'default'
+    }
+  }
+
+  return (
+    <Card
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={() => navigate(`/workshop/${service.workshop.id}`)}
+      sx={{
+        cursor: 'pointer',
+        borderRadius: 3,
+        overflow: 'hidden',
+        transform: isHovered ? 'translateY(-8px)' : 'translateY(0)',
+        transition: 'all 0.3s ease',
+        boxShadow: isHovered
+          ? `0 12px 24px ${alpha(theme.palette.common.black, 0.2)}`
+          : theme.shadows[1],
+        position: 'relative',
+        border: `1px solid ${theme.palette.divider}`,
+      }}
+    >
+      {/* Icono del servicio */}
+      <Box
+        sx={{
+          height: 140,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: alpha(theme.palette.info.main, 0.1),
+          position: 'relative',
+        }}
+      >
+        <Build sx={{ fontSize: 56, color: theme.palette.info.main }} />
+      </Box>
+
+      <CardContent>
+        {/* Categoría del servicio */}
+        <Chip
+          label={service.serviceCategory.name}
+          size="small"
+          color="primary"
+          variant="outlined"
+          sx={{ mb: 1 }}
+        />
+
+        {/* Nombre del servicio */}
+        <Typography variant="h6" fontWeight={600} gutterBottom>
+          {service.name}
+        </Typography>
+
+        {/* Descripción */}
+        {service.description && (
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              mb: 2,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {service.description}
+          </Typography>
+        )}
+
+        {/* Info adicional */}
+        <Stack spacing={1} sx={{ mb: 2 }}>
+          {/* Taller */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Store sx={{ fontSize: 16, color: 'text.secondary' }} />
+            <Typography variant="body2" color="text.secondary">
+              {service.workshop.name}
+            </Typography>
+          </Box>
+
+          {/* Duración */}
+          {service.duration && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Schedule sx={{ fontSize: 16, color: 'text.secondary' }} />
+              <Typography variant="body2" color="text.secondary">
+                {service.duration} min
+              </Typography>
+            </Box>
+          )}
+
+          {/* Tipo de vehículo */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <TwoWheeler sx={{ fontSize: 16, color: 'text.secondary' }} />
+            <Chip
+              label={getVehicleTypeLabel(service.vehicleType)}
+              size="small"
+              color={getVehicleTypeColor(service.vehicleType) as any}
+              variant="outlined"
+            />
+          </Box>
+        </Stack>
+
+        {/* Precio */}
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            pt: 2,
+            borderTop: `1px solid ${theme.palette.divider}`,
+          }}
+        >
+          <Typography variant="h5" fontWeight={700} color="primary.main">
+            {formatPrice(service.price)}
+          </Typography>
+          <Chip label="Ver detalles" size="small" color="primary" />
+        </Box>
+      </CardContent>
+    </Card>
+  )
+}
+
 /* -------------------- Layout -------------------- */
 export const ModernLayout = ({
   items,
@@ -361,8 +528,8 @@ export const ModernLayout = ({
   type,
   onOpenMenu,
 }: {
-  items: (CardProduct | CardWorkshop)[]
-  type: 'product' | 'workshop'
+  items: (CardProduct | CardWorkshop | CardService)[]
+  type: 'product' | 'workshop' | 'service'
   onOpenMenu?: OnOpenMenuHandler
 } & ModernLayoutCommonProps) => {
   const theme = useTheme()
@@ -444,6 +611,8 @@ export const ModernLayout = ({
               onFavoriteToggle={onFavoriteToggle}
               isFavorite={favoriteIds.includes(item.id)}
             />
+          ) : type === 'service' && isService(item) ? (
+            <ServiceCard key={item.id} service={item} />
           ) : null
         )}
       </Box>
@@ -463,3 +632,9 @@ export const ModernWorkshopLayout = (
     workshops: CardWorkshop[]
   } & ModernLayoutCommonProps & { onOpenMenu?: OnOpenMenuHandler }
 ) => <ModernLayout {...props} items={props.workshops} type="workshop" />
+
+export const ModernServiceLayout = (
+  props: {
+    services: CardService[]
+  } & ModernLayoutCommonProps
+) => <ModernLayout {...props} items={props.services} type="service" />

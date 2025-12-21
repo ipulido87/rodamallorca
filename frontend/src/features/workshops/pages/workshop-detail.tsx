@@ -8,6 +8,7 @@ import {
   LocationOn,
   Phone,
   Schedule,
+  ShoppingCart,
   Verified,
 } from '@mui/icons-material'
 import {
@@ -24,12 +25,21 @@ import {
   IconButton,
   Rating,
   Stack,
+  Tab,
+  Tabs,
   Typography,
   useTheme,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getWorkshopById } from '../../catalog/services/catalog-service'
+import {
+  getWorkshopById,
+  searchProducts,
+  searchServices,
+} from '../../catalog/services/catalog-service'
+import type { Product, Service } from '../../catalog/types/catalog'
+import { ModernProductLayout, ModernServiceLayout } from '../../products/components/modern-product-layout'
+import { adaptProductImages } from '../../../utils/adapt-product-Images'
 
 interface Workshop {
   id: string
@@ -49,6 +59,31 @@ interface Workshop {
   verified?: boolean
 }
 
+interface TabPanelProps {
+  children?: React.ReactNode
+  index: number
+  value: number
+}
+
+const TabPanel = ({ children, value, index }: TabPanelProps) => (
+  <Box role="tabpanel" hidden={value !== index}>
+    {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
+  </Box>
+)
+
+const adaptProductForLayout = (product: Product) => ({
+  id: product.id,
+  title: product.title,
+  price: product.price,
+  condition: 'used' as const,
+  status: product.status,
+  images: adaptProductImages(product.images),
+  workshop: {
+    name: product.workshop.name,
+    city: product.workshop.city,
+  },
+})
+
 export const WorkshopDetail = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -56,6 +91,11 @@ export const WorkshopDetail = () => {
   const [workshop, setWorkshop] = useState<Workshop | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [tabValue, setTabValue] = useState(0)
+  const [products, setProducts] = useState<Product[]>([])
+  const [services, setServices] = useState<Service[]>([])
+  const [productsLoading, setProductsLoading] = useState(false)
+  const [servicesLoading, setServicesLoading] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -73,6 +113,48 @@ export const WorkshopDetail = () => {
 
     loadWorkshop()
   }, [id])
+
+  // Cargar productos del taller
+  useEffect(() => {
+    if (!id || tabValue !== 1) return
+
+    const loadProducts = async () => {
+      setProductsLoading(true)
+      try {
+        const response = await searchProducts({ workshopId: id, size: 20 } as any)
+        setProducts(response.items)
+      } catch (error) {
+        console.error('Error loading products:', error)
+      } finally {
+        setProductsLoading(false)
+      }
+    }
+
+    loadProducts()
+  }, [id, tabValue])
+
+  // Cargar servicios del taller
+  useEffect(() => {
+    if (!id || tabValue !== 2) return
+
+    const loadServices = async () => {
+      setServicesLoading(true)
+      try {
+        const response = await searchServices({ workshopId: id, size: 20 } as any)
+        setServices(response.items)
+      } catch (error) {
+        console.error('Error loading services:', error)
+      } finally {
+        setServicesLoading(false)
+      }
+    }
+
+    loadServices()
+  }, [id, tabValue])
+
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue)
+  }
 
   if (loading) {
     return (
@@ -288,8 +370,8 @@ export const WorkshopDetail = () => {
                   <Button
                     variant="text"
                     size="large"
-                    startIcon={<DirectionsBike />}
-                    onClick={() => navigate('/catalog?tab=1')}
+                    startIcon={<ShoppingCart />}
+                    onClick={() => setTabValue(1)}
                     sx={{
                       py: 1.5,
                       fontSize: '1.1rem',
@@ -303,76 +385,140 @@ export const WorkshopDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Servicios y especialidades */}
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={4}>
-            {/* Servicios */}
-            {workshop.services && (
-              <Card sx={{ flex: 1, borderRadius: 3 }}>
+          {/* Tabs de contenido */}
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs
+              value={tabValue}
+              onChange={handleTabChange}
+              centered
+              textColor="primary"
+              indicatorColor="primary"
+            >
+              <Tab label="Información" icon={<Business />} iconPosition="start" />
+              <Tab label="Productos" icon={<ShoppingCart />} iconPosition="start" />
+              <Tab label="Servicios" icon={<Build />} iconPosition="start" />
+            </Tabs>
+          </Box>
+
+          {/* Tab Panel: Información */}
+          <TabPanel value={tabValue} index={0}>
+            <Stack spacing={4}>
+              {/* Servicios y especialidades */}
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={4}>
+                {/* Servicios */}
+                {workshop.services && (
+                  <Card sx={{ flex: 1, borderRadius: 3 }}>
+                    <CardContent sx={{ p: 3 }}>
+                      <Typography variant="h5" fontWeight="bold" gutterBottom>
+                        Servicios Destacados
+                      </Typography>
+                      <Stack spacing={1}>
+                        {workshop.services.map((service, index) => (
+                          <Chip
+                            key={index}
+                            label={service}
+                            variant="outlined"
+                            color="primary"
+                            sx={{ justifyContent: 'flex-start' }}
+                          />
+                        ))}
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Especialidades */}
+                {workshop.specialties && (
+                  <Card sx={{ flex: 1, borderRadius: 3 }}>
+                    <CardContent sx={{ p: 3 }}>
+                      <Typography variant="h5" fontWeight="bold" gutterBottom>
+                        Especialidades
+                      </Typography>
+                      <Stack spacing={1}>
+                        {workshop.specialties.map((specialty, index) => (
+                          <Chip
+                            key={index}
+                            label={specialty}
+                            variant="filled"
+                            color="secondary"
+                            sx={{ justifyContent: 'flex-start' }}
+                          />
+                        ))}
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                )}
+              </Stack>
+
+              {/* Horarios */}
+              <Card sx={{ borderRadius: 3 }}>
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h5" fontWeight="bold" gutterBottom>
-                    Servicios
+                    <Schedule sx={{ mr: 1, verticalAlign: 'middle' }} />
+                    Horarios de Atención
                   </Typography>
-                  <Stack spacing={1}>
-                    {workshop.services.map((service, index) => (
-                      <Chip
-                        key={index}
-                        label={service}
-                        variant="outlined"
-                        color="primary"
-                        sx={{ justifyContent: 'flex-start' }}
-                      />
-                    ))}
-                  </Stack>
+                  <Typography variant="body1" color="text.secondary">
+                    Lunes a Viernes: 9:00 - 18:00
+                    <br />
+                    Sábados: 9:00 - 14:00
+                    <br />
+                    Domingos: Cerrado
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="warning.main"
+                    sx={{ mt: 2, display: 'block' }}
+                  >
+                    * Los horarios pueden variar en días festivos
+                  </Typography>
                 </CardContent>
               </Card>
-            )}
+            </Stack>
+          </TabPanel>
 
-            {/* Especialidades */}
-            {workshop.specialties && (
-              <Card sx={{ flex: 1, borderRadius: 3 }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Typography variant="h5" fontWeight="bold" gutterBottom>
-                    Especialidades
-                  </Typography>
-                  <Stack spacing={1}>
-                    {workshop.specialties.map((specialty, index) => (
-                      <Chip
-                        key={index}
-                        label={specialty}
-                        variant="filled"
-                        color="secondary"
-                        sx={{ justifyContent: 'flex-start' }}
-                      />
-                    ))}
-                  </Stack>
-                </CardContent>
-              </Card>
+          {/* Tab Panel: Productos */}
+          <TabPanel value={tabValue} index={1}>
+            {productsLoading ? (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <CircularProgress />
+                <Typography variant="body1" sx={{ mt: 2 }}>
+                  Cargando productos...
+                </Typography>
+              </Box>
+            ) : products.length > 0 ? (
+              <ModernProductLayout
+                products={products.map(adaptProductForLayout)}
+                loading={false}
+                emptyMessage="Este taller no tiene productos disponibles"
+              />
+            ) : (
+              <Alert severity="info">
+                Este taller no tiene productos publicados en este momento.
+              </Alert>
             )}
-          </Stack>
+          </TabPanel>
 
-          {/* Horarios (placeholder) */}
-          <Card sx={{ borderRadius: 3 }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h5" fontWeight="bold" gutterBottom>
-                <Schedule sx={{ mr: 1, verticalAlign: 'middle' }} />
-                Horarios de Atención
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Lunes a Viernes: 9:00 - 18:00
-                <br />
-                Sábados: 9:00 - 14:00
-                <br />
-                Domingos: Cerrado
-              </Typography>
-              <Typography
-                variant="caption"
-                color="warning.main"
-                sx={{ mt: 2, display: 'block' }}
-              >
-                * Los horarios pueden variar en días festivos
-              </Typography>
-            </CardContent>
-          </Card>
+          {/* Tab Panel: Servicios */}
+          <TabPanel value={tabValue} index={2}>
+            {servicesLoading ? (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <CircularProgress />
+                <Typography variant="body1" sx={{ mt: 2 }}>
+                  Cargando servicios...
+                </Typography>
+              </Box>
+            ) : services.length > 0 ? (
+              <ModernServiceLayout
+                services={services}
+                loading={false}
+                emptyMessage="Este taller no tiene servicios disponibles"
+              />
+            ) : (
+              <Alert severity="info">
+                Este taller no tiene servicios publicados en este momento.
+              </Alert>
+            )}
+          </TabPanel>
         </Stack>
       </Box>
     </Container>
