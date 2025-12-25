@@ -45,14 +45,17 @@ export const GoogleCallbackHandler = () => {
                   {
                     headers: {
                       Authorization: `Bearer ${token}`,
+                      'Cache-Control': 'no-cache', // ✅ Forzar datos frescos, evitar 304
                     },
                   }
                 )
 
-                console.log('🔧 Workshops:', workshopsData)
+                console.log('🔧 Workshops data:', workshopsData)
+                console.log('🔧 Workshops type:', typeof workshopsData)
+                console.log('🔧 Is array:', Array.isArray(workshopsData))
 
-                // Si no tiene workshops, redirigir a crear uno
-                if (!workshopsData || workshopsData.length === 0) {
+                // ✅ Mejor validación que maneja undefined/null de 304
+                if (!workshopsData || !Array.isArray(workshopsData) || workshopsData.length === 0) {
                   console.log(
                     '➡️ Redirigiendo a create-workshop (no tiene talleres)'
                   )
