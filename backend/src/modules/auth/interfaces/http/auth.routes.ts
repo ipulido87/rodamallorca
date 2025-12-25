@@ -11,6 +11,10 @@ import {
   registerUser,
   verifyByLink, // ✅ SOLO ESTE MÉTODO
   resendVerification,
+  updateProfile,
+  changePassword,
+  getUserSettings,
+  updateUserSettings,
 } from '../controllers/auth.controller'
 import { validateBody } from '../middlewares/validate-body'
 import { LoginUserSchema } from './schemas/login.schema'
@@ -45,5 +49,11 @@ router.post('/logout', logout)
 router.post('/forgot-password', forgotPasswordController)
 router.post('/reset-password', resetPasswordController)
 router.post('/resend-verification', resendVerification)
+
+// ✅ PROFILE Y SETTINGS
+router.put('/profile', verifyToken, updateProfile)
+router.post('/change-password', verifyToken, changePassword)
+router.get('/settings', verifyToken, getUserSettings)
+router.put('/settings', verifyToken, updateUserSettings)
 
 export default router
