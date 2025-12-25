@@ -540,3 +540,175 @@ export const resendVerification = async (req: Request, res: Response) => {
     })
   }
 }
+
+// ========================================
+// NUEVOS ENDPOINTS PARA PROFILE Y SETTINGS
+// ========================================
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id
+    if (!userId) {
+      return res.status(401).json({ message: 'No autenticado' })
+    }
+
+    const { name, phone, birthDate } = req.body
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: name || undefined,
+        phone: phone || undefined,
+        birthDate: birthDate ? new Date(birthDate) : undefined,
+      },
+    })
+
+    return res.json(sanitizeUser(updatedUser))
+  } catch (error) {
+    console.error('❌ [UPDATE_PROFILE] Error:', error)
+    return res.status(500).json({ message: 'Error al actualizar perfil' })
+  }
+}
+
+export const changePassword = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id
+    if (!userId) {
+      return res.status(401).json({ message: 'No autenticado' })
+    }
+
+    const { currentPassword, newPassword } = req.body
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Faltan datos requeridos' })
+    }
+
+    // Obtener usuario con contraseña
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    })
+
+    if (!user || !user.password) {
+      return res.status(400).json({ message: 'Usuario no encontrado' })
+    }
+
+    // Verificar contraseña actual
+    const bcrypt = require('bcryptjs')
+    const isValid = await bcrypt.compare(currentPassword, user.password)
+    if (!isValid) {
+      return res.status(400).json({ message: 'Contraseña actual incorrecta' })
+    }
+
+    // Hashear nueva contraseña
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+
+    // Actualizar contraseña
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    })
+
+    return res.json({ message: 'Contraseña actualizada correctamente' })
+  } catch (error) {
+    console.error('❌ [CHANGE_PASSWORD] Error:', error)
+    return res.status(500).json({ message: 'Error al cambiar contraseña' })
+  }
+}
+
+export const getUserSettings = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id
+    if (!userId) {
+      return res.status(401).json({ message: 'No autenticado' })
+    }
+
+    // Buscar settings del usuario
+    let settings = await prisma.userSettings.findUnique({
+      where: { userId },
+    })
+
+    // Si no existen, crear defaults
+    if (!settings) {
+      settings = await prisma.userSettings.create({
+        data: {
+          userId,
+          settings: {
+            notifications: {
+              email: {
+                orders: true,
+                marketing: false,
+                updates: true,
+              },
+              push: {
+                orders: true,
+                messages: true,
+              },
+            },
+            preferences: {
+              language: 'es',
+            },
+            privacy: {
+              profileVisible: true,
+              showEmail: false,
+              showPhone: false,
+            },
+          },
+        },
+      })
+    }
+
+    return res.json(settings.settings)
+  } catch (error) {
+    console.error('❌ [GET_USER_SETTINGS] Error:', error)
+    // Si no existe la tabla, retornar defaults
+    return res.json({
+      notifications: {
+        email: {
+          orders: true,
+          marketing: false,
+          updates: true,
+        },
+        push: {
+          orders: true,
+          messages: true,
+        },
+      },
+      preferences: {
+        language: 'es',
+      },
+      privacy: {
+        profileVisible: true,
+        showEmail: false,
+        showPhone: false,
+      },
+    })
+  }
+}
+
+export const updateUserSettings = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id
+    if (!userId) {
+      return res.status(401).json({ message: 'No autenticado' })
+    }
+
+    const newSettings = req.body
+
+    // Upsert settings
+    const settings = await prisma.userSettings.upsert({
+      where: { userId },
+      update: {
+        settings: newSettings,
+      },
+      create: {
+        userId,
+        settings: newSettings,
+      },
+    })
+
+    return res.json(settings.settings)
+  } catch (error) {
+    console.error('❌ [UPDATE_USER_SETTINGS] Error:', error)
+    return res.status(500).json({ message: 'Error al actualizar configuración' })
+  }
+}

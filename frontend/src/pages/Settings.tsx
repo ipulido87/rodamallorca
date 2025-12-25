@@ -5,13 +5,9 @@ import {
   CardContent,
   Container,
   Divider,
-  FormControl,
   FormControlLabel,
   FormGroup,
   Grid,
-  InputLabel,
-  MenuItem,
-  Select,
   Stack,
   Switch,
   Typography,
@@ -21,9 +17,7 @@ import {
 } from '@mui/material'
 import {
   Notifications,
-  Language,
   Security,
-  Palette,
   Store,
   Save,
 } from '@mui/icons-material'
@@ -45,10 +39,6 @@ interface UserSettings {
       orders: boolean
       messages: boolean
     }
-  }
-  preferences: {
-    language: string
-    theme: 'light' | 'dark' | 'auto'
   }
   privacy: {
     profileVisible: boolean
@@ -75,10 +65,6 @@ const getUserSettings = async (): Promise<UserSettings> => {
           orders: true,
           messages: true,
         },
-      },
-      preferences: {
-        language: 'es',
-        theme: 'auto',
       },
       privacy: {
         profileVisible: true,
@@ -341,75 +327,6 @@ export const Settings = () => {
                 Tu información personal está protegida y nunca será compartida con
                 terceros sin tu consentimiento.
               </Alert>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Preferencias */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent sx={{ p: 3 }}>
-              <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-                <Palette color="primary" />
-                <Typography variant="h6" fontWeight="bold">
-                  Apariencia
-                </Typography>
-              </Stack>
-
-              <FormControl fullWidth sx={{ mb: 3 }}>
-                <InputLabel>Tema</InputLabel>
-                <Select
-                  value={currentSettings.preferences.theme}
-                  label="Tema"
-                  onChange={(e) =>
-                    updateSettings(
-                      ['preferences', 'theme'],
-                      e.target.value as 'light' | 'dark' | 'auto'
-                    )
-                  }
-                >
-                  <MenuItem value="light">Claro</MenuItem>
-                  <MenuItem value="dark">Oscuro</MenuItem>
-                  <MenuItem value="auto">Automático (según sistema)</MenuItem>
-                </Select>
-              </FormControl>
-
-              <Alert severity="warning">
-                La funcionalidad de tema oscuro estará disponible próximamente.
-              </Alert>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Idioma */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent sx={{ p: 3 }}>
-              <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-                <Language color="primary" />
-                <Typography variant="h6" fontWeight="bold">
-                  Idioma
-                </Typography>
-              </Stack>
-
-              <FormControl fullWidth>
-                <InputLabel>Idioma de la interfaz</InputLabel>
-                <Select
-                  value={currentSettings.preferences.language}
-                  label="Idioma de la interfaz"
-                  onChange={(e) =>
-                    updateSettings(['preferences', 'language'], e.target.value)
-                  }
-                >
-                  <MenuItem value="es">Español</MenuItem>
-                  <MenuItem value="en" disabled>
-                    English (Próximamente)
-                  </MenuItem>
-                  <MenuItem value="ca" disabled>
-                    Català (Próximamente)
-                  </MenuItem>
-                </Select>
-              </FormControl>
             </CardContent>
           </Card>
         </Grid>
