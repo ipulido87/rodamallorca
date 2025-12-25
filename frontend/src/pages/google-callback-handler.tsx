@@ -41,7 +41,7 @@ export const GoogleCallbackHandler = () => {
             if (user.role === 'WORKSHOP_OWNER') {
               try {
                 const { data: workshopsData } = await API.get(
-                  '/owner/workshops',
+                  '/owner/workshops/mine',
                   {
                     headers: {
                       Authorization: `Bearer ${token}`,
