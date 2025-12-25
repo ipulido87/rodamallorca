@@ -250,6 +250,7 @@ export const initiateGoogleLogin = async (req: Request, res: Response) => {
     const stateData = {
       id: crypto.randomUUID(),
       role: role || 'USER',
+      isLogin, // ✅ Agregar flag para saber si es login o registro
     }
 
     const state = Buffer.from(JSON.stringify(stateData)).toString('base64')
@@ -274,9 +275,8 @@ export const initiateGoogleLogin = async (req: Request, res: Response) => {
 
     const client = await getGoogleClient()
 
-    const redirectUri = isLogin
-      ? (process.env.GOOGLE_LOGIN_REDIRECT_URI || process.env.GOOGLE_REDIRECT_URI!)
-      : process.env.GOOGLE_REDIRECT_URI!
+    // ✅ USAR SIEMPRE LA MISMA CALLBACK URL
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI!
 
     console.log('🔍 [INITIATE_GOOGLE] Redirect URI:', redirectUri)
 
@@ -303,9 +303,7 @@ export const handleGoogleCallback = async (req: Request, res: Response) => {
     if (!stateParam || !code)
       return res.status(400).json({ error: 'Missing state or code' })
 
-    console.log('🔍 [CALLBACK] MODO REGISTRO - Creando usuario')
-
-    let stateData: { id: string; role?: string }
+    let stateData: { id: string; role?: string; isLogin?: boolean }
     try {
       stateData = JSON.parse(
         Buffer.from(stateParam, 'base64').toString('utf-8')
@@ -314,11 +312,58 @@ export const handleGoogleCallback = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Invalid state format' })
     }
 
+    console.log('🔍 [CALLBACK] Modo:', stateData.isLogin ? 'LOGIN' : 'REGISTRO')
+
     const repo = new UserRepositoryPrisma()
     const codeVerifier = req.cookies?.oauth_code_verifier as string
     if (!codeVerifier) throw new Error('Missing code verifier')
 
     const frontendUrl = getFrontendUrl()
+
+    // ✅ SI ES LOGIN, VERIFICAR QUE EL USUARIO EXISTA
+    if (stateData.isLogin) {
+      const u = await handleCallback(
+        stateParam,
+        code,
+        codeVerifier,
+        process.env.GOOGLE_REDIRECT_URI
+      )
+      if (!u.email) throw new Error('No email from Google')
+
+      const existingUser = await repo.findByEmail(u.email)
+
+      if (!existingUser) {
+        console.log('🔍 [LOGIN] Usuario NO existe - redirigiendo a registro')
+        return res.redirect(
+          `${frontendUrl}/register?message=Usuario no registrado. Por favor regístrate primero.&email=${encodeURIComponent(
+            u.email
+          )}`
+        )
+      }
+
+      const token = signJwt({
+        id: existingUser.id,
+        email: existingUser.email,
+        role: existingUser.role || undefined,
+      })
+
+      res.clearCookie('oauth_state')
+      res.clearCookie('oauth_code_verifier')
+
+      res.cookie('auth_token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        path: '/',
+      })
+
+      console.log('✅ [LOGIN] Usuario logueado:', existingUser.email)
+      return res.redirect(`${frontendUrl}/auth/callback?token=${token}`)
+    }
+
+    // ✅ SI ES REGISTRO, CREAR USUARIO SI NO EXISTE
+    console.log('🔍 [CALLBACK] MODO REGISTRO - Creando usuario si no existe')
 
     const { token, user } = await loginWithGoogleUseCase(
       {
@@ -368,79 +413,6 @@ export const handleGoogleCallback = async (req: Request, res: Response) => {
   } catch (e) {
     const error = e as Error
     console.error('Google callback error:', error)
-    const frontendUrl = getFrontendUrl()
-    const errorMessage = encodeURIComponent(error.message)
-    return res.redirect(`${frontendUrl}/login?error=${errorMessage}`)
-  }
-}
-
-export const handleGoogleLogin = async (req: Request, res: Response) => {
-  try {
-    console.log('🔍 [LOGIN] MODO LOGIN - Solo verificando')
-
-    const { state: stateParam, code } = req.query as {
-      state?: string
-      code?: string
-    }
-    if (!stateParam || !code)
-      return res.status(400).json({ error: 'Missing state or code' })
-
-    const repo = new UserRepositoryPrisma()
-    const codeVerifier = req.cookies?.oauth_code_verifier as string
-    if (!codeVerifier) throw new Error('Missing code verifier')
-
-    const frontendUrl = getFrontendUrl()
-
-    const u = await handleCallback(
-      stateParam,
-      code,
-      codeVerifier,
-      process.env.GOOGLE_LOGIN_REDIRECT_URI || process.env.GOOGLE_REDIRECT_URI
-    )
-    if (!u.email) throw new Error('No email from Google')
-
-    const existingUser = await repo.findByEmail(u.email)
-
-    if (!existingUser) {
-      console.log('🔍 [LOGIN] Usuario NO existe - redirigiendo a registro')
-      return res.redirect(
-        `${frontendUrl}/register?message=Usuario no registrado. Por favor regístrate primero.&email=${encodeURIComponent(
-          u.email
-        )}`
-      )
-    }
-
-    const token = signJwt({
-      id: existingUser.id,
-      email: existingUser.email,
-      role: existingUser.role || undefined,
-    })
-
-    res.clearCookie('oauth_state')
-    res.clearCookie('oauth_code_verifier')
-
-    res.cookie('auth_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: '/',
-    })
-
-    if (existingUser.role === 'WORKSHOP_OWNER') {
-      const workshop = await prisma.workshop.findFirst({
-        where: { ownerId: existingUser.id },
-      })
-      if (!workshop) {
-        return res.redirect(`${frontendUrl}/auth/callback?token=${token}`)
-      }
-      return res.redirect(`${frontendUrl}/auth/callback?token=${token}`)
-    }
-
-    return res.redirect(`${frontendUrl}/auth/callback?token=${token}`)
-  } catch (e) {
-    const error = e as Error
-    console.error('Google login error:', error)
     const frontendUrl = getFrontendUrl()
     const errorMessage = encodeURIComponent(error.message)
     // ✅ Redirigir al callback handler, no al login
