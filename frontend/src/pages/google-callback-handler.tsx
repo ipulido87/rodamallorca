@@ -13,80 +13,74 @@ export const GoogleCallbackHandler = () => {
       const token = searchParams.get('token')
       const error = searchParams.get('error')
 
+      console.log('🔍 [CALLBACK] Token:', token ? 'SÍ' : 'NO')
+      console.log('🔍 [CALLBACK] Error:', error)
+
       if (error) {
-        console.error('Error en Google OAuth:', error)
+        console.error('❌ Error en Google OAuth:', error)
         window.location.href = '/login?error=' + encodeURIComponent(error)
         return
       }
 
-      if (token) {
-        console.log('🔍 Token recibido:', token.substring(0, 30) + '...')
-
-        // ✅ GUARDAR token usando el AuthProvider
-        persistToken(token)
-
-        console.log('✅ Token guardado usando AuthProvider')
-
-        try {
-          // ✅ Refrescar usuario usando AuthProvider (ya maneja el token)
-          await refreshMe()
-
-          // Obtener el usuario actualizado para verificar el rol
-          const { data: user } = await API.get('/auth/me')
-          console.log('👤 Usuario:', user)
-
-          if (user) {
-
-            // ✅ Si es WORKSHOP_OWNER, verificar si tiene workshop
-            if (user.role === 'WORKSHOP_OWNER') {
-              try {
-                const { data: workshopsData } = await API.get(
-                  '/owner/workshops/mine',
-                  {
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                      'Cache-Control': 'no-cache', // ✅ Forzar datos frescos, evitar 304
-                    },
-                  }
-                )
-
-                console.log('🔧 Workshops data:', workshopsData)
-                console.log('🔧 Workshops type:', typeof workshopsData)
-                console.log('🔧 Is array:', Array.isArray(workshopsData))
-
-                // ✅ Mejor validación que maneja undefined/null de 304
-                if (!workshopsData || !Array.isArray(workshopsData) || workshopsData.length === 0) {
-                  console.log(
-                    '➡️ Redirigiendo a create-workshop (no tiene talleres)'
-                  )
-                  window.location.href = '/create-workshop?firstTime=true'
-                  return
-                }
-
-                // Si tiene workshops, ir al dashboard
-                console.log('➡️ Redirigiendo a dashboard (tiene talleres)')
-                window.location.href = '/dashboard'
-              } catch (err) {
-                console.error('Error al verificar workshops:', err)
-                // Si hay error, asumir que no tiene y enviar a crear
-                window.location.href = '/create-workshop?firstTime=true'
-              }
-            } else {
-              // Si es USER, ir a home
-              console.log('➡️ Redirigiendo a home (es USER)')
-              window.location.href = '/home'
-            }
-          } else {
-            console.error('❌ No se pudo obtener info del usuario')
-            window.location.href = '/login?error=user_not_found'
-          }
-        } catch (err) {
-          console.error('❌ Error al obtener usuario:', err)
-          window.location.href = '/login'
-        }
-      } else {
+      if (!token) {
         console.error('❌ No se recibió token en el callback')
         window.location.href = '/login?error=no_token'
+        return
+      }
+
+      try {
+        console.log('🔍 Token recibido:', token.substring(0, 30) + '...')
+
+        // ✅ GUARDAR token
+        persistToken(token)
+        console.log('✅ Token guardado')
+
+        // ✅ Refrescar usuario
+        await refreshMe()
+        console.log('✅ Usuario refrescado')
+
+        // Obtener info del usuario
+        const { data: user } = await API.get('/auth/me')
+        console.log('👤 Usuario obtenido:', user?.email, user?.role)
+
+        if (!user) {
+          console.error('❌ No se pudo obtener usuario')
+          window.location.href = '/login?error=user_not_found'
+          return
+        }
+
+        // ✅ Si es USER normal, ir a home
+        if (user.role !== 'WORKSHOP_OWNER') {
+          console.log('➡️ USER normal → /home')
+          window.location.href = '/home'
+          return
+        }
+
+        // ✅ Si es WORKSHOP_OWNER, verificar workshops
+        console.log('🔍 Verificando workshops...')
+        const { data: workshopsData } = await API.get('/owner/workshops/mine', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Cache-Control': 'no-cache',
+          },
+        })
+
+        console.log('🔧 Workshops:', workshopsData)
+        console.log('🔧 Es array:', Array.isArray(workshopsData))
+        console.log('🔧 Cantidad:', workshopsData?.length)
+
+        if (Array.isArray(workshopsData) && workshopsData.length > 0) {
+          console.log('✅ Tiene workshops → /dashboard')
+          window.location.href = '/dashboard'
+        } else {
+          console.log('⚠️ No tiene workshops → /create-workshop')
+          window.location.href = '/create-workshop?firstTime=true'
+        }
+      } catch (err) {
+        console.error('❌ ERROR EN CALLBACK:', err)
+        console.error('❌ Error completo:', JSON.stringify(err, null, 2))
+        // NO redirigir automáticamente, mostrar error
+        alert('Error al procesar login: ' + (err instanceof Error ? err.message : 'Error desconocido'))
       }
     }
 
