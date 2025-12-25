@@ -217,11 +217,12 @@ export const MyProducts = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* Header */}
+      {/* Header - Responsive */}
       <Stack
-        direction="row"
+        direction={{ xs: 'column', sm: 'row' }}
         justifyContent="space-between"
-        alignItems="center"
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
+        spacing={{ xs: 2, sm: 0 }}
         sx={{ mb: 4 }}
       >
         <Box>
@@ -236,6 +237,8 @@ export const MyProducts = () => {
           variant="contained"
           startIcon={<Add />}
           onClick={() => navigate('/create-product')}
+          fullWidth={{ xs: true, sm: false }}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
           Nuevo Producto
         </Button>
@@ -247,7 +250,7 @@ export const MyProducts = () => {
         </Alert>
       )}
 
-      {/* Filtros */}
+      {/* Filtros - Responsive */}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 4 }}>
         <TextField
           placeholder="Buscar productos..."
@@ -257,31 +260,56 @@ export const MyProducts = () => {
             startAdornment: <Search sx={{ color: 'text.secondary', mr: 1 }} />,
           }}
           sx={{ flex: 1 }}
+          fullWidth
         />
-        <Stack direction="row" spacing={1}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            width: { xs: '100%', sm: 'auto' },
+            justifyContent: { xs: 'space-between', sm: 'flex-start' }
+          }}
+        >
           <Button
             variant={statusFilter === 'ALL' ? 'contained' : 'outlined'}
             onClick={() => setStatusFilter('ALL')}
             size="small"
+            sx={{ flex: { xs: 1, sm: 'none' } }}
           >
-            Todos ({products.length})
+            <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+              Todos ({products.length})
+            </Box>
+            <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+              Todos
+            </Box>
           </Button>
           <Button
             variant={statusFilter === 'PUBLISHED' ? 'contained' : 'outlined'}
             onClick={() => setStatusFilter('PUBLISHED')}
             size="small"
             color="success"
+            sx={{ flex: { xs: 1, sm: 'none' } }}
           >
-            Publicados (
-            {products.filter((p) => p.status === 'PUBLISHED').length})
+            <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+              Publicados ({products.filter((p) => p.status === 'PUBLISHED').length})
+            </Box>
+            <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+              Pub.
+            </Box>
           </Button>
           <Button
             variant={statusFilter === 'DRAFT' ? 'contained' : 'outlined'}
             onClick={() => setStatusFilter('DRAFT')}
             size="small"
             color="warning"
+            sx={{ flex: { xs: 1, sm: 'none' } }}
           >
-            Borradores ({products.filter((p) => p.status === 'DRAFT').length})
+            <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+              Borradores ({products.filter((p) => p.status === 'DRAFT').length})
+            </Box>
+            <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+              Borr.
+            </Box>
           </Button>
         </Stack>
       </Stack>
