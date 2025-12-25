@@ -450,15 +450,21 @@ export const handleGoogleLogin = async (req: Request, res: Response) => {
 export const getCurrentUser = async (req: Request, res: Response) => {
   const token =
     req.headers.authorization?.replace('Bearer ', '') || req.cookies?.auth_token
-  if (!token) return res.json({ user: null })
+  if (!token) return res.status(401).json({ message: 'No autenticado' })
 
   try {
     const payload = jwtVerify(token, process.env.JWT_SECRET!) as JWTPayload
     const repo = new UserRepositoryPrisma()
     const user = await repo.findByEmail(payload.email)
-    return res.json({ user })
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' })
+    }
+
+    // Retornar usuario directamente (sin wrapper)
+    return res.json(sanitizeUser(user))
   } catch {
-    return res.json({ user: null })
+    return res.status(401).json({ message: 'Token inválido' })
   }
 }
 
