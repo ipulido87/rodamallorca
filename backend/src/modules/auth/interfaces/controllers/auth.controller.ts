@@ -275,7 +275,7 @@ export const initiateGoogleLogin = async (req: Request, res: Response) => {
     const client = await getGoogleClient()
 
     const redirectUri = isLogin
-      ? process.env.GOOGLE_LOGIN_REDIRECT_URI!
+      ? (process.env.GOOGLE_LOGIN_REDIRECT_URI || process.env.GOOGLE_REDIRECT_URI!)
       : process.env.GOOGLE_REDIRECT_URI!
 
     console.log('🔍 [INITIATE_GOOGLE] Redirect URI:', redirectUri)
@@ -395,7 +395,7 @@ export const handleGoogleLogin = async (req: Request, res: Response) => {
       stateParam,
       code,
       codeVerifier,
-      process.env.GOOGLE_LOGIN_REDIRECT_URI
+      process.env.GOOGLE_LOGIN_REDIRECT_URI || process.env.GOOGLE_REDIRECT_URI
     )
     if (!u.email) throw new Error('No email from Google')
 
@@ -443,7 +443,8 @@ export const handleGoogleLogin = async (req: Request, res: Response) => {
     console.error('Google login error:', error)
     const frontendUrl = getFrontendUrl()
     const errorMessage = encodeURIComponent(error.message)
-    return res.redirect(`${frontendUrl}/login?error=${errorMessage}`)
+    // ✅ Redirigir al callback handler, no al login
+    return res.redirect(`${frontendUrl}/auth/callback?error=${errorMessage}`)
   }
 }
 
