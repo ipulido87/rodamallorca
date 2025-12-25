@@ -3,6 +3,7 @@ import { verifyToken } from '../../interfaces/middlewares/auth.middleware'
 import {
   getCurrentUser,
   handleGoogleCallback,
+  handleGoogleLogin,
   initiateGoogleLogin,
   loginUserController,
   logout,
@@ -36,10 +37,11 @@ router.get('/verify-link', verifyByLink)
 
 router.get('/protected', verifyToken, protectedRoute)
 
-// ✅ RUTAS DE GOOGLE (usa la MISMA callback para login y registro)
-router.get('/google', initiateGoogleLogin) // Registro
-router.get('/google/login', initiateGoogleLogin) // Login
-router.get('/google/callback', handleGoogleCallback) // Única callback
+// ✅ RUTAS DE GOOGLE
+router.get('/google', initiateGoogleLogin)
+router.get('/google/callback', handleGoogleCallback)
+router.get('/google/login', initiateGoogleLogin)
+router.get('/google/login/callback', handleGoogleLogin)
 
 // ✅ OTRAS RUTAS
 router.get('/me', getCurrentUser)
