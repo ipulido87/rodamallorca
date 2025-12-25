@@ -34,6 +34,8 @@ import { SnackbarProvider } from './shared/hooks/use-snackbar'
 import { ForgotPassword } from './features/auth/pages/forgot-password'
 import { ResetPassword } from './features/auth/pages/reset-password'
 import { GoogleCallbackHandler } from './pages/google-callback-handler'
+import { Profile } from './pages/Profile'
+import { Settings } from './pages/Settings'
 
 function App() {
   return (
@@ -225,14 +227,8 @@ function App() {
             />
 
             {/* Rutas comunes */}
-            <Route
-              path="profile"
-              element={<div>Mi Perfil - Por implementar</div>}
-            />
-            <Route
-              path="settings"
-              element={<div>Configuración - Por implementar</div>}
-            />
+            <Route path="profile" element={<Profile />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>
             </SnackbarProvider>
