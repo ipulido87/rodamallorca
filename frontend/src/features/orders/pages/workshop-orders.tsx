@@ -26,8 +26,9 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import useSWR from 'swr'
 import { useSnackbar } from '../../../shared/hooks/use-snackbar'
 import {
   getOrderStatusColor,
@@ -42,8 +43,6 @@ export const WorkshopOrders = () => {
   const { workshopId } = useParams<{ workshopId: string }>()
   const navigate = useNavigate()
   const { showSuccess, showError } = useSnackbar()
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [updateLoading, setUpdateLoading] = useState<string | null>(null)
 
@@ -58,25 +57,15 @@ export const WorkshopOrders = () => {
     newStatus: null,
   })
 
-  const loadOrders = useCallback(async () => {
-    if (!workshopId) return
-
-    try {
-      setLoading(true)
-      setError('')
-      const data = await getWorkshopOrders(workshopId)
-      setOrders(data)
-    } catch (e) {
-      console.error('❌ [WORKSHOP_ORDERS] Error cargando pedidos:', e)
-      setError('Error al cargar los pedidos del taller')
-    } finally {
-      setLoading(false)
+  // SWR: Cargar pedidos del taller con cache
+  const { data: orders = [], isLoading: loading, mutate } = useSWR<Order[]>(
+    workshopId ? `/workshops/${workshopId}/orders` : null,
+    () => getWorkshopOrders(workshopId!),
+    {
+      revalidateOnFocus: true,
+      dedupingInterval: 5000,
     }
-  }, [workshopId])
-
-  useEffect(() => {
-    void loadOrders()
-  }, [loadOrders])
+  )
 
   const handleStatusChangeClick = (order: Order) => {
     setUpdateDialog({ open: true, order, newStatus: null })
@@ -93,12 +82,14 @@ export const WorkshopOrders = () => {
         status: updateDialog.newStatus,
       })
 
-      setOrders((prev) =>
-        prev.map((o) =>
+      // Optimistic update: actualizar cache inmediatamente
+      mutate(
+        orders.map((o) =>
           o.id === updateDialog.order?.id
             ? { ...o, status: updateDialog.newStatus! }
             : o
-        )
+        ),
+        false
       )
 
       setUpdateDialog({ open: false, order: null, newStatus: null })

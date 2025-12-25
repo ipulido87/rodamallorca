@@ -16,8 +16,9 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import useSWR from 'swr'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useSnackbar } from '../../../shared/hooks/use-snackbar'
 import {
@@ -36,8 +37,6 @@ export const MyOrders = () => {
   console.log('🔐 [MYORDERS] Usuario al cargar componente:', user)
   console.log('🔐 [MYORDERS] User ID:', user?.id)
 
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [cancelLoading, setCancelLoading] = useState<string | null>(null)
 
@@ -49,28 +48,15 @@ export const MyOrders = () => {
     order: null,
   })
 
-  const loadOrders = useCallback(async () => {
-    console.log('🔄 [LOADORDERS] Ejecutando loadOrders...')
-
-    if (!user?.id) {
-      return
+  // SWR: Cargar pedidos del usuario con cache y revalidación
+  const { data: orders = [], isLoading: loading, mutate } = useSWR<Order[]>(
+    user?.id ? `/users/${user.id}/orders` : null,
+    () => getMyOrders(user!.id),
+    {
+      revalidateOnFocus: true,
+      dedupingInterval: 5000,
     }
-
-    try {
-      setLoading(true)
-      setError('')
-      const data = await getMyOrders(user.id)
-      setOrders(data)
-    } catch {
-      setError('Error al cargar los pedidos')
-    } finally {
-      setLoading(false)
-    }
-  }, [user?.id])
-
-  useEffect(() => {
-    void loadOrders()
-  }, [loadOrders])
+  )
 
   const handleCancelClick = (order: Order) => {
     setCancelDialog({ open: true, order })
@@ -85,13 +71,14 @@ export const MyOrders = () => {
 
       await cancelOrder(cancelDialog.order.id)
 
-      // Actualizar la lista local
-      setOrders((prev) =>
-        prev.map((o) =>
+      // Optimistic update: actualizar cache inmediatamente
+      mutate(
+        orders.map((o) =>
           o.id === cancelDialog.order?.id
             ? { ...o, status: 'CANCELLED' as any }
             : o
-        )
+        ),
+        false
       )
 
       setCancelDialog({ open: false, order: null })

@@ -24,8 +24,9 @@ import {
   TableRow,
   Typography,
 } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import useSWR from 'swr'
 import {
   cancelOrder,
   getOrderById,
@@ -38,32 +39,21 @@ import {
 export const OrderDetail = () => {
   const { orderId } = useParams<{ orderId: string }>()
   const navigate = useNavigate()
-  const [order, setOrder] = useState<Order | null>(null)
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [cancelLoading, setCancelLoading] = useState(false)
 
   // Estado para el modal de confirmación de cancelación
   const [cancelDialog, setCancelDialog] = useState(false)
 
-  const loadOrder = useCallback(async () => {
-    if (!orderId) return
-    try {
-      setLoading(true)
-      setError('')
-      const data = await getOrderById(orderId)
-      setOrder(data)
-    } catch (e) {
-      console.error('❌ [ORDER_DETAIL] Error cargando pedido:', e)
-      setError('Error al cargar el pedido')
-    } finally {
-      setLoading(false)
+  // SWR: Cargar detalle del pedido con cache
+  const { data: order, isLoading: loading, mutate } = useSWR<Order>(
+    orderId ? `/orders/${orderId}` : null,
+    () => getOrderById(orderId!),
+    {
+      revalidateOnFocus: true,
+      dedupingInterval: 5000,
     }
-  }, [orderId])
-
-  useEffect(() => {
-    void loadOrder()
-  }, [loadOrder])
+  )
 
   const handleCancelClick = () => {
     setCancelDialog(true)
@@ -75,7 +65,8 @@ export const OrderDetail = () => {
     try {
       setCancelLoading(true)
       const updatedOrder = await cancelOrder(order.id)
-      setOrder(updatedOrder)
+      // Optimistic update: actualizar cache inmediatamente
+      mutate(updatedOrder, false)
       setCancelDialog(false)
     } catch {
       setError('Error al cancelar el pedido')
