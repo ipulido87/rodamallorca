@@ -29,6 +29,7 @@ import {
 } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import useSWR from 'swr'
 import type { Workshop } from '../../workshops/services/workshop-service'
 import { getMyWorkshops } from '../../workshops/services/workshop-service'
 import {
@@ -42,11 +43,7 @@ import {
 
 export const Orders = () => {
   const navigate = useNavigate()
-  const [workshops, setWorkshops] = useState<Workshop[]>([])
   const [selectedWorkshopId, setSelectedWorkshopId] = useState<string>('')
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
-  const [ordersLoading, setOrdersLoading] = useState(false)
   const [error, setError] = useState('')
   const [updateLoading, setUpdateLoading] = useState<string | null>(null)
 
@@ -61,47 +58,32 @@ export const Orders = () => {
     newStatus: null,
   })
 
-  // Cargar talleres del owner
-  useEffect(() => {
-    const loadWorkshops = async () => {
-      try {
-        setLoading(true)
-        const data = await getMyWorkshops()
-        setWorkshops(data)
-
-        // Si solo tiene un taller, seleccionarlo automáticamente
-        if (data.length === 1) {
-          setSelectedWorkshopId(data[0].id)
-        }
-      } catch {
-        setError('Error al cargar tus talleres')
-      } finally {
-        setLoading(false)
-      }
+  // SWR: Cargar talleres del owner
+  const { data: workshops = [], isLoading: loading } = useSWR<Workshop[]>(
+    '/my-workshops',
+    getMyWorkshops,
+    {
+      revalidateOnFocus: true,
+      dedupingInterval: 10000,
     }
+  )
 
-    loadWorkshops()
-  }, [])
-
-  // Cargar pedidos cuando se selecciona un taller
+  // Auto-seleccionar si solo hay un taller
   useEffect(() => {
-    if (!selectedWorkshopId) return
-
-    const loadOrders = async () => {
-      try {
-        setOrdersLoading(true)
-        const data = await getWorkshopOrders(selectedWorkshopId)
-        setOrders(data)
-        setError('')
-      } catch {
-        setError('Error al cargar los pedidos del taller')
-      } finally {
-        setOrdersLoading(false)
-      }
+    if (workshops.length === 1 && !selectedWorkshopId) {
+      setSelectedWorkshopId(workshops[0].id)
     }
+  }, [workshops, selectedWorkshopId])
 
-    loadOrders()
-  }, [selectedWorkshopId])
+  // SWR: Cargar pedidos del taller seleccionado
+  const { data: orders = [], isLoading: ordersLoading, mutate } = useSWR<Order[]>(
+    selectedWorkshopId ? `/workshops/${selectedWorkshopId}/orders` : null,
+    () => getWorkshopOrders(selectedWorkshopId),
+    {
+      revalidateOnFocus: true,
+      dedupingInterval: 5000,
+    }
+  )
 
   const handleStatusChangeClick = (order: Order) => {
     setUpdateDialog({ open: true, order, newStatus: null })
@@ -116,13 +98,14 @@ export const Orders = () => {
         status: updateDialog.newStatus,
       })
 
-      // Actualizar la lista local
-      setOrders((prev) =>
-        prev.map((o) =>
+      // Optimistic update: actualizar cache inmediatamente
+      mutate(
+        orders.map((o) =>
           o.id === updateDialog.order?.id
             ? { ...o, status: updateDialog.newStatus! }
             : o
-        )
+        ),
+        false
       )
 
       setUpdateDialog({ open: false, order: null, newStatus: null })

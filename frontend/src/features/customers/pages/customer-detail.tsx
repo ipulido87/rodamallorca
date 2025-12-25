@@ -26,8 +26,8 @@ import {
   useTheme,
   alpha,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import useSWR from 'swr'
 import { getCustomerById } from '../services/customer-service'
 import type { Customer } from '../types/customer'
 
@@ -35,28 +35,16 @@ export const CustomerDetail = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const theme = useTheme()
-  const [customer, setCustomer] = useState<Customer | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
 
-  useEffect(() => {
-    if (!id) return
-
-    const loadCustomer = async () => {
-      setLoading(true)
-      setError('')
-      try {
-        const data = await getCustomerById(id)
-        setCustomer(data)
-      } catch (err: any) {
-        setError(err.message || 'Error al cargar el cliente')
-      } finally {
-        setLoading(false)
-      }
+  // SWR hook - cache automático por ID
+  const { data: customer, error, isLoading } = useSWR<Customer>(
+    id ? `/customers/${id}` : null,
+    () => getCustomerById(id!),
+    {
+      revalidateOnFocus: true,
+      dedupingInterval: 2000,
     }
-
-    loadCustomer()
-  }, [id])
+  )
 
   const getCustomerTypeLabel = (type: string) => {
     return type === 'INDIVIDUAL' ? 'Particular' : 'Empresa'
@@ -66,7 +54,7 @@ export const CustomerDetail = () => {
     return type === 'INDIVIDUAL' ? <Person /> : <Business />
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Container maxWidth="lg">
         <Box sx={{ py: 4, textAlign: 'center' }}>
@@ -84,7 +72,7 @@ export const CustomerDetail = () => {
       <Container maxWidth="lg">
         <Box sx={{ py: 4 }}>
           <Alert severity="error" sx={{ mb: 3 }}>
-            {error || 'Cliente no encontrado'}
+            {error?.message || 'Cliente no encontrado'}
           </Alert>
           <Button
             variant="contained"

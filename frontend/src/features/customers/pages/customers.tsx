@@ -30,41 +30,32 @@ import {
   Typography,
   useTheme,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import useSWR from 'swr'
 import { getCustomers, deleteCustomer } from '../services/customer-service'
 import type { Customer } from '../types/customer'
 
 export const Customers = () => {
   const navigate = useNavigate()
   const theme = useTheme()
-  const [customers, setCustomers] = useState<Customer[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
 
-  useEffect(() => {
-    loadCustomers()
-  }, [])
-
-  const loadCustomers = async () => {
-    setLoading(true)
-    setError('')
-    try {
-      const data = await getCustomers()
-      setCustomers(data)
-    } catch (err: any) {
-      setError(err.message || 'Error al cargar clientes')
-    } finally {
-      setLoading(false)
+  // SWR hook - cache automático, revalidación, deduplicación
+  const { data: customers = [], error, isLoading, mutate } = useSWR<Customer[]>(
+    '/customers',
+    getCustomers,
+    {
+      revalidateOnFocus: true,
+      dedupingInterval: 2000,
     }
-  }
+  )
 
   const handleDelete = async (id: string) => {
     if (!confirm('¿Estás seguro de eliminar este cliente?')) return
 
     try {
       await deleteCustomer(id)
-      loadCustomers()
+      // Optimistic update: actualizar cache inmediatamente
+      mutate()
     } catch (err: any) {
       alert(err.message || 'Error al eliminar cliente')
     }
@@ -78,7 +69,7 @@ export const Customers = () => {
     return type === 'INDIVIDUAL' ? 'info' : 'secondary'
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Container maxWidth="lg">
         <Box sx={{ py: 4, textAlign: 'center' }}>
@@ -121,7 +112,7 @@ export const Customers = () => {
 
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
+            {error.message || 'Error al cargar clientes'}
           </Alert>
         )}
 

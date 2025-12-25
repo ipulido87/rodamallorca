@@ -30,8 +30,9 @@ import {
   Typography,
   useTheme,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import useSWR from 'swr'
 import {
   getWorkshopById,
   searchProducts,
@@ -88,69 +89,46 @@ export const WorkshopDetail = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const theme = useTheme()
-  const [workshop, setWorkshop] = useState<Workshop | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
   const [tabValue, setTabValue] = useState(0)
-  const [products, setProducts] = useState<Product[]>([])
-  const [services, setServices] = useState<Service[]>([])
-  const [productsLoading, setProductsLoading] = useState(false)
-  const [servicesLoading, setServicesLoading] = useState(false)
 
-  useEffect(() => {
-    if (!id) return
-
-    const loadWorkshop = async () => {
-      try {
-        const data = await getWorkshopById(id!)
-        setWorkshop(data)
-      } catch {
-        setError('Error al cargar el taller')
-      } finally {
-        setLoading(false)
-      }
+  // SWR: Cargar información del taller
+  const { data: workshop, error, isLoading: loading } = useSWR<Workshop>(
+    id ? `/workshops/${id}` : null,
+    () => getWorkshopById(id!),
+    {
+      revalidateOnFocus: true,
+      dedupingInterval: 5000,
     }
+  )
 
-    loadWorkshop()
-  }, [id])
-
-  // Cargar productos del taller
-  useEffect(() => {
-    if (!id || tabValue !== 1) return
-
-    const loadProducts = async () => {
-      setProductsLoading(true)
-      try {
-        const response = await searchProducts({ workshopId: id, size: 20 } as any)
-        setProducts(response.items)
-      } catch (error) {
-        console.error('Error loading products:', error)
-      } finally {
-        setProductsLoading(false)
-      }
+  // SWR: Cargar productos solo cuando el tab de productos está activo
+  const { data: productsData, isLoading: productsLoading } = useSWR(
+    id && tabValue === 1 ? `/workshops/${id}/products` : null,
+    async () => {
+      const response = await searchProducts({ workshopId: id!, size: 20 } as any)
+      return response.items
+    },
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 10000,
     }
+  )
 
-    loadProducts()
-  }, [id, tabValue])
-
-  // Cargar servicios del taller
-  useEffect(() => {
-    if (!id || tabValue !== 2) return
-
-    const loadServices = async () => {
-      setServicesLoading(true)
-      try {
-        const response = await searchServices({ workshopId: id, size: 20 } as any)
-        setServices(response.items)
-      } catch (error) {
-        console.error('Error loading services:', error)
-      } finally {
-        setServicesLoading(false)
-      }
+  // SWR: Cargar servicios solo cuando el tab de servicios está activo
+  const { data: servicesData, isLoading: servicesLoading } = useSWR(
+    id && tabValue === 2 ? `/workshops/${id}/services` : null,
+    async () => {
+      const response = await searchServices({ workshopId: id!, size: 20 } as any)
+      return response.items
+    },
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 10000,
     }
+  )
 
-    loadServices()
-  }, [id, tabValue])
+  const products = productsData || []
+  const services = servicesData || []
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue)
@@ -169,12 +147,12 @@ export const WorkshopDetail = () => {
     )
   }
 
-  if (error || !workshop) {
+  if (error || (!loading && !workshop)) {
     return (
       <Container maxWidth="lg">
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <Alert severity="error" sx={{ mb: 3 }}>
-            {error || 'Taller no encontrado'}
+            {error?.message || 'Taller no encontrado'}
           </Alert>
           <Button
             variant="contained"
