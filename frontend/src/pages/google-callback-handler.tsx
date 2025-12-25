@@ -32,8 +32,7 @@ export const GoogleCallbackHandler = () => {
           await refreshMe()
 
           // Obtener el usuario actualizado para verificar el rol
-          const { data } = await API.get('/auth/me')
-          const user = data?.user
+          const { data: user } = await API.get('/auth/me')
           console.log('👤 Usuario:', user)
 
           if (user) {
