@@ -370,7 +370,8 @@ export const handleGoogleCallback = async (req: Request, res: Response) => {
     console.error('Google callback error:', error)
     const frontendUrl = getFrontendUrl()
     const errorMessage = encodeURIComponent(error.message)
-    return res.redirect(`${frontendUrl}/login?error=${errorMessage}`)
+    // ✅ Redirigir al callback handler, no al login
+    return res.redirect(`${frontendUrl}/auth/callback?error=${errorMessage}`)
   }
 }
 
