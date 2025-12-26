@@ -18,6 +18,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
+import { memo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 
@@ -33,7 +34,8 @@ interface MetricCardProps {
   }
 }
 
-const MetricCard = ({
+// ✅ Memoizado para evitar re-renders innecesarios
+const MetricCard = memo(({
   title,
   value,
   subtitle,
@@ -71,7 +73,9 @@ const MetricCard = ({
       </Stack>
     </CardContent>
   </Card>
-)
+))
+
+MetricCard.displayName = 'MetricCard'
 
 interface QuickActionProps {
   title: string
@@ -81,7 +85,8 @@ interface QuickActionProps {
   color?: 'primary' | 'secondary'
 }
 
-const QuickAction = ({
+// ✅ Memoizado para evitar re-renders innecesarios
+const QuickAction = memo(({
   title,
   description,
   icon,
@@ -116,7 +121,9 @@ const QuickAction = ({
       </Stack>
     </CardContent>
   </Card>
-)
+))
+
+QuickAction.displayName = 'QuickAction'
 
 export const Dashboard = () => {
   const { user } = useAuth()
