@@ -40,9 +40,11 @@ const handleApiError = (error: unknown): string => {
 }
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [token, setToken] = useState<string | null>(() =>
-    localStorage.getItem(TOKEN_KEY)
-  )
+  const [token, setToken] = useState<string | null>(() => {
+    const t = localStorage.getItem(TOKEN_KEY)
+    console.log('🔑 [AUTH] Token inicial desde localStorage:', t ? t.substring(0, 30) + '...' : 'null')
+    return t
+  })
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [authError, setAuthError] = useState<string | null>(null) // ✅ ERROR CENTRALIZADO
@@ -60,6 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [token])
 
   const persistToken = useCallback((t: string | null) => {
+    console.log('💾 [AUTH] persistToken llamado:', t ? t.substring(0, 30) + '...' : 'null')
     if (t) {
       localStorage.setItem(TOKEN_KEY, t)
       setToken(t)
@@ -70,9 +73,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [])
 
   const refreshMe = useCallback(async () => {
+    const currentToken = localStorage.getItem(TOKEN_KEY)
+    console.log('🔄 [AUTH] refreshMe llamado')
+    console.log('🔄 [AUTH] Token actual:', currentToken?.substring(0, 30) + '...')
     try {
       const data = await apiMe()
       const fetchedUser = data?.user ?? null
+      console.log('✅ [AUTH] Usuario obtenido en refreshMe:', fetchedUser?.email, fetchedUser?.role)
       setUser(fetchedUser)
       if (fetchedUser) {
         localStorage.setItem(USER_KEY, JSON.stringify(fetchedUser))
@@ -80,7 +87,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.removeItem(USER_KEY)
       }
       setAuthError(null) // ✅ LIMPIAR ERROR AL REFRESCAR
-    } catch {
+    } catch (error) {
+      console.error('❌ [AUTH] Error en refreshMe:', error)
       setUser(null)
       localStorage.removeItem(USER_KEY)
       persistToken(null)
@@ -89,12 +97,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Carga inicial
   useEffect(() => {
+    console.log('🚀 [AUTH] Inicialización del AuthProvider')
     ;(async () => {
       setLoading(true)
       try {
         await refreshMe()
       } finally {
         setLoading(false)
+        console.log('✅ [AUTH] Inicialización completada')
       }
     })()
   }, [refreshMe])
@@ -265,8 +275,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user, logout])
 
-  const value: AuthContextType = useMemo(
-    () => ({
+  const value: AuthContextType = useMemo(() => {
+    console.log('📦 [AUTH] Context actualizado:', {
+      hasToken: !!token,
+      user: user?.email,
+      role: user?.role,
+      isAuthenticated: !!user,
+      loading,
+    })
+    return {
       token,
       user,
       isAuthenticated: !!user,
@@ -281,22 +298,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       refreshMe,
       persistToken,
       clearError,
-    }),
-    [
-      token,
-      user,
-      loading,
-      authError,
-      login,
-      logout,
-      register,
-      verifyCode,
-      resendVerification,
-      refreshMe,
-      persistToken,
-      clearError,
-    ]
-  )
+    }
+  }, [
+    token,
+    user,
+    loading,
+    authError,
+    login,
+    logout,
+    register,
+    verifyCode,
+    resendVerification,
+    refreshMe,
+    persistToken,
+    clearError,
+  ])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

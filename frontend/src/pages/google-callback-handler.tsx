@@ -80,8 +80,9 @@ export const GoogleCallbackHandler = () => {
       } catch (err) {
         console.error('❌ ERROR EN CALLBACK:', err)
         console.error('❌ Error completo:', JSON.stringify(err, null, 2))
-        // NO redirigir automáticamente, mostrar error
-        alert('Error al procesar login: ' + (err instanceof Error ? err.message : 'Error desconocido'))
+        // Redirigir a login con mensaje de error
+        const errorMsg = err instanceof Error ? err.message : 'Error desconocido'
+        navigate('/login?error=' + encodeURIComponent('Error al iniciar sesión. Intenta de nuevo.'), { replace: true })
       }
     }
 
