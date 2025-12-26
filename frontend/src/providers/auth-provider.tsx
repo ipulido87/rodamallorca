@@ -71,16 +71,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshMe = useCallback(async () => {
     try {
-      const data = await apiMe()
-      const fetchedUser = data?.user ?? null
-      setUser(fetchedUser)
+      const fetchedUser = await apiMe() // ✅ apiMe() retorna el usuario directamente, no { user: {...} }
+      setUser(fetchedUser ?? null)
       if (fetchedUser) {
         localStorage.setItem(USER_KEY, JSON.stringify(fetchedUser))
       } else {
         localStorage.removeItem(USER_KEY)
       }
-      setAuthError(null) // ✅ LIMPIAR ERROR AL REFRESCAR
-    } catch {
+      setAuthError(null)
+    } catch (error) {
+      console.error('Auth error:', error)
       setUser(null)
       localStorage.removeItem(USER_KEY)
       persistToken(null)

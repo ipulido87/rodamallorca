@@ -19,12 +19,15 @@
     "@mui/icons-material": "^7.3.1",
     "@mui/material": "^7.2.0",
     "@mui/system": "^7.2.0",
+    "@react-pdf/renderer": "^4.3.1",
     "axios": "^1.11.0",
     "glob": "^11.0.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.7.0",
     "styled-components": "^6.1.19",
+    "swr": "^2.3.8",
+    "tesseract.js": "^7.0.0",
     "zod": "^4.0.10"
   },
   "devDependencies": {

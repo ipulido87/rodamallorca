@@ -22,6 +22,11 @@ enum OrderStatus {
   CANCELLED    // Cancelado
 }
 
+enum OrderType {
+  PRODUCT_ORDER    // Compra de productos
+  SERVICE_REPAIR   // Reparación/servicio
+}
+
 enum VehicleType {
   BICYCLE      // Bicicleta convencional
   E_BIKE       // Bicicleta eléctrica
@@ -32,6 +37,19 @@ enum VehicleType {
 enum ServiceStatus {
   ACTIVE       // Servicio activo y disponible
   INACTIVE     // Servicio desactivado temporalmente
+}
+
+enum InvoiceStatus {
+  DRAFT        // Borrador (sin enviar)
+  SENT         // Enviada al cliente
+  PAID         // Pagada
+  OVERDUE      // Vencida (no pagada)
+  CANCELLED    // Cancelada
+}
+
+enum CustomerType {
+  INDIVIDUAL   // Particular
+  BUSINESS     // Empresa
 }
 
 model User {
@@ -53,8 +71,31 @@ model User {
   resetTokenExpiresAt DateTime?
 
   // Relaciones
-  workshops        Workshop[]
-  orders           Order[]       // Pedidos realizados por el usuario
+  workshops         Workshop[]
+  orders            Order[]       // Pedidos realizados por el usuario
+  vehicles          Vehicle[]     // Vehículos del usuario
+  favoriteWorkshops FavoriteWorkshop[] // Talleres favoritos
+}
+
+// Vehículos de los usuarios (bicicletas, patinetes)
+model Vehicle {
+  id          String      @id @default(uuid())
+  userId      String      // Propietario del vehículo
+  type        VehicleType @default(BICYCLE)
+  brand       String?     // Marca (ej: "Trek", "Giant", "Xiaomi")
+  model       String?     // Modelo
+  year        Int?        // Año de fabricación
+  color       String?     // Color
+  serialNumber String?    // Número de serie
+  notes       String?     // Notas adicionales
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relaciones
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[] // Reparaciones asociadas a este vehículo
+
+  @@index([userId])
 }
 
 model Workshop {
@@ -70,15 +111,35 @@ model Workshop {
   updatedAt   DateTime @updatedAt
 
   // Relaciones
-  owner       User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  products    Product[]
-  services    Service[] // Servicios ofrecidos por el taller
-  orders      Order[]   // Pedidos recibidos por este taller
+  owner          User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  products       Product[]
+  services       Service[]         // Servicios ofrecidos por el taller
+  orders         Order[]           // Pedidos recibidos por este taller
+  invoices       Invoice[]         // Facturas emitidas por este taller
+  customers      Customer[]        // Clientes del taller
+  invoiceSeries  InvoiceSeries[]   // Series de facturación del taller
+  favoritedBy    FavoriteWorkshop[] // Usuarios que tienen este taller como favorito
 
   @@index([ownerId])
   @@index([city])
   @@index([country])
   @@index([createdAt])
+}
+
+// Talleres favoritos de los usuarios
+model FavoriteWorkshop {
+  id         String   @id @default(uuid())
+  userId     String   // Usuario que marcó como favorito
+  workshopId String   // Taller favorito
+  createdAt  DateTime @default(now())
+
+  // Relaciones
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workshop Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workshopId]) // Un usuario no puede marcar el mismo taller dos veces
+  @@index([userId])
+  @@index([workshopId])
 }
 
 model Category {
@@ -128,23 +189,35 @@ model ProductImage {
 }
 
 model Order {
-  id          String      @id @default(uuid())
-  userId      String      // Cliente que realiza el pedido
-  workshopId  String      // Taller que recibe el pedido
-  status      OrderStatus @default(PENDING)
-  totalAmount Int         // Total en céntimos
-  currency    String      @default("EUR")
-  notes       String?     // Notas del cliente
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id                  String      @id @default(uuid())
+  userId              String      // Cliente que realiza el pedido
+  workshopId          String      // Taller que recibe el pedido
+  type                OrderType   @default(PRODUCT_ORDER) // Tipo de orden
+  status              OrderStatus @default(PENDING)
+  totalAmount         Int         // Total en céntimos
+  currency            String      @default("EUR")
+  notes               String?     // Notas del cliente
+
+  // Campos específicos para reparaciones
+  vehicleId           String?     // Vehículo del cliente (opcional)
+  estimatedDelivery   DateTime?   // Fecha estimada de entrega (opcional)
+  diagnosis           String?     // Diagnóstico del taller (opcional)
+  laborHours          Decimal?    @db.Decimal(5, 2) // Horas de mano de obra (opcional)
+
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
 
   // Relaciones
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   workshop    Workshop    @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  vehicle     Vehicle?    @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
   items       OrderItem[]
+  invoice     Invoice?    // Factura generada automáticamente (si existe)
 
   @@index([userId])
   @@index([workshopId])
+  @@index([vehicleId])
+  @@index([type])
   @@index([status])
   @@index([createdAt])
 }
@@ -211,4 +284,115 @@ model Service {
   @@index([status])
   @@index([vehicleType])
   @@index([createdAt])
+}// Clientes para facturación
+model Customer {
+  id           String       @id @default(uuid())
+  workshopId   String
+  type         CustomerType @default(INDIVIDUAL)
+  name         String       // Nombre o razón social
+  taxId        String?      // NIF/CIF/VAT
+  email        String?
+  phone        String?
+  address      String?
+  city         String?
+  postalCode   String?
+  country      String?      @default("España")
+  notes        String?      // Notas internas
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  // Relaciones
+  workshop     Workshop     @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  invoices     Invoice[]
+
+  @@index([workshopId])
+  @@index([taxId])
+  @@index([email])
+}
+
+// Series de facturación (para numeración automática)
+model InvoiceSeries {
+  id          String    @id @default(uuid())
+  workshopId  String
+  name        String    // ej: "2025", "Facturas Generales"
+  prefix      String    // ej: "F", "INV"
+  nextNumber  Int       @default(1)
+  year        Int       // Año de la serie
+  isDefault   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relaciones
+  workshop    Workshop  @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  invoices    Invoice[]
+
+  @@unique([workshopId, prefix, year])
+  @@index([workshopId])
+}
+
+// Facturas
+model Invoice {
+  id              String        @id @default(uuid())
+  workshopId      String
+  customerId      String?       // Puede ser null para facturas sin cliente específico
+  seriesId        String
+  orderId         String?       @unique // Pedido del que se generó (si aplica)
+  invoiceNumber   String        // ej: "F-2025-001"
+  issueDate       DateTime      @default(now())
+  dueDate         DateTime?     // Fecha de vencimiento
+  status          InvoiceStatus @default(DRAFT)
+
+  // Totales
+  subtotal        Int           // Subtotal en céntimos (antes de impuestos)
+  taxAmount       Int           // Total de impuestos en céntimos
+  total           Int           // Total en céntimos
+  currency        String        @default("EUR")
+
+  // Datos adicionales
+  notes           String?       // Notas visibles en la factura
+  internalNotes   String?       // Notas internas (no visibles en PDF)
+  pdfUrl          String?       // URL del PDF generado
+  paymentMethod   String?       // Efectivo, Tarjeta, Transferencia, etc.
+  paidAt          DateTime?     // Fecha de pago
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relaciones
+  workshop        Workshop      @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  customer        Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  series          InvoiceSeries @relation(fields: [seriesId], references: [id])
+  order           Order?        @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  items           InvoiceItem[]
+
+  @@unique([workshopId, invoiceNumber])
+  @@index([workshopId])
+  @@index([customerId])
+  @@index([seriesId])
+  @@index([orderId])
+  @@index([status])
+  @@index([issueDate])
+  @@index([dueDate])
+}
+
+// Líneas de factura
+model InvoiceItem {
+  id          String   @id @default(uuid())
+  invoiceId   String
+  description String   // Descripción del concepto
+  quantity    Decimal  @default(1) @db.Decimal(10, 2)
+  unitPrice   Int      // Precio unitario en céntimos
+  discount    Int      @default(0) // Descuento en céntimos
+  taxRate     Decimal  @default(21) @db.Decimal(5, 2) // % de IVA (ej: 21.00)
+  subtotal    Int      // Subtotal sin impuestos en céntimos
+  taxAmount   Int      // Impuestos de esta línea en céntimos
+  total       Int      // Total de esta línea en céntimos
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
 }

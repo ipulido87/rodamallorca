@@ -11,6 +11,7 @@ import {
   getWorkshopController,
   updateWorkshopController,
 } from '../controllers/workshop.controller'
+import { getWorkshopOrdersController } from '../../../orders/interfaces/controllers/order.controller'
 
 const r = Router()
 
@@ -49,6 +50,15 @@ r.delete(
 
 // GET /api/catalog/workshops/:id - Público
 r.get('/workshops/:id', getWorkshopController)
+
+// GET /api/owner/workshops/:id/orders - Pedidos de un taller
+r.get(
+  '/workshops/:id/orders',
+  verifyToken,
+  requireUser,
+  requireRole('WORKSHOP_OWNER'),
+  getWorkshopOrdersController
+)
 
 // GET /api/owner/workshops/mine - Obtener mis talleres
 

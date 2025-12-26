@@ -13,6 +13,9 @@ import orderRoutes from './modules/orders/interfaces/http/order.routes'
 import productRoutes from './modules/products/interfaces/http/products.routes'
 import workshopRoutes from './modules/workshops/interfaces/http/workshop.routes'
 import serviceRoutes from './modules/services/interfaces/http/service.routes'
+import billingRoutes from './modules/billing/interfaces/http/billing.routes'
+import favoriteRoutes from './modules/favorites/interfaces/http/favorite.routes'
+import customerRoutes from './modules/customers/interfaces/http/customer.routes'
 
 dotenv.config()
 
@@ -37,6 +40,9 @@ app.use('/api/orders', orderRoutes)
 app.use('/api/owner', productRoutes)
 app.use('/api/owner', workshopRoutes)
 app.use('/api', serviceRoutes) // Rutas de servicios (públicas y protegidas)
+app.use('/api', billingRoutes) // Rutas de facturación
+app.use('/api/favorites', favoriteRoutes) // Rutas de favoritos
+app.use('/api/customers', customerRoutes) // Rutas de clientes
 
 // Servir archivos estáticos
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
@@ -44,20 +50,20 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
 app.get('/api/health', (_req, res) => res.send('ok'))
 
 // Middleware de manejo de errores global (debe ir al final)
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   console.error('❌ Error:', err)
 
   // Errores de validación de Zod
-  if (err instanceof ZodError) {
+  if (err?.name === 'ZodError' || err?.issues) {
     return res.status(400).json({
       error: 'Error de validación',
-      message: err.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', '),
-      details: err.errors,
+      message: err.issues?.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ') || err.message,
+      details: err.issues,
     })
   }
 
   // Errores de negocio (mensajes en español)
-  if (err.message) {
+  if (err?.message) {
     // Determinar el código de estado basado en el mensaje
     let statusCode = 500
 

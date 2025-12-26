@@ -6,13 +6,18 @@ const codeVerifierStore = new Map<string, string>()
 export async function getGoogleClient(): Promise<Client> {
   if (client) return client
   const google = await Issuer.discover('https://accounts.google.com')
+
+  // ✅ Usar mismo redirect URI si LOGIN no está definido
+  const redirectUris = [process.env.GOOGLE_REDIRECT_URI!]
+  if (process.env.GOOGLE_LOGIN_REDIRECT_URI &&
+      process.env.GOOGLE_LOGIN_REDIRECT_URI !== process.env.GOOGLE_REDIRECT_URI) {
+    redirectUris.push(process.env.GOOGLE_LOGIN_REDIRECT_URI)
+  }
+
   client = new google.Client({
     client_id: process.env.GOOGLE_CLIENT_ID!,
     client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-    redirect_uris: [
-      process.env.GOOGLE_REDIRECT_URI!,
-      process.env.GOOGLE_LOGIN_REDIRECT_URI!,
-    ],
+    redirect_uris: redirectUris,
     response_types: ['code'],
   })
   return client

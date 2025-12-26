@@ -23,13 +23,14 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import useSWR, { mutate } from 'swr'
 import { adaptProductImages } from '../../../utils/adapt-product-Images'
 import { ModernProductLayout } from '../components/modern-product-layout'
 import type { Product } from '../services/product-service'
 import type { CardProduct } from '../types/products-types'
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 
 /* --------- Adaptador UI ← Backend --------- */
 const adaptProductForLayout = (product: Product): CardProduct => ({
@@ -42,12 +43,27 @@ const adaptProductForLayout = (product: Product): CardProduct => ({
   workshop: { name: 'Mi Taller', city: undefined },
 })
 
+const PRODUCTS_KEY = `${import.meta.env.VITE_API_URL}/owner/products/mine`
+
+const fetcher = async (url: string) => {
+  const response = await axios.get<Product[]>(url, { withCredentials: true })
+  return response.data
+}
+
 export const MyProducts = () => {
   const navigate = useNavigate()
 
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // ✅ SWR para caché automático y revalidación
+  const { data: products = [], error: swrError, isLoading } = useSWR(
+    PRODUCTS_KEY,
+    fetcher,
+    {
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
+    }
+  )
+
+  const [localError, setLocalError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<
     'ALL' | 'PUBLISHED' | 'DRAFT'
@@ -66,114 +82,59 @@ export const MyProducts = () => {
     product: null,
   })
 
-  // Cargar productos del taller
-  const loadProducts = useCallback(async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      console.log('🔧 [LOAD_PRODUCTS] Iniciando request con axios...')
+  // ✅ useMemo para evitar recalcular en cada render
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      const q = searchQuery.toLowerCase()
+      const matchesSearch =
+        p.title.toLowerCase().includes(q) ||
+        (p.description && p.description.toLowerCase().includes(q))
+      const matchesStatus = statusFilter === 'ALL' || p.status === statusFilter
+      return matchesSearch && matchesStatus
+    })
+  }, [products, searchQuery, statusFilter])
 
-      const response = await axios.get<Product[]>(
-        `${import.meta.env.VITE_API_URL}/owner/products/mine`,
-        {
-          withCredentials: true,
-        }
-      )
+  const error = swrError ? 'Error al cargar los productos' : localError
 
-      console.log('🔧 [LOAD_PRODUCTS] Response status:', response.status)
-      console.log('🔧 [LOAD_PRODUCTS] Response data:', response.data)
-
-      setProducts(response.data)
-    } catch (error) {
-      setError('Error al cargar los productos')
-
-      if (error instanceof AxiosError) {
-        console.error(
-          '🔧 [LOAD_PRODUCTS] Axios error:',
-          error.response?.data || error.message
-        )
-      } else if (error instanceof Error) {
-        console.error('🔧 [LOAD_PRODUCTS] Error:', error.message)
-      } else {
-        console.error('🔧 [LOAD_PRODUCTS] Unknown error:', error)
-      }
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    loadProducts()
-  }, [loadProducts])
-
-  const filteredProducts = products.filter((p) => {
-    const q = searchQuery.toLowerCase()
-    const matchesSearch =
-      p.title.toLowerCase().includes(q) ||
-      (p.description && p.description.toLowerCase().includes(q))
-    const matchesStatus = statusFilter === 'ALL' || p.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
-
-  // publicar / ocultar
+  // ✅ publicar / ocultar con mutate de SWR
   const handleStatusChange = async (product: Product) => {
     try {
       if (product.status === 'DRAFT') {
         await axios.post(
-          `${import.meta.env.VITE_API_URL}/owner/products/${
-            product.id
-          }/publish`,
+          `${import.meta.env.VITE_API_URL}/owner/products/${product.id}/publish`,
           {},
           { withCredentials: true }
         )
-        setProducts((prev) =>
-          prev.map((p) =>
-            p.id === product.id ? { ...p, status: 'PUBLISHED' } : p
-          )
-        )
       } else {
-        const response = await axios.put<Product>(
+        await axios.put<Product>(
           `${import.meta.env.VITE_API_URL}/owner/products/${product.id}`,
           { status: 'DRAFT' },
           { withCredentials: true }
         )
-        setProducts((prev) =>
-          prev.map((p) => (p.id === product.id ? response.data : p))
-        )
       }
+      // ✅ Revalidar caché automáticamente
+      await mutate(PRODUCTS_KEY)
       handleCloseMenu()
     } catch (error) {
-      setError('Error al cambiar el estado del producto')
-
-      if (error instanceof AxiosError) {
-        console.error('Axios error:', error.response?.data || error.message)
-      } else if (error instanceof Error) {
-        console.error('Error:', error.message)
-      }
+      setLocalError('Error al cambiar el estado del producto')
+      console.error('Status change error:', error)
     }
   }
 
+  // ✅ Eliminar con mutate de SWR
   const handleDelete = async () => {
     if (!deleteDialog.product) return
     try {
       await axios.delete(
-        `${import.meta.env.VITE_API_URL}/owner/products/${
-          deleteDialog.product.id
-        }`,
+        `${import.meta.env.VITE_API_URL}/owner/products/${deleteDialog.product.id}`,
         { withCredentials: true }
       )
-      setProducts((prev) =>
-        prev.filter((p) => p.id !== deleteDialog.product!.id)
-      )
+      // ✅ Revalidar caché automáticamente
+      await mutate(PRODUCTS_KEY)
       setDeleteDialog({ open: false, product: null })
     } catch (error) {
-      setError('Error al eliminar el producto')
-
-      if (error instanceof AxiosError) {
-        console.error('Axios error:', error.response?.data || error.message)
-      } else if (error instanceof Error) {
-        console.error('Error:', error.message)
-      }
+      setLocalError('Error al eliminar el producto')
+      console.error('Delete error:', error)
     }
   }
 
@@ -185,7 +146,7 @@ export const MyProducts = () => {
   // abrir menú desde la card (⋮)
   const handleOpenMenuFromCard = (
     e: React.MouseEvent<HTMLElement>,
-    item: CardProduct | import('../types/products-types').CardWorkshop
+    item: CardProduct | import('../types/products-types').CardWorkshop | import('../types/products-types').CardService
   ) => {
     e.stopPropagation()
     // Type guard to ensure it's a CardProduct
@@ -202,7 +163,7 @@ export const MyProducts = () => {
     setSelectedProduct(null)
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Box
         display="flex"
@@ -217,11 +178,12 @@ export const MyProducts = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* Header */}
+      {/* Header - Responsive */}
       <Stack
-        direction="row"
+        direction={{ xs: 'column', sm: 'row' }}
         justifyContent="space-between"
-        alignItems="center"
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
+        spacing={{ xs: 2, sm: 0 }}
         sx={{ mb: 4 }}
       >
         <Box>
@@ -236,18 +198,19 @@ export const MyProducts = () => {
           variant="contained"
           startIcon={<Add />}
           onClick={() => navigate('/create-product')}
+          sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
           Nuevo Producto
         </Button>
       </Stack>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setLocalError(null)}>
           {error}
         </Alert>
       )}
 
-      {/* Filtros */}
+      {/* Filtros - Responsive */}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 4 }}>
         <TextField
           placeholder="Buscar productos..."
@@ -257,31 +220,56 @@ export const MyProducts = () => {
             startAdornment: <Search sx={{ color: 'text.secondary', mr: 1 }} />,
           }}
           sx={{ flex: 1 }}
+          fullWidth
         />
-        <Stack direction="row" spacing={1}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            width: { xs: '100%', sm: 'auto' },
+            justifyContent: { xs: 'space-between', sm: 'flex-start' }
+          }}
+        >
           <Button
             variant={statusFilter === 'ALL' ? 'contained' : 'outlined'}
             onClick={() => setStatusFilter('ALL')}
             size="small"
+            sx={{ flex: { xs: 1, sm: 'none' } }}
           >
-            Todos ({products.length})
+            <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+              Todos ({products.length})
+            </Box>
+            <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+              Todos
+            </Box>
           </Button>
           <Button
             variant={statusFilter === 'PUBLISHED' ? 'contained' : 'outlined'}
             onClick={() => setStatusFilter('PUBLISHED')}
             size="small"
             color="success"
+            sx={{ flex: { xs: 1, sm: 'none' } }}
           >
-            Publicados (
-            {products.filter((p) => p.status === 'PUBLISHED').length})
+            <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+              Publicados ({products.filter((p) => p.status === 'PUBLISHED').length})
+            </Box>
+            <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+              Pub.
+            </Box>
           </Button>
           <Button
             variant={statusFilter === 'DRAFT' ? 'contained' : 'outlined'}
             onClick={() => setStatusFilter('DRAFT')}
             size="small"
             color="warning"
+            sx={{ flex: { xs: 1, sm: 'none' } }}
           >
-            Borradores ({products.filter((p) => p.status === 'DRAFT').length})
+            <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+              Borradores ({products.filter((p) => p.status === 'DRAFT').length})
+            </Box>
+            <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
+              Borr.
+            </Box>
           </Button>
         </Stack>
       </Stack>

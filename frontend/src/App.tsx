@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { SWRConfig } from 'swr'
 import { MainLayout } from './components/layout/main-layout'
 import { PublicLayout } from './components/layout/public-layout'
 import { PrivateRoute } from './components/private-ruta'
@@ -16,8 +17,13 @@ import { OrderDetail } from './features/orders/pages/order-detail'
 import { WorkshopOrders } from './features/orders/pages/workshop-orders'
 import { Orders } from './features/orders/pages/orders'
 import { WorkshopServices } from './features/services/pages/workshop-services'
+import { BillingInvoices } from './features/billing/pages/billing-invoices'
+import { CreateInvoice } from './features/billing/pages/create-invoice'
+import { InvoiceDetails } from './features/billing/pages/invoice-details'
 import { Cart } from './features/cart/pages/Cart'
 import { Checkout } from './features/cart/pages/Checkout'
+import { Favorites } from './features/favorites/pages/favorites'
+import { Customers } from './features/customers/pages/customers'
 import { Home } from './pages/HomePage'
 import { LandingPage } from './pages/LandingPage'
 import { LoginForm } from './features/auth/pages/login-form'
@@ -28,14 +34,29 @@ import { SnackbarProvider } from './shared/hooks/use-snackbar'
 import { ForgotPassword } from './features/auth/pages/forgot-password'
 import { ResetPassword } from './features/auth/pages/reset-password'
 import { GoogleCallbackHandler } from './pages/google-callback-handler'
+import { Profile } from './pages/Profile'
+import { Settings } from './pages/Settings'
 
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <CartProvider>
-          <SnackbarProvider>
-            <Routes>
+      <SWRConfig
+        value={{
+          revalidateOnFocus: true,
+          revalidateOnReconnect: true,
+          dedupingInterval: 2000,
+          focusThrottleInterval: 5000,
+          errorRetryCount: 3,
+          errorRetryInterval: 5000,
+          shouldRetryOnError: true,
+          revalidateIfStale: true,
+          keepPreviousData: true,
+        }}
+      >
+        <AuthProvider>
+          <CartProvider>
+            <SnackbarProvider>
+              <Routes>
           {/* Rutas públicas con PublicLayout */}
           <Route
             path="/"
@@ -85,10 +106,7 @@ function App() {
             <Route path="my-orders" element={<MyOrders />} />
             <Route path="cart" element={<Cart />} />
             <Route path="checkout" element={<Checkout />} />
-            <Route
-              path="favorites"
-              element={<div>Favoritos - Por implementar</div>}
-            />
+            <Route path="favorites" element={<Favorites />} />
             <Route
               path="repairs"
               element={<div>Reparaciones - Por implementar</div>}
@@ -179,33 +197,44 @@ function App() {
               path="customers"
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
-                  <div>Clientes - Por implementar</div>
+                  <Customers />
                 </RoleRoute>
               }
             />
             <Route
-              path="billing"
+              path="billing/:workshopId"
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
-                  <div>Facturación - Por implementar</div>
+                  <BillingInvoices />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="billing/:workshopId/invoice/:invoiceId"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <InvoiceDetails />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="billing/:workshopId/create"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <CreateInvoice />
                 </RoleRoute>
               }
             />
 
             {/* Rutas comunes */}
-            <Route
-              path="profile"
-              element={<div>Mi Perfil - Por implementar</div>}
-            />
-            <Route
-              path="settings"
-              element={<div>Configuración - Por implementar</div>}
-            />
+            <Route path="profile" element={<Profile />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>
-          </SnackbarProvider>
-        </CartProvider>
-      </AuthProvider>
+            </SnackbarProvider>
+          </CartProvider>
+        </AuthProvider>
+      </SWRConfig>
     </BrowserRouter>
   )
 }

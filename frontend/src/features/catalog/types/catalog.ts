@@ -98,8 +98,6 @@ export interface FilterConfig {
   placeholder?: string
 }
 
-// Agregar al final de C:\rodamallorca\frontend\src\features\catalog\types\catalog.ts
-
 export interface PublicProduct {
   id: string
   title: string
@@ -123,4 +121,52 @@ export interface PublicProduct {
     name: string
   } | null
   images: ProductImage[]
+}
+
+// Tipos para servicios
+export type VehicleType = 'BICYCLE' | 'E_BIKE' | 'E_SCOOTER' | 'ALL'
+export type ServiceStatus = 'ACTIVE' | 'INACTIVE'
+
+export interface ServiceCategory {
+  id: string
+  name: string
+  description?: string
+  icon?: string
+  position: number
+}
+
+export interface Service {
+  id: string
+  workshopId: string
+  serviceCategoryId: string
+  name: string
+  description?: string
+  price: number
+  currency: string
+  duration?: number
+  vehicleType: VehicleType
+  status: ServiceStatus
+  createdAt: string
+  updatedAt: string
+  workshop: {
+    id: string
+    name: string
+    city?: string
+    country?: string
+  }
+  serviceCategory: {
+    id: string
+    name: string
+    icon?: string
+  }
+}
+
+export interface ServiceSearchParams {
+  q?: string
+  categoryId?: string
+  city?: string
+  vehicleType?: VehicleType | 'ALL'
+  page?: number
+  size?: number
+  [key: string]: string | number | undefined
 }

@@ -1,6 +1,8 @@
 import { OrderStatus } from '../domain/enums/order-status'
 import type { Order, UpdateOrderStatusInput } from '../domain/entities/order'
 import type { OrderRepository } from '../domain/repositories/order-repository'
+import { billingRepositoryPrisma } from '../../billing/infrastructure/persistence/prisma/billing-repository-prisma'
+import { generateInvoiceFromOrder } from '../../billing/application/generate-invoice-from-order'
 
 interface WorkshopRepository {
   findById(id: string): Promise<{ id: string; ownerId: string } | null>
@@ -52,6 +54,20 @@ export async function updateOrderStatus(
 
   // Actualizar el estado
   const updatedOrder = await repo.updateStatus(orderId, input)
+
+  // 🎯 AUTO-FACTURACIÓN: Generar factura automáticamente cuando se confirma el pedido
+  if (input.status === OrderStatus.CONFIRMED && order.status !== OrderStatus.CONFIRMED) {
+    try {
+      await generateInvoiceFromOrder(orderId, {
+        billingRepo: billingRepositoryPrisma,
+      })
+      console.log(`✅ [AUTO-INVOICE] Factura generada automáticamente para pedido ${orderId}`)
+    } catch (error) {
+      console.error(`❌ [AUTO-INVOICE] Error generando factura para pedido ${orderId}:`, error)
+      // No lanzar error para no bloquear la confirmación del pedido
+      // La factura se puede generar manualmente después si falla
+    }
+  }
 
   return updatedOrder
 }
