@@ -30,7 +30,7 @@ import { adaptProductImages } from '../../../utils/adapt-product-Images'
 import { ModernProductLayout } from '../components/modern-product-layout'
 import type { Product } from '../services/product-service'
 import type { CardProduct } from '../types/products-types'
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 
 /* --------- Adaptador UI ← Backend --------- */
 const adaptProductForLayout = (product: Product): CardProduct => ({
@@ -146,7 +146,7 @@ export const MyProducts = () => {
   // abrir menú desde la card (⋮)
   const handleOpenMenuFromCard = (
     e: React.MouseEvent<HTMLElement>,
-    item: CardProduct | import('../types/products-types').CardWorkshop
+    item: CardProduct | import('../types/products-types').CardWorkshop | import('../types/products-types').CardService
   ) => {
     e.stopPropagation()
     // Type guard to ensure it's a CardProduct
@@ -198,7 +198,6 @@ export const MyProducts = () => {
           variant="contained"
           startIcon={<Add />}
           onClick={() => navigate('/create-product')}
-          fullWidth={{ xs: true, sm: false }}
           sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
           Nuevo Producto

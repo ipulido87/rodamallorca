@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Rueda de bicicleta con rayos -->
+  <circle cx="100" cy="100" r="80" stroke="#1976d2" stroke-width="8" fill="none"/>
+
+  <!-- Rayos de la rueda -->
+  <line x1="100" y1="100" x2="100" y2="20" stroke="#1976d2" stroke-width="3"/>
+  <line x1="100" y1="100" x2="156.57" y2="43.43" stroke="#1976d2" stroke-width="3"/>
+  <line x1="100" y1="100" x2="180" y2="100" stroke="#1976d2" stroke-width="3"/>
+  <line x1="100" y1="100" x2="156.57" y2="156.57" stroke="#1976d2" stroke-width="3"/>
+  <line x1="100" y1="100" x2="100" y2="180" stroke="#1976d2" stroke-width="3"/>
+  <line x1="100" y1="100" x2="43.43" y2="156.57" stroke="#1976d2" stroke-width="3"/>
+  <line x1="100" y1="100" x2="20" y2="100" stroke="#1976d2" stroke-width="3"/>
+  <line x1="100" y1="100" x2="43.43" y2="43.43" stroke="#1976d2" stroke-width="3"/>
+
+  <!-- Centro de la rueda -->
+  <circle cx="100" cy="100" r="15" fill="#1976d2"/>
+  <circle cx="100" cy="100" r="8" fill="white"/>
+</svg>

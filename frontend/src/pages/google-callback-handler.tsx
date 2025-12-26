@@ -7,7 +7,7 @@ import { useAuth } from '../features/auth/hooks/useAuth'
 export const GoogleCallbackHandler = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { persistToken, refreshMe, user } = useAuth()
+  const { persistToken, refreshMe } = useAuth()
 
   useEffect(() => {
     const handleCallback = async () => {
