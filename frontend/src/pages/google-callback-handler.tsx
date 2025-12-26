@@ -1,11 +1,12 @@
 import { useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Box, CircularProgress, Typography } from '@mui/material'
 import { API } from '../features/auth/services/auth-service'
 import { useAuth } from '../features/auth/hooks/useAuth'
 
 export const GoogleCallbackHandler = () => {
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const { persistToken, refreshMe } = useAuth()
 
   useEffect(() => {
@@ -18,13 +19,13 @@ export const GoogleCallbackHandler = () => {
 
       if (error) {
         console.error('❌ Error en Google OAuth:', error)
-        window.location.href = '/login?error=' + encodeURIComponent(error)
+        navigate('/login?error=' + encodeURIComponent(error), { replace: true })
         return
       }
 
       if (!token) {
         console.error('❌ No se recibió token en el callback')
-        window.location.href = '/login?error=no_token'
+        navigate('/login?error=no_token', { replace: true })
         return
       }
 
@@ -45,14 +46,14 @@ export const GoogleCallbackHandler = () => {
 
         if (!user) {
           console.error('❌ No se pudo obtener usuario')
-          window.location.href = '/login?error=user_not_found'
+          navigate('/login?error=user_not_found', { replace: true })
           return
         }
 
         // ✅ Si es USER normal, ir a home
         if (user.role !== 'WORKSHOP_OWNER') {
           console.log('➡️ USER normal → /home')
-          window.location.href = '/home'
+          navigate('/home', { replace: true })
           return
         }
 
@@ -71,10 +72,10 @@ export const GoogleCallbackHandler = () => {
 
         if (Array.isArray(workshopsData) && workshopsData.length > 0) {
           console.log('✅ Tiene workshops → /dashboard')
-          window.location.href = '/dashboard'
+          navigate('/dashboard', { replace: true })
         } else {
           console.log('⚠️ No tiene workshops → /create-workshop')
-          window.location.href = '/create-workshop?firstTime=true'
+          navigate('/create-workshop?firstTime=true', { replace: true })
         }
       } catch (err) {
         console.error('❌ ERROR EN CALLBACK:', err)
@@ -85,7 +86,7 @@ export const GoogleCallbackHandler = () => {
     }
 
     handleCallback()
-  }, [searchParams, persistToken, refreshMe])
+  }, [searchParams, persistToken, refreshMe, navigate])
 
   return (
     <Box
