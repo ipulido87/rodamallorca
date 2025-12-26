@@ -77,10 +77,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     console.log('🔄 [AUTH] refreshMe llamado')
     console.log('🔄 [AUTH] Token actual:', currentToken?.substring(0, 30) + '...')
     try {
-      const data = await apiMe()
-      const fetchedUser = data?.user ?? null
+      const fetchedUser = await apiMe() // ✅ apiMe() retorna el usuario directamente, no { user: {...} }
       console.log('✅ [AUTH] Usuario obtenido en refreshMe:', fetchedUser?.email, fetchedUser?.role)
-      setUser(fetchedUser)
+      setUser(fetchedUser ?? null)
       if (fetchedUser) {
         localStorage.setItem(USER_KEY, JSON.stringify(fetchedUser))
       } else {
