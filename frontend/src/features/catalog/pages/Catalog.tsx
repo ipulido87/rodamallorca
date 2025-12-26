@@ -167,12 +167,14 @@ export const Catalog = () => {
     setWorkshopFilters((prev) => ({ ...prev, [key]: value }))
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleServiceFilterChange = (key: string, value: FilterValue) => {
     setServiceFilters((prev) => ({ ...prev, [key]: value }))
   }
 
   const clearProductFilters = () => setProductFilters({})
   const clearWorkshopFilters = () => setWorkshopFilters({})
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const clearServiceFilters = () => setServiceFilters({})
 
   const handleProductFavoriteToggle = (productId: string) => {
