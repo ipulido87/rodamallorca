@@ -25,7 +25,7 @@ import {
   useTheme,
   alpha,
 } from '@mui/material'
-import Grid from '@mui/material/Unstable_Grid2'
+import Grid from '@mui/material/Grid2'
 import { useNavigate, useParams } from 'react-router-dom'
 import useSWR from 'swr'
 import { getCustomerById } from '../services/customer-service'
