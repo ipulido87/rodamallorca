@@ -82,7 +82,7 @@ export const generateInvoiceFromOrder = async (
 
   // 4. Preparar items de factura desde items del pedido
   const invoiceItems = order.items.map((orderItem) => ({
-    description: orderItem.product?.name || orderItem.service?.name || orderItem.description || 'Item sin descripción',
+    description: orderItem.product?.title || orderItem.service?.name || orderItem.description || 'Item sin descripción',
     quantity: orderItem.quantity,
     unitPrice: orderItem.priceAtOrder, // Ya viene en céntimos
     discount: 0,
