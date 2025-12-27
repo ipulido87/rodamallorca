@@ -20,7 +20,7 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material'
-import { Grid } from '@mui/material'
+
 import {
   Edit,
   Email,
@@ -215,9 +215,9 @@ export const Profile = () => {
         </Typography>
       </Box>
 
-      <Grid container spacing={3}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
         {/* Columna Principal */}
-        <Grid xs={12} md={8}>
+        <Box sx={{ width: { xs: "100%", md: "66.66666666666666%" }, flexGrow: 1 }}>
           <Card>
             <CardContent sx={{ p: 4 }}>
               <Stack spacing={3}>
@@ -394,10 +394,10 @@ export const Profile = () => {
               </Stack>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Sidebar */}
-        <Grid xs={12} md={4}>
+        <Box sx={{ width: { xs: "100%", md: "33.33333333333333%" }, flexGrow: 1 }}>
           <Stack spacing={3}>
             {/* Información de cuenta */}
             <Card>
@@ -468,8 +468,8 @@ export const Profile = () => {
               </CardContent>
             </Card>
           </Stack>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       {/* Dialog: Cambiar Contraseña */}
       <Dialog
