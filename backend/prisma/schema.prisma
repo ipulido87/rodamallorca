@@ -75,6 +75,21 @@ model User {
   orders            Order[]       // Pedidos realizados por el usuario
   vehicles          Vehicle[]     // Vehículos del usuario
   favoriteWorkshops FavoriteWorkshop[] // Talleres favoritos
+  settings          UserSettings? // Configuración del usuario
+}
+
+// Configuración de usuario
+model UserSettings {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  settings  Json     // Configuración en formato JSON
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 // Vehículos de los usuarios (bicicletas, patinetes)

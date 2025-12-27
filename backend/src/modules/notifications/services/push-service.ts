@@ -7,7 +7,7 @@ const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:admin@example.com'
 
 if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
-  webpush.setVAPIDDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
+  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
   console.log('✅ [PUSH] Web Push configurado correctamente')
 } else {
   console.warn('⚠️  [PUSH] VAPID keys no configuradas. Push notifications deshabilitadas.')

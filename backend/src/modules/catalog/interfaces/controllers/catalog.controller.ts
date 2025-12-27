@@ -1,5 +1,5 @@
 // src/modules/catalog/interfaces/controllers/catalog.controller.ts
-import type { Prisma } from '@prisma/client'
+import type { Prisma, VehicleType } from '@prisma/client'
 import { NextFunction, Request, Response } from 'express'
 import prisma from '../../../../lib/prisma'
 
@@ -127,7 +127,7 @@ export const searchServicesController = async (
       status: 'ACTIVE',
       ...(q ? { name: { contains: String(q), mode: 'insensitive' } } : {}),
       ...(categoryId ? { serviceCategoryId: String(categoryId) } : {}),
-      ...(vehicleType && vehicleType !== 'ALL' ? { vehicleType: String(vehicleType) } : {}),
+      ...(vehicleType && vehicleType !== 'ALL' ? { vehicleType: String(vehicleType) as VehicleType } : {}),
       ...(city
         ? {
             workshop: { city: { contains: String(city), mode: 'insensitive' } },
