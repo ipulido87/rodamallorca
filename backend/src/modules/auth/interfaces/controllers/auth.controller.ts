@@ -456,8 +456,9 @@ export const getCurrentUser = async (req: Request, res: Response) => {
 
   try {
     const payload = jwtVerify(token, process.env.JWT_SECRET!) as JWTPayload
-    const repo = new UserRepositoryPrisma()
-    const user = await repo.findByEmail(payload.email)
+    const user = await prisma.user.findUnique({
+      where: { email: payload.email }
+    })
 
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' })

@@ -1,5 +1,5 @@
 import type { BillingRepository } from '../domain/repositories/billing-repository'
-import type { Invoice } from '../domain/entities/billing'
+import type { Invoice, Customer } from '../domain/entities/billing'
 import prisma from '../../../lib/prisma'
 
 interface Dependencies {
@@ -47,12 +47,12 @@ export const generateInvoiceFromOrder = async (
   }
 
   // 2. Buscar o crear cliente para el usuario del pedido
-  let customer = await prisma.customer.findFirst({
+  let customer: Customer | null = await prisma.customer.findFirst({
     where: {
       workshopId: order.workshopId,
       email: order.user.email,
     },
-  })
+  }) as Customer | null
 
   // Si no existe, crear cliente automáticamente
   if (!customer) {
