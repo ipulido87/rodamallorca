@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Prisma } from '@prisma/client'
 import type { BillingRepository } from '../../../domain/repositories/billing-repository'
 import type {
   Customer,
@@ -12,6 +12,18 @@ import type {
 } from '../../../domain/entities/billing'
 
 const prisma = new PrismaClient()
+
+// Helper para convertir Decimal a number
+function toDomainInvoice(prismaInvoice: any): Invoice {
+  return {
+    ...prismaInvoice,
+    items: prismaInvoice.items?.map((item: any) => ({
+      ...item,
+      quantity: item.quantity?.toNumber ? item.quantity.toNumber() : item.quantity,
+      taxRate: item.taxRate?.toNumber ? item.taxRate.toNumber() : item.taxRate,
+    })),
+  }
+}
 
 export const billingRepositoryPrisma: BillingRepository = {
   // ==================== CUSTOMERS ====================
@@ -175,7 +187,7 @@ export const billingRepositoryPrisma: BillingRepository = {
       },
     })
 
-    return invoice as Invoice
+    return toDomainInvoice(invoice)
   },
 
   async findInvoiceById(id: string): Promise<Invoice | null> {
@@ -187,7 +199,7 @@ export const billingRepositoryPrisma: BillingRepository = {
         items: true,
       },
     })
-    return invoice as Invoice | null
+    return invoice ? toDomainInvoice(invoice) : null
   },
 
   async findInvoicesByWorkshop(
@@ -214,7 +226,7 @@ export const billingRepositoryPrisma: BillingRepository = {
       orderBy: { issueDate: 'desc' },
     })
 
-    return invoices as Invoice[]
+    return invoices.map(toDomainInvoice)
   },
 
   async updateInvoice(id: string, data: UpdateInvoiceInput): Promise<Invoice> {
@@ -227,7 +239,7 @@ export const billingRepositoryPrisma: BillingRepository = {
         items: true,
       },
     })
-    return invoice as Invoice
+    return toDomainInvoice(invoice)
   },
 
   async deleteInvoice(id: string): Promise<void> {
