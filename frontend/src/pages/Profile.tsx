@@ -58,7 +58,7 @@ const changePassword = async (
 }
 
 export const Profile = () => {
-  const { user: authUser, setUser } = useAuth()
+  const { user: authUser, refreshMe } = useAuth()
   const { showSuccess, showError } = useSnackbar()
   const [editMode, setEditMode] = useState(false)
   const [passwordDialog, setPasswordDialog] = useState(false)
@@ -115,9 +115,7 @@ export const Profile = () => {
       mutate(updated, false)
 
       // Actualizar contexto de auth
-      if (setUser) {
-        setUser(updated)
-      }
+      await refreshMe()
 
       setEditMode(false)
       showSuccess('Perfil actualizado correctamente')
