@@ -19,13 +19,13 @@ import {
   CircularProgress,
   Container,
   Divider,
-  Grid,
   IconButton,
   Stack,
   Typography,
   useTheme,
   alpha,
 } from '@mui/material'
+import Grid from '@mui/material/Unstable_Grid2'
 import { useNavigate, useParams } from 'react-router-dom'
 import useSWR from 'swr'
 import { getCustomerById } from '../services/customer-service'
@@ -122,7 +122,7 @@ export const CustomerDetail = () => {
 
         <Grid container spacing={3}>
           {/* Información Principal */}
-          <Grid item xs={12} md={8}>
+          <Grid xs={12} md={8}>
             <Card>
               <CardContent>
                 <Stack spacing={3}>
@@ -259,7 +259,7 @@ export const CustomerDetail = () => {
           </Grid>
 
           {/* Sidebar */}
-          <Grid item xs={12} md={4}>
+          <Grid xs={12} md={4}>
             <Stack spacing={3}>
               {/* Estadísticas */}
               <Card>
