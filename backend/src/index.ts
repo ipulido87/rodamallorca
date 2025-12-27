@@ -35,9 +35,15 @@ app.use(
         process.env.FRONTEND_URL
       ].filter(Boolean)
 
+      console.log('🔍 [CORS DEBUG] Origin recibido:', origin)
+      console.log('🔍 [CORS DEBUG] Allowed origins:', allowedOrigins)
+      console.log('🔍 [CORS DEBUG] FRONTEND_URL env:', process.env.FRONTEND_URL)
+
       if (!origin || allowedOrigins.includes(origin)) {
+        console.log('✅ [CORS DEBUG] Origen permitido')
         callback(null, true)
       } else {
+        console.log('❌ [CORS DEBUG] Origen RECHAZADO')
         callback(new Error('Not allowed by CORS'))
       }
     },
