@@ -12,7 +12,6 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  Grid,
   IconButton,
   Stack,
   TextField,
@@ -21,6 +20,7 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material'
+import Grid from '@mui/material/Unstable_Grid2'
 import {
   Edit,
   Email,
@@ -217,7 +217,7 @@ export const Profile = () => {
 
       <Grid container spacing={3}>
         {/* Columna Principal */}
-        <Grid item xs={12} md={8}>
+        <Grid xs={12} md={8}>
           <Card>
             <CardContent sx={{ p: 4 }}>
               <Stack spacing={3}>
@@ -397,7 +397,7 @@ export const Profile = () => {
         </Grid>
 
         {/* Sidebar */}
-        <Grid item xs={12} md={4}>
+        <Grid xs={12} md={4}>
           <Stack spacing={3}>
             {/* Información de cuenta */}
             <Card>

@@ -7,7 +7,6 @@ import {
   Divider,
   FormControlLabel,
   FormGroup,
-  Grid,
   Stack,
   Switch,
   Typography,
@@ -15,6 +14,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material'
+import Grid from '@mui/material/Unstable_Grid2'
 import {
   Notifications,
   Security,
@@ -174,7 +174,7 @@ export const Settings = () => {
 
       <Grid container spacing={3}>
         {/* Notificaciones */}
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Card>
             <CardContent sx={{ p: 3 }}>
               <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
@@ -272,7 +272,7 @@ export const Settings = () => {
         </Grid>
 
         {/* Privacidad */}
-        <Grid item xs={12} md={6}>
+        <Grid xs={12} md={6}>
           <Card>
             <CardContent sx={{ p: 3 }}>
               <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
@@ -333,7 +333,7 @@ export const Settings = () => {
 
         {/* Talleres (solo para WORKSHOP_OWNER) */}
         {user?.role === 'WORKSHOP_OWNER' && (
-          <Grid item xs={12}>
+          <Grid xs={12}>
             <Card>
               <CardContent sx={{ p: 3 }}>
                 <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>

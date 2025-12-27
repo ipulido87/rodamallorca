@@ -50,8 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // ---- Interceptor: adjunta Authorization si hay token ----
   useEffect(() => {
     const id = API.interceptors.request.use((config) => {
-      if (token) {
-        config.headers = config.headers ?? {}
+      if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`
       }
       return config
