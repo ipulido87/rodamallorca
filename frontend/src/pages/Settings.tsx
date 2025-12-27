@@ -14,7 +14,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material'
-import { Grid } from '@mui/material'
+
 import {
   Notifications,
   Security,
@@ -172,9 +172,9 @@ export const Settings = () => {
         </Typography>
       </Box>
 
-      <Grid container spacing={3}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
         {/* Notificaciones */}
-        <Grid xs={12} md={6}>
+        <Box sx={{ width: { xs: "100%", md: "50%" }, flexGrow: 1 }}>
           <Card>
             <CardContent sx={{ p: 3 }}>
               <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
@@ -269,10 +269,10 @@ export const Settings = () => {
               </FormGroup>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Privacidad */}
-        <Grid xs={12} md={6}>
+        <Box sx={{ width: { xs: "100%", md: "50%" }, flexGrow: 1 }}>
           <Card>
             <CardContent sx={{ p: 3 }}>
               <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
@@ -329,11 +329,11 @@ export const Settings = () => {
               </Alert>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Talleres (solo para WORKSHOP_OWNER) */}
         {user?.role === 'WORKSHOP_OWNER' && (
-          <Grid xs={12}>
+          <Box sx={{ width: "100%", flexGrow: 1 }}>
             <Card>
               <CardContent sx={{ p: 3 }}>
                 <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
@@ -359,9 +359,9 @@ export const Settings = () => {
                 </Box>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
         )}
-      </Grid>
+      </Box>
 
       {/* Botón Guardar */}
       {hasChanges && (

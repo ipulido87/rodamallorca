@@ -25,7 +25,7 @@ import {
   useTheme,
   alpha,
 } from '@mui/material'
-import { Grid } from '@mui/material'
+
 import { useNavigate, useParams } from 'react-router-dom'
 import useSWR from 'swr'
 import { getCustomerById } from '../services/customer-service'
@@ -120,9 +120,9 @@ export const CustomerDetail = () => {
           </Button>
         </Box>
 
-        <Grid container spacing={3}>
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
           {/* Información Principal */}
-          <Grid xs={12} md={8}>
+          <Box sx={{ width: { xs: "100%", md: "66.66666666666666%" }, flexGrow: 1 }}>
             <Card>
               <CardContent>
                 <Stack spacing={3}>
@@ -256,10 +256,10 @@ export const CustomerDetail = () => {
                 </Stack>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
 
           {/* Sidebar */}
-          <Grid xs={12} md={4}>
+          <Box sx={{ width: { xs: "100%", md: "33.33333333333333%" }, flexGrow: 1 }}>
             <Stack spacing={3}>
               {/* Estadísticas */}
               <Card>
@@ -324,8 +324,8 @@ export const CustomerDetail = () => {
                 </CardContent>
               </Card>
             </Stack>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Box>
     </Container>
   )
