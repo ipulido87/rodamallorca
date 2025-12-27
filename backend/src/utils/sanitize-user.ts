@@ -15,6 +15,7 @@ interface UserWithSensitiveData {
   resetToken: string | null
   resetTokenExpiresAt: Date | null
   googleId: string | null
+  settings?: any // Optional settings relation
 }
 
 export function sanitizeUser(u: UserWithSensitiveData) {

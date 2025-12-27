@@ -7,7 +7,7 @@ import type {
   UpdateInvoiceInput,
   InvoiceSeries,
   CreateInvoiceSeriesInput,
-} from '../../../domain/entities/billing'
+} from '../entities/billing'
 
 export interface BillingRepository {
   // Customers

@@ -37,11 +37,14 @@ export async function searchCatalog(
   if (categoryId) {
     productWhere.categoryId = categoryId
   }
-  if (minPrice !== undefined) {
-    productWhere.price = { ...productWhere.price, gte: minPrice }
-  }
-  if (maxPrice !== undefined) {
-    productWhere.price = { ...productWhere.price, lte: maxPrice }
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    productWhere.price = {}
+    if (minPrice !== undefined) {
+      productWhere.price.gte = minPrice
+    }
+    if (maxPrice !== undefined) {
+      productWhere.price.lte = maxPrice
+    }
   }
   if (city) {
     productWhere.workshop = {
