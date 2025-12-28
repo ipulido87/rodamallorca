@@ -149,7 +149,7 @@ export const verifyByLink = async (req: Request, res: Response) => {
 
   if (!email || !code) {
     console.log('❌ [VERIFY_BY_LINK] Faltan datos')
-    return res.redirect(`${getFrontendUrl()}/verify?error=missing_data`)
+    return res.redirect(`${getFrontendUrl()}/login?error=${encodeURIComponent('Enlace de verificación inválido')}`)
   }
 
   try {
@@ -159,7 +159,7 @@ export const verifyByLink = async (req: Request, res: Response) => {
 
     if (!user) {
       console.log('❌ [VERIFY_BY_LINK] Usuario no encontrado:', email)
-      return res.redirect(`${getFrontendUrl()}/verify?error=user_not_found`)
+      return res.redirect(`${getFrontendUrl()}/login?error=${encodeURIComponent('Usuario no encontrado')}`)
     }
 
     if (user.verified) {
@@ -188,14 +188,14 @@ export const verifyByLink = async (req: Request, res: Response) => {
     if (user.verificationCode !== code) {
       console.log('❌ [VERIFY_BY_LINK] Código inválido')
       return res.redirect(
-        `${getFrontendUrl()}/verify?error=invalid_code&email=${email}`
+        `${getFrontendUrl()}/login?error=${encodeURIComponent('Código de verificación inválido')}`
       )
     }
 
     if (user.codeExpiresAt && user.codeExpiresAt < new Date()) {
       console.log('❌ [VERIFY_BY_LINK] Código expirado')
       return res.redirect(
-        `${getFrontendUrl()}/verify?error=code_expired&email=${email}`
+        `${getFrontendUrl()}/login?error=${encodeURIComponent('El código de verificación ha expirado')}`
       )
     }
 
@@ -226,12 +226,11 @@ export const verifyByLink = async (req: Request, res: Response) => {
 
     console.log('✅ [VERIFY_BY_LINK] Usuario verificado y logueado:', email)
 
-    // ✅ REDIRIGIR DIRECTAMENTE A LA APP (sin pasar por callback)
-    const redirectPath = user.role === 'WORKSHOP_OWNER' ? '/dashboard' : '/home'
-    return res.redirect(`${getFrontendUrl()}${redirectPath}`)
+    // ✅ REDIRIGIR A LOGIN CON MENSAJE DE ÉXITO
+    return res.redirect(`${getFrontendUrl()}/login?success=${encodeURIComponent('¡Cuenta verificada exitosamente! Ya puedes iniciar sesión.')}`)
   } catch (error) {
     console.error('❌ [VERIFY_BY_LINK] Error:', error)
-    return res.redirect(`${getFrontendUrl()}/verify?error=server_error`)
+    return res.redirect(`${getFrontendUrl()}/login?error=${encodeURIComponent('Error al verificar la cuenta')}`)
   }
 }
 
