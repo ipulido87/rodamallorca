@@ -1,19 +1,12 @@
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 
-const { MAILTRAP_USER, MAILTRAP_PASS } = process.env
+const { RESEND_API_KEY, EMAIL_FROM } = process.env
 
-if (!MAILTRAP_USER || !MAILTRAP_PASS) {
-  console.error('[MAIL] ❌ Faltan MAILTRAP_USER o MAILTRAP_PASS en .env')
+if (!RESEND_API_KEY) {
+  console.error('[MAIL] ❌ Falta RESEND_API_KEY en .env')
 }
 
-const transporter = nodemailer.createTransport({
-  host: 'sandbox.smtp.mailtrap.io',
-  port: 2525,
-  auth: {
-    user: MAILTRAP_USER || '',
-    pass: MAILTRAP_PASS || '',
-  },
-})
+const resend = new Resend(RESEND_API_KEY || '')
 
 export const sendVerificationEmail = async (email: string, code: string) => {
   // ✅ SOLO LINK DIRECTO - NO CÓDIGO MANUAL
@@ -22,11 +15,10 @@ export const sendVerificationEmail = async (email: string, code: string) => {
   }/api/auth/verify-link?email=${encodeURIComponent(email)}&code=${code}`
 
   try {
-    await transporter.verify()
-    console.log('[MAIL] SMTP listo ✅')
+    console.log('[MAIL] Enviando email de verificación con Resend...')
 
-    const info = await transporter.sendMail({
-      from: 'no-reply@rodamallorca.com',
+    const { data, error } = await resend.emails.send({
+      from: EMAIL_FROM || 'onboarding@resend.dev',
       to: email,
       subject: 'Verifica tu cuenta - RodaMallorca',
       html: `
@@ -83,7 +75,12 @@ export const sendVerificationEmail = async (email: string, code: string) => {
       `,
     })
 
-    console.log('[MAIL] ✅ Email de verificación enviado:', info.messageId)
+    if (error) {
+      console.error('[MAIL] ❌ Error de Resend:', error)
+      throw error
+    }
+
+    console.log('[MAIL] ✅ Email de verificación enviado:', data?.id)
   } catch (err) {
     console.error('[MAIL] ❌ Error enviando correo:', err)
     throw err
