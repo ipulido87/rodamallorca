@@ -30,7 +30,7 @@ import { adaptProductImages } from '../../../utils/adapt-product-Images'
 import { ModernProductLayout } from '../components/modern-product-layout'
 import type { Product } from '../services/product-service'
 import type { CardProduct } from '../types/products-types'
-import axios from 'axios'
+import { API } from '../../auth/services/auth-service'
 
 /* --------- Adaptador UI ← Backend --------- */
 const adaptProductForLayout = (product: Product): CardProduct => ({
@@ -43,10 +43,10 @@ const adaptProductForLayout = (product: Product): CardProduct => ({
   workshop: { name: 'Mi Taller', city: undefined },
 })
 
-const PRODUCTS_KEY = `${import.meta.env.VITE_API_URL}/owner/products/mine`
+const PRODUCTS_KEY = '/owner/products/mine'
 
 const fetcher = async (url: string) => {
-  const response = await axios.get<Product[]>(url, { withCredentials: true })
+  const response = await API.get<Product[]>(url)
   return response.data
 }
 
@@ -100,16 +100,14 @@ export const MyProducts = () => {
   const handleStatusChange = async (product: Product) => {
     try {
       if (product.status === 'DRAFT') {
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/owner/products/${product.id}/publish`,
-          {},
-          { withCredentials: true }
+        await API.post(
+          `/owner/products/${product.id}/publish`,
+          {}
         )
       } else {
-        await axios.put<Product>(
-          `${import.meta.env.VITE_API_URL}/owner/products/${product.id}`,
-          { status: 'DRAFT' },
-          { withCredentials: true }
+        await API.put<Product>(
+          `/owner/products/${product.id}`,
+          { status: 'DRAFT' }
         )
       }
       // ✅ Revalidar caché automáticamente
@@ -125,9 +123,8 @@ export const MyProducts = () => {
   const handleDelete = async () => {
     if (!deleteDialog.product) return
     try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_URL}/owner/products/${deleteDialog.product.id}`,
-        { withCredentials: true }
+      await API.delete(
+        `/owner/products/${deleteDialog.product.id}`
       )
       // ✅ Revalidar caché automáticamente
       await mutate(PRODUCTS_KEY)
