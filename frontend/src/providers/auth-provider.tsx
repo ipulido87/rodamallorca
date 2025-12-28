@@ -49,14 +49,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // ---- Interceptor: adjunta Authorization si hay token ----
   useEffect(() => {
-    const id = API.interceptors.request.use((config) => {
+    const reqId = API.interceptors.request.use((config) => {
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`
       }
       return config
     })
-    return () => API.interceptors.request.eject(id)
-  }, [token])
+
+    // ---- Interceptor de respuesta: maneja 401 (token expirado) ----
+    const resId = API.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        // Si el token expiró o es inválido, hacer logout automático
+        if (error.response?.status === 401 && token) {
+          console.warn('Token expirado o inválido, cerrando sesión...')
+          persistToken(null)
+          setUser(null)
+          localStorage.removeItem(USER_KEY)
+          window.location.href = '/login?error=Sesión expirada, por favor inicia sesión nuevamente'
+        }
+        return Promise.reject(error)
+      }
+    )
+
+    return () => {
+      API.interceptors.request.eject(reqId)
+      API.interceptors.response.eject(resId)
+    }
+  }, [token, persistToken])
 
   const persistToken = useCallback((t: string | null) => {
     if (t) {
