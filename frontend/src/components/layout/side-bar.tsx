@@ -19,6 +19,7 @@ import type { SidebarProps } from '../../shared/types/layout'
 import { getIcon } from '../../utils/icon-mapper'
 import { useRealtimeNotifications } from '../../shared/hooks/use-realtime-notifications'
 import { NotificationBadge } from '../notifications/notification-badge'
+import { API } from '../../features/auth/services/auth-service'
 
 const DRAWER_WIDTH = 280
 
@@ -44,16 +45,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
     if ((path === '/services' || path === '/billing') && user?.role === 'WORKSHOP_OWNER') {
       try {
         // Obtener el primer taller del usuario
-        const response = await fetch('http://localhost:4000/api/owner/workshops/mine', {
-          credentials: 'include',
-        })
-        if (response.ok) {
-          const workshops = await response.json()
-          if (workshops.length > 0) {
-            navigate(`${path}/${workshops[0].id}`)
-          } else {
-            navigate('/my-workshops') // Redirigir a crear taller si no tiene
-          }
+        const { data: workshops } = await API.get('/owner/workshops/mine')
+        if (workshops && workshops.length > 0) {
+          navigate(`${path}/${workshops[0].id}`)
+        } else {
+          navigate('/my-workshops') // Redirigir a crear taller si no tiene
         }
       } catch (error) {
         console.error('Error fetching workshop:', error)

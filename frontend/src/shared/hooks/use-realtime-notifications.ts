@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { useSnackbar } from './use-snackbar'
+import { API } from '../../features/auth/services/auth-service'
 
 interface Order {
   id: string
@@ -40,28 +41,16 @@ export const useRealtimeNotifications = () => {
     const checkNewOrders = async () => {
       try {
         // Obtener los talleres del usuario
-        const workshopsResponse = await fetch('http://localhost:4000/api/owner/workshops/mine', {
-          credentials: 'include',
-        })
+        const { data: workshops } = await API.get('/owner/workshops/mine')
 
-        if (!workshopsResponse.ok) return
-
-        const workshops = await workshopsResponse.json()
-        if (workshops.length === 0) return
+        if (!workshops || workshops.length === 0) return
 
         const workshopId = workshops[0].id
 
         // Obtener pedidos desde la última comprobación
-        const ordersResponse = await fetch(
-          `http://localhost:4000/api/owner/workshops/${workshopId}/orders`,
-          {
-            credentials: 'include',
-          }
+        const { data: orders } = await API.get<Order[]>(
+          `/owner/workshops/${workshopId}/orders`
         )
-
-        if (!ordersResponse.ok) return
-
-        const orders: Order[] = await ordersResponse.json()
 
         // Filtrar pedidos nuevos (creados después de la última comprobación)
         const newOrders = orders.filter((order) => {
