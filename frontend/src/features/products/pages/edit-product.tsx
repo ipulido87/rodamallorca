@@ -22,6 +22,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { z } from 'zod'
 import { useAuth } from '../../auth/hooks/useAuth'
+import { API } from '../../auth/services/auth-service'
 
 interface Product {
   id: string
@@ -101,23 +102,8 @@ export const EditProduct = () => {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/categories`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-          }
-        )
-
-        if (response.ok) {
-          const data = await response.json()
-          setCategories(data)
-        } else {
-          console.warn('Categories endpoint not available')
-          setCategories([])
-        }
+        const response = await API.get<Category[]>('/categories')
+        setCategories(response.data)
       } catch (err) {
         console.warn('Could not load categories:', err)
         setCategories([])
@@ -137,21 +123,8 @@ export const EditProduct = () => {
       }
 
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/owner/products/${id}`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-          }
-        )
-
-        if (!response.ok) {
-          throw new Error('Producto no encontrado')
-        }
-
-        const product: Product = await response.json()
+        const response = await API.get<Product>(`/owner/products/${id}`)
+        const product = response.data
 
         setFormData({
           title: product.title,
@@ -212,27 +185,13 @@ export const EditProduct = () => {
       setError(null)
       setValidationErrors({})
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/owner/products/${id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({
-            title: result.data.title.trim(),
-            description: result.data.description?.trim() || null,
-            price: result.data.price, // Enviar precio en euros
-            categoryId: result.data.categoryId || null,
-            status: result.data.status,
-          }),
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error('Error al actualizar el producto')
-      }
+      await API.put(`/owner/products/${id}`, {
+        title: result.data.title.trim(),
+        description: result.data.description?.trim() || null,
+        price: result.data.price, // Enviar precio en euros
+        categoryId: result.data.categoryId || null,
+        status: result.data.status,
+      })
 
       setSuccess(true)
       setTimeout(() => {

@@ -1,6 +1,4 @@
-import axios from 'axios'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+import { API } from '../../auth/services/auth-service'
 
 interface CreateOrderItem {
   productId: string | null
@@ -40,22 +38,6 @@ export interface CreateOrderResponse {
 export const createOrder = async (
   payload: CreateOrderPayload
 ): Promise<CreateOrderResponse> => {
-  const token = localStorage.getItem('token')
-
-  if (!token) {
-    throw new Error('No authentication token found')
-  }
-
-  const response = await axios.post<CreateOrderResponse>(
-    `${API_URL}/orders`,
-    payload,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    }
-  )
-
+  const response = await API.post<CreateOrderResponse>('/orders', payload)
   return response.data
 }
