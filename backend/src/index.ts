@@ -32,6 +32,7 @@ app.use(
         'http://localhost:5173',
         'http://localhost:3000',
         'https://rodamallorca.vercel.app',
+        'https://frontend-production-2ce0.up.railway.app',
         process.env.FRONTEND_URL
       ].filter(Boolean)
 
