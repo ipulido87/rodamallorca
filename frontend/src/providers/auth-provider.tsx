@@ -67,9 +67,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const requestUrl = config.url || ''
       const isPublicRoute = publicRoutes.some(route => requestUrl.includes(route))
 
+      // ✅ Leer token DIRECTAMENTE de localStorage (no del estado que puede estar desactualizado)
+      const currentToken = localStorage.getItem(TOKEN_KEY)
+
       // Solo agregar Authorization a rutas NO públicas
-      if (token && config.headers && !isPublicRoute) {
-        config.headers.Authorization = `Bearer ${token}`
+      if (currentToken && config.headers && !isPublicRoute) {
+        config.headers.Authorization = `Bearer ${currentToken}`
       }
       return config
     })
