@@ -9,22 +9,43 @@ export const uploadImages = async (
   next: NextFunction
 ) => {
   try {
+    console.log('📤 [uploadImages] Recibida solicitud de upload')
+    console.log('📤 [uploadImages] Usuario:', req.user)
+    console.log('📤 [uploadImages] Archivos recibidos:', req.files)
+
     if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+      console.log('❌ [uploadImages] No se enviaron archivos')
       return res.status(400).json({ error: 'No se enviaron archivos' })
     }
+
+    console.log('📤 [uploadImages] Cantidad de archivos:', req.files.length)
+    req.files.forEach((file, index) => {
+      console.log(`📤 [uploadImages] Archivo ${index + 1}:`, {
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        hasBuffer: !!file.buffer
+      })
+    })
 
     const uploadPromises = req.files.map((file: Express.Multer.File) =>
       imageProcessor.processImage(file.buffer, file.originalname)
     )
 
+    console.log('📤 [uploadImages] Procesando imágenes...')
     const processedImages = await Promise.all(uploadPromises)
 
+    console.log('✅ [uploadImages] Todas las imágenes procesadas exitosamente')
     res.json({
       message: 'Imágenes subidas correctamente',
       images: processedImages,
     })
   } catch (error) {
-    console.error('Error uploading images:', error)
+    console.error('❌ [uploadImages] Error:', error)
+    if (error instanceof Error) {
+      console.error('❌ [uploadImages] Error stack:', error.stack)
+      console.error('❌ [uploadImages] Error message:', error.message)
+    }
     res.status(500).json({ error: 'Error al procesar las imágenes' })
   }
 }
