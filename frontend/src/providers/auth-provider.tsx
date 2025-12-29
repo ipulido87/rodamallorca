@@ -60,12 +60,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // ---- Interceptor: adjunta Authorization si hay token ----
   useEffect(() => {
-    // Rutas públicas que NO necesitan Authorization header O que toleran 401 sin redirigir
-    const publicRoutes = ['/catalog/', '/service-categories', '/services', '/auth/login', '/auth/register', '/auth/forgot-password']
+    // Rutas públicas que NO necesitan Authorization header
+    const publicRoutes = [
+      '/catalog/',
+      '/service-categories',
+      '/auth/login',
+      '/auth/register',
+      '/auth/forgot-password'
+    ]
 
     const reqId = API.interceptors.request.use((config) => {
       const requestUrl = config.url || ''
-      const isPublicRoute = publicRoutes.some(route => requestUrl.includes(route))
+
+      // ✅ Verificar si es una ruta pública (pero NO si contiene /owner/ o /admin/)
+      const isOwnerOrAdminRoute = requestUrl.includes('/owner/') || requestUrl.includes('/admin/')
+      const isPublicRoute = !isOwnerOrAdminRoute && publicRoutes.some(route => requestUrl.includes(route))
 
       // ✅ Leer token DIRECTAMENTE de localStorage (no del estado que puede estar desactualizado)
       const currentToken = localStorage.getItem(TOKEN_KEY)
@@ -82,7 +91,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       (response) => response,
       (error) => {
         const requestUrl = error.config?.url || ''
-        const isPublicRoute = publicRoutes.some(route => requestUrl.includes(route))
+
+        // ✅ Verificar si es una ruta pública (pero NO si contiene /owner/ o /admin/)
+        const isOwnerOrAdminRoute = requestUrl.includes('/owner/') || requestUrl.includes('/admin/')
+        const isPublicRoute = !isOwnerOrAdminRoute && publicRoutes.some(route => requestUrl.includes(route))
 
         // ✅ NO redirigir si estamos en el callback de OAuth (está manejando su propio flujo)
         const isInOAuthCallback = window.location.pathname === '/auth/callback'
