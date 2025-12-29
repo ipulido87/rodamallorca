@@ -81,8 +81,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const requestUrl = error.config?.url || ''
         const isPublicRoute = publicRoutes.some(route => requestUrl.includes(route))
 
+        // ✅ NO redirigir si estamos en el callback de OAuth (está manejando su propio flujo)
+        const isInOAuthCallback = window.location.pathname === '/auth/callback'
+
         // Si el token expiró en una ruta PRIVADA, hacer logout automático
-        if (error.response?.status === 401 && token && !isPublicRoute) {
+        if (error.response?.status === 401 && token && !isPublicRoute && !isInOAuthCallback) {
           console.warn('Token expirado o inválido, cerrando sesión...')
           persistToken(null)
           setUser(null)
