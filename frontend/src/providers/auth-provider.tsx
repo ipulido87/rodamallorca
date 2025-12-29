@@ -47,6 +47,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true)
   const [authError, setAuthError] = useState<string | null>(null) // ✅ ERROR CENTRALIZADO
 
+  // ✅ Declarar persistToken ANTES de usarlo en useEffect
+  const persistToken = useCallback((t: string | null) => {
+    if (t) {
+      localStorage.setItem(TOKEN_KEY, t)
+      setToken(t)
+    } else {
+      localStorage.removeItem(TOKEN_KEY)
+      setToken(null)
+    }
+  }, [])
+
   // ---- Interceptor: adjunta Authorization si hay token ----
   useEffect(() => {
     // Rutas públicas que NO necesitan Authorization header O que toleran 401 sin redirigir
@@ -87,16 +98,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       API.interceptors.response.eject(resId)
     }
   }, [token, persistToken])
-
-  const persistToken = useCallback((t: string | null) => {
-    if (t) {
-      localStorage.setItem(TOKEN_KEY, t)
-      setToken(t)
-    } else {
-      localStorage.removeItem(TOKEN_KEY)
-      setToken(null)
-    }
-  }, [])
 
   const refreshMe = useCallback(async () => {
     try {
