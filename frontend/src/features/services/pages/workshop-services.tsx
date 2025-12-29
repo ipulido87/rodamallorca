@@ -73,15 +73,23 @@ export const WorkshopServices = () => {
 
     try {
       setLoading(true)
-      const [servicesData, categoriesData] = await Promise.all([
-        getWorkshopServices(workshopId),
-        getServiceCategories(),
-      ])
-      setServices(servicesData)
+
+      // Cargar categorías siempre (no depende de servicios)
+      const categoriesData = await getServiceCategories()
       setCategories(categoriesData)
+
+      // Cargar servicios (puede fallar sin afectar categorías)
+      try {
+        const servicesData = await getWorkshopServices(workshopId)
+        setServices(servicesData)
+      } catch (servicesError) {
+        console.error('Error loading workshop services:', servicesError)
+        setServices([]) // Dejar vacío si falla
+        // No mostrar error si es solo problema de servicios
+      }
     } catch (error) {
-      showError('Error al cargar los servicios')
-      console.error('Error loading services:', error)
+      showError('Error al cargar las categorías')
+      console.error('Error loading categories:', error)
     } finally {
       setLoading(false)
     }
