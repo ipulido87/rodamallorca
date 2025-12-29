@@ -49,8 +49,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // ---- Interceptor: adjunta Authorization si hay token ----
   useEffect(() => {
+    // Rutas públicas que NO necesitan Authorization header
+    const publicRoutes = ['/catalog/', '/service-categories', '/services', '/auth/login', '/auth/register', '/auth/forgot-password']
+
     const reqId = API.interceptors.request.use((config) => {
-      if (token && config.headers) {
+      const requestUrl = config.url || ''
+      const isPublicRoute = publicRoutes.some(route => requestUrl.includes(route))
+
+      // Solo agregar Authorization a rutas NO públicas
+      if (token && config.headers && !isPublicRoute) {
         config.headers.Authorization = `Bearer ${token}`
       }
       return config
@@ -60,8 +67,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const resId = API.interceptors.response.use(
       (response) => response,
       (error) => {
-        // Rutas públicas que no deben forzar logout
-        const publicRoutes = ['/catalog/', '/service-categories', '/services', '/auth/']
         const requestUrl = error.config?.url || ''
         const isPublicRoute = publicRoutes.some(route => requestUrl.includes(route))
 
