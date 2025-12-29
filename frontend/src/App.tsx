@@ -85,6 +85,32 @@ function App() {
             }
           />
 
+          {/* ✅ CATÁLOGO PÚBLICO - Usuarios pueden explorar sin login */}
+          <Route
+            path="/catalog"
+            element={
+              <PublicLayout>
+                <Catalog />
+              </PublicLayout>
+            }
+          />
+          <Route
+            path="/product/:id"
+            element={
+              <PublicLayout>
+                <ProductDetail />
+              </PublicLayout>
+            }
+          />
+          <Route
+            path="/workshop/:id"
+            element={
+              <PublicLayout>
+                <WorkshopDetail />
+              </PublicLayout>
+            }
+          />
+
           <Route path="/auth/callback" element={<GoogleCallbackHandler />} />
           {/* Rutas privadas con MainLayout */}
           <Route
@@ -96,9 +122,6 @@ function App() {
             }
           >
             {/* Rutas para ambos roles */}
-            <Route path="catalog" element={<Catalog />} />
-            <Route path="product/:id" element={<ProductDetail />} />
-            <Route path="workshop/:id" element={<WorkshopDetail />} />
             <Route path="orders/:orderId" element={<OrderDetail />} />
 
             {/* Rutas solo para USER */}
