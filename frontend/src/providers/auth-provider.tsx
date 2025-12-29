@@ -49,8 +49,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // ---- Interceptor: adjunta Authorization si hay token ----
   useEffect(() => {
-    // Rutas públicas que NO necesitan Authorization header
-    const publicRoutes = ['/catalog/', '/service-categories', '/services', '/auth/login', '/auth/register', '/auth/forgot-password']
+    // Rutas públicas que NO necesitan Authorization header O que toleran 401 sin redirigir
+    const publicRoutes = ['/catalog/', '/service-categories', '/services', '/auth/login', '/auth/register', '/auth/forgot-password', '/auth/me']
 
     const reqId = API.interceptors.request.use((config) => {
       const requestUrl = config.url || ''
