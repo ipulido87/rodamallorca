@@ -60,8 +60,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const resId = API.interceptors.response.use(
       (response) => response,
       (error) => {
-        // Si el token expiró o es inválido, hacer logout automático
-        if (error.response?.status === 401 && token) {
+        // Rutas públicas que no deben forzar logout
+        const publicRoutes = ['/catalog/', '/service-categories', '/services', '/auth/']
+        const requestUrl = error.config?.url || ''
+        const isPublicRoute = publicRoutes.some(route => requestUrl.includes(route))
+
+        // Si el token expiró en una ruta PRIVADA, hacer logout automático
+        if (error.response?.status === 401 && token && !isPublicRoute) {
           console.warn('Token expirado o inválido, cerrando sesión...')
           persistToken(null)
           setUser(null)
