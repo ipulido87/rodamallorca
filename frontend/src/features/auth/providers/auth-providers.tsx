@@ -16,6 +16,7 @@ export type User = {
 export type AuthContextType = {
   token: string | null
   user: User | null
+  setUser: (user: User | null) => void // ✅ Para actualizar usuario en callback handler
   isAuthenticated: boolean
   isWorkshopOwner: boolean
   loading: boolean
