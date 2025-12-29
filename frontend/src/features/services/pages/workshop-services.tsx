@@ -85,7 +85,8 @@ export const WorkshopServices = () => {
     } finally {
       setLoading(false)
     }
-  }, [workshopId, showError])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workshopId]) // ✅ Quitar showError de dependencias para evitar loop infinito
 
   useEffect(() => {
     void loadData()
