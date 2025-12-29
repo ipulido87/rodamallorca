@@ -7,7 +7,7 @@ import { useAuth } from '../features/auth/hooks/useAuth'
 export const GoogleCallbackHandler = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { persistToken } = useAuth()
+  const { persistToken, setUser } = useAuth()
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -52,6 +52,11 @@ export const GoogleCallbackHandler = () => {
           return
         }
 
+        // ✅ ACTUALIZAR contexto de usuario (CRÍTICO para que PrivateRoute no redirija a login)
+        console.log('🔐 [GoogleCallback] Actualizando contexto de usuario...')
+        setUser(userData)
+        localStorage.setItem('user', JSON.stringify(userData))
+
         // ✅ Si es USER normal, ir a home
         if (userData.role !== 'WORKSHOP_OWNER') {
           console.log('🔐 [GoogleCallback] Usuario normal, redirigiendo a /home')
@@ -92,7 +97,7 @@ export const GoogleCallbackHandler = () => {
     }
 
     handleCallback()
-  }, [searchParams, persistToken, navigate])
+  }, [searchParams, persistToken, setUser, navigate])
 
   return (
     <Box

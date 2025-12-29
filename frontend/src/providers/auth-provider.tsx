@@ -299,6 +299,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     () => ({
       token,
       user,
+      setUser, // ✅ Exponer setUser para callback handler
       isAuthenticated: !!user,
       isWorkshopOwner: user?.role === 'WORKSHOP_OWNER',
       loading,
