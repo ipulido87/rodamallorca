@@ -1,7 +1,6 @@
-import fs from 'fs/promises'
-import path from 'path'
 import sharp from 'sharp'
 import { v4 as uuidv4 } from 'uuid'
+import cloudinary from '../../../config/cloudinary.config'
 
 export interface ProcessedImage {
   original: string
@@ -10,41 +9,21 @@ export interface ProcessedImage {
 }
 
 export class ImageProcessor {
-  private uploadsDir = path.join(process.cwd(), 'uploads')
-
-  constructor() {
-    this.ensureUploadsDir()
-  }
-
-  private async ensureUploadsDir() {
-    try {
-      await fs.access(this.uploadsDir)
-    } catch {
-      await fs.mkdir(this.uploadsDir, { recursive: true })
-    }
-  }
-
   async processImage(
     buffer: Buffer,
     originalName: string
   ): Promise<ProcessedImage> {
     const fileId = uuidv4()
-    const ext = 'webp'
 
-    const paths = {
-      original: `${fileId}_original.${ext}`,
-      medium: `${fileId}_medium.${ext}`,
-      thumbnail: `${fileId}_thumb.${ext}`,
-    }
-
-    await Promise.all([
+    // Procesar las 3 versiones de la imagen
+    const [originalBuffer, mediumBuffer, thumbnailBuffer] = await Promise.all([
       sharp(buffer)
         .resize(1200, 1200, {
           fit: 'inside',
           withoutEnlargement: true,
         })
         .webp({ quality: 85 })
-        .toFile(path.join(this.uploadsDir, paths.original)),
+        .toBuffer(),
 
       sharp(buffer)
         .resize(600, 600, {
@@ -52,7 +31,7 @@ export class ImageProcessor {
           withoutEnlargement: true,
         })
         .webp({ quality: 85 })
-        .toFile(path.join(this.uploadsDir, paths.medium)),
+        .toBuffer(),
 
       sharp(buffer)
         .resize(300, 300, {
@@ -60,34 +39,63 @@ export class ImageProcessor {
           withoutEnlargement: true,
         })
         .webp({ quality: 80 })
-        .toFile(path.join(this.uploadsDir, paths.thumbnail)),
+        .toBuffer(),
+    ])
+
+    // Subir a Cloudinary en paralelo
+    const [originalResult, mediumResult, thumbnailResult] = await Promise.all([
+      this.uploadToCloudinary(originalBuffer, `${fileId}_original`),
+      this.uploadToCloudinary(mediumBuffer, `${fileId}_medium`),
+      this.uploadToCloudinary(thumbnailBuffer, `${fileId}_thumb`),
     ])
 
     return {
-      original: `/uploads/${paths.original}`,
-      medium: `/uploads/${paths.medium}`,
-      thumbnail: `/uploads/${paths.thumbnail}`,
+      original: originalResult.secure_url,
+      medium: mediumResult.secure_url,
+      thumbnail: thumbnailResult.secure_url,
     }
   }
 
-  async deleteImage(imagePath: string): Promise<void> {
-    try {
-      const filename = path.basename(imagePath)
-      const fileId = filename.split('_')[0]
+  private uploadToCloudinary(buffer: Buffer, publicId: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'roda-mallorca',
+          public_id: publicId,
+          resource_type: 'image',
+          format: 'webp',
+        },
+        (error, result) => {
+          if (error) reject(error)
+          else resolve(result)
+        }
+      )
+      uploadStream.end(buffer)
+    })
+  }
 
-      const filesToDelete = [
-        `${fileId}_original.webp`,
-        `${fileId}_medium.webp`,
-        `${fileId}_thumb.webp`,
+  async deleteImage(imageUrl: string): Promise<void> {
+    try {
+      // Extraer public_id de la URL de Cloudinary
+      const urlParts = imageUrl.split('/')
+      const filename = urlParts[urlParts.length - 1].split('.')[0]
+      const publicId = `roda-mallorca/${filename}`
+
+      // Eliminar las 3 versiones
+      const baseId = filename.split('_')[0]
+      const idsToDelete = [
+        `roda-mallorca/${baseId}_original`,
+        `roda-mallorca/${baseId}_medium`,
+        `roda-mallorca/${baseId}_thumb`,
       ]
 
       await Promise.all(
-        filesToDelete.map((file) =>
-          fs.unlink(path.join(this.uploadsDir, file)).catch(() => {})
+        idsToDelete.map((id) =>
+          cloudinary.uploader.destroy(id).catch(() => {})
         )
       )
     } catch (error) {
-      console.error('Error deleting image:', error)
+      console.error('Error deleting image from Cloudinary:', error)
     }
   }
 }
