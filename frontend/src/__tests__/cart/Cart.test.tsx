@@ -30,6 +30,7 @@ const { useCart } = await import('@/features/cart/hooks/useCart')
 const createMockAuthContext = (overrides: Partial<AuthContextType> = {}): AuthContextType => ({
   token: null,
   user: null,
+  setUser: vi.fn(),
   isAuthenticated: false,
   isWorkshopOwner: false,
   loading: false,

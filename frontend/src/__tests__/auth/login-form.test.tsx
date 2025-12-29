@@ -20,6 +20,7 @@ const createMockAuthContext = (
 ): AuthContextType => ({
   token: null,
   user: null,
+  setUser: vi.fn<AuthContextType['setUser']>(),
   isAuthenticated: false,
   isWorkshopOwner: false,
   loading: false,
