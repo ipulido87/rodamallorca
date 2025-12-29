@@ -49,8 +49,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // ---- Interceptor: adjunta Authorization si hay token ----
   useEffect(() => {
+    // Rutas públicas que NO necesitan Authorization header
+    const publicRoutes = ['/catalog/', '/service-categories', '/services', '/auth/login', '/auth/register', '/auth/forgot-password']
+
     const reqId = API.interceptors.request.use((config) => {
-      if (token && config.headers) {
+      const requestUrl = config.url || ''
+      const isPublicRoute = publicRoutes.some(route => requestUrl.includes(route))
+
+      // Solo agregar Authorization a rutas NO públicas
+      if (token && config.headers && !isPublicRoute) {
         config.headers.Authorization = `Bearer ${token}`
       }
       return config
@@ -60,8 +67,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const resId = API.interceptors.response.use(
       (response) => response,
       (error) => {
-        // Si el token expiró o es inválido, hacer logout automático
-        if (error.response?.status === 401 && token) {
+        const requestUrl = error.config?.url || ''
+        const isPublicRoute = publicRoutes.some(route => requestUrl.includes(route))
+
+        // Si el token expiró en una ruta PRIVADA, hacer logout automático
+        if (error.response?.status === 401 && token && !isPublicRoute) {
           console.warn('Token expirado o inválido, cerrando sesión...')
           persistToken(null)
           setUser(null)
