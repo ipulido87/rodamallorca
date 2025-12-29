@@ -7,7 +7,7 @@ import { useAuth } from '../features/auth/hooks/useAuth'
 export const GoogleCallbackHandler = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { persistToken, refreshMe } = useAuth()
+  const { persistToken } = useAuth()
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -31,15 +31,11 @@ export const GoogleCallbackHandler = () => {
       }
 
       try {
-        // ✅ GUARDAR token y refrescar usuario
+        // ✅ GUARDAR token
         console.log('🔐 [GoogleCallback] Guardando token...')
         persistToken(token)
 
-        console.log('🔐 [GoogleCallback] Llamando refreshMe()...')
-        await refreshMe()
-
-        // ✅ El usuario ya está en el contexto después de refreshMe()
-        // Hacer una llamada directa para obtener el usuario actualizado
+        // ✅ Obtener datos del usuario directamente (no llamar refreshMe para evitar 401)
         console.log('🔐 [GoogleCallback] Obteniendo datos del usuario...')
         const { data: userData } = await API.get('/auth/me', {
           headers: {
@@ -96,7 +92,7 @@ export const GoogleCallbackHandler = () => {
     }
 
     handleCallback()
-  }, [searchParams, persistToken, refreshMe, navigate])
+  }, [searchParams, persistToken, navigate])
 
   return (
     <Box
