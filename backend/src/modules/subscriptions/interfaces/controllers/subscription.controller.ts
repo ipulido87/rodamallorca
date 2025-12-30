@@ -43,7 +43,7 @@ export const createCheckoutSessionController = async (
       subscription = await subscriptionService.createTrialSubscription({
         workshopId,
         ownerEmail: req.user.email,
-        ownerName: req.user.name || req.user.email,
+        ownerName: req.user.email,
       })
     }
 

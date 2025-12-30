@@ -83,9 +83,9 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     update: {
       stripeSubscriptionId: subscription.id,
       status: mapStripeStatus(subscription.status),
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
+      currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+      cancelAtPeriodEnd: (subscription as any).cancel_at_period_end,
     },
     create: {
       workshopId,
@@ -93,9 +93,9 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
       stripeSubscriptionId: subscription.id,
       stripePriceId: subscription.items.data[0].price.id,
       status: mapStripeStatus(subscription.status),
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
+      currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+      cancelAtPeriodEnd: (subscription as any).cancel_at_period_end,
     },
   })
 
@@ -109,10 +109,10 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     where: { stripeSubscriptionId: subscription.id },
     data: {
       status: mapStripeStatus(subscription.status),
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000) : null,
+      currentPeriodStart: new Date((subscription as any).current_period_start * 1000),
+      currentPeriodEnd: new Date((subscription as any).current_period_end * 1000),
+      cancelAtPeriodEnd: (subscription as any).cancel_at_period_end,
+      canceledAt: (subscription as any).canceled_at ? new Date((subscription as any).canceled_at * 1000) : null,
     },
   })
 
@@ -136,10 +136,11 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   console.log(`💰 [Webhook] Pago exitoso: ${invoice.id}`)
 
-  if (!invoice.subscription) return
+  const invoiceSubscription = (invoice as any).subscription
+  if (!invoiceSubscription) return
 
   const subscription = await prisma.subscription.findUnique({
-    where: { stripeSubscriptionId: invoice.subscription as string },
+    where: { stripeSubscriptionId: invoiceSubscription as string },
   })
 
   if (subscription) {
@@ -156,10 +157,11 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   console.error(`❌ [Webhook] Pago fallido: ${invoice.id}`)
 
-  if (!invoice.subscription) return
+  const invoiceSubscription = (invoice as any).subscription
+  if (!invoiceSubscription) return
 
   const subscription = await prisma.subscription.findUnique({
-    where: { stripeSubscriptionId: invoice.subscription as string },
+    where: { stripeSubscriptionId: invoiceSubscription as string },
   })
 
   if (subscription) {
