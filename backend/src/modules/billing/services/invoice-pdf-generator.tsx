@@ -267,8 +267,14 @@ const InvoicePDFDocument = ({ invoice }: { invoice: InvoiceData }) => (
  */
 export const generateInvoicePDF = async (invoiceData: InvoiceData): Promise<Buffer> => {
   try {
-    const blob = await pdf(<InvoicePDFDocument invoice={invoiceData} />).toBuffer()
-    return blob
+    // Generar el PDF como stream y convertirlo a Buffer
+    const pdfStream = await pdf(<InvoicePDFDocument invoice={invoiceData} />).toBlob()
+
+    // Convertir Blob a Buffer para Node.js
+    const arrayBuffer = await pdfStream.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+
+    return buffer
   } catch (error) {
     console.error('❌ [PDF] Error generando PDF de factura:', error)
     throw new Error('Error al generar PDF de factura')
