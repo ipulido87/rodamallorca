@@ -104,7 +104,7 @@ export async function updateOrderStatus(
           const invoiceItems = fullInvoice.items.map((item) => ({
             id: item.id,
             description: item.description,
-            quantity: item.quantity,
+            quantity: Number(item.quantity), // Convert Decimal to number
             unitPrice: item.unitPrice,
             total: item.total || 0,
           }))
@@ -115,7 +115,7 @@ export async function updateOrderStatus(
             workshopName: fullOrder.workshop.name,
             workshopAddress: fullOrder.workshop.address || undefined,
             workshopCity: fullOrder.workshop.city || undefined,
-            workshopTaxId: fullOrder.workshop.taxId || undefined,
+            workshopTaxId: undefined, // Workshop doesn't have taxId field yet
             workshopPhone: fullOrder.workshop.phone || undefined,
             orderNumber,
             invoiceNumber,
