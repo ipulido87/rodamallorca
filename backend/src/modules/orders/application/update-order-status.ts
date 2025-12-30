@@ -74,7 +74,11 @@ export async function updateOrderStatus(
             include: {
               user: true,
               workshop: true,
-              items: true,
+              items: {
+                include: {
+                  product: true,
+                },
+              },
             },
           })
 
@@ -82,6 +86,9 @@ export async function updateOrderStatus(
 
           const fullInvoice = await prisma.invoice.findUnique({
             where: { id: invoice.id },
+            include: {
+              items: true,
+            },
           })
 
           if (!fullInvoice) return
@@ -93,14 +100,32 @@ export async function updateOrderStatus(
             currency: 'EUR',
           }).format(fullOrder.totalAmount / 100)
 
+          // Preparar items para el PDF
+          const invoiceItems = fullInvoice.items.map((item) => ({
+            id: item.id,
+            description: item.description,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            total: item.total || 0,
+          }))
+
           await sendInvoiceEmail({
             customerName: fullOrder.user.name || fullOrder.user.email,
             customerEmail: fullOrder.user.email,
             workshopName: fullOrder.workshop.name,
+            workshopAddress: fullOrder.workshop.address || undefined,
+            workshopCity: fullOrder.workshop.city || undefined,
+            workshopTaxId: fullOrder.workshop.taxId || undefined,
+            workshopPhone: fullOrder.workshop.phone || undefined,
             orderNumber,
             invoiceNumber,
+            issueDate: fullInvoice.issueDate.toISOString(),
             totalAmount,
+            subtotal: fullInvoice.subtotal,
+            taxAmount: fullInvoice.taxAmount,
+            total: fullInvoice.total,
             itemsCount: fullOrder.items.length,
+            items: invoiceItems,
             invoiceUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/my-orders/${orderId}`,
           })
 

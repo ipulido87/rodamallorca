@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { generateInvoicePDF } from '../../billing/services/invoice-pdf-generator'
 
 const { RESEND_API_KEY, EMAIL_FROM } = process.env
 
@@ -189,10 +190,25 @@ interface InvoiceEmailData {
   customerName: string
   customerEmail: string
   workshopName: string
+  workshopAddress?: string
+  workshopCity?: string
+  workshopTaxId?: string
+  workshopPhone?: string
   orderNumber: string
   invoiceNumber: string
+  issueDate: string
   totalAmount: string
+  subtotal: number
+  taxAmount: number
+  total: number
   itemsCount: number
+  items: Array<{
+    id: string
+    description: string
+    quantity: number
+    unitPrice: number
+    total: number
+  }>
   invoiceUrl: string
 }
 
@@ -209,10 +225,35 @@ export const sendInvoiceEmail = async (data: InvoiceEmailData): Promise<void> =>
 
     const emailFrom = EMAIL_FROM || 'RodaMallorca <noreply@rodamallorca.es>'
 
+    // 📄 Generar PDF de la factura
+    console.log('📄 [PDF] Generando PDF de factura...')
+    const pdfBuffer = await generateInvoicePDF({
+      invoiceNumber: data.invoiceNumber,
+      issueDate: data.issueDate,
+      customerName: data.customerName,
+      customerEmail: data.customerEmail,
+      workshopName: data.workshopName,
+      workshopAddress: data.workshopAddress,
+      workshopCity: data.workshopCity,
+      workshopTaxId: data.workshopTaxId,
+      workshopPhone: data.workshopPhone,
+      items: data.items,
+      subtotal: data.subtotal,
+      taxAmount: data.taxAmount,
+      total: data.total,
+    })
+    console.log('✅ [PDF] PDF generado correctamente')
+
     await resend.emails.send({
       from: emailFrom,
       to: data.customerEmail,
       subject: `✅ Pedido Confirmado #${data.orderNumber} - Factura #${data.invoiceNumber}`,
+      attachments: [
+        {
+          filename: `Factura_${data.invoiceNumber}.pdf`,
+          content: pdfBuffer,
+        },
+      ],
       html: `
         <!DOCTYPE html>
         <html>
