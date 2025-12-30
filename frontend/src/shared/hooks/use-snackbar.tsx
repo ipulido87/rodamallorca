@@ -1,5 +1,6 @@
 import { Alert, Snackbar } from '@mui/material'
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
+import { notify } from '../services/notification-service'
 
 type SnackbarSeverity = 'success' | 'error' | 'warning' | 'info'
 
@@ -49,6 +50,12 @@ export const SnackbarProvider = ({ children }: { children: ReactNode }) => {
 
   const showInfo = useCallback((message: string) => {
     showSnackbar(message, 'info')
+  }, [showSnackbar])
+
+  // 🔥 Registrar el servicio global de notificaciones
+  useEffect(() => {
+    notify.register(showSnackbar)
+    return () => notify.unregister()
   }, [showSnackbar])
 
   const handleClose = (_?: React.SyntheticEvent | Event, reason?: string) => {
