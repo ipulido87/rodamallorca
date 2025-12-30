@@ -28,6 +28,7 @@ import {
   TableRow,
   Tooltip,
   Typography,
+  useMediaQuery,
   useTheme,
 } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
@@ -38,6 +39,7 @@ import type { Customer } from '../types/customer'
 export const Customers = () => {
   const navigate = useNavigate()
   const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
   // SWR hook - cache automático, revalidación, deduplicación
   const { data: customers = [], error, isLoading, mutate } = useSWR<Customer[]>(
@@ -87,9 +89,10 @@ export const Customers = () => {
       <Box sx={{ py: 4 }}>
         {/* Header */}
         <Stack
-          direction="row"
+          direction={isMobile ? 'column' : 'row'}
           justifyContent="space-between"
-          alignItems="center"
+          alignItems={isMobile ? 'stretch' : 'center'}
+          spacing={isMobile ? 2 : 0}
           sx={{ mb: 4 }}
         >
           <Box>
@@ -104,6 +107,7 @@ export const Customers = () => {
             variant="contained"
             startIcon={<Add />}
             onClick={() => navigate('/customers/new')}
+            fullWidth={isMobile}
             sx={{ height: 'fit-content' }}
           >
             Nuevo Cliente
@@ -135,6 +139,82 @@ export const Customers = () => {
               </Button>
             </CardContent>
           </Card>
+        ) : isMobile ? (
+          <Stack spacing={2}>
+            {customers.map((customer) => (
+              <Card key={customer.id} onClick={() => navigate(`/customers/${customer.id}`)} sx={{ cursor: 'pointer' }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                    <Box sx={{ flex: 1 }}>
+                      <Chip
+                        icon={customer.type === 'INDIVIDUAL' ? <Person /> : <Business />}
+                        label={getCustomerTypeLabel(customer.type)}
+                        color={getCustomerTypeColor(customer.type) as any}
+                        size="small"
+                        sx={{ mb: 1 }}
+                      />
+                      <Typography variant="h6" fontWeight={600} gutterBottom>
+                        {customer.name}
+                      </Typography>
+                      {customer.taxId && (
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                          NIF/CIF: {customer.taxId}
+                        </Typography>
+                      )}
+                      {customer.city && (
+                        <Typography variant="body2" color="text.secondary">
+                          {customer.city}
+                        </Typography>
+                      )}
+                    </Box>
+                    <Chip
+                      icon={<Receipt />}
+                      label={customer._count?.invoices || 0}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </Box>
+                  <Stack spacing={1} sx={{ mb: 2 }}>
+                    {customer.email && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Email sx={{ fontSize: 18, color: 'text.secondary' }} />
+                        <Typography variant="body2">{customer.email}</Typography>
+                      </Box>
+                    )}
+                    {customer.phone && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Phone sx={{ fontSize: 18, color: 'text.secondary' }} />
+                        <Typography variant="body2">{customer.phone}</Typography>
+                      </Box>
+                    )}
+                  </Stack>
+                  <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<Edit />}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/customers/${customer.id}/edit`)
+                      }}
+                    >
+                      Editar
+                    </Button>
+                    <IconButton
+                      color="error"
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDelete(customer.id)
+                      }}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </Box>
+                </CardContent>
+              </Card>
+            ))}
+          </Stack>
         ) : (
           <TableContainer component={Card}>
             <Table>
