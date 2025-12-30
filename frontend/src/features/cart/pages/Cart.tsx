@@ -13,6 +13,7 @@ import {
   Divider,
   IconButton,
   Paper,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -20,6 +21,8 @@ import {
   TableHead,
   TableRow,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
@@ -27,6 +30,8 @@ import { useCart } from '../hooks/useCart'
 
 export const Cart = () => {
   const navigate = useNavigate()
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const { user } = useAuth()
   const {
     cart,
@@ -112,113 +117,173 @@ export const Cart = () => {
           </CardContent>
         </Card>
 
-        {/* Cart Items Table */}
-        <TableContainer component={Paper} sx={{ mb: 3 }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Product</TableCell>
-                <TableCell align="center">Price</TableCell>
-                <TableCell align="center">Quantity</TableCell>
-                <TableCell align="right">Subtotal</TableCell>
-                <TableCell align="center">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {cart.items.map((item) => (
-                <TableRow key={item.productId}>
-                  <TableCell>
-                    <Box>
-                      <Typography variant="body1" fontWeight={500}>
+        {/* Cart Items - Mobile: Cards, Desktop: Table */}
+        {isMobile ? (
+          <Stack spacing={2} sx={{ mb: 3 }}>
+            {cart.items.map((item) => (
+              <Card key={item.productId}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="h6" fontWeight={500} gutterBottom>
                         {item.name}
                       </Typography>
                       {item.description && (
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{
-                            display: 'block',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                            maxWidth: '300px',
-                          }}
-                        >
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                           {item.description}
                         </Typography>
                       )}
+                      <Typography variant="h6" color="primary" fontWeight={700}>
+                        {formatPrice(item.price)}
+                      </Typography>
                     </Box>
-                  </TableCell>
-                  <TableCell align="center">
-                    {formatPrice(item.price)}
-                  </TableCell>
-                  <TableCell align="center">
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 1,
-                      }}
+                    <IconButton
+                      color="error"
+                      onClick={() => removeFromCart(item.productId)}
+                      sx={{ alignSelf: 'flex-start' }}
                     >
+                      <Delete />
+                    </IconButton>
+                  </Box>
+                  <Divider sx={{ my: 2 }} />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <IconButton
                         size="small"
-                        onClick={() =>
-                          updateQuantity(item.productId, item.quantity - 1)
-                        }
+                        onClick={() => updateQuantity(item.productId, item.quantity - 1)}
                         disabled={item.quantity <= 1}
                       >
-                        <Remove fontSize="small" />
+                        <Remove />
                       </IconButton>
-                      <Typography variant="body1" sx={{ minWidth: '30px', textAlign: 'center' }}>
+                      <Typography variant="h6" sx={{ minWidth: '40px', textAlign: 'center' }}>
                         {item.quantity}
                       </Typography>
                       <IconButton
                         size="small"
-                        onClick={() =>
-                          updateQuantity(item.productId, item.quantity + 1)
-                        }
+                        onClick={() => updateQuantity(item.productId, item.quantity + 1)}
                       >
-                        <Add fontSize="small" />
+                        <Add />
                       </IconButton>
                     </Box>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Typography variant="body1" fontWeight={500}>
-                      {formatPrice(item.price * item.quantity)}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="center">
-                    <IconButton
-                      color="error"
-                      onClick={() => removeFromCart(item.productId)}
-                    >
-                      <Delete />
-                    </IconButton>
-                  </TableCell>
+                    <Box sx={{ textAlign: 'right' }}>
+                      <Typography variant="caption" color="text.secondary">Subtotal</Typography>
+                      <Typography variant="h6" fontWeight={700}>
+                        {formatPrice(item.price * item.quantity)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            ))}
+          </Stack>
+        ) : (
+          <TableContainer component={Paper} sx={{ mb: 3 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Product</TableCell>
+                  <TableCell align="center">Price</TableCell>
+                  <TableCell align="center">Quantity</TableCell>
+                  <TableCell align="right">Subtotal</TableCell>
+                  <TableCell align="center">Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {cart.items.map((item) => (
+                  <TableRow key={item.productId}>
+                    <TableCell>
+                      <Box>
+                        <Typography variant="body1" fontWeight={500}>
+                          {item.name}
+                        </Typography>
+                        {item.description && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{
+                              display: 'block',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              maxWidth: '300px',
+                            }}
+                          >
+                            {item.description}
+                          </Typography>
+                        )}
+                      </Box>
+                    </TableCell>
+                    <TableCell align="center">
+                      {formatPrice(item.price)}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 1,
+                        }}
+                      >
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            updateQuantity(item.productId, item.quantity - 1)
+                          }
+                          disabled={item.quantity <= 1}
+                        >
+                          <Remove fontSize="small" />
+                        </IconButton>
+                        <Typography variant="body1" sx={{ minWidth: '30px', textAlign: 'center' }}>
+                          {item.quantity}
+                        </Typography>
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            updateQuantity(item.productId, item.quantity + 1)
+                          }
+                        >
+                          <Add fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    </TableCell>
+                    <TableCell align="right">
+                      <Typography variant="body1" fontWeight={500}>
+                        {formatPrice(item.price * item.quantity)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="center">
+                      <IconButton
+                        color="error"
+                        onClick={() => removeFromCart(item.productId)}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
 
         {/* Cart Summary */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 3 }}>
-          <Box>
-            <Button variant="outlined" onClick={() => navigate('/catalog')}>
+        <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', gap: 3 }}>
+          <Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{ width: isMobile ? '100%' : 'auto' }}>
+            <Button variant="outlined" onClick={() => navigate('/catalog')} fullWidth={isMobile}>
               Continue Shopping
             </Button>
             <Button
               variant="outlined"
               color="error"
               onClick={clearCart}
-              sx={{ ml: 2 }}
+              fullWidth={isMobile}
             >
               Clear Cart
             </Button>
-          </Box>
+          </Stack>
 
-          <Card sx={{ minWidth: 300 }}>
+          <Card sx={{ minWidth: isMobile ? 'auto' : 300, width: isMobile ? '100%' : 'auto' }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Order Summary
