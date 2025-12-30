@@ -5,6 +5,7 @@ import { billingRepositoryPrisma } from '../../infrastructure/persistence/prisma
 import { createCustomer } from '../../application/create-customer'
 import { createInvoice } from '../../application/create-invoice'
 import { listInvoicesByWorkshop, listCustomersByWorkshop } from '../../application/list-invoices'
+import { getWorkshopStats } from '../../application/get-workshop-stats'
 
 const repo = billingRepositoryPrisma
 
@@ -321,6 +322,40 @@ export const deleteInvoiceController = async (
     await repo.deleteInvoice(id)
 
     res.status(204).send()
+  } catch (e) {
+    next(e)
+  }
+}
+
+/**
+ * GET /api/owner/billing/workshops/:workshopId/stats
+ * Obtener estadísticas de ventas del taller
+ */
+export const getWorkshopStatsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Usuario no autenticado' })
+    }
+
+    const { workshopId } = req.params
+
+    // Verificar que el taller existe y pertenece al usuario
+    const workshop = await workshopRepo.findById(workshopId)
+    if (!workshop) {
+      return res.status(404).json({ error: 'Taller no encontrado' })
+    }
+
+    if (workshop.ownerId !== req.user.id && req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'No tienes permisos para ver las estadísticas de este taller' })
+    }
+
+    const stats = await getWorkshopStats(workshopId, { billingRepo: repo })
+
+    res.json(stats)
   } catch (e) {
     next(e)
   }

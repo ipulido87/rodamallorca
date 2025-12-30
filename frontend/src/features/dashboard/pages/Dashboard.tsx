@@ -14,13 +14,19 @@ import {
   Card,
   CardContent,
   Chip,
+  CircularProgress,
   Container,
   Stack,
   Typography,
 } from '@mui/material'
 import { memo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import useSWR from 'swr'
 import { useAuth } from '../../auth/hooks/useAuth'
+import { getMyWorkshops } from '../../workshops/services/workshop-service'
+import { getWorkshopStats } from '../../billing/services/stats-service'
+import { StatsCards } from '../../billing/components/stats-cards'
+import { SalesChart } from '../../billing/components/sales-chart'
 
 interface MetricCardProps {
   title: string
@@ -129,9 +135,32 @@ export const Dashboard = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  // Datos mock - en la realidad vendrían de API
+  // Fetch user's workshops
+  const { data: workshops, isLoading: workshopsLoading } = useSWR(
+    '/owner/workshops',
+    getMyWorkshops,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 10000,
+    }
+  )
+
+  // Select first workshop (or allow selection in future)
+  const selectedWorkshop = workshops?.[0]
+
+  // Fetch stats for the selected workshop
+  const { data: stats, isLoading: statsLoading } = useSWR(
+    selectedWorkshop ? `/owner/billing/workshops/${selectedWorkshop.id}/stats` : null,
+    () => selectedWorkshop ? getWorkshopStats(selectedWorkshop.id) : null,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+    }
+  )
+
+  // Datos mock para actividad reciente
   const metrics = {
-    totalWorkshops: 2,
+    totalWorkshops: workshops?.length || 0,
     totalProducts: 3,
     publishedProducts: 1,
     draftProducts: 2,
@@ -149,6 +178,17 @@ export const Dashboard = () => {
     { action: 'Taller actualizado', item: 'Ciclos Palma', time: '1 día' },
   ]
 
+  if (workshopsLoading) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4, textAlign: 'center' }}>
+        <CircularProgress size={60} />
+        <Typography variant="h6" sx={{ mt: 2 }}>
+          Cargando dashboard...
+        </Typography>
+      </Container>
+    )
+  }
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
@@ -157,13 +197,37 @@ export const Dashboard = () => {
           Panel de Control
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Bienvenido de nuevo, {user?.name}. Aquí tienes un resumen de tu
-          actividad.
+          Bienvenido de nuevo, {user?.name}. Aquí tienes un resumen de tu actividad.
         </Typography>
+        {selectedWorkshop && (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Mostrando estadísticas de: <strong>{selectedWorkshop.name}</strong>
+          </Typography>
+        )}
       </Box>
 
-      {/* Metrics Row */}
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ mb: 4 }}>
+      {/* Billing Statistics Section */}
+      {stats && !statsLoading && (
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h5" fontWeight="bold" gutterBottom>
+            📊 Estadísticas de Facturación
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Resumen financiero de tu taller
+          </Typography>
+
+          <Stack spacing={3}>
+            <StatsCards stats={stats} />
+            <SalesChart stats={stats} />
+          </Stack>
+        </Box>
+      )}
+
+      {/* General Metrics Row */}
+      <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ mt: 4 }}>
+        📈 Métricas Generales
+      </Typography>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} sx={{ mb: 4, mt: 2 }}>
         <MetricCard
           title="Talleres"
           value={metrics.totalWorkshops}

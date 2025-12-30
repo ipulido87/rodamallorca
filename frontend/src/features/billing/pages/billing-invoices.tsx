@@ -20,6 +20,7 @@ import {
 } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import useSWR from 'swr'
 import { useSnackbar } from '../../../shared/hooks/use-snackbar'
 import {
   formatDate,
@@ -29,6 +30,8 @@ import {
   getInvoiceStatusLabel,
   type Invoice,
 } from '../services/billing-service'
+import { getWorkshopStats } from '../services/stats-service'
+import { StatsCards } from '../components/stats-cards'
 
 export const BillingInvoices = () => {
   const { workshopId } = useParams<{ workshopId: string }>()
@@ -36,6 +39,16 @@ export const BillingInvoices = () => {
   const { showError } = useSnackbar()
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Fetch workshop stats
+  const { data: stats, isLoading: statsLoading } = useSWR(
+    workshopId ? `/owner/billing/workshops/${workshopId}/stats` : null,
+    () => workshopId ? getWorkshopStats(workshopId) : null,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 30000,
+    }
+  )
 
   const loadInvoices = useCallback(async () => {
     if (!workshopId) return
@@ -104,6 +117,19 @@ export const BillingInvoices = () => {
             Nueva Factura
           </Button>
         </Box>
+
+        {/* Statistics Summary */}
+        {stats && !statsLoading && (
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h6" fontWeight="bold" gutterBottom>
+              📊 Resumen Financiero
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Estadísticas de facturación del mes actual
+            </Typography>
+            <StatsCards stats={stats} />
+          </Box>
+        )}
 
         {invoices.length === 0 ? (
           <Box textAlign="center" py={10}>
