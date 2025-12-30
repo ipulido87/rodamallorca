@@ -3,6 +3,8 @@ import type { Order, UpdateOrderStatusInput } from '../domain/entities/order'
 import type { OrderRepository } from '../domain/repositories/order-repository'
 import { billingRepositoryPrisma } from '../../billing/infrastructure/persistence/prisma/billing-repository-prisma'
 import { generateInvoiceFromOrder } from '../../billing/application/generate-invoice-from-order'
+import { sendInvoiceEmail } from '../../notifications/services/email-service'
+import prisma from '../../../lib/prisma'
 
 interface WorkshopRepository {
   findById(id: string): Promise<{ id: string; ownerId: string } | null>
@@ -58,10 +60,58 @@ export async function updateOrderStatus(
   // 🎯 AUTO-FACTURACIÓN: Generar factura automáticamente cuando se confirma el pedido
   if (input.status === OrderStatus.CONFIRMED && order.status !== OrderStatus.CONFIRMED) {
     try {
-      await generateInvoiceFromOrder(orderId, {
+      const invoice = await generateInvoiceFromOrder(orderId, {
         billingRepo: billingRepositoryPrisma,
       })
       console.log(`✅ [AUTO-INVOICE] Factura generada automáticamente para pedido ${orderId}`)
+
+      // 📧 Enviar email al cliente con la factura
+      setImmediate(async () => {
+        try {
+          // Obtener datos completos del pedido y factura
+          const fullOrder = await prisma.order.findUnique({
+            where: { id: orderId },
+            include: {
+              user: true,
+              workshop: true,
+              items: true,
+            },
+          })
+
+          if (!fullOrder) return
+
+          const fullInvoice = await prisma.invoice.findUnique({
+            where: { id: invoice.id },
+            include: {
+              series: true,
+            },
+          })
+
+          if (!fullInvoice) return
+
+          const orderNumber = fullOrder.id.slice(0, 8).toUpperCase()
+          const invoiceNumber = `${fullInvoice.series.prefix}${fullInvoice.series.year}-${String(fullInvoice.number).padStart(4, '0')}`
+          const totalAmount = new Intl.NumberFormat('es-ES', {
+            style: 'currency',
+            currency: 'EUR',
+          }).format(fullOrder.totalAmount / 100)
+
+          await sendInvoiceEmail({
+            customerName: fullOrder.user.name || fullOrder.user.email,
+            customerEmail: fullOrder.user.email,
+            workshopName: fullOrder.workshop.name,
+            orderNumber,
+            invoiceNumber,
+            totalAmount,
+            itemsCount: fullOrder.items.length,
+            invoiceUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/my-orders/${orderId}`,
+          })
+
+          console.log(`✅ [EMAIL] Email de factura enviado al cliente ${fullOrder.user.email}`)
+        } catch (emailError) {
+          console.error('❌ [EMAIL] Error enviando email de factura:', emailError)
+        }
+      })
     } catch (error) {
       console.error(`❌ [AUTO-INVOICE] Error generando factura para pedido ${orderId}:`, error)
       // No lanzar error para no bloquear la confirmación del pedido
