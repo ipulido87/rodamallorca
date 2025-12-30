@@ -23,6 +23,7 @@ import {
   Stack,
   Typography,
   useTheme,
+  useMediaQuery,
   alpha,
 } from '@mui/material'
 
@@ -35,6 +36,7 @@ export const CustomerDetail = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
   // SWR hook - cache automático por ID
   const { data: customer, error, isLoading } = useSWR<Customer>(
@@ -90,39 +92,54 @@ export const CustomerDetail = () => {
     <Container maxWidth="lg">
       <Box sx={{ py: 4 }}>
         {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-          <IconButton
-            onClick={() => navigate('/customers')}
-            sx={{
-              mr: 2,
-              backgroundColor: alpha(theme.palette.primary.main, 0.1),
-              '&:hover': {
-                backgroundColor: alpha(theme.palette.primary.main, 0.2),
-              },
-            }}
-          >
-            <ArrowBack />
-          </IconButton>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="h4" fontWeight="bold">
-              {customer.name}
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Cliente {getCustomerTypeLabel(customer.type)}
-            </Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            alignItems: isMobile ? 'flex-start' : 'center',
+            mb: 4,
+            gap: isMobile ? 2 : 0,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, width: '100%' }}>
+            <IconButton
+              onClick={() => navigate('/customers')}
+              sx={{
+                mr: 2,
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                '&:hover': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                },
+              }}
+            >
+              <ArrowBack />
+            </IconButton>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant={isMobile ? 'h5' : 'h4'} fontWeight="bold">
+                {customer.name}
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Cliente {getCustomerTypeLabel(customer.type)}
+              </Typography>
+            </Box>
           </Box>
           <Button
             variant="contained"
             startIcon={<Edit />}
             onClick={() => navigate(`/customers/${customer.id}/edit`)}
+            fullWidth={isMobile}
           >
             Editar
           </Button>
         </Box>
 
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+        <Stack
+          direction={isMobile ? 'column' : 'row'}
+          spacing={3}
+          sx={{ alignItems: 'flex-start' }}
+        >
           {/* Información Principal */}
-          <Box sx={{ width: { xs: "100%", md: "66.66666666666666%" }, flexGrow: 1 }}>
+          <Box sx={{ flex: 2, width: '100%' }}>
             <Card>
               <CardContent>
                 <Stack spacing={3}>
@@ -259,7 +276,7 @@ export const CustomerDetail = () => {
           </Box>
 
           {/* Sidebar */}
-          <Box sx={{ width: { xs: "100%", md: "33.33333333333333%" }, flexGrow: 1 }}>
+          <Box sx={{ flex: 1, width: '100%' }}>
             <Stack spacing={3}>
               {/* Estadísticas */}
               <Card>
@@ -325,7 +342,7 @@ export const CustomerDetail = () => {
               </Card>
             </Stack>
           </Box>
-        </Box>
+        </Stack>
       </Box>
     </Container>
   )

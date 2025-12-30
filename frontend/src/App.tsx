@@ -24,6 +24,8 @@ import { Cart } from './features/cart/pages/Cart'
 import { Checkout } from './features/cart/pages/Checkout'
 import { Favorites } from './features/favorites/pages/favorites'
 import { Customers } from './features/customers/pages/customers'
+import { CustomerDetail } from './features/customers/pages/customer-detail'
+import { CustomerForm } from './features/customers/pages/customer-form'
 import { Home } from './pages/HomePage'
 import { LandingPage } from './pages/LandingPage'
 import { LoginForm } from './features/auth/pages/login-form'
@@ -221,6 +223,30 @@ function App() {
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
                   <Customers />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="customers/new"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <CustomerForm />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="customers/:id"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <CustomerDetail />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="customers/:id/edit"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <CustomerForm />
                 </RoleRoute>
               }
             />
