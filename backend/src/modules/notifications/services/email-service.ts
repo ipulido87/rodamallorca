@@ -1,18 +1,9 @@
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 
-const { MAILTRAP_USER, MAILTRAP_PASS } = process.env
+const { RESEND_API_KEY, EMAIL_FROM } = process.env
 
-// Usar la misma configuración de Mailtrap que ya tienes
-const transporter = MAILTRAP_USER && MAILTRAP_PASS
-  ? nodemailer.createTransport({
-      host: 'sandbox.smtp.mailtrap.io',
-      port: 2525,
-      auth: {
-        user: MAILTRAP_USER,
-        pass: MAILTRAP_PASS,
-      },
-    })
-  : null
+// Usar Resend para enviar emails en producción
+const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null
 
 interface NewOrderEmailData {
   workshopName: string
@@ -31,14 +22,16 @@ interface NewOrderEmailData {
 export const sendNewOrderEmail = async (data: NewOrderEmailData): Promise<void> => {
   try {
     // Si no hay configuración de email, solo logear (no bloquear la app)
-    if (!transporter) {
-      console.warn('⚠️  [EMAIL] Mailtrap no configurado. Email no enviado.')
+    if (!resend) {
+      console.warn('⚠️  [EMAIL] Resend no configurado (falta RESEND_API_KEY). Email no enviado.')
       console.log(`📧 [EMAIL] Se hubiera enviado email a ${data.workshopOwnerEmail}:`, data)
       return
     }
 
-    await transporter.sendMail({
-      from: 'no-reply@rodamallorca.com',
+    const emailFrom = EMAIL_FROM || 'RodaMallorca <noreply@rodamallorca.es>'
+
+    await resend.emails.send({
+      from: emailFrom,
       to: data.workshopOwnerEmail,
       subject: `🔔 Nuevo Pedido #${data.orderNumber} - ${data.workshopName}`,
       html: `
@@ -186,8 +179,8 @@ export const sendNewOrderEmail = async (data: NewOrderEmailData): Promise<void> 
     })
 
     console.log(`✅ [EMAIL] Email enviado a ${data.workshopOwnerEmail} - Pedido #${data.orderNumber}`)
-  } catch (error) {
-    console.error('❌ [EMAIL] Error enviando email:', error)
+  } catch (error: any) {
+    console.error('❌ [EMAIL] Error enviando email:', error?.message || error)
     // No lanzar error para no bloquear la creación del pedido
   }
 }
