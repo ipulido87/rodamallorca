@@ -5,7 +5,6 @@ import {
   Save,
 } from '@mui/icons-material'
 import {
-  Alert,
   Box,
   Button,
   Card,
@@ -15,7 +14,6 @@ import {
   FormControl,
   FormControlLabel,
   FormLabel,
-  Grid,
   IconButton,
   Radio,
   RadioGroup,
@@ -226,42 +224,24 @@ export const CustomerForm = () => {
                   <Typography variant="h6" gutterBottom>
                     Información Básica
                   </Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={formData.type === 'BUSINESS' ? 6 : 12}>
-                      <TextField
-                        fullWidth
-                        required
-                        label={formData.type === 'INDIVIDUAL' ? 'Nombre completo' : 'Razón social'}
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                      />
-                    </Grid>
-                    {formData.type === 'BUSINESS' && (
-                      <Grid item xs={12} md={6}>
-                        <TextField
-                          fullWidth
-                          label="CIF"
-                          name="taxId"
-                          value={formData.taxId}
-                          onChange={handleChange}
-                          placeholder="B12345678"
-                        />
-                      </Grid>
-                    )}
-                    {formData.type === 'INDIVIDUAL' && (
-                      <Grid item xs={12} md={6}>
-                        <TextField
-                          fullWidth
-                          label="NIF/NIE"
-                          name="taxId"
-                          value={formData.taxId}
-                          onChange={handleChange}
-                          placeholder="12345678A"
-                        />
-                      </Grid>
-                    )}
-                  </Grid>
+                  <Stack spacing={2}>
+                    <TextField
+                      fullWidth
+                      required
+                      label={formData.type === 'INDIVIDUAL' ? 'Nombre completo' : 'Razón social'}
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                    />
+                    <TextField
+                      fullWidth
+                      label={formData.type === 'BUSINESS' ? 'CIF' : 'NIF/NIE'}
+                      name="taxId"
+                      value={formData.taxId}
+                      onChange={handleChange}
+                      placeholder={formData.type === 'BUSINESS' ? 'B12345678' : '12345678A'}
+                    />
+                  </Stack>
                 </Box>
 
                 {/* Información de Contacto */}
@@ -269,29 +249,25 @@ export const CustomerForm = () => {
                   <Typography variant="h6" gutterBottom>
                     Información de Contacto
                   </Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={6}>
-                      <TextField
-                        fullWidth
-                        label="Email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        placeholder="cliente@ejemplo.com"
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                      <TextField
-                        fullWidth
-                        label="Teléfono"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        placeholder="+34 600 000 000"
-                      />
-                    </Grid>
-                  </Grid>
+                  <Stack spacing={2}>
+                    <TextField
+                      fullWidth
+                      label="Email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="cliente@ejemplo.com"
+                    />
+                    <TextField
+                      fullWidth
+                      label="Teléfono"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="+34 600 000 000"
+                    />
+                  </Stack>
                 </Box>
 
                 {/* Dirección */}
@@ -299,18 +275,16 @@ export const CustomerForm = () => {
                   <Typography variant="h6" gutterBottom>
                     Dirección
                   </Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12}>
-                      <TextField
-                        fullWidth
-                        label="Dirección"
-                        name="address"
-                        value={formData.address}
-                        onChange={handleChange}
-                        placeholder="Calle, número, piso, puerta"
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={6}>
+                  <Stack spacing={2}>
+                    <TextField
+                      fullWidth
+                      label="Dirección"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      placeholder="Calle, número, piso, puerta"
+                    />
+                    <Stack direction={isMobile ? 'column' : 'row'} spacing={2}>
                       <TextField
                         fullWidth
                         label="Ciudad"
@@ -319,27 +293,24 @@ export const CustomerForm = () => {
                         onChange={handleChange}
                         placeholder="Palma de Mallorca"
                       />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
                       <TextField
-                        fullWidth
+                        fullWidth={isMobile}
                         label="Código Postal"
                         name="postalCode"
                         value={formData.postalCode}
                         onChange={handleChange}
                         placeholder="07001"
+                        sx={{ width: isMobile ? '100%' : '200px' }}
                       />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                      <TextField
-                        fullWidth
-                        label="País"
-                        name="country"
-                        value={formData.country}
-                        onChange={handleChange}
-                      />
-                    </Grid>
-                  </Grid>
+                    </Stack>
+                    <TextField
+                      fullWidth
+                      label="País"
+                      name="country"
+                      value={formData.country}
+                      onChange={handleChange}
+                    />
+                  </Stack>
                 </Box>
 
                 {/* Notas Internas */}
