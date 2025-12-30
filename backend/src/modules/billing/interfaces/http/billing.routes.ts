@@ -14,6 +14,7 @@ import {
   getInvoiceByIdController,
   updateInvoiceController,
   deleteInvoiceController,
+  getWorkshopStatsController,
 } from '../controllers/billing.controller'
 
 const r = Router()
@@ -93,6 +94,15 @@ r.delete(
   requireUser,
   requireRole('WORKSHOP_OWNER'),
   deleteInvoiceController
+)
+
+// === STATS ===
+r.get(
+  '/owner/billing/workshops/:workshopId/stats',
+  verifyToken,
+  requireUser,
+  requireRole('WORKSHOP_OWNER'),
+  getWorkshopStatsController
 )
 
 export default r
