@@ -82,15 +82,12 @@ export async function updateOrderStatus(
 
           const fullInvoice = await prisma.invoice.findUnique({
             where: { id: invoice.id },
-            include: {
-              series: true,
-            },
           })
 
           if (!fullInvoice) return
 
           const orderNumber = fullOrder.id.slice(0, 8).toUpperCase()
-          const invoiceNumber = `${fullInvoice.series.prefix}${fullInvoice.series.year}-${String(fullInvoice.number).padStart(4, '0')}`
+          const invoiceNumber = fullInvoice.invoiceNumber // Ya viene formateado (ej: "F-2025-001")
           const totalAmount = new Intl.NumberFormat('es-ES', {
             style: 'currency',
             currency: 'EUR',
