@@ -19,7 +19,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useCart } from '../hooks/useCart'
-import { createOrder } from '../services/cart-service'
+import { redirectToProductCheckout } from '../services/payment-service'
 import { notify } from '../../../shared/services/notification-service'
 
 export const Checkout = () => {
@@ -57,38 +57,26 @@ export const Checkout = () => {
     setError('')
 
     try {
-      const orderPayload = {
-        workshopId: cart.workshopId,
-        notes: notes.trim() || undefined,
-        items: cart.items.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          priceAtOrder: item.price,
-          currency: item.currency,
-          description: item.description,
-        })),
-      }
+      // Preparar items para Stripe
+      const items = cart.items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        priceAtOrder: item.price,
+        currency: item.currency,
+        description: item.description,
+      }))
 
-      const createdOrder = await createOrder(orderPayload)
+      // Redirigir a Stripe Checkout
+      await redirectToProductCheckout(cart.workshopId, items)
 
-      console.log('Order created successfully:', createdOrder)
-      setSuccess(true)
-
-      // Clear cart after successful order
-      clearCart()
-
-      // Redirect to order details after a short delay
-      setTimeout(() => {
-        navigate(`/my-orders`)
-      }, 2000)
+      // La redirección limpiará el carrito cuando vuelva del éxito
     } catch (err: any) {
-      console.error('Error creating order:', err)
+      console.error('Error iniciando checkout:', err)
       setError(
         err.response?.data?.message ||
           err.message ||
-          'Failed to create order. Please try again.'
+          'Error al iniciar el pago. Por favor intenta de nuevo.'
       )
-    } finally {
       setLoading(false)
     }
   }
@@ -314,7 +302,7 @@ export const Checkout = () => {
                   onClick={handleSubmitOrder}
                   disabled={loading}
                 >
-                  {loading ? 'Placing Order...' : 'Place Order'}
+                  {loading ? 'Redirigiendo a pago...' : 'Pagar con Tarjeta'}
                 </Button>
 
                 <Button
