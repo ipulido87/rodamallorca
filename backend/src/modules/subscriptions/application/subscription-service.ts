@@ -108,11 +108,12 @@ export async function createCheckoutSession(input: CreateCheckoutSessionInput) {
       },
     ],
     subscription_data: {
-      trial_period_days: 0, // Ya tuvieron trial, esto es para cuando paguen
+      trial_period_days: TRIAL_PERIOD_DAYS, // ⭐ 7 días de trial GRATIS (pero con tarjeta)
       metadata: {
         workshopId,
       },
     },
+    payment_method_collection: 'always', // ⭐ SIEMPRE pedir tarjeta (incluso durante trial)
     success_url: successUrl,
     cancel_url: cancelUrl,
     customer_email: ownerEmail,

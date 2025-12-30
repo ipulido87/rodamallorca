@@ -58,8 +58,8 @@ export const CreateWorkshop = () => {
 
       console.log('🔧 [CREATE_WORKSHOP] Workshop creado EXITOSAMENTE')
 
-      setSuccess('Workshop created successfully!')
-      setTimeout(() => navigate('/dashboard'), 1500)
+      setSuccess('Workshop created successfully! Redirecting to subscription...')
+      setTimeout(() => navigate('/pricing'), 1500)
     } catch (err) {
       if (err && typeof err === 'object' && 'response' in err) {
         const apiError = err as ApiError
