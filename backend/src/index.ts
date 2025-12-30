@@ -18,6 +18,7 @@ import favoriteRoutes from './modules/favorites/interfaces/http/favorite.routes'
 import customerRoutes from './modules/customers/interfaces/http/customer.routes'
 import subscriptionRoutes from './modules/subscriptions/interfaces/http/subscription.routes'
 import webhookRoutes from './modules/subscriptions/interfaces/http/webhook.routes'
+import paymentRoutes from './modules/payments/interfaces/http/payment.routes'
 
 dotenv.config()
 
@@ -73,6 +74,7 @@ app.use('/api', billingRoutes) // Rutas de facturación
 app.use('/api/favorites', favoriteRoutes) // Rutas de favoritos
 app.use('/api/customers', customerRoutes) // Rutas de clientes
 app.use('/api/subscriptions', subscriptionRoutes) // Rutas de suscripciones
+app.use('/api/payments', paymentRoutes) // Rutas de pagos de productos
 
 // Servir archivos estáticos
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
