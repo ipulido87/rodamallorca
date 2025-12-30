@@ -94,7 +94,7 @@ export const useRealtimeNotifications = () => {
 
     return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]) // ✅ Quitar showInfo de dependencias para evitar loop infinito
+  }, [user?.role]) // ✅ Solo depender de user.role, no del objeto completo
 
   const clearUnread = () => {
     setUnreadCount(0)
