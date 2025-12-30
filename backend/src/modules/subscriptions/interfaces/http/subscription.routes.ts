@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { verifyToken, requireUser } from '../../../auth/infrastructure/middleware/auth-middleware'
+import { verifyToken, requireUser } from '../../../auth/interfaces/middlewares/auth.middleware'
 import * as subscriptionController from '../controllers/subscription.controller'
 
 const router = Router()
