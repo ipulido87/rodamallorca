@@ -52,6 +52,15 @@ enum CustomerType {
   BUSINESS     // Empresa
 }
 
+enum SubscriptionStatus {
+  TRIALING     // En período de prueba
+  ACTIVE       // Activa y pagando
+  PAST_DUE     // Pago vencido
+  CANCELED     // Cancelada
+  INCOMPLETE   // Pago inicial incompleto
+  UNPAID       // Sin pagar
+}
+
 model User {
   id               String   @id @default(uuid())
   email            String   @unique
@@ -134,11 +143,48 @@ model Workshop {
   customers      Customer[]        // Clientes del taller
   invoiceSeries  InvoiceSeries[]   // Series de facturación del taller
   favoritedBy    FavoriteWorkshop[] // Usuarios que tienen este taller como favorito
+  subscription   Subscription?     // Suscripción del taller
 
   @@index([ownerId])
   @@index([city])
   @@index([country])
   @@index([createdAt])
+}
+
+// Suscripciones de talleres (Stripe)
+model Subscription {
+  id                    String             @id @default(uuid())
+  workshopId            String             @unique
+
+  // IDs de Stripe
+  stripeCustomerId      String             @unique
+  stripeSubscriptionId  String?            @unique
+  stripePriceId         String             // ID del precio en Stripe (price_xxx)
+
+  // Estado de la suscripción
+  status                SubscriptionStatus @default(TRIALING)
+
+  // Períodos
+  currentPeriodStart    DateTime
+  currentPeriodEnd      DateTime
+  trialStart            DateTime?
+  trialEnd              DateTime?
+  canceledAt            DateTime?
+  cancelAtPeriodEnd     Boolean            @default(false)
+
+  // Billing
+  defaultPaymentMethodId String?           // ID del método de pago en Stripe
+
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+
+  // Relaciones
+  workshop              Workshop           @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+
+  @@index([workshopId])
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+  @@index([status])
 }
 
 // Talleres favoritos de los usuarios

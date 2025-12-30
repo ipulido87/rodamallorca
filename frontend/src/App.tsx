@@ -26,6 +26,9 @@ import { Favorites } from './features/favorites/pages/favorites'
 import { Customers } from './features/customers/pages/customers'
 import { CustomerDetail } from './features/customers/pages/customer-detail'
 import { CustomerForm } from './features/customers/pages/customer-form'
+import { PricingPage } from './features/subscriptions/pages/pricing'
+import { SubscriptionSuccess } from './features/subscriptions/pages/subscription-success'
+import { SubscriptionCancel } from './features/subscriptions/pages/subscription-cancel'
 import { Home } from './pages/HomePage'
 import { LandingPage } from './pages/LandingPage'
 import { LoginForm } from './features/auth/pages/login-form'
@@ -280,6 +283,11 @@ function App() {
             {/* Rutas comunes */}
             <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<Settings />} />
+
+            {/* Rutas de suscripciones */}
+            <Route path="pricing" element={<PricingPage />} />
+            <Route path="subscription/success" element={<SubscriptionSuccess />} />
+            <Route path="subscription/cancel" element={<SubscriptionCancel />} />
           </Route>
                 </Routes>
               </ConfirmDialogProvider>

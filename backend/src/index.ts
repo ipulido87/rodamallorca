@@ -16,6 +16,8 @@ import serviceRoutes from './modules/services/interfaces/http/service.routes'
 import billingRoutes from './modules/billing/interfaces/http/billing.routes'
 import favoriteRoutes from './modules/favorites/interfaces/http/favorite.routes'
 import customerRoutes from './modules/customers/interfaces/http/customer.routes'
+import subscriptionRoutes from './modules/subscriptions/interfaces/http/subscription.routes'
+import webhookRoutes from './modules/subscriptions/interfaces/http/webhook.routes'
 
 dotenv.config()
 
@@ -23,6 +25,11 @@ const app = express()
 const PORT = process.env.PORT || 4000
 
 app.use(morgan('dev'))
+
+// IMPORTANTE: Webhook de Stripe debe ir ANTES de express.json()
+// porque necesita raw body
+app.use('/api/webhooks', webhookRoutes)
+
 app.use(express.json())
 app.use(cookieParser())
 app.use(
@@ -65,6 +72,7 @@ app.use('/api', serviceRoutes) // Rutas de servicios (públicas y protegidas)
 app.use('/api', billingRoutes) // Rutas de facturación
 app.use('/api/favorites', favoriteRoutes) // Rutas de favoritos
 app.use('/api/customers', customerRoutes) // Rutas de clientes
+app.use('/api/subscriptions', subscriptionRoutes) // Rutas de suscripciones
 
 // Servir archivos estáticos
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
