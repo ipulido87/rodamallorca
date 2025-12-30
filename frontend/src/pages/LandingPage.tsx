@@ -1,5 +1,6 @@
 import {
   Build,
+  CheckCircle,
   DirectionsBike,
   LocationOn,
   Search,
@@ -569,6 +570,185 @@ export const LandingPage = () => {
                 </Box>
               ))}
             </Stack>
+          </Box>
+        </Container>
+      </Box>
+
+      {/* Pricing Section */}
+      <Box
+        sx={{
+          py: { xs: 8, md: 12 },
+          background: `linear-gradient(180deg, ${theme.palette.background.paper} 0%, ${alpha(
+            theme.palette.primary.main,
+            0.03
+          )} 100%)`,
+        }}
+      >
+        <Container maxWidth="lg">
+          <Stack spacing={2} alignItems="center" sx={{ mb: 8, textAlign: 'center' }}>
+            <Chip
+              label="💎 PRECIO ESPECIAL DE LANZAMIENTO"
+              color="primary"
+              sx={{
+                fontSize: '0.9rem',
+                fontWeight: 700,
+                px: 3,
+                py: 2.5,
+              }}
+            />
+            <Typography
+              variant="h2"
+              sx={{
+                fontWeight: 800,
+                fontSize: { xs: '2.5rem', md: '3.5rem' },
+                color: theme.palette.text.primary,
+              }}
+            >
+              Plan Perfecto para tu Taller
+            </Typography>
+            <Typography
+              variant="h6"
+              sx={{
+                color: theme.palette.text.secondary,
+                fontWeight: 300,
+                maxWidth: 600,
+              }}
+            >
+              Gestiona tu negocio, vende más y conecta con miles de ciclistas en Mallorca
+            </Typography>
+          </Stack>
+
+          <Box sx={{ maxWidth: 500, mx: 'auto' }}>
+            <Card
+              sx={{
+                borderRadius: 4,
+                overflow: 'hidden',
+                boxShadow: `0 20px 80px ${alpha(theme.palette.common.black, 0.12)}`,
+                border: `2px solid ${theme.palette.primary.main}`,
+                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: `0 30px 100px ${alpha(theme.palette.common.black, 0.18)}`,
+                },
+              }}
+            >
+              <Box
+                sx={{
+                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                  color: theme.palette.common.white,
+                  py: 3,
+                  textAlign: 'center',
+                }}
+              >
+                <Typography variant="h5" fontWeight="700" gutterBottom>
+                  Taller Pro
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Todo lo que necesitas para crecer
+                </Typography>
+              </Box>
+
+              <CardContent sx={{ p: 4 }}>
+                <Stack alignItems="center" spacing={1} sx={{ mb: 4 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                    <Typography
+                      variant="h2"
+                      sx={{
+                        fontWeight: 800,
+                        color: theme.palette.primary.main,
+                        fontSize: '3.5rem',
+                      }}
+                    >
+                      14.50€
+                    </Typography>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        color: theme.palette.text.secondary,
+                        fontWeight: 300,
+                      }}
+                    >
+                      /mes
+                    </Typography>
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ fontWeight: 500 }}
+                  >
+                    IVA incluido · Sin compromiso · Cancela cuando quieras
+                  </Typography>
+                  <Chip
+                    label="🎁 7 DÍAS DE PRUEBA GRATIS"
+                    color="success"
+                    sx={{
+                      mt: 1,
+                      fontSize: '0.85rem',
+                      fontWeight: 700,
+                      px: 2,
+                    }}
+                  />
+                </Stack>
+
+                <Stack spacing={2} sx={{ mb: 4 }}>
+                  {[
+                    'Dashboard completo de ventas',
+                    'Gestión ilimitada de productos',
+                    'Sistema de pedidos integrado',
+                    'Facturación automática con PDF',
+                    'Catálogo visible para miles de usuarios',
+                    'Estadísticas de rendimiento',
+                    'Notificaciones en tiempo real',
+                    'Soporte técnico prioritario',
+                  ].map((feature, index) => (
+                    <Box
+                      key={index}
+                      sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+                    >
+                      <CheckCircle
+                        sx={{
+                          color: theme.palette.success.main,
+                          fontSize: 24,
+                        }}
+                      />
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {feature}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
+
+                <Button
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  onClick={() => navigate('/register?type=owner')}
+                  sx={{
+                    py: 2,
+                    fontSize: '1.1rem',
+                    fontWeight: 700,
+                    borderRadius: 2,
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                    boxShadow: `0 8px 30px ${alpha(theme.palette.primary.main, 0.3)}`,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                      transform: 'scale(1.02)',
+                      boxShadow: `0 12px 40px ${alpha(theme.palette.primary.main, 0.4)}`,
+                    },
+                  }}
+                >
+                  Empezar Prueba Gratis
+                </Button>
+
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: 'block', textAlign: 'center', mt: 2 }}
+                >
+                  No se requiere tarjeta de crédito para la prueba
+                </Typography>
+              </CardContent>
+            </Card>
           </Box>
         </Container>
       </Box>
