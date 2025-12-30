@@ -44,7 +44,7 @@ export const searchProductsController = async (
   next: NextFunction
 ) => {
   try {
-    const { q, categoryId, city, page = '1', size = '12' } = req.query
+    const { q, categoryId, workshopId, city, page = '1', size = '12' } = req.query
     const take = Math.min(Number(size), 50)
     const skip = (Number(page) - 1) * take
 
@@ -52,6 +52,7 @@ export const searchProductsController = async (
       status: 'PUBLISHED',
       ...(q ? { title: { contains: String(q), mode: 'insensitive' } } : {}),
       ...(categoryId ? { categoryId: String(categoryId) } : {}),
+      ...(workshopId ? { workshopId: String(workshopId) } : {}),
       ...(city
         ? {
             workshop: { city: { contains: String(city), mode: 'insensitive' } },
