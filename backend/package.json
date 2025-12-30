@@ -21,6 +21,7 @@
   "packageManager": "pnpm@10.13.1",
   "dependencies": {
     "@prisma/client": "^6.19.1",
+    "@react-pdf/renderer": "^4.3.2",
     "bcrypt": "^6.0.0",
     "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.7",
@@ -33,6 +34,7 @@
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^7.0.5",
     "openid-client": "^5.7.1",
+    "react": "^19.2.3",
     "resend": "^6.6.0",
     "sharp": "^0.34.4",
     "uuid": "^11.1.0",
