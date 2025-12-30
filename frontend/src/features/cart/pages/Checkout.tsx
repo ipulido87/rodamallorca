@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useCart } from '../hooks/useCart'
 import { createOrder } from '../services/cart-service'
+import { notify } from '../../../shared/services/notification-service'
 
 export const Checkout = () => {
   const navigate = useNavigate()
@@ -41,13 +42,13 @@ export const Checkout = () => {
     }
 
     if (cart.items.length === 0) {
-      alert('Your cart is empty!')
+      notify.warning('Tu carrito está vacío')
       navigate('/cart')
       return
     }
 
     if (!cart.workshopId) {
-      alert('No workshop selected!')
+      notify.error('No se ha seleccionado ningún taller')
       navigate('/cart')
       return
     }

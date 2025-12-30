@@ -11,6 +11,7 @@ import {
   verifyCode as apiVerifyCode,
   resendVerification as apiResendVerification, // ✅ AGREGAR
 } from '../features/auth/services/auth-service'
+import { notify } from '../shared/services/notification-service'
 
 // Key para localStorage
 const TOKEN_KEY = 'token'
@@ -286,8 +287,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const resetTimeout = () => {
       clearTimeout(timeoutId)
       timeoutId = setTimeout(() => {
+        notify.warning('Sesión cerrada por inactividad (30 minutos)')
         logout()
-        alert('Sesión cerrada por inactividad (30 minutos)')
       }, INACTIVITY_TIMEOUT)
     }
 
