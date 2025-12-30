@@ -1,4 +1,4 @@
-import api from '../../../api/axios-config'
+import { API } from '../../auth/services/auth-service'
 
 export interface WorkshopStats {
   currentMonth: {
@@ -26,7 +26,7 @@ export interface WorkshopStats {
 }
 
 export const getWorkshopStats = async (workshopId: string): Promise<WorkshopStats> => {
-  const response = await api.get(`/owner/billing/workshops/${workshopId}/stats`)
+  const response = await API.get(`/owner/billing/workshops/${workshopId}/stats`)
   return response.data
 }
 
