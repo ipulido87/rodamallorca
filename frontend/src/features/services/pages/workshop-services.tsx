@@ -32,6 +32,7 @@ import {
 import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useSnackbar } from '../../../shared/hooks/use-snackbar'
+import { confirmDialog } from '../../../shared/services/confirm-service'
 import {
   createService,
   deleteService,
@@ -184,9 +185,8 @@ export const WorkshopServices = () => {
   }
 
   const handleDelete = async (serviceId: string) => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este servicio?')) {
-      return
-    }
+    const confirmed = await confirmDialog.delete('este servicio')
+    if (!confirmed) return
 
     try {
       await deleteService(serviceId)

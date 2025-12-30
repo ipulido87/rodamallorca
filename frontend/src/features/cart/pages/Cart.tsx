@@ -27,6 +27,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useCart } from '../hooks/useCart'
+import { notify } from '../../../shared/services/notification-service'
 
 export const Cart = () => {
   const navigate = useNavigate()
@@ -53,7 +54,7 @@ export const Cart = () => {
     }
 
     if (cart.items.length === 0) {
-      alert('Your cart is empty!')
+      notify.warning('Tu carrito está vacío')
       return
     }
 
