@@ -35,6 +35,8 @@ import { useNavigate } from 'react-router-dom'
 import useSWR from 'swr'
 import { getCustomers, deleteCustomer } from '../services/customer-service'
 import type { Customer } from '../types/customer'
+import { confirmDialog } from '../../../shared/services/confirm-service'
+import { notify } from '../../../shared/services/notification-service'
 
 export const Customers = () => {
   const navigate = useNavigate()
@@ -51,15 +53,20 @@ export const Customers = () => {
     }
   )
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de eliminar este cliente?')) return
+  const handleDelete = async (id: string, name: string) => {
+    // 🔥 Usar diálogo bonito en vez de confirm() nativo
+    const confirmed = await confirmDialog.delete(`el cliente "${name}"`)
+    if (!confirmed) return
 
     try {
       await deleteCustomer(id)
       // Optimistic update: actualizar cache inmediatamente
       mutate()
+      // 🔥 Notificación bonita en vez de alert()
+      notify.success('Cliente eliminado correctamente')
     } catch (err: any) {
-      alert(err.message || 'Error al eliminar cliente')
+      // 🔥 Notificación de error bonita
+      notify.error(err.message || 'Error al eliminar cliente')
     }
   }
 
@@ -205,7 +212,7 @@ export const Customers = () => {
                       size="small"
                       onClick={(e) => {
                         e.stopPropagation()
-                        handleDelete(customer.id)
+                        handleDelete(customer.id, customer.name)
                       }}
                     >
                       <Delete />
@@ -311,7 +318,7 @@ export const Customers = () => {
                           color="error"
                           onClick={(e) => {
                             e.stopPropagation()
-                            handleDelete(customer.id)
+                            handleDelete(customer.id, customer.name)
                           }}
                         >
                           <Delete />

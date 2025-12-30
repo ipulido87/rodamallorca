@@ -33,6 +33,7 @@ import { Register } from './features/auth/pages/register-form'
 import { AuthProvider } from './providers/auth-provider'
 import { CartProvider } from './features/cart/contexts/CartContext'
 import { SnackbarProvider } from './shared/hooks/use-snackbar'
+import { ConfirmDialogProvider } from './shared/hooks/use-confirm-dialog'
 import { ForgotPassword } from './features/auth/pages/forgot-password'
 import { ResetPassword } from './features/auth/pages/reset-password'
 import { GoogleCallbackHandler } from './pages/google-callback-handler'
@@ -58,7 +59,8 @@ function App() {
         <AuthProvider>
           <CartProvider>
             <SnackbarProvider>
-              <Routes>
+              <ConfirmDialogProvider>
+                <Routes>
           {/* Rutas públicas con PublicLayout */}
           <Route
             path="/"
@@ -279,7 +281,8 @@ function App() {
             <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<Settings />} />
           </Route>
-        </Routes>
+                </Routes>
+              </ConfirmDialogProvider>
             </SnackbarProvider>
           </CartProvider>
         </AuthProvider>
