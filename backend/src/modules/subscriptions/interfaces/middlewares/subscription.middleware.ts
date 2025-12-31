@@ -3,25 +3,17 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-interface AuthRequest extends Request {
-  user?: {
-    id: string
-    email: string
-    role?: 'USER' | 'WORKSHOP_OWNER' | 'ADMIN'
-  }
-}
-
 /**
  * Middleware que verifica que el usuario tenga una suscripción ACTIVA o TRIALING
  * SOLO aplica para WORKSHOP_OWNER
  */
 export const requireActiveSubscription = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const user = req.user
+    const user = (req as any).user
 
     if (!user) {
       return res.status(401).json({
