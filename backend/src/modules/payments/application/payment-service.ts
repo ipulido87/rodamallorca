@@ -48,7 +48,7 @@ export async function createProductCheckoutSession(input: CreateCheckoutInput) {
         currency: item.currency.toLowerCase(),
         unit_amount: item.priceAtOrder, // Ya está en centavos
         product_data: {
-          name: product.name,
+          name: product.title, // ⭐ Product tiene 'title' no 'name'
           description: item.description || product.description || undefined,
           metadata: {
             productId: item.productId,
