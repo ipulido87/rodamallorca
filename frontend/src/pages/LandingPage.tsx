@@ -745,7 +745,7 @@ export const LandingPage = () => {
                   color="text.secondary"
                   sx={{ display: 'block', textAlign: 'center', mt: 2 }}
                 >
-                  7 días gratis, luego 14.50€/mes · Tarjeta requerida, sin cargos durante el trial
+                  7 días gratis, luego 14.90€/mes · Tarjeta requerida, sin cargos durante el trial
                 </Typography>
               </CardContent>
             </Card>
