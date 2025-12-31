@@ -16,10 +16,11 @@ import {
   deleteInvoiceController,
   getWorkshopStatsController,
 } from '../controllers/billing.controller'
+import { requireActiveSubscription } from '../../../subscriptions/interfaces/middlewares/subscription.middleware'
 
 const r = Router()
 
-// Rutas protegidas para dueños de taller
+// Rutas protegidas para dueños de taller - TODAS requieren suscripción activa
 
 // === CUSTOMERS ===
 r.post(
@@ -27,6 +28,7 @@ r.post(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   createCustomerController
 )
 
@@ -35,6 +37,7 @@ r.get(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   listCustomersController
 )
 
@@ -44,6 +47,7 @@ r.post(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   createInvoiceSeriesController
 )
 
@@ -52,6 +56,7 @@ r.get(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   listInvoiceSeriesController
 )
 
@@ -61,6 +66,7 @@ r.post(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   createInvoiceController
 )
 
@@ -69,6 +75,7 @@ r.get(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   listInvoicesController
 )
 
@@ -77,6 +84,7 @@ r.get(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   getInvoiceByIdController
 )
 
@@ -85,6 +93,7 @@ r.patch(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   updateInvoiceController
 )
 
@@ -93,6 +102,7 @@ r.delete(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   deleteInvoiceController
 )
 
@@ -102,6 +112,7 @@ r.get(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   getWorkshopStatsController
 )
 

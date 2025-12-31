@@ -12,6 +12,7 @@ import {
   updateWorkshopController,
 } from '../controllers/workshop.controller'
 import { getWorkshopOrdersController } from '../../../orders/interfaces/controllers/order.controller'
+import { requireActiveSubscription } from '../../../subscriptions/interfaces/middlewares/subscription.middleware'
 
 const r = Router()
 
@@ -37,6 +38,7 @@ r.put(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   updateWorkshopController
 )
 
@@ -45,6 +47,7 @@ r.delete(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   deleteWorkshopController
 )
 
@@ -57,6 +60,7 @@ r.get(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   getWorkshopOrdersController
 )
 
