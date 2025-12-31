@@ -86,7 +86,7 @@ export const requireActiveSubscription = async (
  * Permite acceso a endpoints de lectura pero bloquea escritura sin suscripción
  */
 export const requireSubscriptionForWrite = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
