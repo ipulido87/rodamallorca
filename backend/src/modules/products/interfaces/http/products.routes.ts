@@ -13,6 +13,7 @@ import {
   publishProduct,
   updateProduct,
 } from '../controllers/product.controller'
+import { requireActiveSubscription } from '../../../subscriptions/interfaces/middlewares/subscription.middleware'
 
 const r = Router()
 
@@ -25,6 +26,7 @@ r.post(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   createProduct
 )
 
@@ -34,6 +36,7 @@ r.get(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   getMyProducts
 )
 
@@ -43,6 +46,7 @@ r.get(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   getProductById
 )
 
@@ -52,6 +56,7 @@ r.put(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   updateProduct
 )
 
@@ -61,6 +66,7 @@ r.post(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   publishProduct
 )
 
@@ -70,6 +76,7 @@ r.delete(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  requireActiveSubscription, // ⭐ Requiere suscripción activa
   deleteProduct
 )
 

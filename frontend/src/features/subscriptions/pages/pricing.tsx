@@ -252,7 +252,7 @@ export const PricingPage = () => {
                 color="text.secondary"
                 sx={{ mt: 2 }}
               >
-                ✓ 7 días gratis, luego 14.50€/mes
+                ✓ 7 días gratis, luego 14.90€/mes
                 <br />
                 ✓ Tarjeta requerida, sin cargos durante el trial
               </Typography>

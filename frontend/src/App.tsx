@@ -31,6 +31,7 @@ import { CustomerForm } from './features/customers/pages/customer-form'
 import { PricingPage } from './features/subscriptions/pages/pricing'
 import { SubscriptionSuccess } from './features/subscriptions/pages/subscription-success'
 import { SubscriptionCancel } from './features/subscriptions/pages/subscription-cancel'
+import { ActivateSubscription } from './features/subscriptions/pages/activate-subscription'
 import { Home } from './pages/HomePage'
 import { LandingPage } from './pages/LandingPage'
 import { LoginForm } from './features/auth/pages/login-form'
@@ -292,6 +293,7 @@ function App() {
 
             {/* Rutas de suscripciones */}
             <Route path="pricing" element={<PricingPage />} />
+            <Route path="activate-subscription" element={<ActivateSubscription />} />
             <Route path="subscription/success" element={<SubscriptionSuccess />} />
             <Route path="subscription/cancel" element={<SubscriptionCancel />} />
           </Route>

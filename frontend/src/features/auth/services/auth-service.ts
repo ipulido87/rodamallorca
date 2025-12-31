@@ -11,6 +11,21 @@ export const API = axios.create({
 API.interceptors.response.use(
   (response) => response,
   (error) => {
+    // ⭐ Detectar error de suscripción inactiva
+    if (
+      error.response?.status === 403 &&
+      error.response?.data?.error === 'NO_ACTIVE_SUBSCRIPTION'
+    ) {
+      // Redirigir a página de activación de suscripción
+      console.log('🔒 [API Interceptor] Suscripción inactiva, redirigiendo a /activate-subscription')
+      window.location.href = '/activate-subscription'
+      return Promise.reject({
+        ...error,
+        isSubscriptionRequired: true,
+      })
+    }
+
+    // Detectar email no verificado
     if (
       error.response?.status === 403 &&
       error.response?.data?.error === 'EMAIL_NOT_VERIFIED'
@@ -22,6 +37,7 @@ API.interceptors.response.use(
         email: error.response?.data?.email, // Si el backend lo incluye
       })
     }
+
     return Promise.reject(error)
   }
 )
