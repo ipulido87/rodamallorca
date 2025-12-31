@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Box, CircularProgress, Typography } from '@mui/material'
 import { useAuth } from '../../auth/hooks/useAuth'
-import { API } from '../../auth/services/auth-service'
 
 interface SubscriptionGuardProps {
   children: React.ReactNode
@@ -27,55 +26,43 @@ export const SubscriptionGuard = ({ children }: SubscriptionGuardProps) => {
   const [hasAccess, setHasAccess] = useState(false)
 
   useEffect(() => {
-    const checkSubscription = async () => {
+    const checkSubscription = () => {
+      // Si no hay usuario, esperar
+      if (!user) {
+        setChecking(true)
+        return
+      }
+
       // Si no es WORKSHOP_OWNER, permitir acceso inmediatamente
-      if (!user || user.role !== 'WORKSHOP_OWNER') {
+      if (user.role !== 'WORKSHOP_OWNER') {
         setHasAccess(true)
         setChecking(false)
         return
       }
 
-      try {
-        // Verificar si tiene talleres y suscripción
-        const { data: workshops } = await API.get('/owner/workshops/mine')
+      // ⭐ Usar datos que vienen del /auth/me (sin peticiones adicionales)
+      const userWithSub = user as any
 
-        if (!workshops || workshops.length === 0) {
-          // Sin talleres → crear uno primero
-          console.log('🔒 [SubscriptionGuard] Sin talleres, redirigiendo a crear...')
-          navigate('/create-workshop', { replace: true })
-          return
-        }
-
-        // Verificar si algún taller tiene suscripción activa
-        const hasActiveSub = workshops.some((w: any) => {
-          const status = w.subscription?.status
-          return status === 'ACTIVE' || status === 'TRIALING'
-        })
-
-        if (!hasActiveSub) {
-          // Sin suscripción activa → activar
-          console.log('🔒 [SubscriptionGuard] Sin suscripción activa, redirigiendo a pricing...')
-          navigate('/activate-subscription', { replace: true })
-          return
-        }
-
-        // Todo OK → permitir acceso
-        console.log('✅ [SubscriptionGuard] Suscripción activa verificada')
-        setHasAccess(true)
-      } catch (error: any) {
-        console.error('❌ [SubscriptionGuard] Error verificando suscripción:', error)
-
-        // Si es 403 de suscripción, redirigir
-        if (error.response?.status === 403 && error.response?.data?.error === 'NO_ACTIVE_SUBSCRIPTION') {
-          navigate('/activate-subscription', { replace: true })
-          return
-        }
-
-        // Otro error → permitir acceso (para no bloquear por errores de red)
-        setHasAccess(true)
-      } finally {
+      // Si no tiene talleres, redirigir a crear
+      if (!userWithSub.workshopsCount || userWithSub.workshopsCount === 0) {
+        console.log('🔒 [SubscriptionGuard] Sin talleres, redirigiendo a crear...')
+        navigate('/create-workshop', { replace: true })
         setChecking(false)
+        return
       }
+
+      // Si no tiene suscripción activa, redirigir a activar
+      if (!userWithSub.hasActiveSubscription) {
+        console.log('🔒 [SubscriptionGuard] Sin suscripción activa, redirigiendo a pricing...')
+        navigate('/activate-subscription', { replace: true })
+        setChecking(false)
+        return
+      }
+
+      // Todo OK → permitir acceso
+      console.log('✅ [SubscriptionGuard] Suscripción activa verificada')
+      setHasAccess(true)
+      setChecking(false)
     }
 
     checkSubscription()

@@ -462,8 +462,38 @@ export const getCurrentUser = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Usuario no encontrado' })
     }
 
+    const sanitized = sanitizeUser(user)
+
+    // ⭐ Si es WORKSHOP_OWNER, incluir estado de suscripción
+    if (user.role === 'WORKSHOP_OWNER') {
+      const workshops = await prisma.workshop.findMany({
+        where: { ownerId: user.id },
+        include: {
+          subscription: {
+            select: {
+              status: true,
+              currentPeriodEnd: true,
+              trialEnd: true,
+            },
+          },
+        },
+      })
+
+      // Verificar si tiene al menos un taller con suscripción activa
+      const hasActiveSubscription = workshops.some((w) => {
+        const status = w.subscription?.status
+        return status === 'ACTIVE' || status === 'TRIALING'
+      })
+
+      return res.json({
+        ...sanitized,
+        hasActiveSubscription,
+        workshopsCount: workshops.length,
+      })
+    }
+
     // Retornar usuario directamente (sin wrapper)
-    return res.json(sanitizeUser(user))
+    return res.json(sanitized)
   } catch {
     return res.status(401).json({ message: 'Token inválido' })
   }
