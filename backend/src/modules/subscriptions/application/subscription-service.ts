@@ -98,7 +98,7 @@ export async function createCheckoutSession(input: CreateCheckoutSessionInput) {
 
   // Crear sesión de Checkout
   const session = await stripe.checkout.sessions.create({
-    customer: subscription.stripeCustomerId,
+    customer: subscription.stripeCustomerId, // ⭐ Ya tenemos customer, NO usar customer_email
     mode: 'subscription',
     payment_method_types: ['card'],
     line_items: [
@@ -116,7 +116,7 @@ export async function createCheckoutSession(input: CreateCheckoutSessionInput) {
     payment_method_collection: 'always', // ⭐ SIEMPRE pedir tarjeta (incluso durante trial)
     success_url: successUrl,
     cancel_url: cancelUrl,
-    customer_email: ownerEmail,
+    // ❌ NO customer_email (ya usamos customer)
   })
 
   console.log(`✅ [Checkout] Sesión creada: ${session.id}`)
