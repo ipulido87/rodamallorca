@@ -180,9 +180,8 @@ export const verifyByLink = async (req: Request, res: Response) => {
         path: '/',
       })
 
-      const redirectPath =
-        user.role === 'WORKSHOP_OWNER' ? '/dashboard' : '/home'
-      return res.redirect(`${getFrontendUrl()}${redirectPath}`)
+      // ✅ Usar el mismo callback para manejar lógica de workshops
+      return res.redirect(`${getFrontendUrl()}/email-verified?token=${encodeURIComponent(token)}`)
     }
 
     if (user.verificationCode !== code) {
@@ -226,8 +225,8 @@ export const verifyByLink = async (req: Request, res: Response) => {
 
     console.log('✅ [VERIFY_BY_LINK] Usuario verificado y logueado:', email)
 
-    // ✅ REDIRIGIR A LOGIN CON MENSAJE DE ÉXITO
-    return res.redirect(`${getFrontendUrl()}/login?success=${encodeURIComponent('¡Cuenta verificada exitosamente! Ya puedes iniciar sesión.')}`)
+    // ✅ REDIRIGIR A CALLBACK QUE MANEJA LA LÓGICA DE WORKSHOPS Y STRIPE
+    return res.redirect(`${getFrontendUrl()}/email-verified?token=${encodeURIComponent(token)}`)
   } catch (error) {
     console.error('❌ [VERIFY_BY_LINK] Error:', error)
     return res.redirect(`${getFrontendUrl()}/login?error=${encodeURIComponent('Error al verificar la cuenta')}`)

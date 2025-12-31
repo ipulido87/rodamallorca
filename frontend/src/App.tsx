@@ -42,6 +42,7 @@ import { ConfirmDialogProvider } from './shared/hooks/use-confirm-dialog'
 import { ForgotPassword } from './features/auth/pages/forgot-password'
 import { ResetPassword } from './features/auth/pages/reset-password'
 import { GoogleCallbackHandler } from './pages/google-callback-handler'
+import { EmailVerifiedCallback } from './pages/email-verified-callback'
 import { Profile } from './pages/Profile'
 import { Settings } from './pages/Settings'
 
@@ -121,6 +122,7 @@ function App() {
           />
 
           <Route path="/auth/callback" element={<GoogleCallbackHandler />} />
+          <Route path="/email-verified" element={<EmailVerifiedCallback />} />
           {/* Rutas privadas con MainLayout */}
           <Route
             path="/*"

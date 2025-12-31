@@ -53,7 +53,8 @@ export const PricingPage = () => {
 
   const handleSubscribe = async () => {
     if (!user) {
-      navigate('/login')
+      // ⭐ No loggeado → Registro como TALLER (no login normal)
+      navigate('/register?type=owner')
       return
     }
 
@@ -241,11 +242,7 @@ export const PricingPage = () => {
                   transition: 'all 0.3s ease',
                 }}
               >
-                {loading
-                  ? 'Redirigiendo...'
-                  : user
-                  ? 'Empezar Prueba Gratis'
-                  : 'Crear Cuenta Gratis'}
+                {loading ? 'Redirigiendo...' : 'Empezar Prueba Gratis - 7 Días'}
               </Button>
 
               <Typography
@@ -255,9 +252,9 @@ export const PricingPage = () => {
                 color="text.secondary"
                 sx={{ mt: 2 }}
               >
-                ✓ No se requiere tarjeta de crédito para la prueba
+                ✓ 7 días gratis, luego 14.50€/mes
                 <br />
-                ✓ Acceso completo durante 7 días
+                ✓ Tarjeta requerida, sin cargos durante el trial
               </Typography>
             </CardContent>
           </Card>

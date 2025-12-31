@@ -737,7 +737,7 @@ export const LandingPage = () => {
                     },
                   }}
                 >
-                  Empezar Prueba Gratis
+                  Empezar Prueba Gratis - 7 Días
                 </Button>
 
                 <Typography
@@ -745,7 +745,7 @@ export const LandingPage = () => {
                   color="text.secondary"
                   sx={{ display: 'block', textAlign: 'center', mt: 2 }}
                 >
-                  No se requiere tarjeta de crédito para la prueba
+                  7 días gratis, luego 14.50€/mes · Tarjeta requerida, sin cargos durante el trial
                 </Typography>
               </CardContent>
             </Card>
