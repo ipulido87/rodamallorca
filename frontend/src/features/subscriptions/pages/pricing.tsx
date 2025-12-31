@@ -22,17 +22,18 @@ import {
   alpha,
   useTheme,
 } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 import useSWR from 'swr'
 import { getMyWorkshops } from '../../workshops/services/workshop-service'
 import { redirectToCheckout } from '../services/subscription-service'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export const PricingPage = () => {
   const theme = useTheme()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const [searchParams] = useSearchParams()
   const [loading, setLoading] = useState(false)
 
   // Obtener talleres del usuario
@@ -40,6 +41,15 @@ export const PricingPage = () => {
     user ? '/owner/workshops' : null,
     getMyWorkshops
   )
+
+  // ⭐ Auto-iniciar checkout si viene de Google OAuth
+  useEffect(() => {
+    const auto = searchParams.get('auto')
+    if (auto === 'true' && user && workshops && workshops.length > 0 && !loading) {
+      console.log('🚀 [Pricing] Auto-iniciando checkout para nuevo taller owner...')
+      handleSubscribe()
+    }
+  }, [searchParams, user, workshops])
 
   const handleSubscribe = async () => {
     if (!user) {
