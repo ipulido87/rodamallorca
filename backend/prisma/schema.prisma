@@ -265,6 +265,11 @@ model Order {
   diagnosis           String?     // Diagnóstico del taller (opcional)
   laborHours          Decimal?    @db.Decimal(5, 2) // Horas de mano de obra (opcional)
 
+  // Campos de pago Stripe
+  paymentStatus         String?     @default("UNPAID") // UNPAID, PAID, REFUNDED
+  stripeSessionId       String?     // ID de sesión de Stripe Checkout
+  stripePaymentIntentId String?     // ID del pago en Stripe
+
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 
@@ -280,6 +285,8 @@ model Order {
   @@index([vehicleId])
   @@index([type])
   @@index([status])
+  @@index([paymentStatus])
+  @@index([stripeSessionId])
   @@index([createdAt])
 }
 

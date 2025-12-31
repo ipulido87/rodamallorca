@@ -57,6 +57,12 @@ export async function handleStripeWebhook(payload: Buffer, signature: string) {
         await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session)
         break
 
+      // Pago de producto completado (NO suscripción)
+      case 'payment_intent.succeeded':
+        console.log(`💰 [Webhook] Pago de producto exitoso`)
+        // El checkout.session.completed ya maneja la creación de órdenes
+        break
+
       default:
         console.log(`⚠️ [Webhook] Evento no manejado: ${event.type}`)
     }
@@ -180,11 +186,62 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   console.log(`✅ [Webhook] Checkout completado: ${session.id}`)
 
+  // Checkout de SUSCRIPCIÓN
   if (session.mode === 'subscription' && session.subscription) {
     const workshopId = session.metadata?.workshopId
 
     if (workshopId) {
-      console.log(`✅ [Webhook] Checkout para workshop ${workshopId}`)
+      console.log(`✅ [Webhook] Checkout de suscripción para workshop ${workshopId}`)
+    }
+  }
+
+  // Checkout de PRODUCTOS (pago único)
+  if (session.mode === 'payment' && session.payment_status === 'paid') {
+    console.log(`💰 [Webhook] Pago de productos completado`)
+
+    const { userId, workshopId, items: itemsJson } = session.metadata || {}
+
+    if (!userId || !workshopId || !itemsJson) {
+      console.error('❌ [Webhook] Metadata incompleta en checkout de productos')
+      return
+    }
+
+    try {
+      const items = JSON.parse(itemsJson)
+
+      // Crear la orden en la base de datos
+      const order = await prisma.order.create({
+        data: {
+          workshopId,
+          userId,
+          status: 'PENDING',
+          totalAmount: session.amount_total || 0,
+          paymentStatus: 'PAID', // ⭐ PAGADO
+          stripeSessionId: session.id,
+          stripePaymentIntentId: session.payment_intent as string,
+          items: {
+            create: items.map((item: any) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              priceAtOrder: item.priceAtOrder,
+              currency: item.currency,
+              description: item.description,
+            })),
+          },
+        },
+        include: {
+          items: true,
+          workshop: true,
+          user: true,
+        },
+      })
+
+      console.log(`✅ [Webhook] Orden creada: ${order.id} - Estado: PAID`)
+
+      // TODO: Enviar email de confirmación al usuario
+      // TODO: Enviar notificación al taller
+    } catch (error) {
+      console.error('❌ [Webhook] Error creando orden:', error)
     }
   }
 }
