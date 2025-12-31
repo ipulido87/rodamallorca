@@ -64,8 +64,18 @@ export const GoogleCallbackHandler = () => {
           return
         }
 
-        // ✅ Si es WORKSHOP_OWNER, verificar workshops
-        console.log('🔐 [GoogleCallback] WORKSHOP_OWNER, verificando talleres...')
+        // ⭐ Si es WORKSHOP_OWNER, verificar suscripción ANTES de hacer más peticiones
+        console.log('🔐 [GoogleCallback] WORKSHOP_OWNER detectado')
+        const hasActiveSubscription = (userData as any).hasActiveSubscription
+
+        if (!hasActiveSubscription) {
+          console.log('🔒 [GoogleCallback] Sin suscripción activa, redirigiendo a /activate-subscription')
+          navigate('/activate-subscription', { replace: true })
+          return
+        }
+
+        // ✅ Con suscripción activa, verificar workshops
+        console.log('🔐 [GoogleCallback] Con suscripción activa, verificando talleres...')
         const { data: workshopsData } = await API.get('/owner/workshops/mine', {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -79,38 +89,8 @@ export const GoogleCallbackHandler = () => {
           console.log('🔐 [GoogleCallback] Talleres encontrados, redirigiendo a /dashboard')
           navigate('/dashboard', { replace: true })
         } else {
-          // ⭐ Sin talleres → CREAR WORKSHOP AUTOMÁTICO y redirigir a STRIPE
-          console.log('🔐 [GoogleCallback] Sin talleres, creando workshop automático...')
-
-          try {
-            // Crear workshop con nombre por defecto
-            const { data: newWorkshop } = await API.post(
-              '/owner/workshops',
-              {
-                name: `Taller de ${userData.email.split('@')[0]}`,
-                description: 'Taller creado automáticamente',
-                address: '',
-                city: '',
-                country: 'ES',
-                phone: '',
-              },
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            )
-
-            console.log('✅ [GoogleCallback] Workshop creado:', newWorkshop)
-
-            // Redirigir a pricing para que inicie checkout de Stripe
-            console.log('🔐 [GoogleCallback] Redirigiendo a /pricing para suscripción...')
-            navigate('/pricing?auto=true', { replace: true })
-          } catch (createError) {
-            console.error('❌ [GoogleCallback] Error creando workshop:', createError)
-            // Si falla, enviar a crear workshop manualmente
-            navigate('/create-workshop?firstTime=true', { replace: true })
-          }
+          console.log('🔐 [GoogleCallback] Sin talleres, redirigiendo a crear workshop')
+          navigate('/create-workshop?firstTime=true', { replace: true })
         }
       } catch (err) {
         console.error('❌ [GoogleCallback] Error en callback:', err)

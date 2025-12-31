@@ -148,7 +148,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     })()
   }, [refreshMe])
 
-  // ✅ LOGIN MEJORADO - MANEJA ERRORES ESPECÍFICOS
+  // ✅ LOGIN MEJORADO - MANEJA ERRORES ESPECÍFICOS Y OBTIENE DATOS COMPLETOS
   const login = useCallback(
     async (email: string, password: string) => {
       setLoading(true)
@@ -157,9 +157,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const { token: newToken, user: u } = await apiLogin(email, password)
         persistToken(newToken)
-        setUser(u ?? null)
-        if (u) {
-          localStorage.setItem(USER_KEY, JSON.stringify(u))
+
+        // ⭐ Llamar a /auth/me para obtener datos completos incluyendo hasActiveSubscription
+        const fullUser = await apiMe()
+        setUser(fullUser ?? null)
+        if (fullUser) {
+          localStorage.setItem(USER_KEY, JSON.stringify(fullUser))
         }
       } catch (error: unknown) {
         console.error('Login error in AuthProvider:', error)

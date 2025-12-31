@@ -79,12 +79,27 @@ export const LoginForm = () => {
     try {
       await auth.login(result.data.email, result.data.password)
 
+      // ⭐ Esperar a que el usuario esté disponible en el contexto
       setTimeout(() => {
-        const user = JSON.parse(localStorage.getItem('user') || '{}')
+        const currentUser = auth.user
 
-        if (user.role === 'WORKSHOP_OWNER') {
-          navigate('/dashboard')
-        } else if (user.role === 'USER') {
+        if (!currentUser) {
+          console.error('Usuario no disponible tras login')
+          navigate('/catalog')
+          return
+        }
+
+        // ✅ Si es WORKSHOP_OWNER, verificar suscripción ANTES de redirigir
+        if (currentUser.role === 'WORKSHOP_OWNER') {
+          const hasSubscription = (currentUser as any).hasActiveSubscription
+
+          if (!hasSubscription) {
+            console.log('🔒 Taller sin suscripción activa, redirigiendo a activación')
+            navigate('/activate-subscription')
+          } else {
+            navigate('/dashboard')
+          }
+        } else if (currentUser.role === 'USER') {
           navigate('/home')
         } else {
           navigate('/catalog')
