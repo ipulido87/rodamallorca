@@ -32,7 +32,6 @@ import { PricingPage } from './features/subscriptions/pages/pricing'
 import { SubscriptionSuccess } from './features/subscriptions/pages/subscription-success'
 import { SubscriptionCancel } from './features/subscriptions/pages/subscription-cancel'
 import { ActivateSubscription } from './features/subscriptions/pages/activate-subscription'
-import { SubscriptionGuard } from './features/subscriptions/components/subscription-guard'
 import { Home } from './pages/HomePage'
 import { LandingPage } from './pages/LandingPage'
 import { LoginForm } from './features/auth/pages/login-form'
@@ -155,9 +154,7 @@ function App() {
               path="dashboard"
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
-                  <SubscriptionGuard>
-                    <Dashboard />
-                  </SubscriptionGuard>
+                  <Dashboard />
                 </RoleRoute>
               }
             />
@@ -189,9 +186,7 @@ function App() {
               path="my-products"
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
-                  <SubscriptionGuard>
-                    <MyProducts />
-                  </SubscriptionGuard>
+                  <MyProducts />
                 </RoleRoute>
               }
             />
@@ -199,9 +194,7 @@ function App() {
               path="create-product"
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
-                  <SubscriptionGuard>
-                    <CreateProduct />
-                  </SubscriptionGuard>
+                  <CreateProduct />
                 </RoleRoute>
               }
             />
@@ -209,9 +202,7 @@ function App() {
               path="edit-product/:id"
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
-                  <SubscriptionGuard>
-                    <EditProduct />
-                  </SubscriptionGuard>
+                  <EditProduct />
                 </RoleRoute>
               }
             />
@@ -219,9 +210,7 @@ function App() {
               path="orders"
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
-                  <SubscriptionGuard>
-                    <Orders />
-                  </SubscriptionGuard>
+                  <Orders />
                 </RoleRoute>
               }
             />
@@ -277,9 +266,7 @@ function App() {
               path="billing/:workshopId"
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
-                  <SubscriptionGuard>
-                    <BillingInvoices />
-                  </SubscriptionGuard>
+                  <BillingInvoices />
                 </RoleRoute>
               }
             />
@@ -287,9 +274,7 @@ function App() {
               path="billing/:workshopId/invoice/:invoiceId"
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
-                  <SubscriptionGuard>
-                    <InvoiceDetails />
-                  </SubscriptionGuard>
+                  <InvoiceDetails />
                 </RoleRoute>
               }
             />
@@ -297,9 +282,7 @@ function App() {
               path="billing/:workshopId/create"
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
-                  <SubscriptionGuard>
-                    <CreateInvoice />
-                  </SubscriptionGuard>
+                  <CreateInvoice />
                 </RoleRoute>
               }
             />
