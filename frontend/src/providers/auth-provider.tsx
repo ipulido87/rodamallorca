@@ -78,28 +78,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const isOwnerOrAdminRoute = requestUrl.includes('/owner/') || requestUrl.includes('/admin/')
       const isPublicRoute = !isOwnerOrAdminRoute && publicRoutes.some(route => requestUrl.includes(route))
 
+      // ⭐ Rutas de owner que SÍ deben funcionar SIN suscripción activa
+      const allowedWithoutSubscription = [
+        '/subscriptions/create-checkout-session',  // Crear sesión de pago de Stripe
+        '/subscriptions/status',                    // Verificar estado de suscripción
+        '/workshops',                               // Crear/listar workshops (solo POST/GET básico)
+      ]
+
       // ⭐ BLOQUEAR peticiones a rutas de owner si es taller sin suscripción
       if (isOwnerOrAdminRoute) {
-        const currentUser = JSON.parse(localStorage.getItem(USER_KEY) || 'null')
+        // ✅ Verificar si es una ruta permitida sin suscripción
+        const isAllowedRoute = allowedWithoutSubscription.some(route =>
+          requestUrl.includes(route)
+        )
 
-        if (currentUser?.role === 'WORKSHOP_OWNER') {
-          const hasActiveSubscription = currentUser.hasActiveSubscription
+        if (!isAllowedRoute) {
+          const currentUser = JSON.parse(localStorage.getItem(USER_KEY) || 'null')
 
-          if (!hasActiveSubscription) {
-            console.log('🚫 [REQUEST INTERCEPTOR] Bloqueando petición a', requestUrl, '- sin suscripción activa')
+          if (currentUser?.role === 'WORKSHOP_OWNER') {
+            const hasActiveSubscription = currentUser.hasActiveSubscription
 
-            // Redirigir inmediatamente sin hacer la petición
-            if (window.location.pathname !== '/activate-subscription') {
-              window.location.href = '/activate-subscription'
+            if (!hasActiveSubscription) {
+              console.log('🚫 [REQUEST INTERCEPTOR] Bloqueando petición a', requestUrl, '- sin suscripción activa')
+
+              // Redirigir inmediatamente sin hacer la petición
+              if (window.location.pathname !== '/activate-subscription') {
+                window.location.href = '/activate-subscription'
+              }
+
+              // Cancelar la petición antes de enviarla
+              return Promise.reject({
+                message: 'Subscription required',
+                isSubscriptionRequired: true,
+                config
+              })
             }
-
-            // Cancelar la petición antes de enviarla
-            return Promise.reject({
-              message: 'Subscription required',
-              isSubscriptionRequired: true,
-              config
-            })
           }
+        } else {
+          console.log('✅ [REQUEST INTERCEPTOR] Permitiendo petición a', requestUrl, '- ruta permitida sin suscripción')
         }
       }
 
