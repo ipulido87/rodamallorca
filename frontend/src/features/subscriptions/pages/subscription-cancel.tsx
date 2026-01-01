@@ -1,9 +1,18 @@
 import { Cancel } from '@mui/icons-material'
 import { Box, Button, Container, Stack, Typography } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../auth/hooks/useAuth'
+import { useEffect } from 'react'
 
 export const SubscriptionCancel = () => {
   const navigate = useNavigate()
+  const { refreshMe } = useAuth()
+
+  // ⭐ FORZAR recarga de datos al llegar desde Stripe
+  useEffect(() => {
+    console.log('🔄 [SubscriptionCancel] Refrescando datos de usuario tras cancelación')
+    refreshMe()
+  }, [refreshMe])
 
   return (
     <Container maxWidth="sm">
@@ -40,9 +49,9 @@ export const SubscriptionCancel = () => {
             <Button
               variant="outlined"
               size="large"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/activate-subscription')}
             >
-              Volver al Dashboard
+              Volver
             </Button>
           </Stack>
         </Stack>

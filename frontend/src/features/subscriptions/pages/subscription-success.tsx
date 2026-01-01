@@ -1,9 +1,18 @@
 import { CheckCircle } from '@mui/icons-material'
 import { Box, Button, Container, Stack, Typography } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../auth/hooks/useAuth'
+import { useEffect } from 'react'
 
 export const SubscriptionSuccess = () => {
   const navigate = useNavigate()
+  const { refreshMe } = useAuth()
+
+  // ⭐ FORZAR recarga de datos al llegar desde Stripe
+  useEffect(() => {
+    console.log('🔄 [SubscriptionSuccess] Refrescando datos de usuario tras suscripción exitosa')
+    refreshMe()
+  }, [refreshMe])
 
   return (
     <Container maxWidth="sm">
