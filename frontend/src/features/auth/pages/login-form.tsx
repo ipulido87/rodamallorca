@@ -77,34 +77,31 @@ export const LoginForm = () => {
     }
 
     try {
-      await auth.login(result.data.email, result.data.password)
+      // ⭐ Obtener datos del usuario DIRECTAMENTE del login
+      const loggedUser = await auth.login(result.data.email, result.data.password)
 
-      // ⭐ Esperar a que el usuario esté disponible en el contexto
-      setTimeout(() => {
-        const currentUser = auth.user
+      if (!loggedUser) {
+        console.error('Usuario no disponible tras login')
+        navigate('/catalog')
+        return
+      }
 
-        if (!currentUser) {
-          console.error('Usuario no disponible tras login')
-          navigate('/catalog')
-          return
-        }
+      // ✅ Si es WORKSHOP_OWNER, verificar suscripción ANTES de redirigir
+      if (loggedUser.role === 'WORKSHOP_OWNER') {
+        const hasSubscription = (loggedUser as any).hasActiveSubscription
 
-        // ✅ Si es WORKSHOP_OWNER, verificar suscripción ANTES de redirigir
-        if (currentUser.role === 'WORKSHOP_OWNER') {
-          const hasSubscription = (currentUser as any).hasActiveSubscription
-
-          if (!hasSubscription) {
-            console.log('🔒 Taller sin suscripción activa, redirigiendo a activación')
-            navigate('/activate-subscription')
-          } else {
-            navigate('/dashboard')
-          }
-        } else if (currentUser.role === 'USER') {
-          navigate('/home')
+        if (!hasSubscription) {
+          console.log('🔒 Taller sin suscripción activa, redirigiendo a activación')
+          navigate('/activate-subscription', { replace: true })
         } else {
-          navigate('/catalog')
+          console.log('✅ Taller con suscripción activa, redirigiendo a dashboard')
+          navigate('/dashboard', { replace: true })
         }
-      }, 100)
+      } else if (loggedUser.role === 'USER') {
+        navigate('/home', { replace: true })
+      } else {
+        navigate('/catalog', { replace: true })
+      }
     } catch (error: unknown) {
       console.error('Login failed:', error)
 
