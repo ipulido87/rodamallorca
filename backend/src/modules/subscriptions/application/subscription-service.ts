@@ -87,18 +87,32 @@ export async function createCheckoutSession(input: CreateCheckoutSessionInput) {
 
   console.log(`💳 [Checkout] Creando sesión para workshop ${workshopId}`)
 
-  // Obtener o crear suscripción en trial
+  // ⭐ Verificar si ya existe suscripción
   let subscription = await prisma.subscription.findUnique({
     where: { workshopId },
   })
 
-  if (!subscription) {
-    throw new Error('Primero debes crear una suscripción en trial')
+  let stripeCustomerId: string
+
+  if (subscription && subscription.stripeCustomerId) {
+    // Ya tiene customer de Stripe
+    stripeCustomerId = subscription.stripeCustomerId
+    console.log(`✅ [Checkout] Usando customer existente: ${stripeCustomerId}`)
+  } else {
+    // Crear nuevo customer en Stripe
+    const customer = await stripe.customers.create({
+      email: ownerEmail,
+      metadata: {
+        workshopId,
+      },
+    })
+    stripeCustomerId = customer.id
+    console.log(`✅ [Checkout] Nuevo customer creado: ${stripeCustomerId}`)
   }
 
   // Crear sesión de Checkout
   const session = await stripe.checkout.sessions.create({
-    customer: subscription.stripeCustomerId, // ⭐ Ya tenemos customer, NO usar customer_email
+    customer: stripeCustomerId,
     mode: 'subscription',
     payment_method_types: ['card'],
     line_items: [
@@ -116,7 +130,6 @@ export async function createCheckoutSession(input: CreateCheckoutSessionInput) {
     payment_method_collection: 'always', // ⭐ SIEMPRE pedir tarjeta (incluso durante trial)
     success_url: successUrl,
     cancel_url: cancelUrl,
-    // ❌ NO customer_email (ya usamos customer)
   })
 
   console.log(`✅ [Checkout] Sesión creada: ${session.id}`)
