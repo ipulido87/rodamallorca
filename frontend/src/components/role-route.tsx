@@ -39,6 +39,18 @@ export const RoleRoute = ({
     return <Navigate to={fallback} replace />
   }
 
+  // ⭐ SI ES WORKSHOP_OWNER, VERIFICAR SUSCRIPCIÓN ANTES DE RENDERIZAR
+  if (requiredRole === 'WORKSHOP_OWNER') {
+    const hasActiveSubscription = (user as any).hasActiveSubscription
+
+    if (!hasActiveSubscription) {
+      console.log('🔒 [ROLE-ROUTE] WORKSHOP_OWNER sin suscripción activa → redirigiendo a /activate-subscription')
+      return <Navigate to="/activate-subscription" replace />
+    }
+
+    console.log('✅ [ROLE-ROUTE] WORKSHOP_OWNER con suscripción activa → acceso permitido')
+  }
+
   console.log('✅ [ROLE-ROUTE] Acceso permitido')
   return <>{children}</>
 }
