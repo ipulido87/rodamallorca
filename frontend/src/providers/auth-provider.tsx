@@ -82,15 +82,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const allowedWithoutSubscription = [
         '/subscriptions/create-checkout-session',  // Crear sesión de pago de Stripe
         '/subscriptions/status',                    // Verificar estado de suscripción
-        '/workshops',                               // Crear/listar workshops (solo POST/GET básico)
+        '/auth/me',                                 // Obtener datos del usuario
       ]
+
+      // ⭐ Verificar /workshops SOLO para POST (crear) o GET simple (listar propios)
+      const isWorkshopsRoute = requestUrl.includes('/workshops')
+      const isWorkshopsAllowed = isWorkshopsRoute && (
+        config.method === 'post' ||  // Crear workshop
+        requestUrl === '/owner/workshops' ||  // Listar mis workshops
+        requestUrl.includes('/owner/workshops/mine')  // Listar mis workshops
+      )
 
       // ⭐ BLOQUEAR peticiones a rutas de owner si es taller sin suscripción
       if (isOwnerOrAdminRoute) {
         // ✅ Verificar si es una ruta permitida sin suscripción
         const isAllowedRoute = allowedWithoutSubscription.some(route =>
           requestUrl.includes(route)
-        )
+        ) || isWorkshopsAllowed
 
         if (!isAllowedRoute) {
           const currentUser = JSON.parse(localStorage.getItem(USER_KEY) || 'null')
@@ -101,16 +109,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             if (!hasActiveSubscription) {
               console.log('🚫 [REQUEST INTERCEPTOR] Bloqueando petición a', requestUrl, '- sin suscripción activa')
 
-              // Redirigir inmediatamente sin hacer la petición
-              if (window.location.pathname !== '/activate-subscription') {
-                window.location.href = '/activate-subscription'
-              }
-
-              // Cancelar la petición antes de enviarla
+              // ⭐ SOLO cancelar la petición, SIN redirigir (el RoleRoute ya redirige)
               return Promise.reject({
                 message: 'Subscription required',
                 isSubscriptionRequired: true,
-                config
+                blocked: true
               })
             }
           }
