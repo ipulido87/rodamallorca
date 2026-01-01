@@ -34,18 +34,8 @@ export const createCheckoutSessionController = async (
       return res.status(403).json({ error: 'No tienes permisos para este taller' })
     }
 
-    // Crear o obtener suscripción en trial
-    let subscription = await prisma.subscription.findUnique({
-      where: { workshopId },
-    })
-
-    if (!subscription) {
-      subscription = await subscriptionService.createTrialSubscription({
-        workshopId,
-        ownerEmail: req.user.email,
-        ownerName: req.user.email,
-      })
-    }
+    // ⭐ NO crear suscripción aquí - solo crear el checkout session
+    // La suscripción se creará cuando Stripe confirme el pago via webhook
 
     // Crear sesión de checkout
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
