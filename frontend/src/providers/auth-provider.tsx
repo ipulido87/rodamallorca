@@ -148,7 +148,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     })()
   }, [refreshMe])
 
-  // ✅ LOGIN MEJORADO - MANEJA ERRORES ESPECÍFICOS Y OBTIENE DATOS COMPLETOS
+  // ✅ LOGIN MEJORADO - RETORNA DATOS DEL USUARIO DIRECTAMENTE
   const login = useCallback(
     async (email: string, password: string) => {
       setLoading(true)
@@ -164,6 +164,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (fullUser) {
           localStorage.setItem(USER_KEY, JSON.stringify(fullUser))
         }
+
+        // ⭐ RETORNAR el usuario para uso inmediato
+        return fullUser
       } catch (error: unknown) {
         console.error('Login error in AuthProvider:', error)
 
