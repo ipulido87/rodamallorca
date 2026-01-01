@@ -70,12 +70,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       '/auth/forgot-password'
     ]
 
+    // ⭐ INTERCEPTOR DE REQUEST: BLOQUEAR PETICIONES SIN SUSCRIPCIÓN
     const reqId = API.interceptors.request.use((config) => {
       const requestUrl = config.url || ''
 
       // ✅ Verificar si es una ruta pública (pero NO si contiene /owner/ o /admin/)
       const isOwnerOrAdminRoute = requestUrl.includes('/owner/') || requestUrl.includes('/admin/')
       const isPublicRoute = !isOwnerOrAdminRoute && publicRoutes.some(route => requestUrl.includes(route))
+
+      // ⭐ BLOQUEAR peticiones a rutas de owner si es taller sin suscripción
+      if (isOwnerOrAdminRoute) {
+        const currentUser = JSON.parse(localStorage.getItem(USER_KEY) || 'null')
+
+        if (currentUser?.role === 'WORKSHOP_OWNER') {
+          const hasActiveSubscription = currentUser.hasActiveSubscription
+
+          if (!hasActiveSubscription) {
+            console.log('🚫 [REQUEST INTERCEPTOR] Bloqueando petición a', requestUrl, '- sin suscripción activa')
+
+            // Redirigir inmediatamente sin hacer la petición
+            if (window.location.pathname !== '/activate-subscription') {
+              window.location.href = '/activate-subscription'
+            }
+
+            // Cancelar la petición antes de enviarla
+            return Promise.reject({
+              message: 'Subscription required',
+              isSubscriptionRequired: true,
+              config
+            })
+          }
+        }
+      }
 
       // ✅ Leer token DIRECTAMENTE de localStorage (no del estado que puede estar desactualizado)
       const currentToken = localStorage.getItem(TOKEN_KEY)
