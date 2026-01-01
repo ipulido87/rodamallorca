@@ -21,7 +21,7 @@ export type AuthContextType = {
   isWorkshopOwner: boolean
   loading: boolean
   authError: string | null
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<User | null>
   logout: () => void
   register: (input: {
     email: string
