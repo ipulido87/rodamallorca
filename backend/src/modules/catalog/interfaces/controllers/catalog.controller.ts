@@ -120,7 +120,7 @@ export const searchServicesController = async (
   next: NextFunction
 ) => {
   try {
-    const { q, categoryId, city, vehicleType, page = '1', size = '12' } = req.query
+    const { q, categoryId, city, vehicleType, workshopId, page = '1', size = '12' } = req.query
     const take = Math.min(Number(size), 50)
     const skip = (Number(page) - 1) * take
 
@@ -129,6 +129,7 @@ export const searchServicesController = async (
       ...(q ? { name: { contains: String(q), mode: 'insensitive' } } : {}),
       ...(categoryId ? { serviceCategoryId: String(categoryId) } : {}),
       ...(vehicleType && vehicleType !== 'ALL' ? { vehicleType: String(vehicleType) as VehicleType } : {}),
+      ...(workshopId ? { workshopId: String(workshopId) } : {}),
       ...(city
         ? {
             workshop: { city: { contains: String(city), mode: 'insensitive' } },
