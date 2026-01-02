@@ -97,6 +97,14 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     return
   }
 
+  // 🔍 DEBUG: Ver estructura completa del objeto subscription
+  console.log('🔍 [DEBUG] Subscription object keys:', Object.keys(subscription))
+  console.log('🔍 [DEBUG] subscription.current_period_start:', (subscription as any).current_period_start)
+  console.log('🔍 [DEBUG] subscription.current_period_end:', (subscription as any).current_period_end)
+  console.log('🔍 [DEBUG] subscription.trial_start:', (subscription as any).trial_start)
+  console.log('🔍 [DEBUG] subscription.trial_end:', (subscription as any).trial_end)
+  console.log('🔍 [DEBUG] Full subscription object:', JSON.stringify(subscription, null, 2))
+
   // ⭐ Extraer datos de trial si existen
   const sub = subscription as any
   const trialStart = sub.trial_start
