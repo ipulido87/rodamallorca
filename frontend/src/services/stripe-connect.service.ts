@@ -54,3 +54,12 @@ export async function getStripeDashboardLink(workshopId: string): Promise<Dashbo
   const response = await api.post(`/workshops/${workshopId}/stripe/dashboard-link`)
   return response.data
 }
+
+/**
+ * Recupera y asocia una cuenta de Stripe existente con el workshop
+ * Útil cuando el onboarding se completó pero no se guardó en la BD
+ */
+export async function recoverStripeAccount(workshopId: string): Promise<ConnectResponse> {
+  const response = await api.post(`/workshops/${workshopId}/stripe/recover`)
+  return response.data
+}

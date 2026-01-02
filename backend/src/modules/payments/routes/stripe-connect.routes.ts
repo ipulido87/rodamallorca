@@ -7,6 +7,7 @@ import {
   getStripeDashboardLink,
 } from '../controllers/stripe-connect.controller'
 import { getWorkshopDebugInfo } from '../controllers/debug-workshop.controller'
+import { recoverStripeAccount } from '../controllers/stripe-connect-recovery.controller'
 
 const router = Router()
 
@@ -26,6 +27,9 @@ router.get('/:id/stripe/status', getStripeAccountStatus)
 
 // POST /api/workshops/:id/stripe/dashboard-link - Link al dashboard de Stripe
 router.post('/:id/stripe/dashboard-link', verifyToken, getStripeDashboardLink)
+
+// POST /api/workshops/:id/stripe/recover - Recuperar y asociar cuenta de Stripe existente
+router.post('/:id/stripe/recover', verifyToken, recoverStripeAccount)
 
 // GET /api/workshops/:id/debug - Info de diagnóstico del workshop
 router.get('/:id/debug', getWorkshopDebugInfo)
