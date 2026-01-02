@@ -114,13 +114,27 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     ? new Date(sub.trial_end * 1000)
     : null
 
+  // ⭐ Manejar current_period - durante trial, usar trial dates como fallback
+  const currentPeriodStart = sub.current_period_start
+    ? new Date(sub.current_period_start * 1000)
+    : (trialStart || new Date())
+  const currentPeriodEnd = sub.current_period_end
+    ? new Date(sub.current_period_end * 1000)
+    : (trialEnd || new Date())
+
+  console.log('🔍 [DEBUG] Fechas calculadas:')
+  console.log('   - trialStart:', trialStart)
+  console.log('   - trialEnd:', trialEnd)
+  console.log('   - currentPeriodStart:', currentPeriodStart)
+  console.log('   - currentPeriodEnd:', currentPeriodEnd)
+
   await prisma.subscription.upsert({
     where: { workshopId },
     update: {
       stripeSubscriptionId: subscription.id,
       status: mapStripeStatus(subscription.status),
-      currentPeriodStart: new Date(sub.current_period_start * 1000),
-      currentPeriodEnd: new Date(sub.current_period_end * 1000),
+      currentPeriodStart,
+      currentPeriodEnd,
       trialStart,
       trialEnd,
       cancelAtPeriodEnd: sub.cancel_at_period_end,
@@ -131,8 +145,8 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
       stripeSubscriptionId: subscription.id,
       stripePriceId: subscription.items.data[0].price.id,
       status: mapStripeStatus(subscription.status),
-      currentPeriodStart: new Date(sub.current_period_start * 1000),
-      currentPeriodEnd: new Date(sub.current_period_end * 1000),
+      currentPeriodStart,
+      currentPeriodEnd,
       trialStart,
       trialEnd,
       cancelAtPeriodEnd: sub.cancel_at_period_end,
@@ -155,12 +169,20 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     ? new Date(sub.trial_end * 1000)
     : null
 
+  // ⭐ Manejar current_period con fallback
+  const currentPeriodStart = sub.current_period_start
+    ? new Date(sub.current_period_start * 1000)
+    : (trialStart || new Date())
+  const currentPeriodEnd = sub.current_period_end
+    ? new Date(sub.current_period_end * 1000)
+    : (trialEnd || new Date())
+
   await prisma.subscription.update({
     where: { stripeSubscriptionId: subscription.id },
     data: {
       status: mapStripeStatus(subscription.status),
-      currentPeriodStart: new Date(sub.current_period_start * 1000),
-      currentPeriodEnd: new Date(sub.current_period_end * 1000),
+      currentPeriodStart,
+      currentPeriodEnd,
       trialStart,
       trialEnd,
       cancelAtPeriodEnd: sub.cancel_at_period_end,
