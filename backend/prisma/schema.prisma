@@ -124,13 +124,18 @@ model Vehicle {
 
 model Workshop {
   id          String   @id @default(uuid())
-  ownerId     String   
+  ownerId     String
   name        String
   description String?
   address     String?
   city        String?
   country     String?
   phone       String?
+
+  // Stripe Connect (para venta de productos)
+  stripeConnectedAccountId   String?  // ID de la cuenta conectada en Stripe
+  stripeOnboardingComplete   Boolean  @default(false) // Si completó el onboarding
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -149,6 +154,7 @@ model Workshop {
   @@index([city])
   @@index([country])
   @@index([createdAt])
+  @@index([stripeConnectedAccountId])
 }
 
 // Suscripciones de talleres (Stripe)

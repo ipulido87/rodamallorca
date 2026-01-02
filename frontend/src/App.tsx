@@ -32,6 +32,8 @@ import { PricingPage } from './features/subscriptions/pages/pricing'
 import { SubscriptionSuccess } from './features/subscriptions/pages/subscription-success'
 import { SubscriptionCancel } from './features/subscriptions/pages/subscription-cancel'
 import { ActivateSubscription } from './features/subscriptions/pages/activate-subscription'
+import { StripeConnectSuccess } from './features/payments/pages/stripe-connect-success'
+import { StripeConnectRefresh } from './features/payments/pages/stripe-connect-refresh'
 import { Home } from './pages/HomePage'
 import { LandingPage } from './pages/LandingPage'
 import { LoginForm } from './features/auth/pages/login-form'
@@ -296,6 +298,10 @@ function App() {
             <Route path="activate-subscription" element={<ActivateSubscription />} />
             <Route path="subscription/success" element={<SubscriptionSuccess />} />
             <Route path="subscription/cancel" element={<SubscriptionCancel />} />
+
+            {/* Rutas de Stripe Connect */}
+            <Route path="workshops/:id/stripe/success" element={<StripeConnectSuccess />} />
+            <Route path="workshops/:id/stripe/refresh" element={<StripeConnectRefresh />} />
           </Route>
                 </Routes>
               </ConfirmDialogProvider>

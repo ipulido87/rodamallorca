@@ -27,6 +27,7 @@ import { getMyWorkshops } from '../../workshops/services/workshop-service'
 import { getWorkshopStats } from '../../billing/services/stats-service'
 import { StatsCards } from '../../billing/components/stats-cards'
 import { SalesChart } from '../../billing/components/sales-chart'
+import { StripeConnectCard } from '../../payments/components/stripe-connect-card'
 
 interface MetricCardProps {
   title: string
@@ -220,6 +221,19 @@ export const Dashboard = () => {
             <StatsCards stats={stats} />
             <SalesChart stats={stats} />
           </Stack>
+        </Box>
+      )}
+
+      {/* Stripe Connect Section */}
+      {selectedWorkshop && (
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h5" fontWeight="bold" gutterBottom>
+            💳 Pagos de Productos
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Conecta tu cuenta de Stripe para vender productos y recibir pagos
+          </Typography>
+          <StripeConnectCard workshopId={selectedWorkshop.id} />
         </Box>
       )}
 
