@@ -108,7 +108,16 @@ export async function getAccountStatus(workshopId: string) {
     where: { id: workshopId },
   })
 
+  console.log(`🔍 [Stripe Connect] Workshop de BD:`, {
+    id: workshop?.id,
+    name: workshop?.name,
+    hasStripeAccount: !!workshop?.stripeConnectedAccountId,
+    stripeAccountId: workshop?.stripeConnectedAccountId,
+    onboardingComplete: workshop?.stripeOnboardingComplete,
+  })
+
   if (!workshop || !workshop.stripeConnectedAccountId) {
+    console.log(`❌ [Stripe Connect] Workshop sin cuenta conectada`)
     return {
       hasAccount: false,
       onboardingComplete: false,
@@ -118,16 +127,35 @@ export async function getAccountStatus(workshopId: string) {
   }
 
   // Obtener información de la cuenta desde Stripe
+  console.log(`🔍 [Stripe Connect] Consultando Stripe API para cuenta ${workshop.stripeConnectedAccountId}`)
   const account = await stripe.accounts.retrieve(workshop.stripeConnectedAccountId)
+
+  console.log(`📊 [Stripe Connect] Respuesta de Stripe:`, {
+    id: account.id,
+    details_submitted: account.details_submitted,
+    charges_enabled: account.charges_enabled,
+    payouts_enabled: account.payouts_enabled,
+  })
 
   const onboardingComplete = account.details_submitted && account.charges_enabled && account.payouts_enabled
 
+  console.log(`✅ [Stripe Connect] Onboarding completo: ${onboardingComplete}`)
+
   // Actualizar en BD si cambió el estado
   if (onboardingComplete !== workshop.stripeOnboardingComplete) {
-    await prisma.workshop.update({
+    console.log(`💾 [Stripe Connect] Actualizando BD: stripeOnboardingComplete = ${onboardingComplete}`)
+
+    const updated = await prisma.workshop.update({
       where: { id: workshopId },
       data: { stripeOnboardingComplete: onboardingComplete },
     })
+
+    console.log(`✅ [Stripe Connect] BD actualizada:`, {
+      id: updated.id,
+      stripeOnboardingComplete: updated.stripeOnboardingComplete,
+    })
+  } else {
+    console.log(`ℹ️ [Stripe Connect] No se requiere actualizar BD (estado igual)`)
   }
 
   return {

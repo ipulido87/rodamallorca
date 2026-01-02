@@ -6,6 +6,7 @@ import {
   getStripeAccountStatus,
   getStripeDashboardLink,
 } from '../controllers/stripe-connect.controller'
+import { getWorkshopDebugInfo } from '../controllers/debug-workshop.controller'
 
 const router = Router()
 
@@ -25,5 +26,8 @@ router.get('/:id/stripe/status', getStripeAccountStatus)
 
 // POST /api/workshops/:id/stripe/dashboard-link - Link al dashboard de Stripe
 router.post('/:id/stripe/dashboard-link', verifyToken, getStripeDashboardLink)
+
+// GET /api/workshops/:id/debug - Info de diagnóstico del workshop
+router.get('/:id/debug', getWorkshopDebugInfo)
 
 export default router
