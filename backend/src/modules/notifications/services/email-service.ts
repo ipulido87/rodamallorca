@@ -423,3 +423,579 @@ export const sendInvoiceEmail = async (data: InvoiceEmailData): Promise<void> =>
     // No lanzar error para no bloquear la generación de la factura
   }
 }
+
+interface TrialStartedEmailData {
+  workshopName: string
+  ownerEmail: string
+  trialEndDate: string
+  dashboardUrl: string
+}
+
+/**
+ * Envía email cuando inicia el período de prueba de 7 días
+ */
+export const sendTrialStartedEmail = async (data: TrialStartedEmailData): Promise<void> => {
+  try {
+    if (!resend) {
+      console.warn('⚠️  [EMAIL] Resend no configurado. Email de trial iniciado no enviado.')
+      console.log(`📧 [EMAIL] Se hubiera enviado email de trial a ${data.ownerEmail}`)
+      return
+    }
+
+    const emailFrom = EMAIL_FROM || 'RodaMallorca <noreply@rodamallorca.es>'
+
+    await resend.emails.send({
+      from: emailFrom,
+      to: data.ownerEmail,
+      subject: `🎉 ¡Bienvenido a RodaMallorca Premium! - Prueba de 7 días activada`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Período de Prueba Activado</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .container {
+              background-color: #f9f9f9;
+              border-radius: 8px;
+              padding: 30px;
+              border: 1px solid #e0e0e0;
+            }
+            .header {
+              background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+              color: white;
+              padding: 20px;
+              border-radius: 8px 8px 0 0;
+              text-align: center;
+              margin: -30px -30px 20px -30px;
+            }
+            h1 {
+              margin: 0;
+              font-size: 24px;
+            }
+            .trial-badge {
+              display: inline-block;
+              background: #ffd700;
+              color: #333;
+              padding: 10px 20px;
+              border-radius: 25px;
+              font-size: 16px;
+              font-weight: bold;
+              margin: 20px 0;
+              box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+            .benefits {
+              background: white;
+              padding: 20px;
+              border-radius: 8px;
+              margin: 20px 0;
+            }
+            .benefit-item {
+              padding: 12px 0;
+              border-bottom: 1px solid #f0f0f0;
+              display: flex;
+              align-items: center;
+            }
+            .benefit-item:last-child {
+              border-bottom: none;
+            }
+            .benefit-icon {
+              font-size: 24px;
+              margin-right: 15px;
+            }
+            .button {
+              display: inline-block;
+              padding: 14px 28px;
+              background-color: #9c27b0;
+              color: white;
+              text-decoration: none;
+              border-radius: 6px;
+              font-weight: bold;
+              text-align: center;
+              margin: 20px auto;
+              display: block;
+              width: fit-content;
+            }
+            .info-box {
+              background: #fff3e0;
+              border-left: 4px solid #ff9800;
+              padding: 15px;
+              border-radius: 4px;
+              margin: 20px 0;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 30px;
+              padding-top: 20px;
+              border-top: 1px solid #e0e0e0;
+              color: #666;
+              font-size: 14px;
+            }
+            .emoji {
+              font-size: 48px;
+              text-align: center;
+              margin: 10px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="emoji">🎉</div>
+              <h1>¡Tu Prueba Premium ha Comenzado!</h1>
+            </div>
+
+            <p>Hola <strong>${data.workshopName}</strong>,</p>
+            <p>¡Bienvenido a RodaMallorca Premium! Tu período de prueba de 7 días ya está activo.</p>
+
+            <div style="text-align: center;">
+              <div class="trial-badge">
+                ✨ 7 Días de Prueba GRATIS ✨
+              </div>
+            </div>
+
+            <div class="benefits">
+              <h3 style="margin-top: 0; color: #9c27b0;">Ahora tienes acceso a:</h3>
+
+              <div class="benefit-item">
+                <span class="benefit-icon">📦</span>
+                <span><strong>Gestión de Pedidos:</strong> Recibe y procesa pedidos de clientes</span>
+              </div>
+
+              <div class="benefit-item">
+                <span class="benefit-icon">🧾</span>
+                <span><strong>Facturación Automática:</strong> Genera facturas profesionales al instante</span>
+              </div>
+
+              <div class="benefit-item">
+                <span class="benefit-icon">📊</span>
+                <span><strong>Estadísticas Avanzadas:</strong> Analiza el rendimiento de tu taller</span>
+              </div>
+
+              <div class="benefit-item">
+                <span class="benefit-icon">⭐</span>
+                <span><strong>Perfil Destacado:</strong> Mayor visibilidad en el marketplace</span>
+              </div>
+
+              <div class="benefit-item">
+                <span class="benefit-icon">🔔</span>
+                <span><strong>Notificaciones en Tiempo Real:</strong> Entérate de nuevos pedidos al instante</span>
+              </div>
+            </div>
+
+            <a href="${data.dashboardUrl}" class="button">
+              🚀 Ir al Dashboard
+            </a>
+
+            <div class="info-box">
+              <p style="margin: 0; color: #e65100;">
+                <strong>📅 Tu prueba termina el ${data.trialEndDate}</strong>
+              </p>
+              <p style="margin: 10px 0 0 0; color: #666; font-size: 14px;">
+                Tres días antes te enviaremos un recordatorio. Si decides continuar, se procesará el primer pago automáticamente.
+                Puedes cancelar en cualquier momento desde tu panel de control.
+              </p>
+            </div>
+
+            <p style="margin-top: 30px; color: #666; font-size: 14px;">
+              💡 <strong>Consejo:</strong> Aprovecha estos 7 días para explorar todas las funcionalidades y configurar tu taller completamente.
+            </p>
+
+            <div class="footer">
+              <p>Si tienes alguna pregunta, estamos aquí para ayudarte.</p>
+              <p>© ${new Date().getFullYear()} RodaMallorca. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    })
+
+    console.log(`✅ [EMAIL] Email de trial iniciado enviado a ${data.ownerEmail}`)
+  } catch (error: any) {
+    console.error('❌ [EMAIL] Error enviando email de trial:', error?.message || error)
+  }
+}
+
+interface TrialEndingEmailData {
+  workshopName: string
+  ownerEmail: string
+  trialEndDate: string
+  amount: string
+  manageSubscriptionUrl: string
+}
+
+/**
+ * Envía email 3 días antes de que termine el trial y se realice el primer cobro
+ */
+export const sendTrialEndingEmail = async (data: TrialEndingEmailData): Promise<void> => {
+  try {
+    if (!resend) {
+      console.warn('⚠️  [EMAIL] Resend no configurado. Email de trial finalizando no enviado.')
+      console.log(`📧 [EMAIL] Se hubiera enviado email de trial ending a ${data.ownerEmail}`)
+      return
+    }
+
+    const emailFrom = EMAIL_FROM || 'RodaMallorca <noreply@rodamallorca.es>'
+
+    await resend.emails.send({
+      from: emailFrom,
+      to: data.ownerEmail,
+      subject: `⏰ Tu prueba termina en 3 días - RodaMallorca Premium`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Tu Prueba Está por Terminar</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .container {
+              background-color: #f9f9f9;
+              border-radius: 8px;
+              padding: 30px;
+              border: 1px solid #e0e0e0;
+            }
+            .header {
+              background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+              color: white;
+              padding: 20px;
+              border-radius: 8px 8px 0 0;
+              text-align: center;
+              margin: -30px -30px 20px -30px;
+            }
+            h1 {
+              margin: 0;
+              font-size: 24px;
+            }
+            .countdown-box {
+              background: white;
+              padding: 30px;
+              border-radius: 8px;
+              text-align: center;
+              margin: 20px 0;
+              border: 3px solid #ff9800;
+            }
+            .countdown-number {
+              font-size: 48px;
+              font-weight: bold;
+              color: #ff9800;
+              margin: 10px 0;
+            }
+            .price-box {
+              background: #fff3e0;
+              padding: 20px;
+              border-radius: 8px;
+              text-align: center;
+              margin: 20px 0;
+            }
+            .price {
+              font-size: 32px;
+              font-weight: bold;
+              color: #ff9800;
+            }
+            .button {
+              display: inline-block;
+              padding: 14px 28px;
+              background-color: #ff9800;
+              color: white;
+              text-decoration: none;
+              border-radius: 6px;
+              font-weight: bold;
+              text-align: center;
+              margin: 10px;
+            }
+            .button-secondary {
+              background-color: #666;
+            }
+            .info-box {
+              background: #e3f2fd;
+              border-left: 4px solid #2196f3;
+              padding: 15px;
+              border-radius: 4px;
+              margin: 20px 0;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 30px;
+              padding-top: 20px;
+              border-top: 1px solid #e0e0e0;
+              color: #666;
+              font-size: 14px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>⏰ Tu Prueba Está por Terminar</h1>
+            </div>
+
+            <p>Hola <strong>${data.workshopName}</strong>,</p>
+            <p>Tu período de prueba gratuito de RodaMallorca Premium está llegando a su fin.</p>
+
+            <div class="countdown-box">
+              <div style="font-size: 18px; color: #666;">Tiempo restante de prueba</div>
+              <div class="countdown-number">3 DÍAS</div>
+              <div style="font-size: 14px; color: #999;">Finaliza el ${data.trialEndDate}</div>
+            </div>
+
+            <p style="text-align: center; font-size: 18px; color: #333;">
+              <strong>El ${data.trialEndDate}</strong> se procesará automáticamente el primer pago de tu suscripción Premium.
+            </p>
+
+            <div class="price-box">
+              <div style="color: #666; margin-bottom: 10px;">Importe del primer cobro:</div>
+              <div class="price">${data.amount}</div>
+              <div style="color: #999; font-size: 14px; margin-top: 10px;">Facturación mensual</div>
+            </div>
+
+            <div class="info-box">
+              <p style="margin: 0;">
+                <strong>💳 ¿Qué pasará después del trial?</strong>
+              </p>
+              <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Se cargará ${data.amount} a tu método de pago registrado</li>
+                <li>Mantendrás acceso completo a todas las funcionalidades Premium</li>
+                <li>Se renovará automáticamente cada mes</li>
+                <li>Podrás cancelar en cualquier momento sin penalización</li>
+              </ul>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <p style="font-size: 16px; margin-bottom: 15px;">
+                <strong>¿Todo listo para continuar?</strong>
+              </p>
+              <a href="${data.manageSubscriptionUrl}" class="button">
+                ✅ Continuar con Premium
+              </a>
+              <br>
+              <a href="${data.manageSubscriptionUrl}" class="button button-secondary">
+                ❌ Cancelar Suscripción
+              </a>
+            </div>
+
+            <p style="margin-top: 30px; color: #666; font-size: 14px; text-align: center;">
+              Si no haces nada, tu suscripción continuará automáticamente.<br>
+              Puedes cancelar desde tu panel de control en cualquier momento.
+            </p>
+
+            <div class="footer">
+              <p>¿Preguntas? Estamos aquí para ayudarte.</p>
+              <p>© ${new Date().getFullYear()} RodaMallorca. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    })
+
+    console.log(`✅ [EMAIL] Email de trial ending enviado a ${data.ownerEmail}`)
+  } catch (error: any) {
+    console.error('❌ [EMAIL] Error enviando email de trial ending:', error?.message || error)
+  }
+}
+
+interface PaymentSuccessEmailData {
+  workshopName: string
+  ownerEmail: string
+  amount: string
+  nextBillingDate: string
+  invoiceUrl: string
+  manageSubscriptionUrl: string
+}
+
+/**
+ * Envía email cuando se procesa un pago exitoso
+ */
+export const sendPaymentSuccessEmail = async (data: PaymentSuccessEmailData): Promise<void> => {
+  try {
+    if (!resend) {
+      console.warn('⚠️  [EMAIL] Resend no configurado. Email de pago exitoso no enviado.')
+      console.log(`📧 [EMAIL] Se hubiera enviado email de pago a ${data.ownerEmail}`)
+      return
+    }
+
+    const emailFrom = EMAIL_FROM || 'RodaMallorca <noreply@rodamallorca.es>'
+
+    await resend.emails.send({
+      from: emailFrom,
+      to: data.ownerEmail,
+      subject: `✅ Pago Confirmado - RodaMallorca Premium`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Pago Confirmado</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .container {
+              background-color: #f9f9f9;
+              border-radius: 8px;
+              padding: 30px;
+              border: 1px solid #e0e0e0;
+            }
+            .header {
+              background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+              color: white;
+              padding: 20px;
+              border-radius: 8px 8px 0 0;
+              text-align: center;
+              margin: -30px -30px 20px -30px;
+            }
+            h1 {
+              margin: 0;
+              font-size: 24px;
+            }
+            .success-icon {
+              font-size: 64px;
+              text-align: center;
+              margin: 20px 0;
+            }
+            .payment-details {
+              background: white;
+              padding: 20px;
+              border-radius: 8px;
+              margin: 20px 0;
+              border-left: 4px solid #4caf50;
+            }
+            .detail-row {
+              display: flex;
+              justify-content: space-between;
+              padding: 10px 0;
+              border-bottom: 1px solid #f0f0f0;
+            }
+            .detail-row:last-child {
+              border-bottom: none;
+            }
+            .amount {
+              font-size: 32px;
+              font-weight: bold;
+              color: #4caf50;
+              text-align: center;
+              margin: 20px 0;
+            }
+            .button {
+              display: inline-block;
+              padding: 12px 24px;
+              background-color: #4caf50;
+              color: white;
+              text-decoration: none;
+              border-radius: 6px;
+              font-weight: bold;
+              text-align: center;
+              margin: 10px;
+            }
+            .button-secondary {
+              background-color: #2196f3;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 30px;
+              padding-top: 20px;
+              border-top: 1px solid #e0e0e0;
+              color: #666;
+              font-size: 14px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>✅ Pago Procesado Exitosamente</h1>
+            </div>
+
+            <div class="success-icon">✅</div>
+
+            <p>Hola <strong>${data.workshopName}</strong>,</p>
+            <p>Tu pago ha sido procesado correctamente. ¡Gracias por confiar en RodaMallorca Premium!</p>
+
+            <div class="amount">${data.amount}</div>
+
+            <div class="payment-details">
+              <h3 style="margin-top: 0; color: #4caf50;">Detalles del Pago</h3>
+
+              <div class="detail-row">
+                <span style="color: #666;">Estado:</span>
+                <span style="color: #4caf50; font-weight: bold;">✅ Pagado</span>
+              </div>
+
+              <div class="detail-row">
+                <span style="color: #666;">Concepto:</span>
+                <span>RodaMallorca Premium - Suscripción Mensual</span>
+              </div>
+
+              <div class="detail-row">
+                <span style="color: #666;">Fecha de pago:</span>
+                <span>${new Date().toLocaleDateString('es-ES', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}</span>
+              </div>
+
+              <div class="detail-row">
+                <span style="color: #666;">Próximo cobro:</span>
+                <span>${data.nextBillingDate}</span>
+              </div>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${data.invoiceUrl}" class="button">
+                📄 Ver Recibo
+              </a>
+              <a href="${data.manageSubscriptionUrl}" class="button button-secondary">
+                ⚙️ Gestionar Suscripción
+              </a>
+            </div>
+
+            <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 0; text-align: center;">
+                <strong>🎉 ¡Sigues disfrutando de todas las ventajas Premium!</strong>
+              </p>
+              <p style="margin: 10px 0 0 0; text-align: center; color: #666; font-size: 14px;">
+                Gestión de pedidos • Facturación automática • Estadísticas avanzadas • Soporte prioritario
+              </p>
+            </div>
+
+            <div class="footer">
+              <p>Gracias por tu confianza en RodaMallorca.</p>
+              <p>© ${new Date().getFullYear()} RodaMallorca. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    })
+
+    console.log(`✅ [EMAIL] Email de pago exitoso enviado a ${data.ownerEmail}`)
+  } catch (error: any) {
+    console.error('❌ [EMAIL] Error enviando email de pago:', error?.message || error)
+  }
+}
