@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { authenticate } from '../../auth/interfaces/middlewares/auth.middleware'
+import { verifyToken } from '../../auth/interfaces/middlewares/auth.middleware'
 import {
   initiateStripeConnect,
   refreshOnboardingLink,
@@ -15,15 +15,15 @@ const router = Router()
  */
 
 // POST /api/workshops/:id/stripe/connect - Iniciar conexión de Stripe
-router.post('/:id/stripe/connect', authenticate, initiateStripeConnect)
+router.post('/:id/stripe/connect', verifyToken, initiateStripeConnect)
 
 // POST /api/workshops/:id/stripe/refresh-onboarding - Regenerar link de onboarding
-router.post('/:id/stripe/refresh-onboarding', authenticate, refreshOnboardingLink)
+router.post('/:id/stripe/refresh-onboarding', verifyToken, refreshOnboardingLink)
 
 // GET /api/workshops/:id/stripe/status - Estado de la cuenta conectada
 router.get('/:id/stripe/status', getStripeAccountStatus)
 
 // POST /api/workshops/:id/stripe/dashboard-link - Link al dashboard de Stripe
-router.post('/:id/stripe/dashboard-link', authenticate, getStripeDashboardLink)
+router.post('/:id/stripe/dashboard-link', verifyToken, getStripeDashboardLink)
 
 export default router
