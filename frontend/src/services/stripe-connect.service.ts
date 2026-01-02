@@ -27,7 +27,7 @@ export interface DashboardLinkResponse {
  * Crea la cuenta conectada y retorna la URL de onboarding
  */
 export async function initiateStripeConnect(workshopId: string): Promise<ConnectResponse> {
-  const response = await api.post(`/api/workshops/${workshopId}/stripe/connect`)
+  const response = await api.post(`/workshops/${workshopId}/stripe/connect`)
   return response.data
 }
 
@@ -35,7 +35,7 @@ export async function initiateStripeConnect(workshopId: string): Promise<Connect
  * Regenera el link de onboarding si expiró
  */
 export async function refreshOnboardingLink(workshopId: string): Promise<ConnectResponse> {
-  const response = await api.post(`/api/workshops/${workshopId}/stripe/refresh-onboarding`)
+  const response = await api.post(`/workshops/${workshopId}/stripe/refresh-onboarding`)
   return response.data
 }
 
@@ -43,7 +43,7 @@ export async function refreshOnboardingLink(workshopId: string): Promise<Connect
  * Obtiene el estado de la cuenta conectada de Stripe
  */
 export async function getStripeAccountStatus(workshopId: string): Promise<StripeConnectStatus> {
-  const response = await api.get(`/api/workshops/${workshopId}/stripe/status`)
+  const response = await api.get(`/workshops/${workshopId}/stripe/status`)
   return response.data
 }
 
@@ -51,6 +51,6 @@ export async function getStripeAccountStatus(workshopId: string): Promise<Stripe
  * Obtiene un link al Stripe Express Dashboard
  */
 export async function getStripeDashboardLink(workshopId: string): Promise<DashboardLinkResponse> {
-  const response = await api.post(`/api/workshops/${workshopId}/stripe/dashboard-link`)
+  const response = await api.post(`/workshops/${workshopId}/stripe/dashboard-link`)
   return response.data
 }
