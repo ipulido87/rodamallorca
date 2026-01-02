@@ -1,4 +1,4 @@
-import api from './api'
+import { API as api } from '../features/auth/services/auth-service'
 
 export interface StripeConnectStatus {
   hasAccount: boolean
