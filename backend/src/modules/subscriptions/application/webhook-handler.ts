@@ -10,7 +10,11 @@ const prisma = new PrismaClient()
 export async function handleStripeWebhook(payload: Buffer, signature: string) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
+  console.log('🔔 [Webhook] Webhook recibido desde Stripe')
+  console.log('🔔 [Webhook] STRIPE_WEBHOOK_SECRET configurado:', webhookSecret ? '✅ SÍ' : '❌ NO')
+
   if (!webhookSecret) {
+    console.error('❌ [Webhook] STRIPE_WEBHOOK_SECRET no está configurado en las variables de entorno')
     throw new Error('STRIPE_WEBHOOK_SECRET no está configurado')
   }
 
@@ -18,42 +22,50 @@ export async function handleStripeWebhook(payload: Buffer, signature: string) {
 
   try {
     event = stripe.webhooks.constructEvent(payload, signature, webhookSecret)
+    console.log('✅ [Webhook] Firma verificada correctamente')
   } catch (err) {
     console.error('❌ [Webhook] Error verificando firma:', err)
     throw new Error(`Webhook signature verification failed: ${err.message}`)
   }
 
   console.log(`📨 [Webhook] Evento recibido: ${event.type}`)
+  console.log(`📨 [Webhook] Event ID: ${event.id}`)
 
   try {
     switch (event.type) {
       // Suscripción creada exitosamente
       case 'customer.subscription.created':
+        console.log('🎉 [Webhook] Procesando customer.subscription.created')
         await handleSubscriptionCreated(event.data.object as Stripe.Subscription)
         break
 
       // Suscripción actualizada
       case 'customer.subscription.updated':
+        console.log('🔄 [Webhook] Procesando customer.subscription.updated')
         await handleSubscriptionUpdated(event.data.object as Stripe.Subscription)
         break
 
       // Suscripción cancelada
       case 'customer.subscription.deleted':
+        console.log('❌ [Webhook] Procesando customer.subscription.deleted')
         await handleSubscriptionDeleted(event.data.object as Stripe.Subscription)
         break
 
       // Pago exitoso
       case 'invoice.payment_succeeded':
+        console.log('💰 [Webhook] Procesando invoice.payment_succeeded')
         await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice)
         break
 
       // Pago fallido
       case 'invoice.payment_failed':
+        console.log('⚠️ [Webhook] Procesando invoice.payment_failed')
         await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice)
         break
 
       // Checkout completado
       case 'checkout.session.completed':
+        console.log('✅ [Webhook] Procesando checkout.session.completed')
         await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session)
         break
 
@@ -67,6 +79,7 @@ export async function handleStripeWebhook(payload: Buffer, signature: string) {
         console.log(`⚠️ [Webhook] Evento no manejado: ${event.type}`)
     }
 
+    console.log(`✅ [Webhook] Evento ${event.type} procesado exitosamente`)
     return { received: true }
   } catch (error) {
     console.error(`❌ [Webhook] Error procesando ${event.type}:`, error)
