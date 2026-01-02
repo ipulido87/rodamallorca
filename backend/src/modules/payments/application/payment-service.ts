@@ -35,6 +35,14 @@ export async function createProductCheckoutSession(input: CreateCheckoutInput) {
     where: { id: workshopId },
   })
 
+  console.log(`🔍 [Payment] Workshop encontrado:`, {
+    id: workshop?.id,
+    name: workshop?.name,
+    hasStripeAccount: !!workshop?.stripeConnectedAccountId,
+    stripeAccountId: workshop?.stripeConnectedAccountId,
+    onboardingComplete: workshop?.stripeOnboardingComplete,
+  })
+
   if (!workshop) {
     throw new Error('Taller no encontrado')
   }
