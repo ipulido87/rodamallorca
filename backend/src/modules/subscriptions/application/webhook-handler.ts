@@ -1,6 +1,11 @@
 import { PrismaClient } from '@prisma/client'
 import Stripe from 'stripe'
 import { stripe } from '../infrastructure/stripe.config'
+import {
+  sendTrialStartedEmail,
+  sendTrialEndingEmail,
+  sendPaymentSuccessEmail,
+} from '../../notifications/services/email-service'
 
 const prisma = new PrismaClient()
 
@@ -49,6 +54,12 @@ export async function handleStripeWebhook(payload: Buffer, signature: string) {
       case 'customer.subscription.deleted':
         console.log('❌ [Webhook] Procesando customer.subscription.deleted')
         await handleSubscriptionDeleted(event.data.object as Stripe.Subscription)
+        break
+
+      // Trial está por terminar (3 días antes)
+      case 'customer.subscription.trial_will_end':
+        console.log('⏰ [Webhook] Procesando customer.subscription.trial_will_end')
+        await handleTrialWillEnd(event.data.object as Stripe.Subscription)
         break
 
       // Pago exitoso
@@ -156,6 +167,34 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   console.log(`✅ [Webhook] Suscripción actualizada en BD para workshop ${workshopId}`)
   console.log(`   - Status: ${subscription.status}`)
   console.log(`   - Trial: ${trialStart ? 'SÍ' : 'NO'} ${trialEnd ? `hasta ${trialEnd.toLocaleDateString('es-ES')}` : ''}`)
+
+  // 📧 Enviar email de bienvenida si es un trial
+  if (trialStart && trialEnd) {
+    try {
+      const workshop = await prisma.workshop.findUnique({
+        where: { id: workshopId },
+        include: { owner: true },
+      })
+
+      if (workshop && workshop.owner) {
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
+        await sendTrialStartedEmail({
+          workshopName: workshop.name,
+          ownerEmail: workshop.owner.email,
+          trialEndDate: trialEnd.toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }),
+          dashboardUrl: `${frontendUrl}/dashboard`,
+        })
+        console.log(`📧 [Webhook] Email de bienvenida enviado a ${workshop.owner.email}`)
+      }
+    } catch (emailError) {
+      console.error('❌ [Webhook] Error enviando email de bienvenida:', emailError)
+      // No fallar el webhook por un error de email
+    }
+  }
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
@@ -207,6 +246,64 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   console.log(`✅ [Webhook] Suscripción marcada como cancelada`)
 }
 
+async function handleTrialWillEnd(subscription: Stripe.Subscription) {
+  console.log(`⏰ [Webhook] Trial está por terminar: ${subscription.id}`)
+
+  const workshopId = subscription.metadata.workshopId
+
+  if (!workshopId) {
+    console.error('❌ [Webhook] No se encontró workshopId en metadata')
+    return
+  }
+
+  try {
+    const workshop = await prisma.workshop.findUnique({
+      where: { id: workshopId },
+      include: { owner: true },
+    })
+
+    if (!workshop || !workshop.owner) {
+      console.error('❌ [Webhook] No se encontró el workshop o el owner')
+      return
+    }
+
+    const sub = subscription as any
+    const trialEnd = sub.trial_end
+      ? new Date(sub.trial_end * 1000)
+      : null
+
+    if (!trialEnd) {
+      console.error('❌ [Webhook] No se encontró trial_end en la suscripción')
+      return
+    }
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
+
+    // Obtener el precio de la suscripción
+    const priceAmount = subscription.items.data[0]?.price?.unit_amount
+    const amount = priceAmount
+      ? `${(priceAmount / 100).toFixed(2)}€`
+      : '29.99€'
+
+    await sendTrialEndingEmail({
+      workshopName: workshop.name,
+      ownerEmail: workshop.owner.email,
+      trialEndDate: trialEnd.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }),
+      amount,
+      manageSubscriptionUrl: `${frontendUrl}/subscription/manage`,
+    })
+
+    console.log(`✅ [Webhook] Email de trial ending enviado a ${workshop.owner.email}`)
+  } catch (error) {
+    console.error('❌ [Webhook] Error enviando email de trial ending:', error)
+    // No fallar el webhook por un error de email
+  }
+}
+
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   console.log(`💰 [Webhook] Pago exitoso: ${invoice.id}`)
 
@@ -215,16 +312,56 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
 
   const subscription = await prisma.subscription.findUnique({
     where: { stripeSubscriptionId: invoiceSubscription as string },
+    include: {
+      workshop: {
+        include: {
+          owner: true,
+        },
+      },
+    },
   })
 
   if (subscription) {
-    await prisma.subscription.update({
+    // Actualizar estado de la suscripción
+    const updatedSubscription = await prisma.subscription.update({
       where: { id: subscription.id },
       data: {
         status: 'ACTIVE',
       },
     })
     console.log(`✅ [Webhook] Suscripción activada tras pago exitoso`)
+
+    // 📧 Enviar email de confirmación de pago
+    try {
+      if (subscription.workshop && subscription.workshop.owner) {
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
+        const amount = invoice.amount_paid
+          ? `${(invoice.amount_paid / 100).toFixed(2)}€`
+          : '29.99€'
+
+        // Calcular próxima fecha de facturación
+        const nextBillingDate = subscription.currentPeriodEnd
+          ? new Date(subscription.currentPeriodEnd).toLocaleDateString('es-ES', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })
+          : 'Próximamente'
+
+        await sendPaymentSuccessEmail({
+          workshopName: subscription.workshop.name,
+          ownerEmail: subscription.workshop.owner.email,
+          amount,
+          nextBillingDate,
+          invoiceUrl: invoice.hosted_invoice_url || `${frontendUrl}/subscription/invoices`,
+          manageSubscriptionUrl: `${frontendUrl}/subscription/manage`,
+        })
+        console.log(`📧 [Webhook] Email de pago exitoso enviado a ${subscription.workshop.owner.email}`)
+      }
+    } catch (emailError) {
+      console.error('❌ [Webhook] Error enviando email de pago:', emailError)
+      // No fallar el webhook por un error de email
+    }
   }
 }
 
