@@ -34,6 +34,9 @@ export interface CardWorkshop {
   city?: string
   country?: string
   phone?: string
+  logoOriginal?: string
+  logoMedium?: string
+  logoThumbnail?: string
   createdAt: string
 }
 

@@ -52,6 +52,9 @@ interface Workshop {
   phone?: string
   email?: string
   website?: string
+  logoOriginal?: string
+  logoMedium?: string
+  logoThumbnail?: string
   createdAt: string
   rating?: number
   reviewCount?: number
@@ -208,11 +211,13 @@ export const WorkshopDetail = () => {
               >
                 {/* Avatar del taller */}
                 <Avatar
+                  src={workshop.logoMedium || undefined}
+                  alt={workshop.name}
                   sx={{
                     width: 120,
                     height: 120,
                     fontSize: '3rem',
-                    backgroundColor: theme.palette.primary.main,
+                    backgroundColor: workshop.logoMedium ? 'transparent' : theme.palette.primary.main,
                     border: `4px solid ${theme.palette.common.white}`,
                     boxShadow: `0 4px 20px ${alpha(
                       theme.palette.primary.main,
@@ -220,7 +225,7 @@ export const WorkshopDetail = () => {
                     )}`,
                   }}
                 >
-                  <Build sx={{ fontSize: '3rem' }} />
+                  {!workshop.logoMedium && <Build sx={{ fontSize: '3rem' }} />}
                 </Avatar>
 
                 {/* Información principal */}

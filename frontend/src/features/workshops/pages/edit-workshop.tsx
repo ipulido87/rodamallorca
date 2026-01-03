@@ -7,6 +7,7 @@ import {
   Paper,
   TextField,
   Typography,
+  Divider,
 } from '@mui/material'
 import { AxiosError } from 'axios'
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
@@ -17,6 +18,8 @@ import {
   type CreateWorkshopData,
   type Workshop,
 } from '../services/workshop-service'
+import { WorkshopLogoUpload } from '../components/workshop-logo-upload'
+import type { ProcessedImage } from '../../media/services/media-service'
 
 export const EditWorkshop = () => {
   const { id } = useParams<{ id: string }>()
@@ -35,6 +38,8 @@ export const EditWorkshop = () => {
     country: '',
     phone: '',
   })
+
+  const [logoData, setLogoData] = useState<ProcessedImage | null>(null)
 
   // Cargar datos del workshop al montar el componente
   useEffect(() => {
@@ -60,6 +65,15 @@ export const EditWorkshop = () => {
           country: data.country || '',
           phone: data.phone || '',
         })
+
+        // Cargar logo si existe
+        if (data.logoOriginal && data.logoMedium && data.logoThumbnail) {
+          setLogoData({
+            original: data.logoOriginal,
+            medium: data.logoMedium,
+            thumbnail: data.logoThumbnail,
+          })
+        }
       } catch (err) {
         if (err instanceof AxiosError) {
           if (err.response?.status === 404) {
@@ -85,6 +99,10 @@ export const EditWorkshop = () => {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+  const handleLogoChange = (logo: ProcessedImage | null) => {
+    setLogoData(logo)
+  }
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!id) return
@@ -100,6 +118,9 @@ export const EditWorkshop = () => {
         city: formData.city?.trim() || undefined,
         country: formData.country?.trim() || undefined,
         phone: formData.phone?.trim() || undefined,
+        logoOriginal: logoData?.original || undefined,
+        logoMedium: logoData?.medium || undefined,
+        logoThumbnail: logoData?.thumbnail || undefined,
       })
 
       setSuccess('Taller actualizado correctamente')
@@ -191,6 +212,15 @@ export const EditWorkshop = () => {
         )}
 
         <Box component="form" onSubmit={handleSubmit}>
+          {/* Logo Upload */}
+          <WorkshopLogoUpload
+            currentLogo={logoData?.medium || null}
+            onLogoChange={handleLogoChange}
+            disabled={loading}
+          />
+
+          <Divider sx={{ my: 3 }} />
+
           <TextField
             label="Nombre del Taller"
             name="name"

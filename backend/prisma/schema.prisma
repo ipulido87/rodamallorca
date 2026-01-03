@@ -132,6 +132,11 @@ model Workshop {
   country     String?
   phone       String?
 
+  // Logo del taller (imágenes procesadas en Cloudinary)
+  logoOriginal   String? // URL de la imagen original
+  logoMedium     String? // URL de la imagen mediana (600x600)
+  logoThumbnail  String? // URL de la imagen pequeña (300x300)
+
   // Stripe Connect (para venta de productos)
   stripeConnectedAccountId   String?  // ID de la cuenta conectada en Stripe
   stripeOnboardingComplete   Boolean  @default(false) // Si completó el onboarding
