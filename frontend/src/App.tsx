@@ -34,6 +34,7 @@ import { SubscriptionCancel } from './features/subscriptions/pages/subscription-
 import { ActivateSubscription } from './features/subscriptions/pages/activate-subscription'
 import { StripeConnectSuccess } from './features/payments/pages/stripe-connect-success'
 import { StripeConnectRefresh } from './features/payments/pages/stripe-connect-refresh'
+import { StripeDiagnosticPage } from './features/payments/pages/stripe-diagnostic-page'
 import { Home } from './pages/HomePage'
 import { LandingPage } from './pages/LandingPage'
 import { LoginForm } from './features/auth/pages/login-form'
@@ -302,6 +303,7 @@ function App() {
             {/* Rutas de Stripe Connect */}
             <Route path="workshops/:id/stripe/success" element={<StripeConnectSuccess />} />
             <Route path="workshops/:id/stripe/refresh" element={<StripeConnectRefresh />} />
+            <Route path="workshops/:workshopId/stripe/diagnostic" element={<StripeDiagnosticPage />} />
           </Route>
                 </Routes>
               </ConfirmDialogProvider>

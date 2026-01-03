@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Box,
   Button,
@@ -18,6 +19,7 @@ import {
   OpenInNew,
   Warning,
   Refresh,
+  Build,
 } from '@mui/icons-material'
 import {
   initiateStripeConnect,
@@ -32,6 +34,7 @@ interface StripeConnectCardProps {
 
 export const StripeConnectCard = ({ workshopId }: StripeConnectCardProps) => {
   const theme = useTheme()
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState<StripeConnectStatus | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -195,32 +198,54 @@ export const StripeConnectCard = ({ workshopId }: StripeConnectCardProps) => {
           {/* Botones de acción */}
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             {!status?.hasAccount && (
-              <Button
-                variant="contained"
-                size="large"
-                startIcon={loading ? <CircularProgress size={20} /> : <Payment />}
-                onClick={handleConnect}
-                disabled={loading}
-                fullWidth
-                sx={{ py: 1.5, fontWeight: 600 }}
-              >
-                Conectar con Stripe
-              </Button>
+              <>
+                <Button
+                  variant="contained"
+                  size="large"
+                  startIcon={loading ? <CircularProgress size={20} /> : <Payment />}
+                  onClick={handleConnect}
+                  disabled={loading}
+                  fullWidth
+                  sx={{ py: 1.5, fontWeight: 600 }}
+                >
+                  Conectar con Stripe
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  startIcon={<Build />}
+                  onClick={() => navigate(`/workshops/${workshopId}/stripe/diagnostic`)}
+                  sx={{ py: 1.5, fontWeight: 600 }}
+                >
+                  Diagnosticar
+                </Button>
+              </>
             )}
 
             {status?.hasAccount && !status.onboardingComplete && (
-              <Button
-                variant="contained"
-                size="large"
-                color="warning"
-                startIcon={loading ? <CircularProgress size={20} /> : <Refresh />}
-                onClick={handleConnect}
-                disabled={loading}
-                fullWidth
-                sx={{ py: 1.5, fontWeight: 600 }}
-              >
-                Completar Verificación
-              </Button>
+              <>
+                <Button
+                  variant="contained"
+                  size="large"
+                  color="warning"
+                  startIcon={loading ? <CircularProgress size={20} /> : <Refresh />}
+                  onClick={handleConnect}
+                  disabled={loading}
+                  fullWidth
+                  sx={{ py: 1.5, fontWeight: 600 }}
+                >
+                  Completar Verificación
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  startIcon={<Build />}
+                  onClick={() => navigate(`/workshops/${workshopId}/stripe/diagnostic`)}
+                  sx={{ py: 1.5, fontWeight: 600 }}
+                >
+                  Diagnosticar
+                </Button>
+              </>
             )}
 
             {status?.onboardingComplete && (
