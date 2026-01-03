@@ -24,6 +24,8 @@ export interface Workshop {
   logoOriginal?: string
   logoMedium?: string
   logoThumbnail?: string
+  averageRating?: number
+  reviewCount?: number
   createdAt: string
   updatedAt: string
 }

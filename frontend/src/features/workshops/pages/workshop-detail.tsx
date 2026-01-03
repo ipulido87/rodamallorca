@@ -7,6 +7,7 @@ import {
   Language,
   LocationOn,
   Phone,
+  RateReview,
   Schedule,
   ShoppingCart,
   Verified,
@@ -41,6 +42,9 @@ import {
 import type { Product, Service } from '../../catalog/types/catalog'
 import { ModernProductLayout, ModernServiceLayout } from '../../products/components/modern-product-layout'
 import { adaptProductImages } from '../../../utils/adapt-product-Images'
+import { ReviewForm } from '../../reviews/components/review-form'
+import { ReviewList } from '../../reviews/components/review-list'
+import { useAuth } from '../../auth/hooks/use-auth'
 
 interface Workshop {
   id: string
@@ -55,9 +59,10 @@ interface Workshop {
   logoOriginal?: string
   logoMedium?: string
   logoThumbnail?: string
+  averageRating?: number
+  reviewCount?: number
   createdAt: string
   rating?: number
-  reviewCount?: number
   services?: string[]
   specialties?: string[]
   verified?: boolean
@@ -92,7 +97,9 @@ export const WorkshopDetail = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const theme = useTheme()
+  const { user } = useAuth()
   const [tabValue, setTabValue] = useState(0)
+  const [reviewRefresh, setReviewRefresh] = useState(0)
 
   // SWR: Cargar información del taller
   const { data: workshop, error, isLoading: loading } = useSWR<Workshop>(
@@ -380,6 +387,7 @@ export const WorkshopDetail = () => {
               <Tab label="Información" icon={<Business />} iconPosition="start" />
               <Tab label="Productos" icon={<ShoppingCart />} iconPosition="start" />
               <Tab label="Servicios" icon={<Build />} iconPosition="start" />
+              <Tab label="Opiniones" icon={<RateReview />} iconPosition="start" />
             </Tabs>
           </Box>
 
@@ -501,6 +509,17 @@ export const WorkshopDetail = () => {
                 Este taller no tiene servicios publicados en este momento.
               </Alert>
             )}
+          </TabPanel>
+
+          {/* Tab Panel: Opiniones */}
+          <TabPanel value={tabValue} index={3}>
+            {user && (
+              <ReviewForm
+                workshopId={id!}
+                onReviewCreated={() => setReviewRefresh((prev) => prev + 1)}
+              />
+            )}
+            <ReviewList workshopId={id!} refreshTrigger={reviewRefresh} />
           </TabPanel>
         </Stack>
       </Box>
