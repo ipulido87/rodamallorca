@@ -44,7 +44,7 @@ import { ModernProductLayout, ModernServiceLayout } from '../../products/compone
 import { adaptProductImages } from '../../../utils/adapt-product-Images'
 import { ReviewForm } from '../../reviews/components/review-form'
 import { ReviewList } from '../../reviews/components/review-list'
-import { useAuth } from '../../auth/hooks/use-auth'
+import { useAuth } from '../../auth/hooks/useAuth'
 
 interface Workshop {
   id: string
