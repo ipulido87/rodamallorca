@@ -16,7 +16,7 @@ import {
 import { MoreVert, Delete, Edit } from '@mui/icons-material'
 import { getWorkshopReviews, deleteReview } from '../services/review-service'
 import type { Review } from '../types/review-types'
-import { useAuth } from '../../auth/hooks/use-auth'
+import { useAuth } from '../../auth/hooks/useAuth'
 
 interface ReviewListProps {
   workshopId: string
