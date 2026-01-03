@@ -20,6 +20,7 @@ import subscriptionRoutes from './modules/subscriptions/interfaces/http/subscrip
 import webhookRoutes from './modules/subscriptions/interfaces/http/webhook.routes'
 import paymentRoutes from './modules/payments/interfaces/http/payment.routes'
 import stripeConnectRoutes from './modules/payments/routes/stripe-connect.routes'
+import reviewRoutes from './modules/reviews/interfaces/http/review.routes'
 
 dotenv.config()
 
@@ -77,6 +78,7 @@ app.use('/api/customers', customerRoutes) // Rutas de clientes
 app.use('/api/subscriptions', subscriptionRoutes) // Rutas de suscripciones
 app.use('/api/payments', paymentRoutes) // Rutas de pagos de productos
 app.use('/api/workshops', stripeConnectRoutes) // Rutas de Stripe Connect
+app.use('/api', reviewRoutes) // Rutas de reviews
 
 // Servir archivos estáticos
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))

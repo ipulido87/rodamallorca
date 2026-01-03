@@ -85,6 +85,7 @@ model User {
   vehicles          Vehicle[]     // Vehículos del usuario
   favoriteWorkshops FavoriteWorkshop[] // Talleres favoritos
   settings          UserSettings? // Configuración del usuario
+  reviews           Review[]      // Reviews escritas por el usuario
 }
 
 // Configuración de usuario
@@ -132,9 +133,18 @@ model Workshop {
   country     String?
   phone       String?
 
+  // Logo del taller (imágenes procesadas en Cloudinary)
+  logoOriginal   String? // URL de la imagen original
+  logoMedium     String? // URL de la imagen mediana (600x600)
+  logoThumbnail  String? // URL de la imagen pequeña (300x300)
+
   // Stripe Connect (para venta de productos)
   stripeConnectedAccountId   String?  // ID de la cuenta conectada en Stripe
   stripeOnboardingComplete   Boolean  @default(false) // Si completó el onboarding
+
+  // Rating y reviews
+  averageRating Float?   @default(0)    // Calificación promedio (0-5)
+  reviewCount   Int      @default(0)     // Número total de reviews
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -149,12 +159,36 @@ model Workshop {
   invoiceSeries  InvoiceSeries[]   // Series de facturación del taller
   favoritedBy    FavoriteWorkshop[] // Usuarios que tienen este taller como favorito
   subscription   Subscription?     // Suscripción del taller
+  reviews        Review[]          // Reviews del taller
 
   @@index([ownerId])
   @@index([city])
   @@index([country])
   @@index([createdAt])
   @@index([stripeConnectedAccountId])
+  @@index([averageRating])
+}
+
+// Reviews de talleres
+model Review {
+  id         String   @id @default(uuid())
+  workshopId String
+  userId     String
+  rating     Int      // Calificación de 1-5 estrellas
+  comment    String?  // Comentario opcional
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relaciones
+  workshop Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Un usuario solo puede dejar una review por taller
+  @@unique([workshopId, userId])
+  @@index([workshopId])
+  @@index([userId])
+  @@index([rating])
+  @@index([createdAt])
 }
 
 // Suscripciones de talleres (Stripe)

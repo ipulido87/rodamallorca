@@ -7,6 +7,9 @@ export interface WorkshopDTO {
   city?: string | null
   country?: string | null
   phone?: string | null
+  logoOriginal?: string | null
+  logoMedium?: string | null
+  logoThumbnail?: string | null
 }
 
 export interface WorkshopRepository {

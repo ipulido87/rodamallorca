@@ -7,6 +7,9 @@ export interface CreateWorkshopData {
   city?: string
   country?: string
   phone?: string
+  logoOriginal?: string
+  logoMedium?: string
+  logoThumbnail?: string
 }
 
 export interface Workshop {
@@ -18,6 +21,11 @@ export interface Workshop {
   city?: string
   country?: string
   phone?: string
+  logoOriginal?: string
+  logoMedium?: string
+  logoThumbnail?: string
+  averageRating?: number
+  reviewCount?: number
   createdAt: string
   updatedAt: string
 }
