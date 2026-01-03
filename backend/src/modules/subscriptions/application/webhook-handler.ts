@@ -5,6 +5,7 @@ import {
   sendTrialStartedEmail,
   sendTrialEndingEmail,
   sendPaymentSuccessEmail,
+  sendNewOrderEmail,
 } from '../../notifications/services/email-service'
 
 const prisma = new PrismaClient()
@@ -436,15 +437,38 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         },
         include: {
           items: true,
-          workshop: true,
+          workshop: {
+            include: {
+              owner: true,
+            },
+          },
           user: true,
         },
       })
 
       console.log(`✅ [Webhook] Orden creada: ${order.id} - Estado: PAID`)
 
-      // TODO: Enviar email de confirmación al usuario
-      // TODO: Enviar notificación al taller
+      // 📧 Enviar email de notificación al taller
+      try {
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
+        const totalAmount = `${(order.totalAmount / 100).toFixed(2)}€`
+
+        await sendNewOrderEmail({
+          workshopName: order.workshop.name,
+          workshopOwnerEmail: order.workshop.owner.email,
+          orderNumber: order.id.slice(0, 8),
+          customerName: order.user.name || order.user.email,
+          customerEmail: order.user.email,
+          totalAmount,
+          itemsCount: order.items.length,
+          orderUrl: `${frontendUrl}/workshop-orders/${order.workshopId}`,
+        })
+
+        console.log(`📧 [Webhook] Email de nuevo pedido enviado al taller ${order.workshop.name}`)
+      } catch (emailError) {
+        console.error('❌ [Webhook] Error enviando email al taller:', emailError)
+        // No fallar el webhook por un error de email
+      }
     } catch (error) {
       console.error('❌ [Webhook] Error creando orden:', error)
     }
