@@ -48,6 +48,7 @@ import { useAuth } from '../../auth/hooks/useAuth'
 
 interface Workshop {
   id: string
+  ownerId: string
   name: string
   description?: string
   address?: string
@@ -513,7 +514,7 @@ export const WorkshopDetail = () => {
 
           {/* Tab Panel: Opiniones */}
           <TabPanel value={tabValue} index={3}>
-            {user && (
+            {user && workshop && user.id !== workshop.ownerId && (
               <ReviewForm
                 workshopId={id!}
                 onReviewCreated={() => setReviewRefresh((prev) => prev + 1)}

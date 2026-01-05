@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Box,
   Button,
@@ -25,6 +25,11 @@ export const WorkshopLogoUpload = ({
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [preview, setPreview] = useState<string | null>(currentLogo || null)
+
+  // Actualizar preview cuando cambie currentLogo
+  useEffect(() => {
+    setPreview(currentLogo || null)
+  }, [currentLogo])
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>
