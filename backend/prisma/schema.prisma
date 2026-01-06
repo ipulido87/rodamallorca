@@ -136,6 +136,18 @@ model Workshop {
   stripeConnectedAccountId   String?  // ID de la cuenta conectada en Stripe
   stripeOnboardingComplete   Boolean  @default(false) // Si completó el onboarding
 
+  // Directorio público
+  isVerified      Boolean  @default(false) // Si es un partner verificado (pagando suscripción)
+  isListed        Boolean  @default(true)  // Si aparece en directorio público
+  googleMapsUrl   String?  // URL de Google Maps
+  website         String?  // Web oficial del taller
+  claimToken      String?  @unique // Token para reclamar el negocio
+  claimedAt       DateTime? // Cuándo fue reclamado por el owner
+  latitude        Float?   // Coordenadas para mapa
+  longitude       Float?
+  rating          Float?   @default(0) // Rating promedio (calculado de reviews)
+  reviewCount     Int      @default(0) // Número de reviews
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -155,6 +167,9 @@ model Workshop {
   @@index([country])
   @@index([createdAt])
   @@index([stripeConnectedAccountId])
+  @@index([isVerified])
+  @@index([isListed])
+  @@index([claimToken])
 }
 
 // Suscripciones de talleres (Stripe)
