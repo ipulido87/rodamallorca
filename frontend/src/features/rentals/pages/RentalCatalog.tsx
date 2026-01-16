@@ -1,0 +1,346 @@
+import { useState, useEffect } from 'react'
+import {
+  Box,
+  Container,
+  Grid,
+  Typography,
+  Card,
+  CardMedia,
+  CardContent,
+  CardActions,
+  Button,
+  Chip,
+  Paper,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormControlLabel,
+  Checkbox,
+  CircularProgress,
+  Alert,
+} from '@mui/material'
+import {
+  DirectionsBike,
+  LocationOn,
+  CalendarMonth,
+  AttachMoney,
+  CheckCircle,
+  Security,
+  Lightbulb,
+} from '@mui/icons-material'
+import { useNavigate } from 'react-router-dom'
+import { getRentalBikes, getRentalFiltersOptions, type RentalBike, type RentalFilters } from '../../../services/rental.service'
+
+export const RentalCatalog = () => {
+  const navigate = useNavigate()
+  const [bikes, setBikes] = useState<RentalBike[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Filtros
+  const [filters, setFilters] = useState<RentalFilters>({})
+  const [cities, setCities] = useState<string[]>([])
+  const [bikeTypes, setBikeTypes] = useState<string[]>([])
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 })
+
+  // Cargar opciones de filtros
+  useEffect(() => {
+    getRentalFiltersOptions()
+      .then((response) => {
+        setCities(response.filters.cities.map((c) => c.city))
+        setBikeTypes(response.filters.bikeTypes.map((t) => t.type))
+        setPriceRange(response.filters.priceRange)
+      })
+      .catch((err) => console.error('Error cargando filtros:', err))
+  }, [])
+
+  // Cargar bicis
+  useEffect(() => {
+    setLoading(true)
+    setError(null)
+
+    getRentalBikes(filters)
+      .then((response) => {
+        setBikes(response.bikes)
+        setLoading(false)
+      })
+      .catch((err) => {
+        console.error('Error cargando bicis:', err)
+        setError('Error cargando bicicletas. Intenta de nuevo.')
+        setLoading(false)
+      })
+  }, [filters])
+
+  const handleFilterChange = (key: keyof RentalFilters, value: any) => {
+    setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const clearFilters = () => {
+    setFilters({})
+  }
+
+  const getBikeTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      road: 'Carretera',
+      mountain: 'Montaña',
+      hybrid: 'Híbrida',
+      ebike: 'Eléctrica',
+      gravel: 'Gravel',
+      city: 'Ciudad',
+    }
+    return labels[type] || type
+  }
+
+  return (
+    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', py: 4 }}>
+      <Container maxWidth="xl">
+        {/* Header */}
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
+            🚴 Alquiler de Bicicletas en Mallorca
+          </Typography>
+          <Typography variant="h6" color="text.secondary">
+            Encuentra la bici perfecta para tu aventura
+          </Typography>
+        </Box>
+
+        <Grid container spacing={3}>
+          {/* Filtros laterales */}
+          <Grid item xs={12} md={3}>
+            <Paper sx={{ p: 3, position: 'sticky', top: 20 }}>
+              <Typography variant="h6" gutterBottom>
+                Filtros
+              </Typography>
+
+              {/* Ciudad */}
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Ciudad</InputLabel>
+                <Select
+                  value={filters.city || ''}
+                  label="Ciudad"
+                  onChange={(e) => handleFilterChange('city', e.target.value || undefined)}
+                >
+                  <MenuItem value="">Todas</MenuItem>
+                  {cities.map((city) => (
+                    <MenuItem key={city} value={city}>
+                      {city}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {/* Tipo de bici */}
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Tipo de Bici</InputLabel>
+                <Select
+                  value={filters.bikeType || ''}
+                  label="Tipo de Bici"
+                  onChange={(e) => handleFilterChange('bikeType', e.target.value || undefined)}
+                >
+                  <MenuItem value="">Todas</MenuItem>
+                  {bikeTypes.map((type) => (
+                    <MenuItem key={type} value={type}>
+                      {getBikeTypeLabel(type)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {/* Fechas */}
+              <TextField
+                fullWidth
+                label="Fecha de Inicio"
+                type="date"
+                value={filters.startDate || ''}
+                onChange={(e) => handleFilterChange('startDate', e.target.value || undefined)}
+                InputLabelProps={{ shrink: true }}
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                fullWidth
+                label="Fecha de Fin"
+                type="date"
+                value={filters.endDate || ''}
+                onChange={(e) => handleFilterChange('endDate', e.target.value || undefined)}
+                InputLabelProps={{ shrink: true }}
+                sx={{ mb: 2 }}
+              />
+
+              {/* Accesorios */}
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={filters.includesHelmet || false}
+                    onChange={(e) => handleFilterChange('includesHelmet', e.target.checked || undefined)}
+                  />
+                }
+                label="Incluye casco"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={filters.includesLock || false}
+                    onChange={(e) => handleFilterChange('includesLock', e.target.checked || undefined)}
+                  />
+                }
+                label="Incluye candado"
+              />
+
+              <Button fullWidth variant="outlined" onClick={clearFilters} sx={{ mt: 2 }}>
+                Limpiar Filtros
+              </Button>
+            </Paper>
+          </Grid>
+
+          {/* Grid de bicis */}
+          <Grid item xs={12} md={9}>
+            {error && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {error}
+              </Alert>
+            )}
+
+            {loading ? (
+              <Box display="flex" justifyContent="center" py={8}>
+                <CircularProgress />
+              </Box>
+            ) : bikes.length === 0 ? (
+              <Paper sx={{ p: 6, textAlign: 'center' }}>
+                <Typography variant="h6" color="text.secondary">
+                  No se encontraron bicicletas con estos filtros
+                </Typography>
+                <Button variant="outlined" onClick={clearFilters} sx={{ mt: 2 }}>
+                  Limpiar Filtros
+                </Button>
+              </Paper>
+            ) : (
+              <>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  {bikes.length} bicicleta{bikes.length !== 1 ? 's' : ''} disponible{bikes.length !== 1 ? 's' : ''}
+                </Typography>
+
+                <Grid container spacing={3}>
+                  {bikes.map((bike) => (
+                    <Grid item xs={12} sm={6} lg={4} key={bike.id}>
+                      <Card
+                        sx={{
+                          height: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          transition: 'transform 0.2s, box-shadow 0.2s',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: 4,
+                          },
+                        }}
+                      >
+                        {/* Imagen */}
+                        <CardMedia
+                          component="img"
+                          height="200"
+                          image={bike.images[0]?.medium || '/placeholder-bike.jpg'}
+                          alt={bike.title}
+                          sx={{ objectFit: 'cover' }}
+                        />
+
+                        <CardContent sx={{ flexGrow: 1 }}>
+                          {/* Badges */}
+                          <Box sx={{ mb: 1, display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                            {bike.workshop.isVerified && (
+                              <Chip
+                                icon={<CheckCircle />}
+                                label="Verificado"
+                                size="small"
+                                color="success"
+                              />
+                            )}
+                            {bike.bikeType && (
+                              <Chip
+                                icon={<DirectionsBike />}
+                                label={getBikeTypeLabel(bike.bikeType)}
+                                size="small"
+                                variant="outlined"
+                              />
+                            )}
+                          </Box>
+
+                          {/* Título */}
+                          <Typography variant="h6" gutterBottom noWrap>
+                            {bike.title}
+                          </Typography>
+
+                          {/* Taller y ubicación */}
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                            <LocationOn fontSize="small" color="action" />
+                            <Typography variant="body2" color="text.secondary" noWrap>
+                              {bike.workshop.name} • {bike.workshop.city}
+                            </Typography>
+                          </Box>
+
+                          {/* Talla y marca */}
+                          {(bike.bikeSize || bike.bikeBrand) && (
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                              {bike.bikeBrand && `${bike.bikeBrand} `}
+                              {bike.bikeSize && `• Talla ${bike.bikeSize}`}
+                            </Typography>
+                          )}
+
+                          {/* Accesorios */}
+                          <Box sx={{ display: 'flex', gap: 0.5, mb: 2 }}>
+                            {bike.includesHelmet && (
+                              <Chip icon={<Security />} label="Casco" size="small" />
+                            )}
+                            {bike.includesLock && (
+                              <Chip icon={<Security />} label="Candado" size="small" />
+                            )}
+                            {bike.includesLights && (
+                              <Chip icon={<Lightbulb />} label="Luces" size="small" />
+                            )}
+                          </Box>
+
+                          {/* Precio */}
+                          <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                            <Typography variant="h5" color="primary" fontWeight="bold">
+                              {(bike.rentalPricePerDay / 100).toFixed(0)}€
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              / día
+                            </Typography>
+                          </Box>
+
+                          {bike.rentalPricePerWeek && (
+                            <Typography variant="body2" color="text.secondary">
+                              {(bike.rentalPricePerWeek / 100).toFixed(0)}€/semana
+                            </Typography>
+                          )}
+
+                          {/* Stock */}
+                          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                            {bike.availableQuantity} disponible{bike.availableQuantity !== 1 ? 's' : ''}
+                          </Typography>
+                        </CardContent>
+
+                        <CardActions sx={{ p: 2, pt: 0 }}>
+                          <Button
+                            fullWidth
+                            variant="contained"
+                            startIcon={<CalendarMonth />}
+                            onClick={() => navigate(`/rentals/${bike.id}`)}
+                          >
+                            Ver Disponibilidad
+                          </Button>
+                        </CardActions>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </>
+            )}
+          </Grid>
+        </Grid>
+      </Container>
+    </Box>
+  )
+}

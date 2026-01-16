@@ -142,6 +142,16 @@ model Workshop {
   stripeConnectedAccountId   String?  // ID de la cuenta conectada en Stripe
   stripeOnboardingComplete   Boolean  @default(false) // Si completó el onboarding
 
+  // Directorio público
+  isVerified      Boolean  @default(false) // Si es un partner verificado (pagando suscripción)
+  isListed        Boolean  @default(true)  // Si aparece en directorio público
+  googleMapsUrl   String?  // URL de Google Maps
+  website         String?  // Web oficial del taller
+  claimToken      String?  @unique // Token para reclamar el negocio
+  claimedAt       DateTime? // Cuándo fue reclamado por el owner
+  latitude        Float?   // Coordenadas para mapa
+  longitude       Float?
+
   // Rating y reviews
   averageRating Float?   @default(0)    // Calificación promedio (0-5)
   reviewCount   Int      @default(0)     // Número total de reviews
@@ -166,6 +176,9 @@ model Workshop {
   @@index([country])
   @@index([createdAt])
   @@index([stripeConnectedAccountId])
+  @@index([isVerified])
+  @@index([isListed])
+  @@index([claimToken])
   @@index([averageRating])
 }
 
@@ -258,12 +271,29 @@ model Product {
   categoryId  String?
   title       String
   description String?
-  price       Int       // en céntimos
+  price       Int       // en céntimos (precio de venta O precio por día si es alquiler)
   currency    String    @default("EUR")
-  condition   String    @default("used")   
-  status      String    @default("DRAFT")  
+  condition   String    @default("used")
+  status      String    @default("DRAFT")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  // Campos de alquiler
+  isRental              Boolean   @default(false)  // Si es para alquiler (true) o venta (false)
+  rentalPricePerDay     Int?      // Precio por día en céntimos (si isRental=true)
+  rentalPricePerWeek    Int?      // Precio por semana (opcional, descuento)
+  availableQuantity     Int       @default(1)      // Cuántas unidades disponibles para alquilar
+  bikeType              String?   // road, mountain, hybrid, ebike, gravel, city
+  bikeSize              String?   // XS, S, M, L, XL, XXL o medidas específicas
+  bikeBrand             String?   // Trek, Specialized, Giant, etc.
+  bikeModel             String?   // Modelo específico
+  frameSize             Int?      // Tamaño del cuadro en cm
+  includesHelmet        Boolean   @default(false)  // Si incluye casco
+  includesLock          Boolean   @default(false)  // Si incluye candado
+  includesLights        Boolean   @default(false)  // Si incluye luces
+  depositAmount         Int?      // Depósito en céntimos (opcional)
+  minRentalDays         Int       @default(1)      // Mínimo de días para alquilar
+  maxRentalDays         Int       @default(30)     // Máximo de días
 
   workshop    Workshop  @relation(fields: [workshopId], references: [id], onDelete: Cascade)
   category    Category? @relation(fields: [categoryId], references: [id])
@@ -274,6 +304,8 @@ model Product {
   @@index([categoryId])
   @@index([status])
   @@index([createdAt])
+  @@index([isRental])
+  @@index([bikeType])
 }
 
 model ProductImage {
@@ -342,6 +374,14 @@ model OrderItem {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // Campos específicos para alquiler
+  isRental      Boolean   @default(false)  // Si este item es un alquiler
+  rentalStartDate DateTime?               // Fecha de inicio del alquiler
+  rentalEndDate   DateTime?               // Fecha de fin del alquiler
+  rentalDays      Int?                    // Número de días de alquiler
+  depositPaid     Int?                    // Depósito pagado en céntimos
+  depositReturned Boolean   @default(false) // Si se devolvió el depósito
+
   // Relaciones
   order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product      Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
@@ -350,6 +390,8 @@ model OrderItem {
   @@index([orderId])
   @@index([productId])
   @@index([serviceId])
+  @@index([rentalStartDate])
+  @@index([rentalEndDate])
 }
 
 // Categorías de servicios (Ruedas, Transmisión, Frenos, etc.)
