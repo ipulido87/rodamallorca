@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import {
   Box,
   Container,
-  Grid,
   Typography,
   Card,
   CardMedia,
@@ -21,6 +20,7 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material'
+import Grid2 from '@mui/material/Grid2'
 import {
   DirectionsBike,
   LocationOn,
@@ -106,9 +106,9 @@ export const RentalCatalog = () => {
           </Typography>
         </Box>
 
-        <Grid container spacing={3}>
+        <Grid2 container spacing={3}>
           {/* Filtros laterales */}
-          <Grid item xs={12} md={3}>
+          <Grid2 xs={12} md={3}>
             <Paper sx={{ p: 3, position: 'sticky', top: 20 }}>
               <Typography variant="h6" gutterBottom>
                 Filtros
@@ -192,10 +192,10 @@ export const RentalCatalog = () => {
                 Limpiar Filtros
               </Button>
             </Paper>
-          </Grid>
+          </Grid2>
 
           {/* Grid de bicis */}
-          <Grid item xs={12} md={9}>
+          <Grid2 xs={12} md={9}>
             {error && (
               <Alert severity="error" sx={{ mb: 3 }}>
                 {error}
@@ -221,9 +221,9 @@ export const RentalCatalog = () => {
                   {bikes.length} bicicleta{bikes.length !== 1 ? 's' : ''} disponible{bikes.length !== 1 ? 's' : ''}
                 </Typography>
 
-                <Grid container spacing={3}>
+                <Grid2 container spacing={3}>
                   {bikes.map((bike) => (
-                    <Grid item xs={12} sm={6} lg={4} key={bike.id}>
+                    <Grid2 xs={12} sm={6} lg={4} key={bike.id}>
                       <Card
                         sx={{
                           height: '100%',
@@ -333,13 +333,13 @@ export const RentalCatalog = () => {
                           </Button>
                         </CardActions>
                       </Card>
-                    </Grid>
+                    </Grid2>
                   ))}
-                </Grid>
+                </Grid2>
               </>
             )}
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
       </Container>
     </Box>
   )
