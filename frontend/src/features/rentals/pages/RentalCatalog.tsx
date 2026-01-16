@@ -20,7 +20,6 @@ import {
   CircularProgress,
   Alert,
 } from '@mui/material'
-import Grid2 from '@mui/material/Grid2'
 import {
   DirectionsBike,
   LocationOn,
@@ -106,9 +105,9 @@ export const RentalCatalog = () => {
           </Typography>
         </Box>
 
-        <Grid2 container spacing={3}>
+        <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', md: 'row' } }}>
           {/* Filtros laterales */}
-          <Grid2 xs={12} md={3}>
+          <Box sx={{ width: { xs: '100%', md: '25%' }, flexShrink: 0 }}>
             <Paper sx={{ p: 3, position: 'sticky', top: 20 }}>
               <Typography variant="h6" gutterBottom>
                 Filtros
@@ -192,10 +191,10 @@ export const RentalCatalog = () => {
                 Limpiar Filtros
               </Button>
             </Paper>
-          </Grid2>
+          </Box>
 
           {/* Grid de bicis */}
-          <Grid2 xs={12} md={9}>
+          <Box sx={{ flex: 1 }}>
             {error && (
               <Alert severity="error" sx={{ mb: 3 }}>
                 {error}
@@ -221,9 +220,19 @@ export const RentalCatalog = () => {
                   {bikes.length} bicicleta{bikes.length !== 1 ? 's' : ''} disponible{bikes.length !== 1 ? 's' : ''}
                 </Typography>
 
-                <Grid2 container spacing={3}>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: {
+                      xs: '1fr',
+                      sm: 'repeat(2, 1fr)',
+                      lg: 'repeat(3, 1fr)',
+                    },
+                    gap: 3,
+                  }}
+                >
                   {bikes.map((bike) => (
-                    <Grid2 xs={12} sm={6} lg={4} key={bike.id}>
+                    <Box key={bike.id}>
                       <Card
                         sx={{
                           height: '100%',
@@ -333,13 +342,13 @@ export const RentalCatalog = () => {
                           </Button>
                         </CardActions>
                       </Card>
-                    </Grid2>
+                    </Box>
                   ))}
-                </Grid2>
+                </Box>
               </>
             )}
-          </Grid2>
-        </Grid2>
+          </Box>
+        </Box>
       </Container>
     </Box>
   )

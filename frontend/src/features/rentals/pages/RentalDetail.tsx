@@ -18,7 +18,6 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@mui/material'
-import Grid2 from '@mui/material/Grid2'
 import {
   DirectionsBike,
   LocationOn,
@@ -174,9 +173,9 @@ export const RentalDetail = () => {
           Volver al Catálogo
         </Button>
 
-        <Grid2 container spacing={4}>
+        <Box sx={{ display: 'flex', gap: 4, flexDirection: { xs: 'column', md: 'row' } }}>
           {/* Columna izquierda: Fotos e info */}
-          <Grid2 xs={12} md={7}>
+          <Box sx={{ flex: 1 }}>
             {/* Imagen principal */}
             <Card sx={{ mb: 3 }}>
               <Box
@@ -293,10 +292,10 @@ export const RentalDetail = () => {
                 )}
               </List>
             </Paper>
-          </Grid2>
+          </Box>
 
           {/* Columna derecha: Reserva */}
-          <Grid2 xs={12} md={5}>
+          <Box sx={{ width: { xs: '100%', md: '400px' }, flexShrink: 0 }}>
             <Paper sx={{ p: 3, position: 'sticky', top: 20 }}>
               <Typography variant="h5" gutterBottom fontWeight="bold">
                 Reserva tu Bicicleta
@@ -424,8 +423,8 @@ export const RentalDetail = () => {
                 </Typography>
               </Alert>
             </Paper>
-          </Grid2>
-        </Grid2>
+          </Box>
+        </Box>
       </Container>
     </Box>
   )
