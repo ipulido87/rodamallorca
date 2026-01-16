@@ -109,8 +109,8 @@ export const Catalog = () => {
     : {
         title: 'RodaMallorca Marketplace',
         subtitle: 'Encuentra talleres de confianza y productos para tu bici',
-        searchPlaceholder: 'Buscar talleres, productos, servicios...',
-        tabs: ['Talleres', 'Productos', 'Servicios'],
+        searchPlaceholder: 'Buscar talleres, productos, rutas...',
+        tabs: ['Talleres', 'Productos', 'Rutas'],
         searchButtonText: 'Buscar',
       }
 
@@ -127,18 +127,18 @@ export const Catalog = () => {
     }
   }, [debouncedQuery, productFilters, tabValue, loadProducts])
 
-  useEffect(() => {
-    if (tabValue === 2 && !isWorkshopOwner) {
-      loadServices(debouncedQuery, serviceFilters)
-    }
-  }, [debouncedQuery, serviceFilters, tabValue, loadServices, isWorkshopOwner])
+  // useEffect(() => {
+  //   if (tabValue === 2 && !isWorkshopOwner) {
+  //     loadServices(debouncedQuery, serviceFilters)
+  //   }
+  // }, [debouncedQuery, serviceFilters, tabValue, loadServices, isWorkshopOwner])
 
   // Carga inicial
   useEffect(() => {
     loadWorkshops()
     loadProducts()
-    loadServices()
-  }, [loadProducts, loadServices, loadWorkshops])
+    // loadServices() // Comentado - no se usa en el catálogo ahora
+  }, [loadProducts, loadWorkshops])
 
   // Cargar favoritos del usuario
   useEffect(() => {
@@ -260,34 +260,17 @@ export const Catalog = () => {
     </Box>
   )
 
-  const renderServicesContent = () => (
-    <Box>
-      {servicesError && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {servicesError}
-        </Alert>
-      )}
-
-      {servicesLoading ? (
-        <ProductSkeletonGrid count={8} />
-      ) : (
-        <>
-          <ModernServiceLayout
-            services={services}
-            loading={false}
-            error={servicesError ?? undefined}
-            emptyMessage="No se encontraron servicios"
-          />
-
-          {servicesPagination.total > 0 && (
-            <Box textAlign="center" sx={{ mt: 4 }}>
-              <Typography variant="body2" color="text.secondary">
-                Mostrando {services.length} de {servicesPagination.total} servicios
-              </Typography>
-            </Box>
-          )}
-        </>
-      )}
+  const renderRoutesContent = () => (
+    <Box textAlign="center" py={8}>
+      <Typography variant="h5" gutterBottom color="primary">
+        Descubre las mejores rutas en bici de Mallorca
+      </Typography>
+      <Typography variant="body1" color="text.secondary" sx={{ mt: 2, mb: 4 }}>
+        Próximamente: Rutas guiadas, rutas populares, y recomendaciones personalizadas
+      </Typography>
+      <Alert severity="info" sx={{ maxWidth: 600, mx: 'auto' }}>
+        Esta sección está en desarrollo. Pronto podrás explorar rutas ciclistas por toda Mallorca.
+      </Alert>
     </Box>
   )
 
@@ -384,7 +367,7 @@ export const Catalog = () => {
             {renderProductsContent()}
           </TabPanel>
           <TabPanel value={tabValue} index={2}>
-            {renderServicesContent()}
+            {renderRoutesContent()}
           </TabPanel>
         </>
       )}

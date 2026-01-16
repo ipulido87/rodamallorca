@@ -24,6 +24,9 @@ const updateWorkshopSchema = z.object({
   city: z.string().optional().nullable(),
   country: z.string().length(2).optional().nullable(),
   phone: z.string().optional().nullable(),
+  logoOriginal: z.string().optional().nullable(),
+  logoMedium: z.string().optional().nullable(),
+  logoThumbnail: z.string().optional().nullable(),
 })
 
 export const createWorkshopController = async (

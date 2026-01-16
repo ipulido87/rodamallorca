@@ -344,10 +344,24 @@ const WorkshopCard = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          bgcolor: alpha(theme.palette.primary.main, 0.8),
+          bgcolor: workshop.logoMedium ? 'grey.100' : alpha(theme.palette.primary.main, 0.8),
         }}
       >
-        <Business sx={{ fontSize: 64, color: 'white' }} />
+        {workshop.logoMedium ? (
+          <CardMedia
+            component="img"
+            image={workshop.logoMedium}
+            alt={workshop.name}
+            sx={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              p: 2,
+            }}
+          />
+        ) : (
+          <Business sx={{ fontSize: 64, color: 'white' }} />
+        )}
       </Box>
       <CardContent>
         <Typography variant="h6" fontWeight={600} gutterBottom>
