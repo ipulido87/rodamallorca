@@ -9,6 +9,8 @@ import {
   Star,
   TrendingUp,
   Verified,
+  PedalBike,
+  CalendarMonth,
 } from '@mui/icons-material'
 import {
   alpha,
@@ -498,78 +500,130 @@ export const LandingPage = () => {
             ))}
           </Stack>
 
-          {/* Beneficios adicionales */}
+          {/* Sección de Alquiler de Bicicletas */}
           <Box sx={{ mt: 12 }}>
-            <Typography
-              variant="h4"
-              textAlign="center"
+            <Card
               sx={{
-                fontWeight: 600,
-                mb: 6,
-                color: theme.palette.text.primary,
+                background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
+                color: theme.palette.common.white,
+                borderRadius: 4,
+                overflow: 'hidden',
+                position: 'relative',
+                transition: 'all 0.4s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: `0 20px 60px ${alpha(theme.palette.success.main, 0.4)}`,
+                },
               }}
             >
-              Más razones para elegirnos
-            </Typography>
-
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={3}
-              sx={{ flexWrap: 'wrap', justifyContent: 'center' }}
-            >
-              {benefits.map((benefit, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    flex: { xs: '1', sm: '0 1 calc(50% - 12px)' },
-                    maxWidth: { xs: '100%', sm: '300px' },
-                  }}
+              <CardContent sx={{ p: { xs: 4, md: 6 } }}>
+                <Stack
+                  direction={{ xs: 'column', md: 'row' }}
+                  spacing={4}
+                  alignItems="center"
                 >
-                  <Fade in={featuresInView} timeout={600 + index * 200}>
-                    <Card
+                  <Box sx={{ flex: 1 }}>
+                    <Chip
+                      icon={<PedalBike />}
+                      label="NUEVO"
                       sx={{
-                        p: 3,
-                        textAlign: 'center',
+                        backgroundColor: alpha(theme.palette.common.white, 0.25),
+                        color: theme.palette.common.white,
+                        fontWeight: 700,
+                        mb: 3,
+                      }}
+                    />
+                    <Typography
+                      variant="h2"
+                      sx={{
+                        fontWeight: 800,
+                        mb: 3,
+                        fontSize: { xs: '2rem', md: '3rem' },
+                      }}
+                    >
+                      Alquiler de Bicicletas
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        mb: 4,
+                        opacity: 0.95,
+                        fontWeight: 300,
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      Descubre Mallorca en bicicleta. Alquila las mejores bicis de talleres verificados con precios desde 15€/día.
+                    </Typography>
+
+                    <Stack spacing={2} sx={{ mb: 4 }}>
+                      {[
+                        'Carretera, Montaña, Eléctricas y más',
+                        'Seguro y casco incluidos',
+                        'Recogida en tu ubicación',
+                        'Cancelación flexible',
+                      ].map((item, index) => (
+                        <Box
+                          key={index}
+                          sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+                        >
+                          <CheckCircle sx={{ fontSize: 24 }} />
+                          <Typography variant="body1" fontWeight={500}>
+                            {item}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Stack>
+
+                    <Button
+                      variant="contained"
+                      size="large"
+                      onClick={() => navigate('/rentals')}
+                      startIcon={<CalendarMonth />}
+                      sx={{
+                        backgroundColor: theme.palette.common.white,
+                        color: theme.palette.success.main,
+                        px: 5,
+                        py: 2,
+                        fontSize: '1.2rem',
+                        fontWeight: 700,
                         borderRadius: 3,
-                        border: `1px solid ${alpha(
-                          theme.palette.divider,
-                          0.1
-                        )}`,
-                        height: '100%',
-                        minHeight: 160,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
+                        boxShadow: `0 8px 30px ${alpha(theme.palette.common.black, 0.2)}`,
                         transition: 'all 0.3s ease',
                         '&:hover': {
-                          transform: 'translateY(-4px)',
-                          boxShadow: `0 8px 25px ${alpha(
-                            theme.palette.common.black,
-                            0.1
-                          )}`,
+                          backgroundColor: alpha(theme.palette.common.white, 0.95),
+                          transform: 'scale(1.05)',
+                          boxShadow: `0 12px 40px ${alpha(theme.palette.common.black, 0.25)}`,
                         },
                       }}
                     >
-                      <Box
-                        sx={{
-                          color: theme.palette.primary.main,
-                          mb: 2,
-                          '& svg': { fontSize: 32 },
-                        }}
-                      >
-                        {benefit.icon}
-                      </Box>
-                      <Typography variant="h6" fontWeight="600" gutterBottom>
-                        {benefit.title}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {benefit.desc}
-                      </Typography>
-                    </Card>
-                  </Fade>
-                </Box>
-              ))}
-            </Stack>
+                      Ver Bicicletas Disponibles
+                    </Button>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      flex: 1,
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <PedalBike
+                      sx={{
+                        fontSize: { xs: 120, md: 200 },
+                        opacity: 0.9,
+                        filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.2))',
+                        animation: 'float 3s ease-in-out infinite',
+                        '@keyframes float': {
+                          '0%, 100%': { transform: 'translateY(0)' },
+                          '50%': { transform: 'translateY(-20px)' },
+                        },
+                      }}
+                    />
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
           </Box>
         </Container>
       </Box>
