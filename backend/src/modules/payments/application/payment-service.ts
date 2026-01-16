@@ -10,6 +10,12 @@ export interface CartItem {
   priceAtOrder: number
   currency: string
   description?: string
+  // Campos de alquiler
+  isRental?: boolean
+  rentalStartDate?: string
+  rentalEndDate?: string
+  rentalDays?: number
+  depositPaid?: number
 }
 
 export interface CreateCheckoutInput {
@@ -81,16 +87,27 @@ export async function createProductCheckoutSession(input: CreateCheckoutInput) {
     const product = products.find((p) => p.id === item.productId)
     if (!product) throw new Error(`Producto ${item.productId} no encontrado`)
 
+    // Si es alquiler, agregar fechas a la descripción
+    let description = item.description || product.description || ''
+    if (item.isRental && item.rentalStartDate && item.rentalEndDate) {
+      const startDate = new Date(item.rentalStartDate).toLocaleDateString('es-ES')
+      const endDate = new Date(item.rentalEndDate).toLocaleDateString('es-ES')
+      description = `Alquiler: ${startDate} - ${endDate} (${item.rentalDays} días)${description ? ' | ' + description : ''}`
+    }
+
     return {
       price_data: {
         currency: item.currency.toLowerCase(),
         unit_amount: item.priceAtOrder, // Ya está en centavos
         product_data: {
           name: product.title,
-          description: item.description || product.description || undefined,
+          description: description || undefined,
           metadata: {
             productId: item.productId,
             workshopId,
+            isRental: item.isRental ? 'true' : 'false',
+            rentalStartDate: item.rentalStartDate || '',
+            rentalEndDate: item.rentalEndDate || '',
           },
         },
       },

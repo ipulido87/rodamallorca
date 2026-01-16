@@ -21,6 +21,7 @@ import webhookRoutes from './modules/subscriptions/interfaces/http/webhook.route
 import paymentRoutes from './modules/payments/interfaces/http/payment.routes'
 import stripeConnectRoutes from './modules/payments/routes/stripe-connect.routes'
 import directoryRoutes from './modules/workshops/routes/directory.routes'
+import rentalRoutes from './modules/rentals/routes/rental.routes'
 
 dotenv.config()
 
@@ -79,6 +80,7 @@ app.use('/api/subscriptions', subscriptionRoutes) // Rutas de suscripciones
 app.use('/api/payments', paymentRoutes) // Rutas de pagos de productos
 app.use('/api/workshops', stripeConnectRoutes) // Rutas de Stripe Connect
 app.use('/api/directory', directoryRoutes) // Directorio público de talleres
+app.use('/api/rentals', rentalRoutes) // Rutas de alquiler de bicicletas
 
 // Servir archivos estáticos
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
