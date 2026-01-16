@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom'
 import {
   Box,
   Container,
-  Grid,
   Typography,
   Card,
   CardContent,
@@ -19,6 +18,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from '@mui/material'
+import Grid2 from '@mui/material/Grid2'
 import {
   DirectionsBike,
   LocationOn,
@@ -174,9 +174,9 @@ export const RentalDetail = () => {
           Volver al Catálogo
         </Button>
 
-        <Grid container spacing={4}>
+        <Grid2 container spacing={4}>
           {/* Columna izquierda: Fotos e info */}
-          <Grid item xs={12} md={7}>
+          <Grid2 xs={12} md={7}>
             {/* Imagen principal */}
             <Card sx={{ mb: 3 }}>
               <Box
@@ -293,10 +293,10 @@ export const RentalDetail = () => {
                 )}
               </List>
             </Paper>
-          </Grid>
+          </Grid2>
 
           {/* Columna derecha: Reserva */}
-          <Grid item xs={12} md={5}>
+          <Grid2 xs={12} md={5}>
             <Paper sx={{ p: 3, position: 'sticky', top: 20 }}>
               <Typography variant="h5" gutterBottom fontWeight="bold">
                 Reserva tu Bicicleta
@@ -424,8 +424,8 @@ export const RentalDetail = () => {
                 </Typography>
               </Alert>
             </Paper>
-          </Grid>
-        </Grid>
+          </Grid2>
+        </Grid2>
       </Container>
     </Box>
   )

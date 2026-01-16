@@ -144,7 +144,7 @@ export const getRentalBikeDetails = async (req: Request, res: Response, next: Ne
             latitude: true,
             longitude: true,
             isVerified: true,
-            rating: true,
+            averageRating: true,
             reviewCount: true,
           },
         },

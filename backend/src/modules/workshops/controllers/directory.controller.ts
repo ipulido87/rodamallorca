@@ -38,14 +38,14 @@ export const getDirectoryWorkshops = async (
         website: true,
         latitude: true,
         longitude: true,
-        rating: true,
+        averageRating: true,
         reviewCount: true,
         isVerified: true, // Importante: distinguir verificados de no verificados
         createdAt: true,
       },
       orderBy: [
         { isVerified: 'desc' }, // Verificados primero
-        { rating: 'desc' }, // Luego por rating
+        { averageRating: 'desc' }, // Luego por rating
         { name: 'asc' },
       ],
     })
