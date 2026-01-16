@@ -2,6 +2,7 @@
 
 import {
   DirectionsBike,
+  PedalBike,
   ExpandMore,
   Logout,
   Person,
@@ -137,6 +138,29 @@ export const PublicHeader = () => {
           </Stack>
 
           <Stack direction="row" spacing={2} alignItems="center">
+            {/* Botón de Alquiler - visible para todos */}
+            <Button
+              variant="contained"
+              onClick={() => navigate('/rentals')}
+              startIcon={<PedalBike />}
+              sx={{
+                display: { xs: 'none', md: 'inline-flex' },
+                bgcolor: 'success.main',
+                color: 'white',
+                px: 3,
+                py: 1,
+                fontWeight: 600,
+                boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)',
+                '&:hover': {
+                  bgcolor: 'success.dark',
+                  transform: 'translateY(-1px)',
+                  boxShadow: '0 6px 16px rgba(46, 125, 50, 0.4)',
+                },
+              }}
+            >
+              Alquiler de Bicis
+            </Button>
+
             {isAuthenticated ? (
               <>
                 <Button
@@ -158,7 +182,7 @@ export const PublicHeader = () => {
                     },
                   }}
                 >
-                  Ir al Catálogo
+                  Catálogo
                 </Button>
 
                 <Box>
@@ -354,6 +378,21 @@ export const PublicHeader = () => {
               </>
             ) : (
               <>
+                <Button
+                  variant="text"
+                  onClick={() => navigate('/catalog')}
+                  sx={{
+                    display: { xs: 'none', sm: 'inline-flex' },
+                    color: 'primary.main',
+                    fontWeight: 500,
+                    '&:hover': {
+                      bgcolor: 'primary.light',
+                    },
+                  }}
+                >
+                  Tienda
+                </Button>
+
                 {!isLoginPage && (
                   <Button
                     variant="outlined"
