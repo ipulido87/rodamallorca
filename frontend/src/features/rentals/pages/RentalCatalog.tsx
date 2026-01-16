@@ -206,13 +206,50 @@ export const RentalCatalog = () => {
                 <CircularProgress />
               </Box>
             ) : bikes.length === 0 ? (
-              <Paper sx={{ p: 6, textAlign: 'center' }}>
-                <Typography variant="h6" color="text.secondary">
-                  No se encontraron bicicletas con estos filtros
+              <Paper
+                sx={{
+                  p: 8,
+                  textAlign: 'center',
+                  background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.05) 0%, rgba(46, 125, 50, 0.02) 100%)',
+                }}
+              >
+                <DirectionsBike
+                  sx={{
+                    fontSize: 120,
+                    color: 'success.main',
+                    opacity: 0.3,
+                    mb: 3
+                  }}
+                />
+                <Typography variant="h4" gutterBottom fontWeight="600" color="text.primary">
+                  {Object.keys(filters).length > 0
+                    ? 'No hay bicicletas con estos filtros'
+                    : 'Próximamente disponible'}
                 </Typography>
-                <Button variant="outlined" onClick={clearFilters} sx={{ mt: 2 }}>
-                  Limpiar Filtros
-                </Button>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 500, mx: 'auto' }}>
+                  {Object.keys(filters).length > 0
+                    ? 'Intenta ajustar los filtros o explora todas las opciones disponibles'
+                    : 'Estamos trabajando con talleres locales para traerte las mejores bicicletas de alquiler en Mallorca'}
+                </Typography>
+
+                {Object.keys(filters).length > 0 ? (
+                  <Button
+                    variant="contained"
+                    onClick={clearFilters}
+                    sx={{ mt: 2 }}
+                    startIcon={<Search />}
+                  >
+                    Ver Todas las Bicicletas
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outlined"
+                    onClick={() => navigate('/catalog')}
+                    sx={{ mt: 2 }}
+                  >
+                    Explorar Tienda
+                  </Button>
+                )}
               </Paper>
             ) : (
               <>
