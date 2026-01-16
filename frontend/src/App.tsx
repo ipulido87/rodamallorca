@@ -34,6 +34,8 @@ import { SubscriptionCancel } from './features/subscriptions/pages/subscription-
 import { ActivateSubscription } from './features/subscriptions/pages/activate-subscription'
 import { StripeConnectSuccess } from './features/payments/pages/stripe-connect-success'
 import { StripeConnectRefresh } from './features/payments/pages/stripe-connect-refresh'
+import { RentalCatalog } from './features/rentals/pages/RentalCatalog'
+import { RentalDetail } from './features/rentals/pages/RentalDetail'
 import { Home } from './pages/HomePage'
 import { LandingPage } from './pages/LandingPage'
 import { LoginForm } from './features/auth/pages/login-form'
@@ -120,6 +122,24 @@ function App() {
             element={
               <PublicLayout>
                 <WorkshopDetail />
+              </PublicLayout>
+            }
+          />
+
+          {/* Rutas de alquiler de bicicletas */}
+          <Route
+            path="/rentals"
+            element={
+              <PublicLayout>
+                <RentalCatalog />
+              </PublicLayout>
+            }
+          />
+          <Route
+            path="/rentals/:id"
+            element={
+              <PublicLayout>
+                <RentalDetail />
               </PublicLayout>
             }
           />
