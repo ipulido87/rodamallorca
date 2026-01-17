@@ -137,19 +137,19 @@ export const PublicHeader = () => {
             </Typography>
           </Stack>
 
-          <Stack direction="row" spacing={2} alignItems="center">
+          <Stack direction="row" spacing={{ xs: 1, md: 2 }} alignItems="center">
             {/* Botón de Alquiler - visible para todos */}
             <Button
               variant="contained"
               onClick={() => navigate('/rentals')}
-              startIcon={<PedalBike />}
+              startIcon={<PedalBike sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
               sx={{
-                display: { xs: 'none', md: 'inline-flex' },
                 bgcolor: 'success.main',
                 color: 'white',
-                px: 3,
+                px: { xs: 2, sm: 3 },
                 py: 1,
                 fontWeight: 600,
+                fontSize: { xs: '0.875rem', md: '1rem' },
                 boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)',
                 '&:hover': {
                   bgcolor: 'success.dark',
@@ -158,31 +158,26 @@ export const PublicHeader = () => {
                 },
               }}
             >
-              Alquiler de Bicis
+              Alquiler
             </Button>
 
             {isAuthenticated ? (
               <>
                 <Button
-                  variant="outlined"
+                  variant="text"
                   onClick={() => navigate('/catalog')}
                   sx={{
-                    display: { xs: 'none', sm: 'inline-flex' },
-                    borderColor: 'primary.main',
+                    display: { xs: 'none', md: 'inline-flex' },
                     color: 'primary.main',
-                    px: 3,
+                    px: 2,
                     py: 1,
                     fontWeight: 500,
                     '&:hover': {
-                      borderColor: 'primary.dark',
                       bgcolor: 'primary.light',
-                      color: 'white',
-                      transform: 'translateY(-1px)',
-                      boxShadow: '0 4px 12px rgba(57, 73, 171, 0.2)',
                     },
                   }}
                 >
-                  Catálogo
+                  Tienda
                 </Button>
 
                 <Box>
@@ -382,9 +377,10 @@ export const PublicHeader = () => {
                   variant="text"
                   onClick={() => navigate('/catalog')}
                   sx={{
-                    display: { xs: 'none', sm: 'inline-flex' },
+                    display: { xs: 'none', md: 'inline-flex' },
                     color: 'primary.main',
                     fontWeight: 500,
+                    px: 2,
                     '&:hover': {
                       bgcolor: 'primary.light',
                     },
@@ -401,6 +397,8 @@ export const PublicHeader = () => {
                       display: { xs: 'none', sm: 'inline-flex' },
                       borderColor: 'primary.main',
                       color: 'primary.main',
+                      px: { xs: 2, sm: 3 },
+                      fontSize: { xs: '0.875rem', md: '1rem' },
                       '&:hover': {
                         borderColor: 'primary.dark',
                         bgcolor: 'primary.light',
@@ -418,6 +416,8 @@ export const PublicHeader = () => {
                     onClick={() => navigate('/register')}
                     sx={{
                       bgcolor: 'primary.main',
+                      px: { xs: 2, sm: 3 },
+                      fontSize: { xs: '0.875rem', md: '1rem' },
                       '&:hover': {
                         bgcolor: 'primary.dark',
                       },
