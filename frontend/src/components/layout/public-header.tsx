@@ -105,7 +105,7 @@ export const PublicHeader = () => {
           <Stack
             direction="row"
             alignItems="center"
-            spacing={1.5}
+            spacing={{ xs: 0.5, sm: 1.5 }}
             sx={{
               cursor: 'pointer',
               transition: 'all 0.2s ease',
@@ -118,7 +118,7 @@ export const PublicHeader = () => {
             <DirectionsBike
               sx={{
                 color: 'primary.main',
-                fontSize: 36,
+                fontSize: { xs: 32, sm: 36 },
                 filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
               }}
             />
@@ -127,67 +127,76 @@ export const PublicHeader = () => {
               component="div"
               sx={{
                 fontWeight: 700,
-                display: { xs: 'none', sm: 'block' },
+                display: { xs: 'none', md: 'block' },
                 background: 'linear-gradient(45deg, #3949ab, #5c6bc0)',
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 letterSpacing: '-0.5px',
+                fontSize: { md: '1.5rem' },
               }}
             >
               RodaMallorca
             </Typography>
           </Stack>
 
-          <Stack direction="row" spacing={{ xs: 0.5, md: 2 }} alignItems="center">
-            {/* Navegación principal - visible para todos */}
+          <Stack direction="row" spacing={{ xs: 0.5, sm: 1, md: 2 }} alignItems="center">
+            {/* Navegación principal - oculta en móvil pequeño, visible en tablet+ */}
             <Button
               variant="text"
               onClick={() => navigate('/talleres')}
-              startIcon={<Handyman sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
               sx={{
+                display: { xs: 'none', sm: 'inline-flex' },
                 color: 'text.primary',
-                px: { xs: 1, md: 2 },
+                px: { sm: 1, md: 2 },
                 py: 1,
                 fontWeight: 500,
-                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                fontSize: { sm: '0.875rem', md: '1rem' },
+                minWidth: { sm: 'auto', md: 'auto' },
                 '&:hover': {
                   bgcolor: 'action.hover',
                 },
               }}
+              startIcon={<Handyman sx={{ fontSize: { sm: 20, md: 24 } }} />}
             >
-              Talleres
+              <Box component="span" sx={{ display: { sm: 'none', md: 'inline' } }}>
+                Talleres
+              </Box>
             </Button>
 
             <Button
               variant="text"
               onClick={() => navigate('/productos')}
-              startIcon={<ShoppingBag sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
               sx={{
+                display: { xs: 'none', sm: 'inline-flex' },
                 color: 'text.primary',
-                px: { xs: 1, md: 2 },
+                px: { sm: 1, md: 2 },
                 py: 1,
                 fontWeight: 500,
-                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                fontSize: { sm: '0.875rem', md: '1rem' },
+                minWidth: { sm: 'auto', md: 'auto' },
                 '&:hover': {
                   bgcolor: 'action.hover',
                 },
               }}
+              startIcon={<ShoppingBag sx={{ fontSize: { sm: 20, md: 24 } }} />}
             >
-              Recambios
+              <Box component="span" sx={{ display: { sm: 'none', md: 'inline' } }}>
+                Recambios
+              </Box>
             </Button>
 
             <Button
               variant="contained"
               onClick={() => navigate('/alquileres')}
-              startIcon={<PedalBike sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
+              startIcon={<PedalBike />}
               sx={{
                 bgcolor: 'success.main',
                 color: 'white',
                 px: { xs: 1.5, sm: 2, md: 3 },
-                py: 1,
+                py: { xs: 0.75, sm: 1 },
                 fontWeight: 600,
-                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                fontSize: { xs: '0.875rem', sm: '0.875rem', md: '1rem' },
                 boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)',
                 '&:hover': {
                   bgcolor: 'success.dark',
