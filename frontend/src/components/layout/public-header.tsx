@@ -139,18 +139,18 @@ export const PublicHeader = () => {
             </Typography>
           </Stack>
 
-          <Stack direction="row" spacing={{ xs: 1, md: 2 }} alignItems="center">
+          <Stack direction="row" spacing={{ xs: 0.5, md: 2 }} alignItems="center">
             {/* Navegación principal - visible para todos */}
             <Button
               variant="text"
               onClick={() => navigate('/talleres')}
               startIcon={<Handyman sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
               sx={{
-                display: { xs: 'none', md: 'inline-flex' },
                 color: 'text.primary',
-                px: 2,
+                px: { xs: 1, md: 2 },
                 py: 1,
                 fontWeight: 500,
+                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
                 '&:hover': {
                   bgcolor: 'action.hover',
                 },
@@ -164,17 +164,17 @@ export const PublicHeader = () => {
               onClick={() => navigate('/productos')}
               startIcon={<ShoppingBag sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
               sx={{
-                display: { xs: 'none', md: 'inline-flex' },
                 color: 'text.primary',
-                px: 2,
+                px: { xs: 1, md: 2 },
                 py: 1,
                 fontWeight: 500,
+                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
                 '&:hover': {
                   bgcolor: 'action.hover',
                 },
               }}
             >
-              Productos
+              Recambios
             </Button>
 
             <Button
@@ -184,10 +184,10 @@ export const PublicHeader = () => {
               sx={{
                 bgcolor: 'success.main',
                 color: 'white',
-                px: { xs: 2, sm: 3 },
+                px: { xs: 1.5, sm: 2, md: 3 },
                 py: 1,
                 fontWeight: 600,
-                fontSize: { xs: '0.875rem', md: '1rem' },
+                fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
                 boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)',
                 '&:hover': {
                   bgcolor: 'success.dark',
