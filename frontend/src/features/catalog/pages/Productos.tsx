@@ -72,7 +72,7 @@ export const Productos = () => {
     if (productsError)
       return (
         <Alert severity="error" sx={{ mt: 2 }}>
-          Error al cargar productos: {productsError.message}
+          Error al cargar productos: {productsError}
         </Alert>
       )
     if (products.length === 0)
@@ -84,11 +84,23 @@ export const Productos = () => {
 
     const adaptedProducts = products.map(adaptCatalogProductForLayout)
     return (
-      <ModernProductLayout
-        products={adaptedProducts}
-        pagination={productsPagination}
-        onPageChange={(page) => loadProducts(debouncedQuery, productFilters, page)}
-      />
+      <>
+        <ModernProductLayout
+          products={adaptedProducts}
+          loading={false}
+          emptyMessage="No se encontraron productos"
+          onFavoriteToggle={() => {}}
+          favoriteIds={[]}
+        />
+
+        {productsPagination.total > 0 && (
+          <Box textAlign="center" sx={{ mt: 4 }}>
+            <Typography variant="body2" color="text.secondary">
+              Mostrando {products.length} de {productsPagination.total} productos
+            </Typography>
+          </Box>
+        )}
+      </>
     )
   }
 
