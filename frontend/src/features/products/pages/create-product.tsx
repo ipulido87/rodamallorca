@@ -499,7 +499,9 @@ export const CreateProduct = () => {
               disabled={
                 loading ||
                 !formData.title.trim() ||
-                formData.price <= 0 ||
+                (formData.isRental
+                  ? (formData.rentalPricePerDay || 0) <= 0
+                  : formData.price <= 0) ||
                 formData.images.length === 0
               }
               size="large"
