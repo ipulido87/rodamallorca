@@ -28,6 +28,7 @@ import {
   CheckCircle,
   Security,
   Lightbulb,
+  Search,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { getRentalBikes, getRentalFiltersOptions, type RentalBike, type RentalFilters } from '../../../services/rental.service'
