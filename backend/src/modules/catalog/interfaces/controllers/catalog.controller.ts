@@ -50,6 +50,7 @@ export const searchProductsController = async (
 
     const where: Prisma.ProductWhereInput = {
       status: 'PUBLISHED',
+      isRental: false, // SOLO productos de venta, NO alquileres
       ...(q ? { title: { contains: String(q), mode: 'insensitive' } } : {}),
       ...(categoryId ? { categoryId: String(categoryId) } : {}),
       ...(workshopId ? { workshopId: String(workshopId) } : {}),
@@ -104,7 +105,7 @@ export const getProductByIdController = async (
       },
     })
 
-    if (!product) {
+    if (!product || product.isRental) {
       return res.status(404).json({ message: 'Product not found' })
     }
 

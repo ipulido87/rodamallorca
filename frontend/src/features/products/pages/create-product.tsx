@@ -18,7 +18,7 @@ import {
 } from '@mui/material'
 import { PedalBike, Inventory } from '@mui/icons-material'
 import { AxiosError } from 'axios'
-import { useState, type ChangeEvent, type FormEvent } from 'react'
+import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ImageUpload } from '../../media/components/image-downloads'
 import type { ProcessedImage } from '../../media/services/media-service'
@@ -26,6 +26,12 @@ import {
   createProduct,
   type CreateProductData,
 } from '../services/product-service'
+import { API } from '../../auth/services/auth-service'
+
+interface Category {
+  id: string
+  name: string
+}
 
 // Extender el tipo para incluir imágenes y campos de alquiler
 interface CreateProductFormData extends CreateProductData {
@@ -53,6 +59,7 @@ export const CreateProduct = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [categories, setCategories] = useState<Category[]>([])
 
   const [formData, setFormData] = useState<CreateProductFormData>({
     title: '',
@@ -99,6 +106,20 @@ export const CreateProduct = () => {
       images,
     }))
   }
+
+  // Cargar categorías al montar el componente
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await API.get<Category[]>('/categories')
+        setCategories(response.data)
+      } catch (err) {
+        console.warn('Could not load categories:', err)
+        setCategories([])
+      }
+    }
+    loadCategories()
+  }, [])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -469,6 +490,27 @@ export const CreateProduct = () => {
             <MenuItem value="DRAFT">Borrador</MenuItem>
             <MenuItem value="PUBLISHED">Publicado</MenuItem>
           </TextField>
+
+          {/* Campo de categoría (solo para productos de venta, no alquileres) */}
+          {!formData.isRental && (
+            <TextField
+              label="Categoría"
+              name="categoryId"
+              value={formData.categoryId}
+              onChange={handleChange}
+              margin="normal"
+              fullWidth
+              select
+              helperText="Tipo de producto que estás vendiendo"
+            >
+              <MenuItem value="">-- Sin categoría --</MenuItem>
+              {categories.map((cat) => (
+                <MenuItem key={cat.id} value={cat.id}>
+                  {cat.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
 
           <TextField
             label="Descripción"
