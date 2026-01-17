@@ -72,13 +72,13 @@ export const Productos = () => {
     if (productsError)
       return (
         <Alert severity="error" sx={{ mt: 2 }}>
-          Error al cargar productos: {productsError}
+          Error al cargar recambios: {productsError}
         </Alert>
       )
     if (products.length === 0)
       return (
         <Alert severity="info" sx={{ mt: 2 }}>
-          No se encontraron productos con estos filtros.
+          No se encontraron recambios con estos filtros.
         </Alert>
       )
 
@@ -88,7 +88,7 @@ export const Productos = () => {
         <ModernProductLayout
           products={adaptedProducts}
           loading={false}
-          emptyMessage="No se encontraron productos"
+          emptyMessage="No se encontraron recambios"
           onFavoriteToggle={() => {}}
           favoriteIds={[]}
         />
@@ -96,7 +96,7 @@ export const Productos = () => {
         {productsPagination.total > 0 && (
           <Box textAlign="center" sx={{ mt: 4 }}>
             <Typography variant="body2" color="text.secondary">
-              Mostrando {products.length} de {productsPagination.total} productos
+              Mostrando {products.length} de {productsPagination.total} recambios
             </Typography>
           </Box>
         )}
@@ -120,10 +120,10 @@ export const Productos = () => {
             WebkitTextFillColor: 'transparent',
           }}
         >
-          Catálogo de Productos
+          Recambios y Componentes
         </Typography>
         <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-          Encuentra recambios, componentes y accesorios para tu bicicleta
+          Encuentra piezas, componentes y accesorios para tu bicicleta
         </Typography>
       </Box>
 
@@ -132,7 +132,7 @@ export const Productos = () => {
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Buscar productos, marcas, componentes..."
+          placeholder="Buscar recambios, marcas, componentes..."
           value={searchQuery}
           onChange={handleSearchChange}
           InputProps={{

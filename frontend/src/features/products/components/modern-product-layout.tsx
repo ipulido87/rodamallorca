@@ -107,24 +107,26 @@ const ProductCard = ({
         position: 'relative',
       }}
     >
-      {/* Botón ⋮ para el menú contextual */}
-      <IconButton
-        size="small"
-        onClick={(e) => {
-          e.stopPropagation()
-          onOpenMenu?.(e, product)
-        }}
-        sx={{
-          position: 'absolute',
-          top: 8,
-          right: 8,
-          zIndex: 2,
-          bgcolor: 'rgba(255,255,255,0.95)',
-          '&:hover': { bgcolor: 'white' },
-        }}
-      >
-        <MoreVert />
-      </IconButton>
+      {/* Botón ⋮ para el menú contextual - solo si onOpenMenu está definido */}
+      {onOpenMenu && (
+        <IconButton
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation()
+            onOpenMenu(e, product)
+          }}
+          sx={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            zIndex: 2,
+            bgcolor: 'rgba(255,255,255,0.95)',
+            '&:hover': { bgcolor: 'white' },
+          }}
+        >
+          <MoreVert />
+        </IconButton>
+      )}
 
       {/* Imagen */}
       <Box sx={{ position: 'relative', height: 260, bgcolor: 'grey.50' }}>
