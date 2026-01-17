@@ -74,10 +74,15 @@ async function main() {
   console.log('📦 Creando categorías de productos...')
   await prisma.category.createMany({
     data: [
-      { name: 'Transmission' },
-      { name: 'Brakes' },
-      { name: 'Wheels' },
-      { name: 'Accessories' },
+      { name: 'Bicicletas' },
+      { name: 'Componentes' },
+      { name: 'Accesorios' },
+      { name: 'Repuestos' },
+      { name: 'Ruedas' },
+      { name: 'Frenos' },
+      { name: 'Transmisión' },
+      { name: 'Electrónica' },
+      { name: 'Ropa y Calzado' },
     ],
     skipDuplicates: true,
   })
