@@ -77,7 +77,7 @@ export const Talleres = () => {
   const handleToggleFavorite = async (workshopId: string) => {
     if (!user) return
     try {
-      await toggleFavorite(workshopId, 'workshop')
+      await toggleFavorite(workshopId)
       setFavoriteWorkshopIds((prev) =>
         prev.includes(workshopId)
           ? prev.filter((id) => id !== workshopId)
