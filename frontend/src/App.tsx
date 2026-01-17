@@ -1,10 +1,10 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
 import { SWRConfig } from 'swr'
 import { MainLayout } from './components/layout/main-layout'
 import { PublicLayout } from './components/layout/public-layout'
 import { PrivateRoute } from './components/private-ruta'
 import { RoleRoute } from './components/role-route'
-import { Catalog, Talleres, Productos } from './features/catalog/index'
+import { Talleres, Productos } from './features/catalog/index'
 import { Dashboard } from './features/dashboard/index'
 import { MyProducts, ProductDetail } from './features/products'
 import { CreateProduct, EditProduct } from './features/products/index'
@@ -142,14 +142,7 @@ function App() {
           />
 
           {/* Legacy routes - redirect to new paths */}
-          <Route
-            path="/catalog"
-            element={
-              <PublicLayout>
-                <Catalog />
-              </PublicLayout>
-            }
-          />
+          <Route path="/catalog" element={<Navigate to="/productos" replace />} />
           <Route
             path="/rentals"
             element={
