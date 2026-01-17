@@ -93,7 +93,7 @@ export const Talleres = () => {
     if (workshopsError)
       return (
         <Alert severity="error" sx={{ mt: 2 }}>
-          Error al cargar talleres: {workshopsError.message}
+          Error al cargar talleres: {workshopsError}
         </Alert>
       )
     if (workshops.length === 0)
@@ -104,15 +104,23 @@ export const Talleres = () => {
       )
 
     return (
-      <ModernWorkshopLayout
-        workshops={workshops}
-        onToggleFavorite={handleToggleFavorite}
-        favoriteIds={favoriteWorkshopIds}
-        pagination={workshopsPagination}
-        onPageChange={(page) =>
-          loadWorkshops(debouncedQuery, workshopFilters, page)
-        }
-      />
+      <>
+        <ModernWorkshopLayout
+          workshops={workshops}
+          loading={false}
+          emptyMessage="No se encontraron talleres"
+          onFavoriteToggle={handleToggleFavorite}
+          favoriteIds={favoriteWorkshopIds}
+        />
+
+        {workshopsPagination.total > 0 && (
+          <Box textAlign="center" sx={{ mt: 4 }}>
+            <Typography variant="body2" color="text.secondary">
+              Mostrando {workshops.length} de {workshopsPagination.total} talleres
+            </Typography>
+          </Box>
+        )}
+      </>
     )
   }
 
