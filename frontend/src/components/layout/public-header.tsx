@@ -7,6 +7,8 @@ import {
   Logout,
   Person,
   Settings,
+  Handyman,
+  ShoppingBag,
 } from '@mui/icons-material'
 import {
   AppBar,
@@ -138,10 +140,46 @@ export const PublicHeader = () => {
           </Stack>
 
           <Stack direction="row" spacing={{ xs: 1, md: 2 }} alignItems="center">
-            {/* Botón de Alquiler - visible para todos */}
+            {/* Navegación principal - visible para todos */}
+            <Button
+              variant="text"
+              onClick={() => navigate('/talleres')}
+              startIcon={<Handyman sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
+              sx={{
+                display: { xs: 'none', md: 'inline-flex' },
+                color: 'text.primary',
+                px: 2,
+                py: 1,
+                fontWeight: 500,
+                '&:hover': {
+                  bgcolor: 'action.hover',
+                },
+              }}
+            >
+              Talleres
+            </Button>
+
+            <Button
+              variant="text"
+              onClick={() => navigate('/productos')}
+              startIcon={<ShoppingBag sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
+              sx={{
+                display: { xs: 'none', md: 'inline-flex' },
+                color: 'text.primary',
+                px: 2,
+                py: 1,
+                fontWeight: 500,
+                '&:hover': {
+                  bgcolor: 'action.hover',
+                },
+              }}
+            >
+              Productos
+            </Button>
+
             <Button
               variant="contained"
-              onClick={() => navigate('/rentals')}
+              onClick={() => navigate('/alquileres')}
               startIcon={<PedalBike sx={{ display: { xs: 'none', sm: 'inline-flex' } }} />}
               sx={{
                 bgcolor: 'success.main',
@@ -163,22 +201,6 @@ export const PublicHeader = () => {
 
             {isAuthenticated ? (
               <>
-                <Button
-                  variant="text"
-                  onClick={() => navigate('/catalog')}
-                  sx={{
-                    display: { xs: 'none', md: 'inline-flex' },
-                    color: 'primary.main',
-                    px: 2,
-                    py: 1,
-                    fontWeight: 500,
-                    '&:hover': {
-                      bgcolor: 'primary.light',
-                    },
-                  }}
-                >
-                  Tienda
-                </Button>
 
                 <Box>
                   <Button
@@ -373,22 +395,6 @@ export const PublicHeader = () => {
               </>
             ) : (
               <>
-                <Button
-                  variant="text"
-                  onClick={() => navigate('/catalog')}
-                  sx={{
-                    display: { xs: 'none', md: 'inline-flex' },
-                    color: 'primary.main',
-                    fontWeight: 500,
-                    px: 2,
-                    '&:hover': {
-                      bgcolor: 'primary.light',
-                    },
-                  }}
-                >
-                  Tienda
-                </Button>
-
                 {!isLoginPage && (
                   <Button
                     variant="outlined"
