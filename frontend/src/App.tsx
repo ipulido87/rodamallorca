@@ -4,7 +4,7 @@ import { MainLayout } from './components/layout/main-layout'
 import { PublicLayout } from './components/layout/public-layout'
 import { PrivateRoute } from './components/private-ruta'
 import { RoleRoute } from './components/role-route'
-import { Catalog } from './features/catalog/index'
+import { Catalog, Talleres, Productos } from './features/catalog/index'
 import { Dashboard } from './features/dashboard/index'
 import { MyProducts, ProductDetail } from './features/products'
 import { CreateProduct, EditProduct } from './features/products/index'
@@ -101,7 +101,47 @@ function App() {
             }
           />
 
-          {/* ✅ CATÁLOGO PÚBLICO - Usuarios pueden explorar sin login */}
+          {/* ✅ NAVEGACIÓN PÚBLICA - Usuarios pueden explorar sin login */}
+
+          {/* Directorio de Talleres */}
+          <Route
+            path="/talleres"
+            element={
+              <PublicLayout>
+                <Talleres />
+              </PublicLayout>
+            }
+          />
+
+          {/* Catálogo de Productos (Recambios) */}
+          <Route
+            path="/productos"
+            element={
+              <PublicLayout>
+                <Productos />
+              </PublicLayout>
+            }
+          />
+
+          {/* Alquiler de Bicicletas */}
+          <Route
+            path="/alquileres"
+            element={
+              <PublicLayout>
+                <RentalCatalog />
+              </PublicLayout>
+            }
+          />
+          <Route
+            path="/alquileres/:id"
+            element={
+              <PublicLayout>
+                <RentalDetail />
+              </PublicLayout>
+            }
+          />
+
+          {/* Legacy routes - redirect to new paths */}
           <Route
             path="/catalog"
             element={
@@ -110,24 +150,6 @@ function App() {
               </PublicLayout>
             }
           />
-          <Route
-            path="/product/:id"
-            element={
-              <PublicLayout>
-                <ProductDetail />
-              </PublicLayout>
-            }
-          />
-          <Route
-            path="/workshop/:id"
-            element={
-              <PublicLayout>
-                <WorkshopDetail />
-              </PublicLayout>
-            }
-          />
-
-          {/* Rutas de alquiler de bicicletas */}
           <Route
             path="/rentals"
             element={
@@ -141,6 +163,24 @@ function App() {
             element={
               <PublicLayout>
                 <RentalDetail />
+              </PublicLayout>
+            }
+          />
+
+          {/* Detalles de productos y talleres */}
+          <Route
+            path="/product/:id"
+            element={
+              <PublicLayout>
+                <ProductDetail />
+              </PublicLayout>
+            }
+          />
+          <Route
+            path="/workshop/:id"
+            element={
+              <PublicLayout>
+                <WorkshopDetail />
               </PublicLayout>
             }
           />

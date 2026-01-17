@@ -63,13 +63,6 @@ export const menuItems: MenuItem[] = [
     roles: ['USER'],
   },
   {
-    id: 'catalog',
-    text: 'Catálogo',
-    icon: 'Store',
-    path: '/catalog',
-    roles: ['USER', 'WORKSHOP_OWNER'],
-  },
-  {
     id: 'my-orders',
     text: 'Mis Pedidos y Reparaciones',
     icon: 'ShoppingCart',
