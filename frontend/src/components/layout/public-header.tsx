@@ -9,6 +9,7 @@ import {
   Settings,
   Handyman,
   ShoppingBag,
+  Menu as MenuIcon,
 } from '@mui/icons-material'
 import {
   AppBar,
@@ -28,6 +29,8 @@ import {
   Toolbar,
   Typography,
   useScrollTrigger,
+  IconButton,
+  Tooltip,
 } from '@mui/material'
 import { useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -140,73 +143,106 @@ export const PublicHeader = () => {
             </Typography>
           </Stack>
 
-          <Stack direction="row" spacing={{ xs: 0.5, sm: 1, md: 2 }} alignItems="center">
-            {/* Navegación principal - oculta en móvil pequeño, visible en tablet+ */}
-            <Button
-              variant="text"
-              onClick={() => navigate('/talleres')}
-              sx={{
-                display: { xs: 'none', sm: 'inline-flex' },
-                color: 'text.primary',
-                px: { sm: 1, md: 2 },
-                py: 1,
-                fontWeight: 500,
-                fontSize: { sm: '0.875rem', md: '1rem' },
-                minWidth: { sm: 'auto', md: 'auto' },
-                '&:hover': {
-                  bgcolor: 'action.hover',
-                },
-              }}
-              startIcon={<Handyman sx={{ fontSize: { sm: 20, md: 24 } }} />}
-            >
-              <Box component="span" sx={{ display: { sm: 'none', md: 'inline' } }}>
+          <Stack direction="row" spacing={{ xs: 0.5, sm: 1.5, md: 2 }} alignItems="center">
+            {/* Navegación principal */}
+
+            {/* MÓVIL: Solo iconos */}
+            <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 0.5 }}>
+              <Tooltip title="Talleres">
+                <IconButton
+                  onClick={() => navigate('/talleres')}
+                  sx={{
+                    bgcolor: 'background.paper',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    '&:hover': { bgcolor: 'action.hover' },
+                  }}
+                >
+                  <Handyman sx={{ fontSize: 20 }} />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Recambios">
+                <IconButton
+                  onClick={() => navigate('/productos')}
+                  sx={{
+                    bgcolor: 'background.paper',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    '&:hover': { bgcolor: 'action.hover' },
+                  }}
+                >
+                  <ShoppingBag sx={{ fontSize: 20 }} />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip title="Alquiler">
+                <IconButton
+                  onClick={() => navigate('/alquileres')}
+                  sx={{
+                    bgcolor: 'success.main',
+                    color: 'white',
+                    '&:hover': { bgcolor: 'success.dark' },
+                  }}
+                >
+                  <PedalBike sx={{ fontSize: 20 }} />
+                </IconButton>
+              </Tooltip>
+            </Box>
+
+            {/* DESKTOP: Botones con texto */}
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
+              <Button
+                variant="text"
+                onClick={() => navigate('/talleres')}
+                startIcon={<Handyman />}
+                sx={{
+                  color: 'text.primary',
+                  px: 2,
+                  py: 1,
+                  fontWeight: 500,
+                  '&:hover': { bgcolor: 'action.hover' },
+                }}
+              >
                 Talleres
-              </Box>
-            </Button>
+              </Button>
 
-            <Button
-              variant="text"
-              onClick={() => navigate('/productos')}
-              sx={{
-                display: { xs: 'none', sm: 'inline-flex' },
-                color: 'text.primary',
-                px: { sm: 1, md: 2 },
-                py: 1,
-                fontWeight: 500,
-                fontSize: { sm: '0.875rem', md: '1rem' },
-                minWidth: { sm: 'auto', md: 'auto' },
-                '&:hover': {
-                  bgcolor: 'action.hover',
-                },
-              }}
-              startIcon={<ShoppingBag sx={{ fontSize: { sm: 20, md: 24 } }} />}
-            >
-              <Box component="span" sx={{ display: { sm: 'none', md: 'inline' } }}>
+              <Button
+                variant="text"
+                onClick={() => navigate('/productos')}
+                startIcon={<ShoppingBag />}
+                sx={{
+                  color: 'text.primary',
+                  px: 2,
+                  py: 1,
+                  fontWeight: 500,
+                  '&:hover': { bgcolor: 'action.hover' },
+                }}
+              >
                 Recambios
-              </Box>
-            </Button>
+              </Button>
 
-            <Button
-              variant="contained"
-              onClick={() => navigate('/alquileres')}
-              startIcon={<PedalBike />}
-              sx={{
-                bgcolor: 'success.main',
-                color: 'white',
-                px: { xs: 1.5, sm: 2, md: 3 },
-                py: { xs: 0.75, sm: 1 },
-                fontWeight: 600,
-                fontSize: { xs: '0.875rem', sm: '0.875rem', md: '1rem' },
-                boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)',
-                '&:hover': {
-                  bgcolor: 'success.dark',
-                  transform: 'translateY(-1px)',
-                  boxShadow: '0 6px 16px rgba(46, 125, 50, 0.4)',
-                },
-              }}
-            >
-              Alquiler
-            </Button>
+              <Button
+                variant="contained"
+                onClick={() => navigate('/alquileres')}
+                startIcon={<PedalBike />}
+                sx={{
+                  bgcolor: 'success.main',
+                  color: 'white',
+                  px: 3,
+                  py: 1,
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(46, 125, 50, 0.3)',
+                  '&:hover': {
+                    bgcolor: 'success.dark',
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 6px 16px rgba(46, 125, 50, 0.4)',
+                  },
+                }}
+              >
+                Alquiler
+              </Button>
+            </Box>
 
             {isAuthenticated ? (
               <>
@@ -409,11 +445,12 @@ export const PublicHeader = () => {
                     variant="outlined"
                     onClick={() => navigate('/login')}
                     sx={{
-                      display: { xs: 'none', sm: 'inline-flex' },
+                      display: { xs: 'none', md: 'inline-flex' },
                       borderColor: 'primary.main',
                       color: 'primary.main',
-                      px: { xs: 2, sm: 3 },
-                      fontSize: { xs: '0.875rem', md: '1rem' },
+                      px: 3,
+                      py: 1,
+                      fontWeight: 500,
                       '&:hover': {
                         borderColor: 'primary.dark',
                         bgcolor: 'primary.light',
@@ -431,14 +468,18 @@ export const PublicHeader = () => {
                     onClick={() => navigate('/register')}
                     sx={{
                       bgcolor: 'primary.main',
-                      px: { xs: 2, sm: 3 },
+                      color: 'white',
+                      px: { xs: 2, md: 3 },
+                      py: { xs: 0.75, md: 1 },
                       fontSize: { xs: '0.875rem', md: '1rem' },
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap',
                       '&:hover': {
                         bgcolor: 'primary.dark',
                       },
                     }}
                   >
-                    {isLoginPage ? 'Crear Cuenta' : 'Registrarse'}
+                    {isLoginPage ? 'Cuenta' : 'Registro'}
                   </Button>
                 )}
               </>
