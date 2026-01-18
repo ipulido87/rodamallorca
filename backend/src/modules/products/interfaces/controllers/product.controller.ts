@@ -143,7 +143,7 @@ export const createProduct = async (
   }
 }
 
-// GET /api/owner/products/mine
+// GET /api/owner/products/mine?isRental=true|false
 export const getMyProducts = async (
   req: Request,
   res: Response,
@@ -155,8 +155,19 @@ export const getMyProducts = async (
       return res.status(403).json({ message: 'You do not own a workshop' })
     }
 
+    // Filtro opcional para separar productos de venta vs alquiler
+    const isRentalParam = req.query.isRental
+    const whereClause: any = { workshopId: workshop.id }
+
+    if (isRentalParam === 'true') {
+      whereClause.isRental = true
+    } else if (isRentalParam === 'false') {
+      whereClause.isRental = false
+    }
+    // Si no se especifica, devuelve todos
+
     const products = await prisma.product.findMany({
-      where: { workshopId: workshop.id },
+      where: whereClause,
       include: {
         category: { select: { id: true, name: true } },
         images: { orderBy: { position: 'asc' } },
