@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   Container,
-  Grid,
   Typography,
   Stack
 } from '@mui/material'
@@ -107,47 +106,56 @@ export const Home = () => {
         </Box>
 
         {/* Action Cards */}
-        <Grid container spacing={3}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(2, 1fr)',
+              md: 'repeat(4, 1fr)',
+            },
+            gap: 3,
+          }}
+        >
           {actions.map((action, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Card
-                sx={{
-                  height: '100%',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: 6,
-                  },
-                }}
-                onClick={action.action}
-              >
-                <CardContent>
-                  <Stack spacing={2} alignItems="center" textAlign="center">
-                    <Box
-                      sx={{
-                        color: action.color,
-                        display: 'flex',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      {action.icon}
-                    </Box>
-                    <Typography variant="h6" fontWeight="bold">
-                      {action.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {action.description}
-                    </Typography>
-                    <Button variant="outlined" size="small" sx={{ mt: 1 }}>
-                      Ir
-                    </Button>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
+            <Card
+              key={index}
+              sx={{
+                height: '100%',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: 6,
+                },
+              }}
+              onClick={action.action}
+            >
+              <CardContent>
+                <Stack spacing={2} alignItems="center" textAlign="center">
+                  <Box
+                    sx={{
+                      color: action.color,
+                      display: 'flex',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {action.icon}
+                  </Box>
+                  <Typography variant="h6" fontWeight="bold">
+                    {action.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {action.description}
+                  </Typography>
+                  <Button variant="outlined" size="small" sx={{ mt: 1 }}>
+                    Ir
+                  </Button>
+                </Stack>
+              </CardContent>
+            </Card>
           ))}
-        </Grid>
+        </Box>
 
         {/* Additional Info Section */}
         <Box sx={{ mt: 6, textAlign: 'center' }}>
