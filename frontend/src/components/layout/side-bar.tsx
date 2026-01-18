@@ -86,6 +86,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           component="div"
           color="primary"
           fontWeight="bold"
+          onClick={() => navigate('/')}
+          sx={{
+            cursor: 'pointer',
+            '&:hover': {
+              opacity: 0.8,
+            },
+          }}
         >
           RodaMallorca
         </Typography>
