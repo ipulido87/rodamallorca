@@ -237,33 +237,6 @@ export const CreateProduct = () => {
         )}
 
         <Box component="form" onSubmit={handleSubmit}>
-          {/* Toggle Alquiler vs Venta */}
-          <Paper sx={{ p: 2, mb: 3, bgcolor: 'grey.50' }}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData.isRental || false}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, isRental: e.target.checked }))
-                  }
-                  color="success"
-                />
-              }
-              label={
-                <Box>
-                  <Typography variant="subtitle1" fontWeight="600">
-                    ¿Es para alquiler?
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {formData.isRental
-                      ? 'Configurando como bicicleta de alquiler'
-                      : 'Configurando como producto para venta'}
-                  </Typography>
-                </Box>
-              }
-            />
-          </Paper>
-
           {/* Información básica */}
           <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
             Información básica
@@ -561,18 +534,21 @@ export const CreateProduct = () => {
                 loading ||
                 !formData.title.trim() ||
                 (formData.isRental
-                  ? (formData.rentalPricePerDay || 0) <= 0
+                  ? !formData.rentalPricePerDay || formData.rentalPricePerDay <= 0
                   : formData.price <= 0) ||
                 formData.images.length === 0
               }
               size="large"
             >
-              {loading ? 'Creando producto...' : 'Crear Producto'}
+              {loading
+                ? (formData.isRental ? 'Creando bicicleta...' : 'Creando producto...')
+                : (formData.isRental ? 'Crear Bicicleta' : 'Crear Producto')
+              }
             </Button>
 
             <Button
               variant="outlined"
-              onClick={() => navigate('/my-products')}
+              onClick={() => navigate(formData.isRental ? '/my-rentals' : '/my-products')}
               disabled={loading}
               size="large"
             >
