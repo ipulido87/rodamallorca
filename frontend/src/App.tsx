@@ -6,7 +6,7 @@ import { PrivateRoute } from './components/private-ruta'
 import { RoleRoute } from './components/role-route'
 import { Talleres, Productos } from './features/catalog/index'
 import { Dashboard } from './features/dashboard/index'
-import { MyProducts, ProductDetail } from './features/products'
+import { MyProducts, MyRentals, ProductDetail } from './features/products'
 import { CreateProduct, EditProduct } from './features/products/index'
 import { CreateWorkshop } from './features/workshops/pages/create-workshop'
 import { EditWorkshop } from './features/workshops/pages/edit-workshop'
@@ -243,6 +243,14 @@ function App() {
               element={
                 <RoleRoute requiredRole="WORKSHOP_OWNER">
                   <MyProducts />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="my-rentals"
+              element={
+                <RoleRoute requiredRole="WORKSHOP_OWNER">
+                  <MyRentals />
                 </RoleRoute>
               }
             />

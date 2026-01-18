@@ -19,7 +19,7 @@ import {
 import { PedalBike, Inventory } from '@mui/icons-material'
 import { AxiosError } from 'axios'
 import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ImageUpload } from '../../media/components/image-downloads'
 import type { ProcessedImage } from '../../media/services/media-service'
 import {
@@ -56,6 +56,7 @@ interface CreateProductFormData extends CreateProductData {
 
 export const CreateProduct = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -120,6 +121,17 @@ export const CreateProduct = () => {
     }
     loadCategories()
   }, [])
+
+  // Detectar query parameter isRental=true
+  useEffect(() => {
+    const isRentalParam = searchParams.get('isRental')
+    if (isRentalParam === 'true') {
+      setFormData((prev) => ({
+        ...prev,
+        isRental: true,
+      }))
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
