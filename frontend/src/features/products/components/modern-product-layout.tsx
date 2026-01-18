@@ -93,7 +93,7 @@ const ProductCard = ({
     <Card
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={() => navigate(`/product/${product.id}`)}
+      onClick={() => navigate(product.isRental ? `/alquileres/${product.id}` : `/product/${product.id}`)}
       sx={{
         cursor: 'pointer',
         borderRadius: 3,

@@ -116,6 +116,7 @@ export const RentalDetail = () => {
     const rentalData = {
       bikeId: bike.id,
       bikeName: bike.title,
+      bikeImage: bike.images[0]?.original || '/placeholder-bike.jpg',
       workshopId: bike.workshop.id,
       workshopName: bike.workshop.name,
       startDate,
@@ -128,7 +129,7 @@ export const RentalDetail = () => {
     }
 
     // Guardar en localStorage para el checkout
-    localStorage.setItem('rentalCheckout', JSON.stringify(rentalData))
+    localStorage.setItem('rentalCheckoutData', JSON.stringify(rentalData))
 
     // Redirigir al checkout
     navigate('/checkout/rental')

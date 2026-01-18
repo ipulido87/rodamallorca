@@ -23,6 +23,7 @@ export interface CardProduct {
     name: string
     city?: string
   }
+  isRental?: boolean // Para saber si es alquiler o venta
 }
 
 /** Modelo que usan las *cards* de taller (UI) */

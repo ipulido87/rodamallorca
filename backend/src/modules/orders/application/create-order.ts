@@ -6,6 +6,7 @@ import type {
 import type { WorkshopRepository } from '../../../modules/workshops/domain/repositories/workshop-repository'
 import { sendNewOrderEmail } from '../../notifications/services/email-service'
 import { sendNewOrderPush } from '../../notifications/services/push-service'
+import { checkAvailability } from '../../rentals/services/rental-availability.service'
 import prisma from '../../../lib/prisma'
 
 interface CreateOrderDeps {
@@ -41,6 +42,22 @@ export async function createOrder(
     if (item.priceAtOrder <= 0) {
       throw new Error('El precio de cada item debe ser mayor a 0')
     }
+
+    // ✅ VALIDACIÓN DE DISPONIBILIDAD PARA ALQUILERES
+    if (item.isRental && item.productId && item.rentalStartDate && item.rentalEndDate) {
+      const availability = await checkAvailability({
+        productId: item.productId,
+        startDate: new Date(item.rentalStartDate),
+        endDate: new Date(item.rentalEndDate),
+        quantity: item.quantity,
+      })
+
+      if (!availability.available) {
+        throw new Error(
+          `El producto no está disponible para las fechas seleccionadas. Disponibilidad: ${availability.availableQuantity} unidades`
+        )
+      }
+    }
   }
 
   const items = input.items.map((i) => ({
@@ -49,6 +66,12 @@ export async function createOrder(
     priceAtOrder: i.priceAtOrder,
     currency: i.currency ?? 'EUR',
     description: i.description ?? null,
+    // Campos de alquiler
+    isRental: i.isRental ?? false,
+    rentalStartDate: i.rentalStartDate ? new Date(i.rentalStartDate) : null,
+    rentalEndDate: i.rentalEndDate ? new Date(i.rentalEndDate) : null,
+    rentalDays: i.rentalDays ?? null,
+    depositPaid: i.depositPaid ?? null,
   }))
 
   const totalAmount = items.reduce(
@@ -56,12 +79,17 @@ export async function createOrder(
     0
   )
 
+  // Determinar el tipo de orden basado en los items
+  const hasRentals = items.some(item => item.isRental)
+  const orderType = input.type || (hasRentals ? 'RENTAL' : 'PRODUCT_ORDER')
+
   const payload: CreateOrderRepoInput = {
     userId: input.userId,
     workshopId: input.workshopId,
     notes: input.notes ?? null,
     totalAmount,
     items,
+    type: orderType,
   }
 
   // Crear el pedido

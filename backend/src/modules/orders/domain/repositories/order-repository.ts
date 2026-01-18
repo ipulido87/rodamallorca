@@ -7,6 +7,12 @@ export interface CreateOrderRepoItem {
   priceAtOrder: number
   currency: string
   description: string | null
+  // Campos de alquiler
+  isRental?: boolean
+  rentalStartDate?: Date | null
+  rentalEndDate?: Date | null
+  rentalDays?: number | null
+  depositPaid?: number | null
 }
 
 export interface CreateOrderRepoInput {
@@ -15,6 +21,7 @@ export interface CreateOrderRepoInput {
   notes: string | null
   totalAmount: number
   items: CreateOrderRepoItem[]
+  type?: 'PRODUCT_ORDER' | 'SERVICE_REPAIR' | 'RENTAL'
 }
 
 export interface OrderRepository {

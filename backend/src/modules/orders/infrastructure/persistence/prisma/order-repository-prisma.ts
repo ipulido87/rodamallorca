@@ -32,6 +32,7 @@ export class OrderRepositoryPrisma implements OrderRepository {
         user: { connect: { id: input.userId } },
         workshop: { connect: { id: input.workshopId } },
         status: 'PENDING', // 👈 literal del enum de Prisma vale
+        type: (input.type || 'PRODUCT_ORDER') as any, // Tipo de orden
         totalAmount: input.totalAmount,
         currency: 'EUR',
         notes: input.notes,
@@ -42,6 +43,12 @@ export class OrderRepositoryPrisma implements OrderRepository {
             priceAtOrder: i.priceAtOrder,
             currency: i.currency,
             description: i.description,
+            // Campos de alquiler
+            isRental: i.isRental ?? false,
+            rentalStartDate: i.rentalStartDate ?? null,
+            rentalEndDate: i.rentalEndDate ?? null,
+            rentalDays: i.rentalDays ?? null,
+            depositPaid: i.depositPaid ?? null,
           })),
         },
       },

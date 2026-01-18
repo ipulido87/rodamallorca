@@ -1,4 +1,4 @@
-import { ArrowBack, Cancel, Store } from '@mui/icons-material'
+import { ArrowBack, Cancel, Store, TwoWheeler, CalendarMonth } from '@mui/icons-material'
 import {
   Alert,
   Box,
@@ -81,6 +81,33 @@ export const OrderDetail = () => {
 
   const formatPrice = (price: number) => `${(price / 100).toFixed(2)}€`
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    })
+  }
+
+  const getOrderTypeLabel = (type?: string) => {
+    const labels: Record<string, string> = {
+      PRODUCT_ORDER: 'Producto',
+      SERVICE_REPAIR: 'Reparación',
+      RENTAL: 'Alquiler',
+    }
+    return labels[type || 'PRODUCT_ORDER']
+  }
+
+  const getOrderTypeColor = (type?: string): 'default' | 'primary' | 'secondary' => {
+    const colors: Record<string, 'default' | 'primary' | 'secondary'> = {
+      PRODUCT_ORDER: 'default',
+      SERVICE_REPAIR: 'secondary',
+      RENTAL: 'primary',
+    }
+    return colors[type || 'PRODUCT_ORDER']
+  }
+
   if (loading) {
     return (
       <Container maxWidth="lg">
@@ -132,9 +159,18 @@ export const OrderDetail = () => {
             }}
           >
             <Box>
-              <Typography variant="h4" fontWeight="bold" gutterBottom>
-                Pedido #{order.id.slice(0, 8)}
-              </Typography>
+              <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+                {order.type === 'RENTAL' && <TwoWheeler color="primary" />}
+                <Typography variant="h4" fontWeight="bold">
+                  Pedido #{order.id.slice(0, 8)}
+                </Typography>
+                <Chip
+                  label={getOrderTypeLabel(order.type)}
+                  color={getOrderTypeColor(order.type)}
+                  size="small"
+                  variant="outlined"
+                />
+              </Stack>
               <Typography variant="body1" color="text.secondary">
                 {new Date(order.createdAt).toLocaleDateString('es-ES', {
                   year: 'numeric',
@@ -201,6 +237,61 @@ export const OrderDetail = () => {
             </Stack>
           </CardContent>
         </Card>
+
+        {/* Información de Alquiler (solo para pedidos tipo RENTAL) */}
+        {order.type === 'RENTAL' && order.items && order.items.length > 0 && order.items[0].isRental && (
+          <Card sx={{ mb: 3, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
+            <CardContent>
+              <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                <CalendarMonth />
+                <Typography variant="h6">
+                  Información de Alquiler
+                </Typography>
+              </Stack>
+              <Divider sx={{ mb: 2, borderColor: 'primary.dark' }} />
+
+              <Stack spacing={2}>
+                <Box>
+                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                    Fecha de Inicio
+                  </Typography>
+                  <Typography variant="body1" fontWeight={600}>
+                    {order.items[0].rentalStartDate && formatDate(order.items[0].rentalStartDate)}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                    Fecha de Devolución
+                  </Typography>
+                  <Typography variant="body1" fontWeight={600}>
+                    {order.items[0].rentalEndDate && formatDate(order.items[0].rentalEndDate)}
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                    Duración
+                  </Typography>
+                  <Typography variant="body1" fontWeight={600}>
+                    {order.items[0].rentalDays} {order.items[0].rentalDays === 1 ? 'día' : 'días'}
+                  </Typography>
+                </Box>
+
+                {order.items[0].depositPaid && order.items[0].depositPaid > 0 && (
+                  <Box>
+                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                      Depósito (reembolsable)
+                    </Typography>
+                    <Typography variant="body1" fontWeight={600}>
+                      {formatPrice(order.items[0].depositPaid)}
+                    </Typography>
+                  </Box>
+                )}
+              </Stack>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Items del pedido */}
         <Card sx={{ mb: 3 }}>

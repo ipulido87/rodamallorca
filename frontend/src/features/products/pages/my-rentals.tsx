@@ -41,6 +41,7 @@ const adaptProductForLayout = (product: Product): CardProduct => ({
   status: product.status,
   images: adaptProductImages(product.images),
   workshop: { name: 'Mi Taller', city: undefined },
+  isRental: true, // Marca como alquiler
 })
 
 const RENTALS_KEY = '/owner/products/mine?isRental=true'

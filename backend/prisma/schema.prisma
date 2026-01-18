@@ -25,6 +25,7 @@ enum OrderStatus {
 enum OrderType {
   PRODUCT_ORDER    // Compra de productos
   SERVICE_REPAIR   // Reparación/servicio
+  RENTAL           // Alquiler de bicicletas
 }
 
 enum VehicleType {

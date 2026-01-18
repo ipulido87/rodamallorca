@@ -19,6 +19,12 @@ export interface OrderItem {
   priceAtOrder: number
   currency: string
   description: string | null
+  // Campos de alquiler
+  isRental?: boolean
+  rentalStartDate?: string | null
+  rentalEndDate?: string | null
+  rentalDays?: number | null
+  depositPaid?: number | null
   createdAt: string
   updatedAt: string
 }
@@ -28,6 +34,7 @@ export interface Order {
   userId: string
   workshopId: string
   status: OrderStatus
+  type?: 'PRODUCT_ORDER' | 'SERVICE_REPAIR' | 'RENTAL'
   totalAmount: number
   currency: string
   notes: string | null

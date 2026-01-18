@@ -374,7 +374,7 @@ export const RentalCatalog = () => {
                             fullWidth
                             variant="contained"
                             startIcon={<CalendarMonth />}
-                            onClick={() => navigate(`/rentals/${bike.id}`)}
+                            onClick={() => navigate(`/alquileres/${bike.id}`)}
                           >
                             Ver Disponibilidad
                           </Button>
