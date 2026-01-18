@@ -22,7 +22,23 @@ const createProductSchema = z.object({
   status: z.enum(['DRAFT', 'PUBLISHED', 'SOLD']).optional(),
   description: z.string().optional().nullable(),
   categoryId: z.string().uuid().optional().nullable(),
-  images: z.array(imageSchema).min(1, 'Al menos una imagen es requerida'), // Nuevo campo
+  images: z.array(imageSchema).min(1, 'Al menos una imagen es requerida'),
+  // Campos de alquiler
+  isRental: z.boolean().optional(),
+  rentalPricePerDay: z.number().int().min(0).optional().nullable(),
+  rentalPricePerWeek: z.number().int().min(0).optional().nullable(),
+  availableQuantity: z.number().int().min(1).optional(),
+  bikeType: z.string().optional().nullable(),
+  bikeSize: z.string().optional().nullable(),
+  bikeBrand: z.string().optional().nullable(),
+  bikeModel: z.string().optional().nullable(),
+  frameSize: z.number().optional().nullable(),
+  includesHelmet: z.boolean().optional(),
+  includesLock: z.boolean().optional(),
+  includesLights: z.boolean().optional(),
+  depositAmount: z.number().int().min(0).optional().nullable(),
+  minRentalDays: z.number().int().min(1).optional().nullable(),
+  maxRentalDays: z.number().int().min(1).optional().nullable(),
 })
 
 const updateProductSchema = z.object({
@@ -112,18 +128,34 @@ export const createProduct = async (
       return res.status(403).json({ message: 'You do not own a workshop' })
     }
 
-    // Crear producto sin imágenes primero
-    const product = await createProductDraft(
-      {
+    // Crear producto con Prisma directamente (incluye campos de alquiler)
+    const product = await prisma.product.create({
+      data: {
         workshopId: workshop.id,
         title: productData.title,
         price: productData.price,
-        condition: productData.condition,
+        condition: productData.condition || 'used',
+        status: productData.status || 'DRAFT',
         description: productData.description,
         categoryId: productData.categoryId,
+        // Campos de alquiler
+        isRental: productData.isRental || false,
+        rentalPricePerDay: productData.rentalPricePerDay,
+        rentalPricePerWeek: productData.rentalPricePerWeek,
+        availableQuantity: productData.availableQuantity || 1,
+        bikeType: productData.bikeType,
+        bikeSize: productData.bikeSize,
+        bikeBrand: productData.bikeBrand,
+        bikeModel: productData.bikeModel,
+        frameSize: productData.frameSize,
+        includesHelmet: productData.includesHelmet || false,
+        includesLock: productData.includesLock || false,
+        includesLights: productData.includesLights || false,
+        depositAmount: productData.depositAmount,
+        minRentalDays: productData.minRentalDays,
+        maxRentalDays: productData.maxRentalDays,
       },
-      { repo }
-    )
+    })
 
     // Crear las imágenes asociadas
     await createProductImages(product.id, images)
