@@ -49,7 +49,7 @@ export const MyOrders = () => {
   })
 
   // SWR: Cargar pedidos del usuario con cache y revalidación
-  const { data: orders = [], isLoading: loading, mutate } = useSWR<Order[]>(
+  const { data: allOrders = [], isLoading: loading, mutate } = useSWR<Order[]>(
     user?.id ? `/users/${user.id}/orders` : null,
     () => getMyOrders(user!.id),
     {
@@ -57,6 +57,9 @@ export const MyOrders = () => {
       dedupingInterval: 5000,
     }
   )
+
+  // Filtrar para excluir alquileres (solo productos y reparaciones)
+  const orders = allOrders.filter((order) => order.type !== 'RENTAL')
 
   const handleCancelClick = (order: Order) => {
     setCancelDialog({ open: true, order })
@@ -73,7 +76,7 @@ export const MyOrders = () => {
 
       // Optimistic update: actualizar cache inmediatamente
       mutate(
-        orders.map((o) =>
+        allOrders.map((o) =>
           o.id === cancelDialog.order?.id
             ? { ...o, status: 'CANCELLED' as any }
             : o
