@@ -146,6 +146,12 @@ export async function createProductCheckoutSession(input: CreateCheckoutInput) {
           priceAtOrder: item.priceAtOrder,
           currency: item.currency,
           description: item.description,
+          // ✅ Campos de alquiler
+          isRental: item.isRental,
+          rentalStartDate: item.rentalStartDate,
+          rentalEndDate: item.rentalEndDate,
+          rentalDays: item.rentalDays,
+          depositPaid: item.depositPaid,
         }))
       ),
     },

@@ -13,6 +13,7 @@ import { EditWorkshop } from './features/workshops/pages/edit-workshop'
 import { MyWorkshops } from './features/workshops/pages/my-work-shops'
 import { WorkshopDetail } from './features/workshops/pages/workshop-detail'
 import { MyOrders } from './features/orders/pages/my-orders'
+import { MyRentals as CustomerRentals } from './features/orders/pages/my-rentals'
 import { OrderDetail } from './features/orders/pages/order-detail'
 import { WorkshopOrders } from './features/orders/pages/workshop-orders'
 import { Orders } from './features/orders/pages/orders'
@@ -196,6 +197,7 @@ function App() {
             {/* Rutas solo para USER */}
             <Route path="home" element={<Home />} />
             <Route path="my-orders" element={<MyOrders />} />
+            <Route path="my-rentals" element={<CustomerRentals />} />
             <Route path="cart" element={<Cart />} />
             <Route path="checkout" element={<Checkout />} />
             <Route path="checkout/rental" element={<RentalCheckout />} />
