@@ -181,8 +181,15 @@ export const CreateProduct = () => {
 
       await createProduct(productData)
 
-      setSuccess('Producto creado correctamente!')
-      setTimeout(() => navigate('/my-products'), 1500)
+      setSuccess(
+        formData.isRental
+          ? '¡Bicicleta de alquiler creada correctamente!'
+          : '¡Producto creado correctamente!'
+      )
+      // Navegar según el tipo: alquiler → my-rentals, producto → my-products
+      setTimeout(() => {
+        navigate(formData.isRental ? '/my-rentals' : '/my-products')
+      }, 1500)
     } catch (err) {
       if (err instanceof AxiosError) {
         setError(err.response?.data?.message || 'Error al crear el producto')

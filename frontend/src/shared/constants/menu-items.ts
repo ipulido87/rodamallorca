@@ -3,29 +3,6 @@
 import type { MenuItem, UserRole } from '../types/layout'
 
 export const menuItems: MenuItem[] = [
-  // Catálogo Público (para todos)
-  {
-    id: 'talleres',
-    text: 'Talleres',
-    icon: 'Handyman',
-    path: '/talleres',
-    roles: ['USER', 'WORKSHOP_OWNER', 'ADMIN'],
-  },
-  {
-    id: 'productos',
-    text: 'Recambios',
-    icon: 'Inventory',
-    path: '/productos',
-    roles: ['USER', 'WORKSHOP_OWNER', 'ADMIN'],
-  },
-  {
-    id: 'alquileres',
-    text: 'Alquiler',
-    icon: 'DirectionsBike',
-    path: '/alquileres',
-    roles: ['USER', 'WORKSHOP_OWNER', 'ADMIN'],
-  },
-
   // Menú para Talleres (WORKSHOP_OWNER)
   {
     id: 'dashboard',
