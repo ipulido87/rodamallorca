@@ -1,4 +1,4 @@
-import { Cancel, Receipt, ShoppingBag, Visibility } from '@mui/icons-material'
+import { Cancel, Receipt, ShoppingBag, Visibility, TwoWheeler, CalendarMonth } from '@mui/icons-material'
 import {
   Alert,
   Box,
@@ -121,6 +121,33 @@ export const MyOrders = () => {
 
   const formatPrice = (price: number) => `${(price / 100).toFixed(2)}€`
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    })
+  }
+
+  const getOrderTypeLabel = (type?: string) => {
+    const labels: Record<string, string> = {
+      PRODUCT_ORDER: 'Producto',
+      SERVICE_REPAIR: 'Reparación',
+      RENTAL: 'Alquiler',
+    }
+    return labels[type || 'PRODUCT_ORDER']
+  }
+
+  const getOrderTypeColor = (type?: string): 'default' | 'primary' | 'secondary' => {
+    const colors: Record<string, 'default' | 'primary' | 'secondary'> = {
+      PRODUCT_ORDER: 'default',
+      SERVICE_REPAIR: 'secondary',
+      RENTAL: 'primary',
+    }
+    return colors[type || 'PRODUCT_ORDER']
+  }
+
   if (loading) {
     return (
       <Container maxWidth="lg">
@@ -187,10 +214,16 @@ export const MyOrders = () => {
                         alignItems="center"
                         mb={1}
                       >
-                        <Receipt />
+                        {order.type === 'RENTAL' ? <TwoWheeler /> : <Receipt />}
                         <Typography variant="h6">
                           Pedido #{order.id.slice(0, 8)}
                         </Typography>
+                        <Chip
+                          size="small"
+                          label={getOrderTypeLabel(order.type)}
+                          color={getOrderTypeColor(order.type)}
+                          variant="outlined"
+                        />
                       </Stack>
                       <Typography variant="body2" color="text.secondary">
                         {new Date(order.createdAt).toLocaleDateString('es-ES', {
@@ -201,6 +234,17 @@ export const MyOrders = () => {
                           minute: '2-digit',
                         })}
                       </Typography>
+                      {/* Mostrar fechas de alquiler si es un pedido de tipo RENTAL */}
+                      {order.type === 'RENTAL' && order.items && order.items.length > 0 && (
+                        <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <CalendarMonth sx={{ fontSize: 16, color: 'text.secondary' }} />
+                          <Typography variant="caption" color="text.secondary">
+                            {order.items[0].rentalStartDate && formatDate(order.items[0].rentalStartDate)} -{' '}
+                            {order.items[0].rentalEndDate && formatDate(order.items[0].rentalEndDate)}
+                            {order.items[0].rentalDays && ` (${order.items[0].rentalDays} días)`}
+                          </Typography>
+                        </Box>
+                      )}
                     </Box>
                     <Chip
                       label={getOrderStatusLabel(order.status)}
