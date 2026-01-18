@@ -36,26 +36,26 @@ import { API } from '../../auth/services/auth-service'
 const adaptProductForLayout = (product: Product): CardProduct => ({
   id: product.id,
   title: product.title,
-  price: product.price,
-  condition: 'used', // si tienes el real, cámbialo aquí
+  price: product.rentalPricePerDay || 0,
+  condition: 'used',
   status: product.status,
-  images: adaptProductImages(product.images), // sin any
+  images: adaptProductImages(product.images),
   workshop: { name: 'Mi Taller', city: undefined },
 })
 
-const PRODUCTS_KEY = '/owner/products/mine?isRental=false'
+const RENTALS_KEY = '/owner/products/mine?isRental=true'
 
 const fetcher = async (url: string) => {
   const response = await API.get<Product[]>(url)
   return response.data
 }
 
-export const MyProducts = () => {
+export const MyRentals = () => {
   const navigate = useNavigate()
 
   // ✅ SWR para caché automático y revalidación
-  const { data: products = [], error: swrError, isLoading } = useSWR(
-    PRODUCTS_KEY,
+  const { data: rentals = [], error: swrError, isLoading } = useSWR(
+    RENTALS_KEY,
     fetcher,
     {
       revalidateOnFocus: true,
@@ -71,72 +71,72 @@ export const MyProducts = () => {
 
   // menú contextual
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [selectedRental, setSelectedRental] = useState<Product | null>(null)
 
   // modal eliminar
   const [deleteDialog, setDeleteDialog] = useState<{
     open: boolean
-    product: Product | null
+    rental: Product | null
   }>({
     open: false,
-    product: null,
+    rental: null,
   })
 
   // ✅ useMemo para evitar recalcular en cada render
-  const filteredProducts = useMemo(() => {
-    return products.filter((p) => {
+  const filteredRentals = useMemo(() => {
+    return rentals.filter((r) => {
       const q = searchQuery.toLowerCase()
       const matchesSearch =
-        p.title.toLowerCase().includes(q) ||
-        (p.description && p.description.toLowerCase().includes(q))
-      const matchesStatus = statusFilter === 'ALL' || p.status === statusFilter
+        r.title.toLowerCase().includes(q) ||
+        (r.description && r.description.toLowerCase().includes(q))
+      const matchesStatus = statusFilter === 'ALL' || r.status === statusFilter
       return matchesSearch && matchesStatus
     })
-  }, [products, searchQuery, statusFilter])
+  }, [rentals, searchQuery, statusFilter])
 
-  const error = swrError ? 'Error al cargar los productos' : localError
+  const error = swrError ? 'Error al cargar los alquileres' : localError
 
   // ✅ publicar / ocultar con mutate de SWR
-  const handleStatusChange = async (product: Product) => {
+  const handleStatusChange = async (rental: Product) => {
     try {
-      if (product.status === 'DRAFT') {
+      if (rental.status === 'DRAFT') {
         await API.post(
-          `/owner/products/${product.id}/publish`,
+          `/owner/products/${rental.id}/publish`,
           {}
         )
       } else {
         await API.put<Product>(
-          `/owner/products/${product.id}`,
+          `/owner/products/${rental.id}`,
           { status: 'DRAFT' }
         )
       }
       // ✅ Revalidar caché automáticamente
-      await mutate(PRODUCTS_KEY)
+      await mutate(RENTALS_KEY)
       handleCloseMenu()
     } catch (error) {
-      setLocalError('Error al cambiar el estado del producto')
+      setLocalError('Error al cambiar el estado del alquiler')
       console.error('Status change error:', error)
     }
   }
 
   // ✅ Eliminar con mutate de SWR
   const handleDelete = async () => {
-    if (!deleteDialog.product) return
+    if (!deleteDialog.rental) return
     try {
       await API.delete(
-        `/owner/products/${deleteDialog.product.id}`
+        `/owner/products/${deleteDialog.rental.id}`
       )
       // ✅ Revalidar caché automáticamente
-      await mutate(PRODUCTS_KEY)
-      setDeleteDialog({ open: false, product: null })
+      await mutate(RENTALS_KEY)
+      setDeleteDialog({ open: false, rental: null })
     } catch (error) {
-      setLocalError('Error al eliminar el producto')
+      setLocalError('Error al eliminar el alquiler')
       console.error('Delete error:', error)
     }
   }
 
-  const handleEdit = (p: Product) => {
-    navigate(`/edit-product/${p.id}`)
+  const handleEdit = (r: Product) => {
+    navigate(`/edit-product/${r.id}`)
     handleCloseMenu()
   }
 
@@ -149,15 +149,20 @@ export const MyProducts = () => {
     // Type guard to ensure it's a CardProduct
     if ('price' in item) {
       const cardProduct = item as CardProduct
-      const original = products.find((p) => p.id === cardProduct.id) || null
-      setSelectedProduct(original)
+      const original = rentals.find((r) => r.id === cardProduct.id) || null
+      setSelectedRental(original)
       setAnchorEl(e.currentTarget)
     }
   }
 
   const handleCloseMenu = () => {
     setAnchorEl(null)
-    setSelectedProduct(null)
+    setSelectedRental(null)
+  }
+
+  const handleCreateRental = () => {
+    // Navegar al formulario de creación con isRental pre-seleccionado
+    navigate('/create-product?isRental=true')
   }
 
   if (isLoading) {
@@ -185,19 +190,19 @@ export const MyProducts = () => {
       >
         <Box>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Mis Productos
+            Mis Alquileres
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Gestiona tu catálogo de productos
+            Gestiona tus bicicletas de alquiler
           </Typography>
         </Box>
         <Button
           variant="contained"
           startIcon={<Add />}
-          onClick={() => navigate('/create-product')}
+          onClick={handleCreateRental}
           sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
-          Nuevo Producto
+          Nueva Bicicleta
         </Button>
       </Stack>
 
@@ -210,7 +215,7 @@ export const MyProducts = () => {
       {/* Filtros - Responsive */}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 4 }}>
         <TextField
-          placeholder="Buscar productos..."
+          placeholder="Buscar bicicletas de alquiler..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           InputProps={{
@@ -234,7 +239,7 @@ export const MyProducts = () => {
             sx={{ flex: { xs: 1, sm: 'none' } }}
           >
             <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-              Todos ({products.length})
+              Todos ({rentals.length})
             </Box>
             <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
               Todos
@@ -248,7 +253,7 @@ export const MyProducts = () => {
             sx={{ flex: { xs: 1, sm: 'none' } }}
           >
             <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-              Publicados ({products.filter((p) => p.status === 'PUBLISHED').length})
+              Publicados ({rentals.filter((r) => r.status === 'PUBLISHED').length})
             </Box>
             <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
               Pub.
@@ -262,7 +267,7 @@ export const MyProducts = () => {
             sx={{ flex: { xs: 1, sm: 'none' } }}
           >
             <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-              Borradores ({products.filter((p) => p.status === 'DRAFT').length})
+              Borradores ({rentals.filter((r) => r.status === 'DRAFT').length})
             </Box>
             <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
               Borr.
@@ -273,12 +278,12 @@ export const MyProducts = () => {
 
       {/* Grid con cards (con botón ⋮ por card) */}
       <ModernProductLayout
-        products={filteredProducts.map(adaptProductForLayout)}
+        products={filteredRentals.map(adaptProductForLayout)}
         loading={false}
         emptyMessage={
           searchQuery
-            ? 'No se encontraron productos'
-            : 'No tienes productos aún'
+            ? 'No se encontraron bicicletas de alquiler'
+            : 'No tienes bicicletas de alquiler aún'
         }
         onOpenMenu={handleOpenMenuFromCard}
       />
@@ -289,26 +294,26 @@ export const MyProducts = () => {
         open={Boolean(anchorEl)}
         onClose={handleCloseMenu}
       >
-        {selectedProduct && [
-          <MenuItem key="edit" onClick={() => handleEdit(selectedProduct)}>
+        {selectedRental && [
+          <MenuItem key="edit" onClick={() => handleEdit(selectedRental)}>
             <Edit sx={{ mr: 2 }} />
             Editar
           </MenuItem>,
           <MenuItem
             key="status"
-            onClick={() => handleStatusChange(selectedProduct)}
+            onClick={() => handleStatusChange(selectedRental)}
           >
-            {selectedProduct.status === 'PUBLISHED' ? (
+            {selectedRental.status === 'PUBLISHED' ? (
               <VisibilityOff sx={{ mr: 2 }} />
             ) : (
               <Visibility sx={{ mr: 2 }} />
             )}
-            {selectedProduct.status === 'PUBLISHED' ? 'Ocultar' : 'Publicar'}
+            {selectedRental.status === 'PUBLISHED' ? 'Ocultar' : 'Publicar'}
           </MenuItem>,
           <MenuItem
             key="delete"
             onClick={() => {
-              setDeleteDialog({ open: true, product: selectedProduct })
+              setDeleteDialog({ open: true, rental: selectedRental })
               handleCloseMenu()
             }}
             sx={{ color: 'error.main' }}
@@ -322,18 +327,18 @@ export const MyProducts = () => {
       {/* Confirmación eliminar */}
       <Dialog
         open={deleteDialog.open}
-        onClose={() => setDeleteDialog({ open: false, product: null })}
+        onClose={() => setDeleteDialog({ open: false, rental: null })}
       >
         <DialogTitle>Confirmar eliminación</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            ¿Estás seguro de que quieres eliminar "{deleteDialog.product?.title}
+            ¿Estás seguro de que quieres eliminar "{deleteDialog.rental?.title}
             "? Esta acción no se puede deshacer.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={() => setDeleteDialog({ open: false, product: null })}
+            onClick={() => setDeleteDialog({ open: false, rental: null })}
           >
             Cancelar
           </Button>

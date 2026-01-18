@@ -42,6 +42,13 @@ export const menuItems: MenuItem[] = [
     roles: ['WORKSHOP_OWNER'],
   },
   {
+    id: 'my-rentals',
+    text: 'Mis Alquileres',
+    icon: 'DirectionsBike',
+    path: '/my-rentals',
+    roles: ['WORKSHOP_OWNER'],
+  },
+  {
     id: 'services',
     text: 'Servicios',
     icon: 'Build',
