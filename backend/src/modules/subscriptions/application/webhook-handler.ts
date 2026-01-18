@@ -415,12 +415,17 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     try {
       const items = JSON.parse(itemsJson)
 
+      // ✅ Determinar el tipo de orden basado en los items
+      const hasRentals = items.some((item: any) => item.isRental === true)
+      const orderType = hasRentals ? 'RENTAL' : 'PRODUCT_ORDER'
+
       // Crear la orden en la base de datos
       const order = await prisma.order.create({
         data: {
           workshopId,
           userId,
           status: 'PENDING',
+          type: orderType as any, // RENTAL o PRODUCT_ORDER
           totalAmount: session.amount_total || 0,
           paymentStatus: 'PAID', // ⭐ PAGADO
           stripeSessionId: session.id,
@@ -432,6 +437,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
               priceAtOrder: item.priceAtOrder,
               currency: item.currency,
               description: item.description,
+              // ✅ Campos de alquiler
+              isRental: item.isRental ?? false,
+              rentalStartDate: item.rentalStartDate ? new Date(item.rentalStartDate) : null,
+              rentalEndDate: item.rentalEndDate ? new Date(item.rentalEndDate) : null,
+              rentalDays: item.rentalDays ?? null,
+              depositPaid: item.depositPaid ?? null,
             })),
           },
         },
