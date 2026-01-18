@@ -24,6 +24,22 @@ export interface Product {
   categoryId?: string
   createdAt: string
   updatedAt: string
+  // Campos de alquiler
+  isRental?: boolean
+  rentalPricePerDay?: number
+  rentalPricePerWeek?: number
+  availableQuantity?: number
+  bikeType?: string
+  bikeSize?: string
+  bikeBrand?: string
+  bikeModel?: string
+  frameSize?: number
+  includesHelmet?: boolean
+  includesLock?: boolean
+  includesLights?: boolean
+  depositAmount?: number
+  minRentalDays?: number
+  maxRentalDays?: number
 }
 
 export const createProduct = async (
