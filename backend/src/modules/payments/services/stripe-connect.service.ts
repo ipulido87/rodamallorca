@@ -26,12 +26,43 @@ export async function createConnectedAccount(workshopId: string, ownerEmail: str
     throw new Error('Taller no encontrado')
   }
 
-  // Si ya tiene una cuenta conectada, retornarla
+  // Si ya tiene una cuenta conectada, validar que existe en Stripe
   if (workshop.stripeConnectedAccountId) {
-    console.log(`✅ [Stripe Connect] Workshop ya tiene cuenta: ${workshop.stripeConnectedAccountId}`)
-    return {
-      accountId: workshop.stripeConnectedAccountId,
-      onboardingComplete: workshop.stripeOnboardingComplete,
+    console.log(`🔍 [Stripe Connect] Workshop ya tiene cuenta en BD: ${workshop.stripeConnectedAccountId}`)
+
+    try {
+      // ⭐ Validar que la cuenta existe en Stripe
+      const account = await stripe.accounts.retrieve(workshop.stripeConnectedAccountId)
+
+      if (account) {
+        console.log(`✅ [Stripe Connect] Cuenta validada en Stripe: ${workshop.stripeConnectedAccountId}`)
+        return {
+          accountId: workshop.stripeConnectedAccountId,
+          onboardingComplete: workshop.stripeOnboardingComplete,
+        }
+      }
+    } catch (error: any) {
+      // Si la cuenta no existe en Stripe, limpiar BD y crear nueva
+      if (error.code === 'resource_missing' || error.type === 'StripeInvalidRequestError') {
+        console.warn(
+          `⚠️ [Stripe Connect] Cuenta ${workshop.stripeConnectedAccountId} no existe en Stripe. Limpiando BD...`
+        )
+
+        // Limpiar cuenta inválida
+        await prisma.workshop.update({
+          where: { id: workshopId },
+          data: {
+            stripeConnectedAccountId: null,
+            stripeOnboardingComplete: false,
+          },
+        })
+
+        console.log(`✅ [Stripe Connect] BD limpiada. Creando nueva cuenta...`)
+        // Continuar con la creación de nueva cuenta
+      } else {
+        // Re-throw si es otro tipo de error
+        throw error
+      }
     }
   }
 
@@ -82,19 +113,77 @@ export async function createAccountLink(workshopId: string, returnUrl: string, r
     throw new Error('El taller no tiene una cuenta conectada')
   }
 
+  // ⭐ Validar que la cuenta existe antes de crear el link
+  try {
+    const account = await stripe.accounts.retrieve(workshop.stripeConnectedAccountId)
+
+    if (!account) {
+      throw new Error('resource_missing')
+    }
+  } catch (error: any) {
+    if (error.code === 'resource_missing' || error.type === 'StripeInvalidRequestError') {
+      console.error(
+        `❌ [Stripe Connect] Cuenta ${workshop.stripeConnectedAccountId} no existe. Limpiando BD...`
+      )
+
+      // Limpiar cuenta inválida
+      await prisma.workshop.update({
+        where: { id: workshopId },
+        data: {
+          stripeConnectedAccountId: null,
+          stripeOnboardingComplete: false,
+        },
+      })
+
+      throw new Error(
+        'La cuenta de Stripe Connect no es válida. Se ha limpiado automáticamente. ' +
+        'Por favor, inicia el proceso de conexión de nuevo.'
+      )
+    }
+
+    throw error
+  }
+
   // Crear el link de onboarding
-  const accountLink = await stripe.accountLinks.create({
-    account: workshop.stripeConnectedAccountId,
-    refresh_url: refreshUrl,
-    return_url: returnUrl,
-    type: 'account_onboarding',
-  })
+  try {
+    const accountLink = await stripe.accountLinks.create({
+      account: workshop.stripeConnectedAccountId,
+      refresh_url: refreshUrl,
+      return_url: returnUrl,
+      type: 'account_onboarding',
+    })
 
-  console.log(`✅ [Stripe Connect] Account link creado`)
+    console.log(`✅ [Stripe Connect] Account link creado`)
 
-  return {
-    url: accountLink.url,
-    expiresAt: accountLink.expires_at,
+    return {
+      url: accountLink.url,
+      expiresAt: accountLink.expires_at,
+    }
+  } catch (error: any) {
+    // Capturar errores específicos de cuenta inválida
+    if (
+      error.message?.includes('account that is not connected') ||
+      error.code === 'account_invalid'
+    ) {
+      console.error(
+        `❌ [Stripe Connect] Error al crear account link. Cuenta inválida. Limpiando BD...`
+      )
+
+      await prisma.workshop.update({
+        where: { id: workshopId },
+        data: {
+          stripeConnectedAccountId: null,
+          stripeOnboardingComplete: false,
+        },
+      })
+
+      throw new Error(
+        'La cuenta de Stripe Connect no es válida. Se ha limpiado automáticamente. ' +
+        'Por favor, recarga la página e inicia el proceso de conexión de nuevo.'
+      )
+    }
+
+    throw error
   }
 }
 
@@ -128,14 +217,43 @@ export async function getAccountStatus(workshopId: string) {
 
   // Obtener información de la cuenta desde Stripe
   console.log(`🔍 [Stripe Connect] Consultando Stripe API para cuenta ${workshop.stripeConnectedAccountId}`)
-  const account = await stripe.accounts.retrieve(workshop.stripeConnectedAccountId)
 
-  console.log(`📊 [Stripe Connect] Respuesta de Stripe:`, {
-    id: account.id,
-    details_submitted: account.details_submitted,
-    charges_enabled: account.charges_enabled,
-    payouts_enabled: account.payouts_enabled,
-  })
+  let account
+  try {
+    account = await stripe.accounts.retrieve(workshop.stripeConnectedAccountId)
+
+    console.log(`📊 [Stripe Connect] Respuesta de Stripe:`, {
+      id: account.id,
+      details_submitted: account.details_submitted,
+      charges_enabled: account.charges_enabled,
+      payouts_enabled: account.payouts_enabled,
+    })
+  } catch (error: any) {
+    // Si la cuenta no existe, limpiar BD
+    if (error.code === 'resource_missing' || error.type === 'StripeInvalidRequestError') {
+      console.warn(
+        `⚠️ [Stripe Connect] Cuenta ${workshop.stripeConnectedAccountId} no existe. Limpiando BD...`
+      )
+
+      await prisma.workshop.update({
+        where: { id: workshopId },
+        data: {
+          stripeConnectedAccountId: null,
+          stripeOnboardingComplete: false,
+        },
+      })
+
+      // Retornar estado sin cuenta
+      return {
+        hasAccount: false,
+        onboardingComplete: false,
+        chargesEnabled: false,
+        payoutsEnabled: false,
+      }
+    }
+
+    throw error
+  }
 
   const onboardingComplete = account.details_submitted && account.charges_enabled && account.payouts_enabled
 
