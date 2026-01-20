@@ -63,6 +63,53 @@ export async function createProductCheckoutSession(input: CreateCheckoutInput) {
 
   console.log(`✅ [Payment] Workshop tiene Stripe Connect: ${workshop.stripeConnectedAccountId}`)
 
+  // ⭐ Validar que la cuenta de Stripe Connect existe y es válida
+  try {
+    const account = await stripe.accounts.retrieve(workshop.stripeConnectedAccountId)
+
+    if (!account || account.details_submitted === false) {
+      console.error(`❌ [Payment] Cuenta de Stripe Connect no está completa o no existe`)
+
+      // Limpiar cuenta inválida de la BD
+      await prisma.workshop.update({
+        where: { id: workshopId },
+        data: {
+          stripeConnectedAccountId: null,
+          stripeOnboardingComplete: false,
+        },
+      })
+
+      throw new Error(
+        'La cuenta de pagos del taller no está configurada correctamente. ' +
+        'El propietario debe reconectar Stripe Connect desde su panel de control.'
+      )
+    }
+
+    console.log(`✅ [Payment] Cuenta de Stripe validada correctamente`)
+  } catch (error: any) {
+    // Si Stripe retorna error de cuenta no encontrada
+    if (error.code === 'resource_missing' || error.type === 'StripeInvalidRequestError') {
+      console.error(`❌ [Payment] Cuenta de Stripe Connect no existe: ${workshop.stripeConnectedAccountId}`)
+
+      // Limpiar cuenta inválida automáticamente
+      await prisma.workshop.update({
+        where: { id: workshopId },
+        data: {
+          stripeConnectedAccountId: null,
+          stripeOnboardingComplete: false,
+        },
+      })
+
+      throw new Error(
+        'La cuenta de pagos del taller ya no existe. ' +
+        'El propietario debe reconectar Stripe Connect desde su panel de control.'
+      )
+    }
+
+    // Re-throw si es otro tipo de error
+    throw error
+  }
+
   // Validar que todos los productos existen
   const productIds = items.map((item) => item.productId)
   const products = await prisma.product.findMany({
@@ -116,53 +163,81 @@ export async function createProductCheckoutSession(input: CreateCheckoutInput) {
   })
 
   // ⭐ Crear sesión de Checkout con Stripe Connect
-  const session = await stripe.checkout.sessions.create({
-    mode: 'payment',
-    payment_method_types: ['card'],
-    line_items: lineItems,
-    success_url: successUrl,
-    cancel_url: cancelUrl,
-    customer_email: userEmail,
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items: lineItems,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      customer_email: userEmail,
 
-    // ⭐ Configuración de Stripe Connect
-    payment_intent_data: {
-      application_fee_amount: applicationFee, // Comisión para RodaMallorca
-      transfer_data: {
-        destination: workshop.stripeConnectedAccountId, // Cuenta del taller
+      // ⭐ Configuración de Stripe Connect
+      payment_intent_data: {
+        application_fee_amount: applicationFee, // Comisión para RodaMallorca
+        transfer_data: {
+          destination: workshop.stripeConnectedAccountId, // Cuenta del taller
+        },
+        metadata: {
+          workshopId,
+          workshopName: workshop.name,
+        },
       },
+
       metadata: {
+        userId,
         workshopId,
-        workshopName: workshop.name,
+        items: JSON.stringify(
+          items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            priceAtOrder: item.priceAtOrder,
+            currency: item.currency,
+            description: item.description,
+            // ✅ Campos de alquiler
+            isRental: item.isRental,
+            rentalStartDate: item.rentalStartDate,
+            rentalEndDate: item.rentalEndDate,
+            rentalDays: item.rentalDays,
+            depositPaid: item.depositPaid,
+          }))
+        ),
       },
-    },
+    })
 
-    metadata: {
-      userId,
-      workshopId,
-      items: JSON.stringify(
-        items.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          priceAtOrder: item.priceAtOrder,
-          currency: item.currency,
-          description: item.description,
-          // ✅ Campos de alquiler
-          isRental: item.isRental,
-          rentalStartDate: item.rentalStartDate,
-          rentalEndDate: item.rentalEndDate,
-          rentalDays: item.rentalDays,
-          depositPaid: item.depositPaid,
-        }))
-      ),
-    },
-  })
+    console.log(`✅ [Payment] Sesión de checkout creada con Stripe Connect: ${session.id}`)
+    console.log(`   - Cuenta destino: ${workshop.stripeConnectedAccountId}`)
+    console.log(`   - Comisión: ${applicationFee / 100}€`)
 
-  console.log(`✅ [Payment] Sesión de checkout creada con Stripe Connect: ${session.id}`)
-  console.log(`   - Cuenta destino: ${workshop.stripeConnectedAccountId}`)
-  console.log(`   - Comisión: ${applicationFee / 100}€`)
+    return {
+      sessionId: session.id,
+      url: session.url,
+    }
+  } catch (error: any) {
+    // Manejar error específico de cuenta destino inválida
+    if (
+      error.message?.includes('No such destination') ||
+      error.message?.includes('account that is not connected') ||
+      error.code === 'account_invalid'
+    ) {
+      console.error(`❌ [Payment] Cuenta de Stripe Connect inválida, limpiando de la BD...`)
 
-  return {
-    sessionId: session.id,
-    url: session.url,
+      // Limpiar cuenta inválida automáticamente
+      await prisma.workshop.update({
+        where: { id: workshopId },
+        data: {
+          stripeConnectedAccountId: null,
+          stripeOnboardingComplete: false,
+        },
+      })
+
+      throw new Error(
+        'La cuenta de pagos del taller no es válida. ' +
+        'Se ha desconectado automáticamente. El propietario debe reconectar Stripe Connect.'
+      )
+    }
+
+    // Re-throw otros errores
+    throw error
   }
 }
