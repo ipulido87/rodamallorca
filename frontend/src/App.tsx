@@ -197,7 +197,7 @@ function App() {
             {/* Rutas solo para USER */}
             <Route path="home" element={<Home />} />
             <Route path="my-orders" element={<MyOrders />} />
-            <Route path="my-rentals" element={<CustomerRentals />} />
+            <Route path="customer-rentals" element={<CustomerRentals />} />
             <Route path="cart" element={<Cart />} />
             <Route path="checkout" element={<Checkout />} />
             <Route path="checkout/rental" element={<RentalCheckout />} />

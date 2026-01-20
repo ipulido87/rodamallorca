@@ -37,7 +37,7 @@ export const Home = () => {
       icon: <TwoWheeler sx={{ fontSize: 48 }} />,
       title: 'Mis Alquileres',
       description: 'Ver y gestionar tus alquileres de bicicletas',
-      action: () => navigate('/my-rentals'),
+      action: () => navigate('/customer-rentals'),
       color: 'info.main',
     },
     {
