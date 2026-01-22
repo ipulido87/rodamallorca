@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import prisma from '../../../lib/prisma'
 import Stripe from 'stripe'
 import { stripe } from '../infrastructure/stripe.config'
 import {
@@ -7,8 +7,6 @@ import {
   sendPaymentSuccessEmail,
   sendNewOrderEmail,
 } from '../../notifications/services/email-service'
-
-const prisma = new PrismaClient()
 
 /**
  * Maneja los webhooks de Stripe

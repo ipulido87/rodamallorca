@@ -1,10 +1,8 @@
-import { PrismaClient } from '@prisma/client'
+import prisma from '../../../../../lib/prisma'
 import {
   ProductDTO,
   ProductRepository,
 } from '../../../domain/repositories/product-repository'
-
-const prisma = new PrismaClient()
 
 export class ProductRepositoryPrisma implements ProductRepository {
   async createDraft(input: {

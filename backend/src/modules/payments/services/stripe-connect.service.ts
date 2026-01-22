@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client'
+import prisma from '../../../lib/prisma'
 import Stripe from 'stripe'
 import { stripe } from '../../subscriptions/infrastructure/stripe.config'
-
-const prisma = new PrismaClient()
 
 /**
  * Comisión de RodaMallorca en porcentaje (10%)

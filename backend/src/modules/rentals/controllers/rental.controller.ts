@@ -1,12 +1,10 @@
 import { Request, Response, NextFunction } from 'express'
-import { PrismaClient } from '@prisma/client'
+import prisma from '../../../lib/prisma'
 import {
   checkAvailability,
   calculateRentalPrice,
   getBlockedDates,
 } from '../services/rental-availability.service'
-
-const prisma = new PrismaClient()
 
 /**
  * GET /api/rentals/bikes

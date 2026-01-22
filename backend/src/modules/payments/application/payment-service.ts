@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client'
+import prisma from '../../../lib/prisma'
 import { stripe } from '../../subscriptions/infrastructure/stripe.config'
 import { calculateApplicationFee } from '../services/stripe-connect.service'
-
-const prisma = new PrismaClient()
 
 export interface CartItem {
   productId: string
