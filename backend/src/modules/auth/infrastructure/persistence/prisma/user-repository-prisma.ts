@@ -1,10 +1,9 @@
-import { PrismaClient, UserRole } from '@prisma/client'
+import { UserRole } from '@prisma/client'
+import prisma from '../../../../../lib/prisma'
 import {
   UserDTO,
   UserRepository,
 } from '../../../domain/repositories/user-repository'
-
-const prisma = new PrismaClient()
 
 export class UserRepositoryPrisma implements UserRepository {
   async findByEmail(email: string): Promise<UserDTO | null> {

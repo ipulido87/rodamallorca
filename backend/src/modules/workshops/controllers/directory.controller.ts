@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
-import { PrismaClient } from '@prisma/client'
+import prisma from '../../../lib/prisma'
 import crypto from 'crypto'
-
-const prisma = new PrismaClient()
 
 /**
  * GET /api/directory/workshops

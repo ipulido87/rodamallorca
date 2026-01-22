@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import prisma from '../../../../../lib/prisma'
 import type { ServiceRepository } from '../../../domain/repositories/service-repository'
 import type {
   Service,
@@ -8,8 +8,6 @@ import type {
   VehicleType,
   ServiceStatus,
 } from '../../../domain/entities/service'
-
-const prisma = new PrismaClient()
 
 export const serviceRepositoryPrisma: ServiceRepository = {
   async create(data: CreateServiceInput): Promise<Service> {

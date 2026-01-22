@@ -3,6 +3,7 @@ import {
   PrismaClient,
   type $Enums, // 👈 para el tipo del enum
 } from '@prisma/client'
+import prismaClient from '../../../../../lib/prisma'
 import type {
   CreateOrderRepoInput,
   OrderRepository,
@@ -22,7 +23,7 @@ const toDomainStatus = (s: PrismaOrderStatus): DomainOrderStatus =>
   s as unknown as DomainOrderStatus
 
 export class OrderRepositoryPrisma implements OrderRepository {
-  constructor(private prisma: PrismaClient = new PrismaClient()) {}
+  constructor(private prisma: PrismaClient = prismaClient) {}
 
   async create(input: CreateOrderRepoInput): Promise<Order> {
     if (!input.userId) throw new Error('userId es obligatorio')

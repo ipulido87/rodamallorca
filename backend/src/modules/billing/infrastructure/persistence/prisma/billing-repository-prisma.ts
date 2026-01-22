@@ -1,4 +1,5 @@
-import { PrismaClient, Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client'
+import prisma from '../../../../../lib/prisma'
 import type { BillingRepository } from '../../../domain/repositories/billing-repository'
 import type {
   Customer,
@@ -10,8 +11,6 @@ import type {
   InvoiceSeries,
   CreateInvoiceSeriesInput,
 } from '../../../domain/entities/billing'
-
-const prisma = new PrismaClient()
 
 // Helper para convertir Decimal a number
 function toDomainInvoice(prismaInvoice: any): Invoice {

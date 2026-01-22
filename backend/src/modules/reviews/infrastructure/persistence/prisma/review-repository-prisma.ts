@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import prisma from '../../../../../lib/prisma'
 import type {
   ReviewRepository,
   ReviewDTO,
@@ -6,8 +6,6 @@ import type {
   CreateReviewInput,
   UpdateReviewInput,
 } from '../../../domain/repositories/review-repository'
-
-const prisma = new PrismaClient()
 
 export class ReviewRepositoryPrisma implements ReviewRepository {
   async create(input: CreateReviewInput): Promise<ReviewDTO> {

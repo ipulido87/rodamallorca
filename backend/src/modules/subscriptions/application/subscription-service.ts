@@ -1,7 +1,6 @@
-import { PrismaClient, SubscriptionStatus } from '@prisma/client'
+import { SubscriptionStatus } from '@prisma/client'
+import prisma from '../../../lib/prisma'
 import { stripe, SUBSCRIPTION_PRICE_ID, TRIAL_PERIOD_DAYS } from '../infrastructure/stripe.config'
-
-const prisma = new PrismaClient()
 
 export interface CreateSubscriptionInput {
   workshopId: string

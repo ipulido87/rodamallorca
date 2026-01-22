@@ -1,10 +1,8 @@
-import { PrismaClient } from '@prisma/client'
+import prisma from '../../../../../lib/prisma'
 import {
   WorkshopDTO,
   WorkshopRepository,
 } from '../../../domain/repositories/workshop-repository'
-
-const prisma = new PrismaClient()
 
 export class WorkshopRepositoryPrisma implements WorkshopRepository {
   async create(input: Omit<WorkshopDTO, 'id'>): Promise<WorkshopDTO> {

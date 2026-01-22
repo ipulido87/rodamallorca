@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import prisma from '../../../lib/prisma'
 
 /**
  * Servicio para gestionar la disponibilidad de alquiler de bicicletas

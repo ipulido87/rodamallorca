@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
-import { PrismaClient } from '@prisma/client'
+import prisma from '../../../lib/prisma'
 import { stripe } from '../../subscriptions/infrastructure/stripe.config'
-
-const prisma = new PrismaClient()
 
 /**
  * POST /api/workshops/:id/stripe/recover-by-email

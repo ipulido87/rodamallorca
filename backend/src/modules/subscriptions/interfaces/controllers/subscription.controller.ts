@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
+import prisma from '../../../../lib/prisma'
 import * as subscriptionService from '../../application/subscription-service'
 import { handleStripeWebhook } from '../../application/webhook-handler'
 
@@ -23,9 +24,6 @@ export const createCheckoutSessionController = async (
     }
 
     // Verificar que el usuario sea el owner del workshop
-    const { PrismaClient } = await import('@prisma/client')
-    const prisma = new PrismaClient()
-
     const workshop = await prisma.workshop.findUnique({
       where: { id: workshopId },
     })
@@ -74,9 +72,6 @@ export const cancelSubscriptionController = async (
     }
 
     // Verificar permisos
-    const { PrismaClient } = await import('@prisma/client')
-    const prisma = new PrismaClient()
-
     const workshop = await prisma.workshop.findUnique({
       where: { id: workshopId },
     })
@@ -116,9 +111,6 @@ export const getSubscriptionStatusController = async (
     const { workshopId } = req.params
 
     // Verificar permisos
-    const { PrismaClient } = await import('@prisma/client')
-    const prisma = new PrismaClient()
-
     const workshop = await prisma.workshop.findUnique({
       where: { id: workshopId },
     })
@@ -157,9 +149,6 @@ export const createPortalSessionController = async (
     }
 
     // Verificar permisos
-    const { PrismaClient } = await import('@prisma/client')
-    const prisma = new PrismaClient()
-
     const workshop = await prisma.workshop.findUnique({
       where: { id: workshopId },
     })
