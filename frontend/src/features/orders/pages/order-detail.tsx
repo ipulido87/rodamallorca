@@ -79,7 +79,12 @@ export const OrderDetail = () => {
     setCancelDialog(false)
   }
 
-  const formatPrice = (price: number) => `${(price / 100).toFixed(2)}€`
+  const formatPrice = (price: number | undefined | null) => {
+    if (price === undefined || price === null || isNaN(price)) {
+      return '0.00€'
+    }
+    return `${(price / 100).toFixed(2)}€`
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
