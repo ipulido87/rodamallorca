@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     userRef.current = user
   }, [token, user])
 
-  // ✅ Declarar persistToken ANTES de usarlo en useEffect
+  // ✅ Declarar persistToken ANTES de usarlo - SIN dependencias para que sea estable
   const persistToken = useCallback((t: string | null) => {
     if (t) {
       localStorage.setItem(TOKEN_KEY, t)
@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem(TOKEN_KEY)
       setToken(null)
     }
-  }, [])
+  }, []) // Sin dependencias - setToken es estable
 
   // ---- Interceptor: adjunta Authorization si hay token ---- SOLO UNA VEZ
   useEffect(() => {
@@ -191,10 +191,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // ← SOLO una vez al montar
 
-  const refreshMe = useCallback(async () => {
+  // ✅ Usar useRef para refreshMe para que sea estable
+  const refreshMeRef = useRef<() => Promise<void>>()
+
+  refreshMeRef.current = async () => {
     console.log('🔄 [AUTH] refreshMe() iniciado')
     try {
-      const fetchedUser = await apiMe() // ✅ apiMe() retorna el usuario directamente, no { user: {...} }
+      const fetchedUser = await apiMe()
       console.log('✅ [AUTH] Usuario obtenido:', fetchedUser ? fetchedUser.email : 'null')
       setUser(fetchedUser ?? null)
       if (fetchedUser) {
@@ -212,9 +215,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(null)
         localStorage.removeItem(USER_KEY)
         persistToken(null)
-        // No redirigir aquí - dejar que PrivateRoute lo maneje
       } else {
-        // Otros errores (red, servidor, etc.) - limpiar también
         console.warn('⚠️ [AUTH] Error de autenticación, limpiando sesión...')
         setUser(null)
         localStorage.removeItem(USER_KEY)
@@ -223,7 +224,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       console.log('🏁 [AUTH] refreshMe() completado')
     }
-  }, [persistToken])
+  }
+
+  // Función estable que siempre apunta a la versión más reciente
+  const refreshMe = useCallback(async () => {
+    await refreshMeRef.current?.()
+  }, [])
 
   // Carga inicial con timeout de seguridad - SOLO UNA VEZ al montar
   useEffect(() => {
