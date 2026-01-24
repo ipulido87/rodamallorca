@@ -3,25 +3,13 @@ import { Request, Response } from 'express'
 import { ForgotPasswordUseCase } from '../../application/forgot-password'
 import { ResetPasswordUseCase } from '../../application/reset-password'
 import { PasswordResetRepositoryPrisma } from '../../infrastructure/persistence/prisma/password-reset-repository-prisma'
-import {
-  ForgotPasswordSchema,
-  type ForgotPasswordInput,
-} from '../http/schemas/forgot-password.schema'
-import {
-  ResetPasswordSchema,
-  type ResetPasswordInput,
-} from '../http/schemas/reset-password.schema'
+import { type ForgotPasswordInput } from '../http/schemas/forgot-password.schema'
+import { type ResetPasswordInput } from '../http/schemas/reset-password.schema'
 
 export const forgotPasswordController = async (req: Request, res: Response) => {
   try {
-    // Validar input
-    const result = ForgotPasswordSchema.safeParse(req.body)
-
-    if (!result.success) {
-      return res.status(400).json({ errors: result.error.issues })
-    }
-
-    const input: ForgotPasswordInput = result.data
+    // Validación ya realizada por middleware validateBody
+    const input: ForgotPasswordInput = req.body
 
     // Ejecutar use case
     const repo = new PasswordResetRepositoryPrisma()
@@ -37,14 +25,8 @@ export const forgotPasswordController = async (req: Request, res: Response) => {
 
 export const resetPasswordController = async (req: Request, res: Response) => {
   try {
-    // Validar input
-    const result = ResetPasswordSchema.safeParse(req.body)
-
-    if (!result.success) {
-      return res.status(400).json({ errors: result.error.issues })
-    }
-
-    const input: ResetPasswordInput = result.data
+    // Validación ya realizada por middleware validateBody
+    const input: ResetPasswordInput = req.body
 
     // Ejecutar use case
     const repo = new PasswordResetRepositoryPrisma()

@@ -1,33 +1,18 @@
 import { NextFunction, Request, Response } from 'express'
-import { z } from 'zod'
 import { createWorkshop } from '../../application/create-workshop'
 import { deleteWorkshop } from '../../application/delete-workshop'
 import { updateWorkshop } from '../../application/update-workshop'
 import { WorkshopRepositoryPrisma } from '../../infrastructure/persistence/prisma/workshop-repository-prisma'
+import {
+  CreateWorkshopSchema,
+  UpdateWorkshopSchema,
+} from '../http/schemas/workshop.schemas'
 
 const repo = new WorkshopRepositoryPrisma()
 
-const createWorkshopSchema = z.object({
-  name: z.string().min(2),
-  description: z.string().optional().nullable(),
-  address: z.string().optional().nullable(),
-  city: z.string().optional().nullable(),
-  country: z.string().length(2).optional().nullable(),
-  phone: z.string().optional().nullable(),
-})
-
-// Schema para actualizar (campos opcionales)
-const updateWorkshopSchema = z.object({
-  name: z.string().min(2).optional(),
-  description: z.string().optional().nullable(),
-  address: z.string().optional().nullable(),
-  city: z.string().optional().nullable(),
-  country: z.string().length(2).optional().nullable(),
-  phone: z.string().optional().nullable(),
-  logoOriginal: z.string().optional().nullable(),
-  logoMedium: z.string().optional().nullable(),
-  logoThumbnail: z.string().optional().nullable(),
-})
+// Aliases para mantener compatibilidad con código existente
+const createWorkshopSchema = CreateWorkshopSchema
+const updateWorkshopSchema = UpdateWorkshopSchema
 
 export const createWorkshopController = async (
   req: Request,

@@ -4,6 +4,7 @@ import {
   requireUser,
   verifyToken,
 } from '../../../auth/interfaces/middlewares/auth.middleware'
+import { validateBody } from '../../../auth/interfaces/middlewares/validate-body'
 import {
   createWorkshopController,
   deleteWorkshopController,
@@ -13,6 +14,10 @@ import {
 } from '../controllers/workshop.controller'
 import { getWorkshopOrdersController } from '../../../orders/interfaces/controllers/order.controller'
 import { requireActiveSubscription } from '../../../subscriptions/interfaces/middlewares/subscription.middleware'
+import {
+  CreateWorkshopSchema,
+  UpdateWorkshopSchema,
+} from './schemas/workshop.schemas'
 
 const r = Router()
 
@@ -22,6 +27,7 @@ r.post(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  validateBody(CreateWorkshopSchema),
   createWorkshopController
 )
 
@@ -39,6 +45,7 @@ r.put(
   requireUser,
   requireRole('WORKSHOP_OWNER'),
   requireActiveSubscription, // ⭐ Requiere suscripción activa
+  validateBody(UpdateWorkshopSchema),
   updateWorkshopController
 )
 

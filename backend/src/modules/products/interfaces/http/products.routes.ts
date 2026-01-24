@@ -4,6 +4,7 @@ import {
   requireUser,
   verifyToken,
 } from '../../../auth/interfaces/middlewares/auth.middleware'
+import { validateBody } from '../../../auth/interfaces/middlewares/validate-body'
 import {
   createProduct,
   deleteProduct,
@@ -13,6 +14,10 @@ import {
   updateProduct,
 } from '../controllers/product.controller'
 import { requireActiveSubscription } from '../../../subscriptions/interfaces/middlewares/subscription.middleware'
+import {
+  CreateProductSchema,
+  UpdateProductSchema,
+} from './schemas/product.schemas'
 
 const r = Router()
 
@@ -23,6 +28,7 @@ r.post(
   requireUser,
   requireRole('WORKSHOP_OWNER'),
   requireActiveSubscription, // ⭐ Requiere suscripción activa
+  validateBody(CreateProductSchema),
   createProduct
 )
 
@@ -53,6 +59,7 @@ r.put(
   requireUser,
   requireRole('WORKSHOP_OWNER'),
   requireActiveSubscription, // ⭐ Requiere suscripción activa
+  validateBody(UpdateProductSchema),
   updateProduct
 )
 

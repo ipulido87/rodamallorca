@@ -510,14 +510,8 @@ export const logout = (req: Request, res: Response) => {
 }
 
 export const resendVerification = async (req: Request, res: Response) => {
+  // Validación ya realizada por middleware validateBody
   const { email } = req.body
-
-  if (!email) {
-    return res.status(400).json({
-      error: 'EMAIL_REQUIRED',
-      message: 'El email es requerido',
-    })
-  }
 
   try {
     console.log('🔍 [RESEND_VERIFICATION] Solicitado para:', email)
@@ -589,6 +583,7 @@ export const updateProfile = async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'No autenticado' })
     }
 
+    // Validación ya realizada por middleware validateBody
     const { name, phone, birthDate } = req.body
 
     const updatedUser = await prisma.user.update({
@@ -614,11 +609,8 @@ export const changePassword = async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'No autenticado' })
     }
 
+    // Validación ya realizada por middleware validateBody
     const { currentPassword, newPassword } = req.body
-
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({ message: 'Faltan datos requeridos' })
-    }
 
     // Obtener usuario con contraseña
     const user = await prisma.user.findUnique({

@@ -1,55 +1,19 @@
 // modules/products/interfaces/controllers/product.controller.ts
 
 import { NextFunction, Request, Response } from 'express'
-import { z } from 'zod'
 import prisma from '../../../../lib/prisma'
 import { createProductDraft } from '../../application/create-product'
 import { ProductRepositoryPrisma } from '../../infrastructure/persistence/prisma/product-repository-prisma'
+import {
+  CreateProductSchema,
+  UpdateProductSchema,
+} from '../http/schemas/product.schemas'
 
 const repo = new ProductRepositoryPrisma()
 
-// Esquema para las imágenes
-const imageSchema = z.object({
-  original: z.string(),
-  medium: z.string(),
-  thumbnail: z.string(),
-})
-
-const createProductSchema = z.object({
-  title: z.string().min(2),
-  price: z.number().int().min(0),
-  condition: z.enum(['new', 'used', 'refurb']).optional(),
-  status: z.enum(['DRAFT', 'PUBLISHED', 'SOLD']).optional(),
-  description: z.string().optional().nullable(),
-  categoryId: z.string().uuid().optional().nullable(),
-  images: z.array(imageSchema).min(1, 'Al menos una imagen es requerida'),
-  // Campos de alquiler
-  isRental: z.boolean().optional(),
-  rentalPricePerDay: z.number().int().min(0).optional().nullable(),
-  rentalPricePerWeek: z.number().int().min(0).optional().nullable(),
-  availableQuantity: z.number().int().min(1).optional(),
-  bikeType: z.string().optional().nullable(),
-  bikeSize: z.string().optional().nullable(),
-  bikeBrand: z.string().optional().nullable(),
-  bikeModel: z.string().optional().nullable(),
-  frameSize: z.number().optional().nullable(),
-  includesHelmet: z.boolean().optional(),
-  includesLock: z.boolean().optional(),
-  includesLights: z.boolean().optional(),
-  depositAmount: z.number().int().min(0).optional().nullable(),
-  minRentalDays: z.number().int().min(1).optional().nullable(),
-  maxRentalDays: z.number().int().min(1).optional().nullable(),
-})
-
-const updateProductSchema = z.object({
-  title: z.string().min(2).optional(),
-  price: z.number().int().min(0).optional(),
-  condition: z.enum(['new', 'used', 'refurb']).optional(),
-  status: z.enum(['DRAFT', 'PUBLISHED', 'SOLD']).optional(),
-  description: z.string().optional().nullable(),
-  categoryId: z.string().uuid().optional().nullable(),
-  images: z.array(imageSchema).optional(), // Opcional para updates
-})
+// Aliases para mantener compatibilidad con código existente
+const createProductSchema = CreateProductSchema
+const updateProductSchema = UpdateProductSchema
 
 // Helper function to get user's workshop
 async function getUserWorkshop(userId: string) {
