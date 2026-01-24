@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { AxiosError } from 'axios'
 import { AuthContext } from '../features/auth/providers/auth-providers'
@@ -48,6 +48,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true)
   const [authError, setAuthError] = useState<string | null>(null) // ✅ ERROR CENTRALIZADO
 
+  // ✅ Usar ref para evitar recrear interceptores constantemente
+  const tokenRef = useRef(token)
+  const userRef = useRef(user)
+
+  // Actualizar refs cuando cambien los estados
+  useEffect(() => {
+    tokenRef.current = token
+    userRef.current = user
+  }, [token, user])
+
   // ✅ Declarar persistToken ANTES de usarlo en useEffect
   const persistToken = useCallback((t: string | null) => {
     if (t) {
@@ -59,7 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [])
 
-  // ---- Interceptor: adjunta Authorization si hay token ----
+  // ---- Interceptor: adjunta Authorization si hay token ---- SOLO UNA VEZ
   useEffect(() => {
     // Rutas públicas que NO necesitan Authorization header
     const publicRoutes = [
@@ -69,6 +79,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       '/auth/register',
       '/auth/forgot-password'
     ]
+
+    console.log('🔧 [AUTH] Configurando interceptores de Axios...')
 
     // ⭐ INTERCEPTOR DE REQUEST: BLOQUEAR PETICIONES SIN SUSCRIPCIÓN
     const reqId = API.interceptors.request.use((config) => {
@@ -117,12 +129,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               })
             }
           }
-        } else {
-          console.log('✅ [REQUEST INTERCEPTOR] Permitiendo petición a', requestUrl, '- ruta permitida sin suscripción')
         }
       }
 
-      // ✅ Leer token DIRECTAMENTE de localStorage (no del estado que puede estar desactualizado)
+      // ✅ Leer token DIRECTAMENTE de localStorage (más confiable que el estado)
       const currentToken = localStorage.getItem(TOKEN_KEY)
 
       // Solo agregar Authorization a rutas NO públicas
@@ -147,18 +157,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const isInCheckoutFlow = window.location.pathname.includes('/checkout/')
 
         // Si el token expiró en una ruta PRIVADA, hacer logout automático
-        if (error.response?.status === 401 && token && !isPublicRoute && !isInOAuthCallback) {
+        const currentToken = localStorage.getItem(TOKEN_KEY)
+        if (error.response?.status === 401 && currentToken && !isPublicRoute && !isInOAuthCallback) {
           console.warn('⚠️ [INTERCEPTOR] Token expirado o inválido (401)')
 
           // Limpiar token y datos de usuario
-          persistToken(null)
-          setUser(null)
+          localStorage.removeItem(TOKEN_KEY)
           localStorage.removeItem(USER_KEY)
+          setToken(null)
+          setUser(null)
 
           // Si estamos en checkout, NO forzar redirect - dejar que PrivateRoute lo maneje
           if (!isInCheckoutFlow) {
             console.warn('🔄 [INTERCEPTOR] Redirigiendo a login...')
-            window.location.href = '/login?error=Sesión expirada, por favor inicia sesión nuevamente'
+            setTimeout(() => {
+              window.location.href = '/login?error=Sesión expirada, por favor inicia sesión nuevamente'
+            }, 100)
           } else {
             console.warn('⏭️ [INTERCEPTOR] En checkout flow, dejando que PrivateRoute maneje el redirect')
           }
@@ -167,11 +181,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     )
 
+    console.log('✅ [AUTH] Interceptores configurados')
+
     return () => {
+      console.log('🧹 [AUTH] Limpiando interceptores...')
       API.interceptors.request.eject(reqId)
       API.interceptors.response.eject(resId)
     }
-  }, [token, persistToken])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // ← SOLO una vez al montar
 
   const refreshMe = useCallback(async () => {
     console.log('🔄 [AUTH] refreshMe() iniciado')
@@ -207,16 +225,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [persistToken])
 
-  // Carga inicial con timeout de seguridad
+  // Carga inicial con timeout de seguridad - SOLO UNA VEZ al montar
   useEffect(() => {
     let timeoutId: NodeJS.Timeout
+    let isMounted = true
 
     ;(async () => {
+      if (!isMounted) return
+
       setLoading(true)
       console.log('🚀 [AUTH] Iniciando carga inicial de usuario...')
 
       // Timeout de seguridad: 8 segundos máximo
       timeoutId = setTimeout(() => {
+        if (!isMounted) return
         console.error('⏰ [AUTH] TIMEOUT: refreshMe() tardó más de 8 segundos')
         setLoading(false)
         setAuthError('La verificación de sesión tardó demasiado. Por favor, recarga la página.')
@@ -224,20 +246,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       try {
         await refreshMe()
-        clearTimeout(timeoutId)
+        if (timeoutId) clearTimeout(timeoutId)
       } catch (error) {
         console.error('❌ [AUTH] Error en carga inicial:', error)
-        clearTimeout(timeoutId)
+        if (timeoutId) clearTimeout(timeoutId)
       } finally {
-        setLoading(false)
-        console.log('🏁 [AUTH] Carga inicial completada')
+        if (isMounted) {
+          setLoading(false)
+          console.log('🏁 [AUTH] Carga inicial completada')
+        }
       }
     })()
 
     return () => {
+      isMounted = false
       if (timeoutId) clearTimeout(timeoutId)
     }
-  }, [refreshMe])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // ← SOLO una vez al montar el componente
 
   // ✅ LOGIN MEJORADO - RETORNA DATOS DEL USUARIO DIRECTAMENTE
   const login = useCallback(
