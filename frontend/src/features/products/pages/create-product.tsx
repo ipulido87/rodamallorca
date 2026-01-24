@@ -112,7 +112,7 @@ export const CreateProduct = () => {
   useEffect(() => {
     const loadCategories = async () => {
       try {
-        const response = await API.get<Category[]>('/categories')
+        const response = await API.get<Category[]>('/catalog/categories')
         setCategories(response.data)
       } catch (err) {
         console.warn('Could not load categories:', err)

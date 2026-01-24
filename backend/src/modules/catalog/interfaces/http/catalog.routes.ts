@@ -4,9 +4,13 @@ import {
   searchProductsController,
   searchWorkshopsController,
   searchServicesController,
+  getCategoriesController,
 } from '../controllers/catalog.controller'
 
 const r = Router()
+
+// GET /api/catalog/categories
+r.get('/categories', getCategoriesController)
 
 // GET /api/catalog/workshops
 r.get('/workshops', searchWorkshopsController)

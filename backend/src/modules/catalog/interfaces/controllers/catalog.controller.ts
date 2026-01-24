@@ -159,3 +159,27 @@ export const searchServicesController = async (
     next(e)
   }
 }
+
+/**
+ * GET /api/catalog/categories
+ * Obtener todas las categorías de productos (público)
+ */
+export const getCategoriesController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const categories = await prisma.category.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: { name: 'asc' },
+    })
+
+    res.json(categories)
+  } catch (e) {
+    next(e)
+  }
+}
