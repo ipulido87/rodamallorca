@@ -7,7 +7,6 @@ import {
 import {
   createProduct,
   deleteProduct,
-  getCategories,
   getMyProducts,
   getProductById,
   publishProduct,
@@ -16,9 +15,6 @@ import {
 import { requireActiveSubscription } from '../../../subscriptions/interfaces/middlewares/subscription.middleware'
 
 const r = Router()
-
-// GET /api/categories - Obtener todas las categorías (sin autenticación)
-r.get('/categories', getCategories)
 
 // POST /api/owner/products - Crear producto
 r.post(
