@@ -153,14 +153,20 @@ export const MyWorkshops = () => {
             </Typography>
           </Box>
 
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={() => navigate('/create-workshop')}
-            size="large"
-          >
-            Nuevo Taller
-          </Button>
+          {workshops.length === 0 ? (
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => navigate('/create-workshop')}
+              size="large"
+            >
+              Crear Tu Taller
+            </Button>
+          ) : (
+            <Alert severity="info" sx={{ maxWidth: 400 }}>
+              Ya tienes un taller. Solo puedes tener uno por cuenta.
+            </Alert>
+          )}
         </Box>
 
         {/* Error Alert */}
