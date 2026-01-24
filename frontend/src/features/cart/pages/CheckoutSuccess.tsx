@@ -13,7 +13,14 @@ export const CheckoutSuccess = () => {
   useEffect(() => {
     // Limpiar carrito cuando llega a la página de éxito
     if (sessionId) {
-      clearCart()
+      try {
+        clearCart()
+        // Limpiar también el localStorage del rental checkout si existe
+        localStorage.removeItem('rentalCheckoutData')
+      } catch (error) {
+        console.error('Error limpiando carrito:', error)
+        // No bloquear la UI si hay error
+      }
     }
   }, [sessionId, clearCart])
 
