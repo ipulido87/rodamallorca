@@ -72,7 +72,7 @@ export const SubscriptionBanner = ({ workshopId, subscriptionStatus }: Subscript
             ⚠️ Prueba Gratuita Finalizada
           </Typography>
           <Typography variant="body2">
-            Tu período de prueba ha terminado. Suscríbete por solo 14.90€/mes para continuar
+            Tu período de prueba ha terminado. Suscríbete por solo 18.30€/mes para continuar
             usando RodaMallorca.
           </Typography>
         </Box>

@@ -111,7 +111,7 @@ export const ActivateSubscription = () => {
                 },
                 {
                   icon: <CreditCard />,
-                  title: 'Solo 14.90€/mes después',
+                  title: 'Solo 18.30€/mes después',
                   desc: 'Cancela cuando quieras, sin compromiso',
                 },
               ].map((feature, index) => (

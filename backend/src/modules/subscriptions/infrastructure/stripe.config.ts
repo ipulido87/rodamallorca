@@ -10,7 +10,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 })
 
 // ID del precio de la suscripción (debe crearse en Stripe Dashboard)
-// Precio: 14.50 EUR/mes
+// Precio: 18.30 EUR/mes (IVA incluido)
 export const SUBSCRIPTION_PRICE_ID = process.env.STRIPE_PRICE_ID || 'price_xxx'
 
 // Configuración del trial

@@ -713,7 +713,7 @@ export const LandingPage = () => {
                         fontSize: '3.5rem',
                       }}
                     >
-                      14.50€
+                      18.30€
                     </Typography>
                     <Typography
                       variant="h5"
@@ -799,7 +799,7 @@ export const LandingPage = () => {
                   color="text.secondary"
                   sx={{ display: 'block', textAlign: 'center', mt: 2 }}
                 >
-                  7 días gratis, luego 14.90€/mes · Tarjeta requerida, sin cargos durante el trial
+                  7 días gratis, luego 18.30€/mes · Tarjeta requerida, sin cargos durante el trial
                 </Typography>
               </CardContent>
             </Card>
