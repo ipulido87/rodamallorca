@@ -5,24 +5,29 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCart } from '../hooks/useCart'
 
 export const CheckoutSuccess = () => {
+  console.log('🔄 [CheckoutSuccess] Componente renderizando...')
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { clearCart } = useCart()
   const sessionId = searchParams.get('session_id')
+  console.log('📋 [CheckoutSuccess] sessionId:', sessionId)
 
   useEffect(() => {
-    // Limpiar carrito cuando llega a la página de éxito
+    // Limpiar carrito cuando llega a la página de éxito - SOLO UNA VEZ
     if (sessionId) {
+      console.log('🧹 [CheckoutSuccess] Limpiando carrito y localStorage...')
       try {
         clearCart()
         // Limpiar también el localStorage del rental checkout si existe
         localStorage.removeItem('rentalCheckoutData')
+        console.log('✅ [CheckoutSuccess] Limpieza completada')
       } catch (error) {
-        console.error('Error limpiando carrito:', error)
+        console.error('❌ [CheckoutSuccess] Error limpiando carrito:', error)
         // No bloquear la UI si hay error
       }
     }
-  }, [sessionId, clearCart])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId]) // SOLO depende de sessionId, NO de clearCart
 
   return (
     <Container maxWidth="sm">
