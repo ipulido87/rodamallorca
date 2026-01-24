@@ -15,20 +15,8 @@ export const createProductCheckoutController = async (
       return res.status(401).json({ error: 'No autenticado' })
     }
 
+    // Validación ya realizada por middleware validateBody
     const { workshopId, items } = req.body
-
-    if (!workshopId || !items || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: 'workshopId e items son requeridos' })
-    }
-
-    // Validar estructura de items
-    for (const item of items) {
-      if (!item.productId || !item.quantity || !item.priceAtOrder || !item.currency) {
-        return res.status(400).json({
-          error: 'Cada item debe tener: productId, quantity, priceAtOrder, currency',
-        })
-      }
-    }
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
 

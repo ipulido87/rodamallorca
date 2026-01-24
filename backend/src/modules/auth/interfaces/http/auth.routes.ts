@@ -9,7 +9,7 @@ import {
   logout,
   protectedRoute,
   registerUser,
-  verifyByLink, // ✅ SOLO ESTE MÉTODO
+  verifyByLink,
   resendVerification,
   updateProfile,
   changePassword,
@@ -19,7 +19,12 @@ import {
 import { validateBody } from '../middlewares/validate-body'
 import { LoginUserSchema } from './schemas/login.schema'
 import { RegisterUserSchema } from './schemas/register.schema'
-// ❌ ELIMINAR: import { VerifyCodeSchema } from './schemas/verify-code.schema'
+import { ResendVerificationSchema } from './schemas/resend-verification.schema'
+import { UpdateProfileSchema } from './schemas/update-profile.schema'
+import { ChangePasswordSchema } from './schemas/change-password.schema'
+import { UpdateUserSettingsSchema } from './schemas/update-settings.schema'
+import { ForgotPasswordSchema } from './schemas/forgot-password.schema'
+import { ResetPasswordSchema } from './schemas/reset-password.schema'
 import {
   forgotPasswordController,
   resetPasswordController,
@@ -46,14 +51,14 @@ router.get('/google/login/callback', handleGoogleLogin)
 // ✅ OTRAS RUTAS
 router.get('/me', getCurrentUser)
 router.post('/logout', logout)
-router.post('/forgot-password', forgotPasswordController)
-router.post('/reset-password', resetPasswordController)
-router.post('/resend-verification', resendVerification)
+router.post('/forgot-password', validateBody(ForgotPasswordSchema), forgotPasswordController)
+router.post('/reset-password', validateBody(ResetPasswordSchema), resetPasswordController)
+router.post('/resend-verification', validateBody(ResendVerificationSchema), resendVerification)
 
 // ✅ PROFILE Y SETTINGS
-router.put('/profile', verifyToken, updateProfile)
-router.post('/change-password', verifyToken, changePassword)
+router.put('/profile', verifyToken, validateBody(UpdateProfileSchema), updateProfile)
+router.post('/change-password', verifyToken, validateBody(ChangePasswordSchema), changePassword)
 router.get('/settings', verifyToken, getUserSettings)
-router.put('/settings', verifyToken, updateUserSettings)
+router.put('/settings', verifyToken, validateBody(UpdateUserSettingsSchema), updateUserSettings)
 
 export default router

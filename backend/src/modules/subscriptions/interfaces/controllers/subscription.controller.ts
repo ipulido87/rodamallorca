@@ -17,11 +17,8 @@ export const createCheckoutSessionController = async (
       return res.status(401).json({ error: 'No autenticado' })
     }
 
+    // Validación ya realizada por middleware validateBody
     const { workshopId } = req.body
-
-    if (!workshopId) {
-      return res.status(400).json({ error: 'workshopId es requerido' })
-    }
 
     // Verificar que el usuario sea el owner del workshop
     const workshop = await prisma.workshop.findUnique({
@@ -65,11 +62,8 @@ export const cancelSubscriptionController = async (
       return res.status(401).json({ error: 'No autenticado' })
     }
 
+    // Validación ya realizada por middleware validateBody
     const { workshopId, immediate } = req.body
-
-    if (!workshopId) {
-      return res.status(400).json({ error: 'workshopId es requerido' })
-    }
 
     // Verificar permisos
     const workshop = await prisma.workshop.findUnique({
@@ -142,11 +136,8 @@ export const createPortalSessionController = async (
       return res.status(401).json({ error: 'No autenticado' })
     }
 
+    // Validación ya realizada por middleware validateBody
     const { workshopId } = req.body
-
-    if (!workshopId) {
-      return res.status(400).json({ error: 'workshopId es requerido' })
-    }
 
     // Verificar permisos
     const workshop = await prisma.workshop.findUnique({
