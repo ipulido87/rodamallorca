@@ -126,6 +126,9 @@ export async function createCheckoutSession(input: CreateCheckoutSessionInput) {
         workshopId,
       },
     },
+    metadata: {
+      workshopId, // ⭐ IMPORTANTE: metadata en el session también
+    },
     payment_method_collection: 'always', // ⭐ SIEMPRE pedir tarjeta (incluso durante trial)
     success_url: successUrl,
     cancel_url: cancelUrl,

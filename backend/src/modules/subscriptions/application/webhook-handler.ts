@@ -396,6 +396,27 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
     if (workshopId) {
       console.log(`✅ [Webhook] Checkout de suscripción para workshop ${workshopId}`)
+
+      try {
+        // Obtener la suscripción completa de Stripe
+        const subscriptionId = typeof session.subscription === 'string'
+          ? session.subscription
+          : session.subscription.id
+
+        console.log(`🔍 [Webhook] Obteniendo suscripción ${subscriptionId} desde Stripe...`)
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+
+        // Procesar la suscripción (igual que en handleSubscriptionCreated)
+        // Esto creará/actualizará el registro en BD y enviará emails
+        await handleSubscriptionCreated(subscription)
+
+        console.log(`✅ [Webhook] Suscripción procesada desde checkout para workshop ${workshopId}`)
+      } catch (error) {
+        console.error('❌ [Webhook] Error procesando suscripción desde checkout:', error)
+        throw error
+      }
+    } else {
+      console.error('❌ [Webhook] No se encontró workshopId en metadata del checkout de suscripción')
     }
   }
 
