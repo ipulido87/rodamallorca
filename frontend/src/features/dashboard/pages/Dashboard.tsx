@@ -319,10 +319,16 @@ export const Dashboard = () => {
                   color="primary"
                 />
                 <QuickAction
-                  title="Configurar Taller"
-                  description="Actualizar información del taller"
+                  title={workshops && workshops.length > 0 ? "Configurar Taller" : "Crear Tu Taller"}
+                  description={workshops && workshops.length > 0 ? "Actualizar información del taller" : "Configura tu primer taller"}
                   icon={<Business />}
-                  onClick={() => navigate('/create-workshop')}
+                  onClick={() => {
+                    if (workshops && workshops.length > 0) {
+                      navigate(`/edit-workshop/${workshops[0].id}`)
+                    } else {
+                      navigate('/create-workshop')
+                    }
+                  }}
                   color="secondary"
                 />
               </Stack>

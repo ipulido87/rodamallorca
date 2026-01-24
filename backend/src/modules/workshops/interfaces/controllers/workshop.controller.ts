@@ -44,6 +44,17 @@ export const createWorkshopController = async (
       })
     }
 
+    // ✅ VALIDACIÓN: Un usuario solo puede tener un taller
+    const existingWorkshops = await repo.findByOwnerId(req.user.id)
+    if (existingWorkshops.length > 0) {
+      console.log(`❌ [createWorkshopController] Usuario ${req.user.id} ya tiene ${existingWorkshops.length} taller(es)`)
+      return res.status(403).json({
+        error: 'MAX_WORKSHOPS_REACHED',
+        message: 'Solo puedes tener un taller por cuenta. Si necesitas gestionar múltiples talleres, contáctanos.',
+        existingWorkshopId: existingWorkshops[0].id,
+      })
+    }
+
     const body = createWorkshopSchema.parse(req.body)
     const result = await createWorkshop(
       { ownerId: req.user.id, ...body },
