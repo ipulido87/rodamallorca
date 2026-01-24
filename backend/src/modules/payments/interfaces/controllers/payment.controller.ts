@@ -31,6 +31,11 @@ export const createProductCheckoutController = async (
     }
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
+
+    console.log(`🌐 [PAYMENT] FRONTEND_URL configurada: ${frontendUrl}`)
+    console.log(`✅ [PAYMENT] Success URL: ${frontendUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`)
+    console.log(`❌ [PAYMENT] Cancel URL: ${frontendUrl}/checkout/cancel`)
+
     const session = await paymentService.createProductCheckoutSession({
       userId: req.user.id,
       userEmail: req.user.email,
