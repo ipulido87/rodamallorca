@@ -172,9 +172,8 @@ export const CreateProduct = () => {
         productData.includesHelmet = formData.includesHelmet || false
         productData.includesLock = formData.includesLock || false
         productData.includesLights = formData.includesLights || false
-        if (formData.depositAmount && formData.depositAmount > 0) {
-          productData.depositAmount = formData.depositAmount * 100
-        }
+        // Siempre enviar depositAmount, incluso si es 0
+        productData.depositAmount = (formData.depositAmount || 0) * 100
         productData.minRentalDays = formData.minRentalDays || 1
         productData.maxRentalDays = formData.maxRentalDays || 30
       }

@@ -176,7 +176,7 @@ export const PricingPage = () => {
 
                 <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
                   <Typography variant="h2" fontWeight="bold" color="primary">
-                    14.50€
+                    18.30€
                   </Typography>
                   <Typography variant="h5" color="text.secondary">
                     /mes
@@ -252,7 +252,7 @@ export const PricingPage = () => {
                 color="text.secondary"
                 sx={{ mt: 2 }}
               >
-                ✓ 7 días gratis, luego 14.90€/mes
+                ✓ 7 días gratis, luego 18.30€/mes
                 <br />
                 ✓ Tarjeta requerida, sin cargos durante el trial
               </Typography>

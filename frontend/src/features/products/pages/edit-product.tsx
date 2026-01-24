@@ -292,9 +292,8 @@ export const EditProduct = () => {
         updateData.includesHelmet = result.data.includesHelmet || false
         updateData.includesLock = result.data.includesLock || false
         updateData.includesLights = result.data.includesLights || false
-        if (result.data.depositAmount && result.data.depositAmount > 0) {
-          updateData.depositAmount = result.data.depositAmount
-        }
+        // Siempre enviar depositAmount, incluso si es 0
+        updateData.depositAmount = result.data.depositAmount || 0
         updateData.minRentalDays = result.data.minRentalDays || 1
         updateData.maxRentalDays = result.data.maxRentalDays || 30
       } else {

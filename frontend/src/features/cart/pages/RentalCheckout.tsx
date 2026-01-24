@@ -54,7 +54,10 @@ export const RentalCheckout = () => {
     }
   }, [navigate])
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | undefined) => {
+    if (price === undefined || price === null || isNaN(price)) {
+      return '0.00€'
+    }
     return `${(price / 100).toFixed(2)}€`
   }
 
@@ -291,25 +294,29 @@ export const RentalCheckout = () => {
                   </Typography>
                 </Box>
 
-                <Divider sx={{ my: 2 }} />
+                {rentalData.deposit && rentalData.deposit > 0 && (
+                  <>
+                    <Divider sx={{ my: 2 }} />
 
-                {/* Deposit */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    mb: 1,
-                  }}
-                >
-                  <Typography variant="body1" fontWeight={600}>
-                    Depósito (reembolsable):
-                  </Typography>
-                  <Typography variant="body1" fontWeight={600}>
-                    {formatPrice(rentalData.deposit)}
-                  </Typography>
-                </Box>
+                    {/* Deposit */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        mb: 1,
+                      }}
+                    >
+                      <Typography variant="body1" fontWeight={600}>
+                        Depósito (reembolsable):
+                      </Typography>
+                      <Typography variant="body1" fontWeight={600}>
+                        {formatPrice(rentalData.deposit)}
+                      </Typography>
+                    </Box>
 
-                <Divider sx={{ my: 2 }} />
+                    <Divider sx={{ my: 2 }} />
+                  </>
+                )}
 
                 {/* Total */}
                 <Box
@@ -321,18 +328,20 @@ export const RentalCheckout = () => {
                 >
                   <Typography variant="h6">Total a pagar:</Typography>
                   <Typography variant="h6" color="primary" fontWeight={700}>
-                    {formatPrice(rentalData.totalPrice + rentalData.deposit)}
+                    {formatPrice(rentalData.totalPrice + (rentalData.deposit || 0))}
                   </Typography>
                 </Box>
 
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ display: 'block', mb: 3 }}
-                >
-                  El depósito de {formatPrice(rentalData.deposit)} se devolverá
-                  cuando devuelvas la bicicleta en buen estado.
-                </Typography>
+                {rentalData.deposit && rentalData.deposit > 0 && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mb: 3 }}
+                  >
+                    El depósito de {formatPrice(rentalData.deposit)} se devolverá
+                    cuando devuelvas la bicicleta en buen estado.
+                  </Typography>
+                )}
 
                 {error && (
                   <Box

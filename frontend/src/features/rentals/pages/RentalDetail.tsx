@@ -124,7 +124,7 @@ export const RentalDetail = () => {
       days: pricing.days,
       pricePerDay: pricing.pricePerDay,
       totalPrice: pricing.totalPrice,
-      deposit: pricing.deposit,
+      deposit: pricing.deposit || 0,
       quantity,
     }
 
