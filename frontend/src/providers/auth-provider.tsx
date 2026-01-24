@@ -142,16 +142,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const isOwnerOrAdminRoute = requestUrl.includes('/owner/') || requestUrl.includes('/admin/')
         const isPublicRoute = !isOwnerOrAdminRoute && publicRoutes.some(route => requestUrl.includes(route))
 
-        // ✅ NO redirigir si estamos en el callback de OAuth (está manejando su propio flujo)
+        // ✅ NO redirigir si estamos en el callback de OAuth o en checkout success
         const isInOAuthCallback = window.location.pathname === '/auth/callback'
+        const isInCheckoutFlow = window.location.pathname.includes('/checkout/')
 
         // Si el token expiró en una ruta PRIVADA, hacer logout automático
         if (error.response?.status === 401 && token && !isPublicRoute && !isInOAuthCallback) {
-          console.warn('Token expirado o inválido, cerrando sesión...')
+          console.warn('⚠️ [INTERCEPTOR] Token expirado o inválido (401)')
+
+          // Limpiar token y datos de usuario
           persistToken(null)
           setUser(null)
           localStorage.removeItem(USER_KEY)
-          window.location.href = '/login?error=Sesión expirada, por favor inicia sesión nuevamente'
+
+          // Si estamos en checkout, NO forzar redirect - dejar que PrivateRoute lo maneje
+          if (!isInCheckoutFlow) {
+            console.warn('🔄 [INTERCEPTOR] Redirigiendo a login...')
+            window.location.href = '/login?error=Sesión expirada, por favor inicia sesión nuevamente'
+          } else {
+            console.warn('⏭️ [INTERCEPTOR] En checkout flow, dejando que PrivateRoute maneje el redirect')
+          }
         }
         return Promise.reject(error)
       }
@@ -164,8 +174,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [token, persistToken])
 
   const refreshMe = useCallback(async () => {
+    console.log('🔄 [AUTH] refreshMe() iniciado')
     try {
       const fetchedUser = await apiMe() // ✅ apiMe() retorna el usuario directamente, no { user: {...} }
+      console.log('✅ [AUTH] Usuario obtenido:', fetchedUser ? fetchedUser.email : 'null')
       setUser(fetchedUser ?? null)
       if (fetchedUser) {
         localStorage.setItem(USER_KEY, JSON.stringify(fetchedUser))
@@ -173,24 +185,58 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.removeItem(USER_KEY)
       }
       setAuthError(null)
-    } catch (error) {
-      console.error('Auth error:', error)
-      setUser(null)
-      localStorage.removeItem(USER_KEY)
-      persistToken(null)
+    } catch (error: any) {
+      console.error('❌ [AUTH] Error en refreshMe():', error)
+
+      // Si es 401 (token inválido/expirado), limpiar todo inmediatamente
+      if (error.response?.status === 401) {
+        console.warn('⚠️ [AUTH] Token inválido o expirado, limpiando sesión...')
+        setUser(null)
+        localStorage.removeItem(USER_KEY)
+        persistToken(null)
+        // No redirigir aquí - dejar que PrivateRoute lo maneje
+      } else {
+        // Otros errores (red, servidor, etc.) - limpiar también
+        console.warn('⚠️ [AUTH] Error de autenticación, limpiando sesión...')
+        setUser(null)
+        localStorage.removeItem(USER_KEY)
+        persistToken(null)
+      }
+    } finally {
+      console.log('🏁 [AUTH] refreshMe() completado')
     }
   }, [persistToken])
 
-  // Carga inicial
+  // Carga inicial con timeout de seguridad
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout
+
     ;(async () => {
       setLoading(true)
+      console.log('🚀 [AUTH] Iniciando carga inicial de usuario...')
+
+      // Timeout de seguridad: 8 segundos máximo
+      timeoutId = setTimeout(() => {
+        console.error('⏰ [AUTH] TIMEOUT: refreshMe() tardó más de 8 segundos')
+        setLoading(false)
+        setAuthError('La verificación de sesión tardó demasiado. Por favor, recarga la página.')
+      }, 8000)
+
       try {
         await refreshMe()
+        clearTimeout(timeoutId)
+      } catch (error) {
+        console.error('❌ [AUTH] Error en carga inicial:', error)
+        clearTimeout(timeoutId)
       } finally {
         setLoading(false)
+        console.log('🏁 [AUTH] Carga inicial completada')
       }
     })()
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId)
+    }
   }, [refreshMe])
 
   // ✅ LOGIN MEJORADO - RETORNA DATOS DEL USUARIO DIRECTAMENTE
