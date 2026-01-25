@@ -55,31 +55,41 @@ export async function createProductCheckoutSession(input: CreateCheckoutInput) {
     throw new Error('El taller no tiene configurado Stripe Connect. No puede recibir pagos.')
   }
 
-  if (!workshop.stripeOnboardingComplete) {
-    throw new Error('El taller aún no ha completado la verificación de Stripe.')
-  }
-
   console.log(`✅ [Payment] Workshop tiene Stripe Connect: ${workshop.stripeConnectedAccountId}`)
 
   // ⭐ Validar que la cuenta de Stripe Connect existe y es válida
   try {
     const account = await stripe.accounts.retrieve(workshop.stripeConnectedAccountId)
 
-    if (!account || account.details_submitted === false) {
-      console.error(`❌ [Payment] Cuenta de Stripe Connect no está completa o no existe`)
+    // Verificar si el onboarding está completo en Stripe
+    const onboardingComplete = account.details_submitted && account.charges_enabled && account.payouts_enabled
 
-      // Limpiar cuenta inválida de la BD
+    // Si el onboarding está completo en Stripe pero no en la BD, actualizar
+    if (onboardingComplete && !workshop.stripeOnboardingComplete) {
+      console.log(`✅ [Payment] Onboarding completo en Stripe, actualizando BD...`)
       await prisma.workshop.update({
         where: { id: workshopId },
-        data: {
-          stripeConnectedAccountId: null,
-          stripeOnboardingComplete: false,
-        },
+        data: { stripeOnboardingComplete: true },
+      })
+    }
+
+    // Si el onboarding NO está completo, bloquear el pago
+    if (!onboardingComplete) {
+      console.error(`❌ [Payment] Onboarding incompleto:`, {
+        details_submitted: account.details_submitted,
+        charges_enabled: account.charges_enabled,
+        payouts_enabled: account.payouts_enabled,
+      })
+
+      // NO limpiar la cuenta, solo marcar onboarding como incompleto
+      await prisma.workshop.update({
+        where: { id: workshopId },
+        data: { stripeOnboardingComplete: false },
       })
 
       throw new Error(
-        'La cuenta de pagos del taller no está configurada correctamente. ' +
-        'El propietario debe reconectar Stripe Connect desde su panel de control.'
+        'El taller aún no ha completado la verificación de Stripe. ' +
+        'Por favor, completa la configuración de pagos en tu panel de control para poder vender productos.'
       )
     }
 
@@ -164,7 +174,13 @@ export async function createProductCheckoutSession(input: CreateCheckoutInput) {
   try {
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      payment_method_types: ['card'],
+      // ✅ Múltiples métodos de pago habilitados
+      payment_method_types: [
+        'card',           // Tarjetas de crédito/débito
+        'revolut_pay',    // Revolut
+        'paypal',         // PayPal
+        'klarna',         // Klarna (compra ahora, paga después)
+      ],
       line_items: lineItems,
       success_url: successUrl,
       cancel_url: cancelUrl,
