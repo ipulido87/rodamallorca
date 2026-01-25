@@ -184,8 +184,8 @@ export async function createProductCheckoutSession(input: CreateCheckoutInput) {
   try {
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      // ✅ Método de pago por tarjeta (el más compatible)
-      payment_method_types: ['card'],
+      // ✅ Método de pago por Revolut
+      payment_method_types: ['revolut_pay'],
       line_items: lineItems,
       success_url: successUrl,
       cancel_url: cancelUrl,
