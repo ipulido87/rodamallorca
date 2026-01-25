@@ -4,6 +4,7 @@ import {
   requireUser,
   verifyToken,
 } from '../../../auth/interfaces/middlewares/auth.middleware'
+import { validateBody } from '../../../auth/interfaces/middlewares/validate-body'
 import {
   createCustomerController,
   listCustomersController,
@@ -17,6 +18,12 @@ import {
   getWorkshopStatsController,
 } from '../controllers/billing.controller'
 import { requireActiveSubscription } from '../../../subscriptions/interfaces/middlewares/subscription.middleware'
+import {
+  CreateCustomerSchema,
+  CreateInvoiceSeriesSchema,
+  CreateInvoiceSchema,
+  UpdateInvoiceSchema,
+} from './schemas/billing.schemas'
 
 const r = Router()
 
@@ -29,6 +36,7 @@ r.post(
   requireUser,
   requireRole('WORKSHOP_OWNER'),
   requireActiveSubscription, // ⭐ Requiere suscripción activa
+  validateBody(CreateCustomerSchema),
   createCustomerController
 )
 
@@ -48,6 +56,7 @@ r.post(
   requireUser,
   requireRole('WORKSHOP_OWNER'),
   requireActiveSubscription, // ⭐ Requiere suscripción activa
+  validateBody(CreateInvoiceSeriesSchema),
   createInvoiceSeriesController
 )
 
@@ -67,6 +76,7 @@ r.post(
   requireUser,
   requireRole('WORKSHOP_OWNER'),
   requireActiveSubscription, // ⭐ Requiere suscripción activa
+  validateBody(CreateInvoiceSchema),
   createInvoiceController
 )
 
@@ -94,6 +104,7 @@ r.patch(
   requireUser,
   requireRole('WORKSHOP_OWNER'),
   requireActiveSubscription, // ⭐ Requiere suscripción activa
+  validateBody(UpdateInvoiceSchema),
   updateInvoiceController
 )
 

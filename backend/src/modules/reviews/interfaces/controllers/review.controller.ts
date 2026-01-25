@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express'
-import { z } from 'zod'
 import { createReview } from '../../application/create-review'
 import { getWorkshopReviews } from '../../application/get-reviews'
 import { updateReview } from '../../application/update-review'
@@ -7,17 +6,6 @@ import { deleteReview } from '../../application/delete-review'
 import { ReviewRepositoryPrisma } from '../../infrastructure/persistence/prisma/review-repository-prisma'
 
 const repo = new ReviewRepositoryPrisma()
-
-const createReviewSchema = z.object({
-  workshopId: z.string().uuid(),
-  rating: z.number().int().min(1).max(5),
-  comment: z.string().optional().nullable(),
-})
-
-const updateReviewSchema = z.object({
-  rating: z.number().int().min(1).max(5).optional(),
-  comment: z.string().optional().nullable(),
-})
 
 export const createReviewController = async (
   req: Request,
@@ -31,7 +19,8 @@ export const createReviewController = async (
       })
     }
 
-    const body = createReviewSchema.parse(req.body)
+    // Validación ya realizada por middleware validateBody
+    const body = req.body
 
     const review = await createReview(
       {
@@ -76,7 +65,8 @@ export const updateReviewController = async (
     }
 
     const { reviewId } = req.params
-    const body = updateReviewSchema.parse(req.body)
+    // Validación ya realizada por middleware validateBody
+    const body = req.body
 
     const review = await updateReview(reviewId, body, {
       repo,
