@@ -95,9 +95,19 @@ export async function createProductCheckoutSession(input: CreateCheckoutInput) {
 
     console.log(`✅ [Payment] Cuenta de Stripe validada correctamente`)
   } catch (error: any) {
-    // Si Stripe retorna error de cuenta no encontrada
-    if (error.code === 'resource_missing' || error.type === 'StripeInvalidRequestError') {
-      console.error(`❌ [Payment] Cuenta de Stripe Connect no existe: ${workshop.stripeConnectedAccountId}`)
+    // Detectar errores de cuenta inválida o sin acceso
+    const isInvalidAccount =
+      error.code === 'resource_missing' ||
+      error.type === 'StripeInvalidRequestError' ||
+      error.message?.includes('does not have access to account') ||
+      error.message?.includes('Application access may have been revoked')
+
+    if (isInvalidAccount) {
+      console.error(`❌ [Payment] Cuenta de Stripe Connect inválida o sin acceso:`, {
+        accountId: workshop.stripeConnectedAccountId,
+        errorCode: error.code,
+        errorMessage: error.message,
+      })
 
       // Limpiar cuenta inválida automáticamente
       await prisma.workshop.update({
@@ -109,7 +119,7 @@ export async function createProductCheckoutSession(input: CreateCheckoutInput) {
       })
 
       throw new Error(
-        'La cuenta de pagos del taller ya no existe. ' +
+        'La cuenta de pagos del taller ya no es válida o ha sido desconectada. ' +
         'El propietario debe reconectar Stripe Connect desde su panel de control.'
       )
     }
