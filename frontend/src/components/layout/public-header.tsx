@@ -162,7 +162,7 @@ export const PublicHeader = () => {
                 </IconButton>
               </Tooltip>
 
-              <Tooltip title="Recambios">
+              <Tooltip title="Bicis & Recambios">
                 <IconButton
                   onClick={() => navigate('/productos')}
                   sx={{
@@ -219,7 +219,7 @@ export const PublicHeader = () => {
                   '&:hover': { bgcolor: 'action.hover' },
                 }}
               >
-                Recambios
+                Bicis & Recambios
               </Button>
 
               <Button
