@@ -3,23 +3,28 @@ import {
   requireUser,
   verifyToken,
 } from '../../../auth/interfaces/middlewares/auth.middleware'
+import { validateBody } from '../../../auth/interfaces/middlewares/validate-body'
 import {
   createReviewController,
   getWorkshopReviewsController,
   updateReviewController,
   deleteReviewController,
 } from '../controllers/review.controller'
+import {
+  CreateReviewSchema,
+  UpdateReviewSchema,
+} from './schemas/review.schemas'
 
 const r = Router()
 
 // Crear una review (requiere autenticación)
-r.post('/reviews', verifyToken, requireUser, createReviewController)
+r.post('/reviews', verifyToken, requireUser, validateBody(CreateReviewSchema), createReviewController)
 
 // Obtener reviews de un taller (público)
 r.get('/workshops/:workshopId/reviews', getWorkshopReviewsController)
 
 // Actualizar review (requiere ser el propietario)
-r.put('/reviews/:reviewId', verifyToken, requireUser, updateReviewController)
+r.put('/reviews/:reviewId', verifyToken, requireUser, validateBody(UpdateReviewSchema), updateReviewController)
 
 // Eliminar review (requiere ser el propietario)
 r.delete('/reviews/:reviewId', verifyToken, requireUser, deleteReviewController)

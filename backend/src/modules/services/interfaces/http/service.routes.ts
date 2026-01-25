@@ -4,6 +4,7 @@ import {
   requireUser,
   verifyToken,
 } from '../../../auth/interfaces/middlewares/auth.middleware'
+import { validateBody } from '../../../auth/interfaces/middlewares/validate-body'
 import {
   createServiceController,
   deleteServiceController,
@@ -13,6 +14,10 @@ import {
   searchServicesController,
   updateServiceController,
 } from '../controllers/service.controller'
+import {
+  CreateServiceSchema,
+  UpdateServiceSchema,
+} from './schemas/service.schemas'
 
 const r = Router()
 
@@ -35,6 +40,7 @@ r.post(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  validateBody(CreateServiceSchema),
   createServiceController
 )
 
@@ -53,6 +59,7 @@ r.patch(
   verifyToken,
   requireUser,
   requireRole('WORKSHOP_OWNER'),
+  validateBody(UpdateServiceSchema),
   updateServiceController
 )
 
