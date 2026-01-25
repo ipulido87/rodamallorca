@@ -94,7 +94,8 @@ export const searchServicesController = async (
   next: NextFunction
 ) => {
   try {
-    const filters = searchServicesSchema.parse(req.query)
+    // Query params opcionales - no requieren validación estricta
+    const filters = req.query
 
     const services = await listServices(filters, { repo })
 
