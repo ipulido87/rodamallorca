@@ -1,7 +1,7 @@
 import type { ReviewRepository } from '../domain/repositories/review-repository'
 import { verifyEntityExists } from '@/lib/authorization'
 import { validateRating } from '@/lib/validators'
-import { WorkshopStatsUpdater } from '../domain/services/workshop-stats-updater'
+import { WorkshopStatsUpdater, type WorkshopStatsRepository } from '../domain/services/workshop-stats-updater'
 import { ERRORS } from '@/lib/errors/error-messages'
 
 export async function updateReview(
@@ -10,7 +10,11 @@ export async function updateReview(
     rating?: number
     comment?: string | null
   },
-  deps: { repo: ReviewRepository; authenticatedUserId: string }
+  deps: {
+    repo: ReviewRepository
+    workshopRepo: WorkshopStatsRepository
+    authenticatedUserId: string
+  }
 ) {
   // Verificar que la review existe usando helper compartido
   const review = await deps.repo.findById(reviewId)
@@ -34,7 +38,7 @@ export async function updateReview(
   }
 
   // Actualizar estadísticas del workshop usando servicio centralizado
-  await WorkshopStatsUpdater.updateStats(review.workshopId, deps.repo)
+  await WorkshopStatsUpdater.updateStats(review.workshopId, deps.repo, deps.workshopRepo)
 
   return updatedReview
 }

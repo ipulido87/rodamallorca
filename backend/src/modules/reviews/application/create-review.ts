@@ -1,6 +1,6 @@
 import type { ReviewRepository } from '../domain/repositories/review-repository'
 import { validateRating } from '@/lib/validators'
-import { WorkshopStatsUpdater } from '../domain/services/workshop-stats-updater'
+import { WorkshopStatsUpdater, type WorkshopStatsRepository } from '../domain/services/workshop-stats-updater'
 
 export async function createReview(
   input: {
@@ -9,7 +9,10 @@ export async function createReview(
     rating: number
     comment?: string | null
   },
-  deps: { repo: ReviewRepository }
+  deps: {
+    repo: ReviewRepository
+    workshopRepo: WorkshopStatsRepository
+  }
 ) {
   // Validar rating usando validador compartido
   validateRating(input.rating)
@@ -28,7 +31,7 @@ export async function createReview(
   const review = await deps.repo.create(input)
 
   // Actualizar estadísticas del workshop usando servicio centralizado
-  await WorkshopStatsUpdater.updateStats(input.workshopId, deps.repo)
+  await WorkshopStatsUpdater.updateStats(input.workshopId, deps.repo, deps.workshopRepo)
 
   return review
 }

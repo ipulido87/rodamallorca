@@ -20,4 +20,6 @@ export interface WorkshopRepository {
   update(id: string, input: Partial<Omit<WorkshopDTO, 'id' | 'ownerId'>>): Promise<WorkshopDTO | null>
   delete(id: string): Promise<boolean>
   findAll(): Promise<WorkshopDTO[]>
+  // Método para actualizar estadísticas de reviews
+  updateStats(workshopId: string, stats: { averageRating: number; reviewCount: number }): Promise<void>
 }

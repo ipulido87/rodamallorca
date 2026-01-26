@@ -1,11 +1,15 @@
 import type { ReviewRepository } from '../domain/repositories/review-repository'
 import { verifyEntityExists } from '@/lib/authorization'
-import { WorkshopStatsUpdater } from '../domain/services/workshop-stats-updater'
+import { WorkshopStatsUpdater, type WorkshopStatsRepository } from '../domain/services/workshop-stats-updater'
 import { ERRORS } from '@/lib/errors/error-messages'
 
 export async function deleteReview(
   reviewId: string,
-  deps: { repo: ReviewRepository; authenticatedUserId: string }
+  deps: {
+    repo: ReviewRepository
+    workshopRepo: WorkshopStatsRepository
+    authenticatedUserId: string
+  }
 ) {
   // Verificar que la review existe usando helper compartido
   const review = await deps.repo.findById(reviewId)
@@ -26,7 +30,7 @@ export async function deleteReview(
   }
 
   // Actualizar estadísticas del workshop usando servicio centralizado
-  await WorkshopStatsUpdater.updateStats(workshopId, deps.repo)
+  await WorkshopStatsUpdater.updateStats(workshopId, deps.repo, deps.workshopRepo)
 
   return true
 }
