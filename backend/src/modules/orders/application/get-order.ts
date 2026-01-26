@@ -1,6 +1,6 @@
 import type { Order } from '../domain/entities/order'
 import type { OrderRepository } from '../domain/repositories/order-repository'
-import { verifyEntityExists, verifyAdminOrOwner } from '@/lib/authorization'
+import { verifyEntityExists, verifyAdminOrOwner } from '../../../lib/authorization'
 
 interface GetOrderDeps {
   repo: OrderRepository

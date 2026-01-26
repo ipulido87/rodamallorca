@@ -4,7 +4,7 @@ import type {
   CreateCustomerInput,
   Customer,
 } from '../domain/entities/customer'
-import { validateUniqueEmail, validateUniqueTaxId } from '@/lib/validators'
+import { validateUniqueEmail, validateUniqueTaxId } from '../../../lib/validators'
 
 export interface CreateCustomerDeps {
   customerRepository: CustomerRepository

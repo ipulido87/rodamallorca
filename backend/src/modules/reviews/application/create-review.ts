@@ -1,5 +1,5 @@
 import type { ReviewRepository } from '../domain/repositories/review-repository'
-import { validateRating } from '@/lib/validators'
+import { validateRating } from '../../../lib/validators'
 import { WorkshopStatsUpdater, type WorkshopStatsRepository } from '../domain/services/workshop-stats-updater'
 
 export async function createReview(

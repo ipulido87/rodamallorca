@@ -1,6 +1,6 @@
 import type { ServiceRepository } from '../domain/repositories/service-repository'
 import type { Service, CreateServiceInput } from '../domain/entities/service'
-import { verifyWorkshopOwnership, verifyEntityExists } from '@/lib/authorization'
+import { verifyWorkshopOwnership, verifyEntityExists } from '../../../lib/authorization'
 
 interface CreateServiceDeps {
   repo: ServiceRepository

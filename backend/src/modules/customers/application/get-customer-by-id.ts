@@ -1,7 +1,7 @@
 // backend/src/modules/customers/application/get-customer-by-id.ts
 import type { CustomerRepository } from '../domain/repositories/customer-repository'
 import type { Customer } from '../domain/entities/customer'
-import { verifyResourceBelongsToWorkshop } from '@/lib/authorization'
+import { verifyResourceBelongsToWorkshop } from '../../../lib/authorization'
 
 export interface GetCustomerByIdDeps {
   customerRepository: CustomerRepository

@@ -1,6 +1,6 @@
 import type { BillingRepository } from '../domain/repositories/billing-repository'
 import type { Invoice, CreateInvoiceInput } from '../domain/entities/billing'
-import { verifyWorkshopOwnership, verifyEntityExists } from '@/lib/authorization'
+import { verifyWorkshopOwnership, verifyEntityExists } from '../../../lib/authorization'
 
 interface CreateInvoiceDeps {
   repo: BillingRepository

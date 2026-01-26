@@ -1,8 +1,8 @@
 import type { ReviewRepository } from '../domain/repositories/review-repository'
-import { verifyEntityExists } from '@/lib/authorization'
-import { validateRating } from '@/lib/validators'
+import { verifyEntityExists } from '../../../lib/authorization'
+import { validateRating } from '../../../lib/validators'
 import { WorkshopStatsUpdater, type WorkshopStatsRepository } from '../domain/services/workshop-stats-updater'
-import { ERRORS } from '@/lib/errors/error-messages'
+import { ERRORS } from '../../../lib/errors/error-messages'
 
 export async function updateReview(
   reviewId: string,
