@@ -4,8 +4,10 @@ import { getWorkshopReviews } from '../../application/get-reviews'
 import { updateReview } from '../../application/update-review'
 import { deleteReview } from '../../application/delete-review'
 import { ReviewRepositoryPrisma } from '../../infrastructure/persistence/prisma/review-repository-prisma'
+import { WorkshopRepositoryPrisma } from '../../../workshops/infrastructure/persistence/prisma/workshop-repository-prisma'
 
 const repo = new ReviewRepositoryPrisma()
+const workshopRepo = new WorkshopRepositoryPrisma()
 
 export const createReviewController = async (
   req: Request,
@@ -27,7 +29,7 @@ export const createReviewController = async (
         ...body,
         userId: req.user.id,
       },
-      { repo }
+      { repo, workshopRepo }
     )
 
     res.status(201).json(review)
@@ -70,6 +72,7 @@ export const updateReviewController = async (
 
     const review = await updateReview(reviewId, body, {
       repo,
+      workshopRepo,
       authenticatedUserId: req.user.id,
     })
 
@@ -95,6 +98,7 @@ export const deleteReviewController = async (
 
     await deleteReview(reviewId, {
       repo,
+      workshopRepo,
       authenticatedUserId: req.user.id,
     })
 

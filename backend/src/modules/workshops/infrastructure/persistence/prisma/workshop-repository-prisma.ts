@@ -53,4 +53,17 @@ export class WorkshopRepositoryPrisma implements WorkshopRepository {
     })
     return workshops
   }
+
+  async updateStats(
+    workshopId: string,
+    stats: { averageRating: number; reviewCount: number }
+  ): Promise<void> {
+    await prisma.workshop.update({
+      where: { id: workshopId },
+      data: {
+        averageRating: stats.averageRating,
+        reviewCount: stats.reviewCount,
+      },
+    })
+  }
 }

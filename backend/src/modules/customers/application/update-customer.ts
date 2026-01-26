@@ -4,6 +4,8 @@ import type {
   UpdateCustomerInput,
   Customer,
 } from '../domain/entities/customer'
+import { getEntityAndVerifyWorkshop } from '@/lib/authorization'
+import { validateUniqueEmail, validateUniqueTaxId } from '@/lib/validators'
 
 export interface UpdateCustomerDeps {
   customerRepository: CustomerRepository
@@ -17,35 +19,13 @@ export async function updateCustomer(
 ): Promise<Customer> {
   const { customerRepository, workshopId } = deps
 
-  // Verificar que el cliente existe y pertenece al taller
+  // Verificar que el cliente existe y pertenece al taller usando helper compartido
   const existing = await customerRepository.findById(customerId)
-  if (!existing) {
-    throw new Error('Cliente no encontrado')
-  }
-  if (existing.workshopId !== workshopId) {
-    throw new Error('No tienes permiso para modificar este cliente')
-  }
+  getEntityAndVerifyWorkshop(existing, 'Cliente', workshopId)
 
-  // Verificar duplicados si se actualiza email o taxId
-  if (data.email && data.email !== existing.email) {
-    const existingByEmail = await customerRepository.findByEmail(
-      workshopId,
-      data.email
-    )
-    if (existingByEmail && existingByEmail.id !== customerId) {
-      throw new Error('Ya existe un cliente con ese email')
-    }
-  }
-
-  if (data.taxId && data.taxId !== existing.taxId) {
-    const existingByTaxId = await customerRepository.findByTaxId(
-      workshopId,
-      data.taxId
-    )
-    if (existingByTaxId && existingByTaxId.id !== customerId) {
-      throw new Error('Ya existe un cliente con ese NIF/CIF')
-    }
-  }
+  // Validar email y taxId únicos usando validadores compartidos (excluyendo el ID actual)
+  await validateUniqueEmail(data.email, workshopId, customerRepository, customerId)
+  await validateUniqueTaxId(data.taxId, workshopId, customerRepository, customerId)
 
   const customer = await customerRepository.update(customerId, data)
 

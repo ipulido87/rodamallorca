@@ -5,6 +5,7 @@ import { billingRepositoryPrisma } from '../../billing/infrastructure/persistenc
 import { generateInvoiceFromOrder } from '../../billing/application/generate-invoice-from-order'
 import { sendInvoiceEmail } from '../../notifications/services/email-service'
 import prisma from '../../../lib/prisma'
+import { verifyEntityExists, verifyWorkshopOwnership } from '@/lib/authorization'
 
 interface WorkshopRepository {
   findById(id: string): Promise<{ id: string; ownerId: string } | null>
@@ -29,26 +30,14 @@ export async function updateOrderStatus(
 ): Promise<Order> {
   const { repo, workshopRepo, authenticatedUserId, userRole } = deps
 
-  // Obtener el pedido actual
+  // Obtener el pedido actual usando helper compartido
   const order = await repo.findById(orderId, false)
+  verifyEntityExists(order, 'Pedido')
 
-  if (!order) {
-    throw new Error('Pedido no encontrado')
-  }
-
-  // Verificar que el taller existe y obtener el dueño
-  const workshop = await workshopRepo.findById(order.workshopId)
-
-  if (!workshop) {
-    throw new Error('Taller no encontrado')
-  }
-
-  // Verificar permisos - solo el dueño del taller puede actualizar
-  const isWorkshopOwner = workshop.ownerId === authenticatedUserId
-  const isAdmin = userRole === 'ADMIN'
-
-  if (!isWorkshopOwner && !isAdmin) {
-    throw new Error('No tienes permisos para actualizar este pedido')
+  // Verificar permisos - solo el dueño del taller puede actualizar, usando helper compartido
+  // (admin también tiene acceso pero primero validamos el workshop)
+  if (userRole !== 'ADMIN') {
+    await verifyWorkshopOwnership(order.workshopId, authenticatedUserId, workshopRepo)
   }
 
   // Validar transiciones de estado
