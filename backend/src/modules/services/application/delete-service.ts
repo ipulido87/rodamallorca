@@ -1,5 +1,5 @@
 import type { ServiceRepository } from '../domain/repositories/service-repository'
-import { verifyWorkshopOwnership, verifyEntityExists } from '@/lib/authorization'
+import { verifyWorkshopOwnership, verifyEntityExists } from '../../../lib/authorization'
 
 interface DeleteServiceDeps {
   repo: ServiceRepository

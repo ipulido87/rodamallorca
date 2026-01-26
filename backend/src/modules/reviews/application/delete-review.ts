@@ -1,7 +1,7 @@
 import type { ReviewRepository } from '../domain/repositories/review-repository'
-import { verifyEntityExists } from '@/lib/authorization'
+import { verifyEntityExists } from '../../../lib/authorization'
 import { WorkshopStatsUpdater, type WorkshopStatsRepository } from '../domain/services/workshop-stats-updater'
-import { ERRORS } from '@/lib/errors/error-messages'
+import { ERRORS } from '../../../lib/errors/error-messages'
 
 export async function deleteReview(
   reviewId: string,

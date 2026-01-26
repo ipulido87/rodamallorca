@@ -1,6 +1,6 @@
 // backend/src/modules/customers/application/delete-customer.ts
 import type { CustomerRepository } from '../domain/repositories/customer-repository'
-import { getEntityAndVerifyWorkshop } from '@/lib/authorization'
+import { getEntityAndVerifyWorkshop } from '../../../lib/authorization'
 
 export interface DeleteCustomerDeps {
   customerRepository: CustomerRepository

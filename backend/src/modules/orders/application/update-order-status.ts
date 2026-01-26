@@ -5,7 +5,7 @@ import { billingRepositoryPrisma } from '../../billing/infrastructure/persistenc
 import { generateInvoiceFromOrder } from '../../billing/application/generate-invoice-from-order'
 import { sendInvoiceEmail } from '../../notifications/services/email-service'
 import prisma from '../../../lib/prisma'
-import { verifyEntityExists, verifyWorkshopOwnership } from '@/lib/authorization'
+import { verifyEntityExists, verifyWorkshopOwnership } from '../../../lib/authorization'
 
 interface WorkshopRepository {
   findById(id: string): Promise<{ id: string; ownerId: string } | null>

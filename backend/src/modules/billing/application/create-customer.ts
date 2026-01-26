@@ -1,6 +1,6 @@
 import type { BillingRepository } from '../domain/repositories/billing-repository'
 import type { Customer, CreateCustomerInput } from '../domain/entities/billing'
-import { verifyWorkshopOwnership } from '@/lib/authorization'
+import { verifyWorkshopOwnership } from '../../../lib/authorization'
 
 interface CreateCustomerDeps {
   repo: BillingRepository

@@ -4,8 +4,8 @@ import type {
   UpdateCustomerInput,
   Customer,
 } from '../domain/entities/customer'
-import { getEntityAndVerifyWorkshop } from '@/lib/authorization'
-import { validateUniqueEmail, validateUniqueTaxId } from '@/lib/validators'
+import { getEntityAndVerifyWorkshop } from '../../../lib/authorization'
+import { validateUniqueEmail, validateUniqueTaxId } from '../../../lib/validators'
 
 export interface UpdateCustomerDeps {
   customerRepository: CustomerRepository
