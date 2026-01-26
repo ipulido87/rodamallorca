@@ -1,6 +1,7 @@
 import { OrderStatus } from '../domain/enums/order-status'
 import type { Order } from '../domain/entities/order'
 import type { OrderRepository } from '../domain/repositories/order-repository'
+import { verifyEntityExists, verifyAdminOrOwner } from '@/lib/authorization'
 
 interface CancelOrderDeps {
   repo: OrderRepository
@@ -20,20 +21,12 @@ export async function cancelOrder(
 ): Promise<Order> {
   const { repo, authenticatedUserId, userRole } = deps
 
-  // Obtener el pedido actual
+  // Obtener el pedido actual usando helper compartido
   const order = await repo.findById(orderId, false)
+  verifyEntityExists(order, 'Pedido')
 
-  if (!order) {
-    throw new Error('Pedido no encontrado')
-  }
-
-  // Verificar permisos - el cliente o admin pueden cancelar
-  const isOrderOwner = order.userId === authenticatedUserId
-  const isAdmin = userRole === 'ADMIN'
-
-  if (!isOrderOwner && !isAdmin) {
-    throw new Error('No tienes permisos para cancelar este pedido')
-  }
+  // Verificar permisos usando helper compartido
+  verifyAdminOrOwner(order.userId, authenticatedUserId, userRole)
 
   // Validar que el pedido pueda ser cancelado
   if (order.status === OrderStatus.COMPLETED) {

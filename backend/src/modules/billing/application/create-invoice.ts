@@ -1,5 +1,6 @@
 import type { BillingRepository } from '../domain/repositories/billing-repository'
 import type { Invoice, CreateInvoiceInput } from '../domain/entities/billing'
+import { verifyWorkshopOwnership, verifyEntityExists } from '@/lib/authorization'
 
 interface CreateInvoiceDeps {
   repo: BillingRepository
@@ -16,16 +17,8 @@ export async function createInvoice(
 ): Promise<Invoice> {
   const { repo, workshopRepo, authenticatedUserId } = deps
 
-  // Verificar que el taller existe y que el usuario es el dueño
-  const workshop = await workshopRepo.findById(data.workshopId)
-
-  if (!workshop) {
-    throw new Error('Taller no encontrado')
-  }
-
-  if (workshop.ownerId !== authenticatedUserId) {
-    throw new Error('No tienes permisos para crear facturas en este taller')
-  }
+  // Verificar que el taller existe y que el usuario es el dueño usando helper compartido
+  await verifyWorkshopOwnership(data.workshopId, authenticatedUserId, workshopRepo)
 
   // Verificar que la serie existe
   const series = await repo.findInvoiceSeriesByWorkshop(data.workshopId)
@@ -35,12 +28,10 @@ export async function createInvoice(
     throw new Error('Serie de facturación no encontrada')
   }
 
-  // Verificar que el cliente existe (si se proporciona)
+  // Verificar que el cliente existe (si se proporciona) usando helper compartido
   if (data.customerId) {
     const customer = await repo.findCustomerById(data.customerId)
-    if (!customer) {
-      throw new Error('Cliente no encontrado')
-    }
+    verifyEntityExists(customer, 'Cliente')
   }
 
   const invoice = await repo.createInvoice(data)

@@ -1,5 +1,8 @@
 import type { ReviewRepository } from '../domain/repositories/review-repository'
-import prisma from '../../../lib/prisma'
+import { verifyEntityExists } from '@/lib/authorization'
+import { validateRating } from '@/lib/validators'
+import { WorkshopStatsUpdater } from '../domain/services/workshop-stats-updater'
+import { ERRORS } from '@/lib/errors/error-messages'
 
 export async function updateReview(
   reviewId: string,
@@ -9,20 +12,18 @@ export async function updateReview(
   },
   deps: { repo: ReviewRepository; authenticatedUserId: string }
 ) {
-  // Verificar que la review existe
+  // Verificar que la review existe usando helper compartido
   const review = await deps.repo.findById(reviewId)
-  if (!review) {
-    throw new Error('Review no encontrada')
-  }
+  verifyEntityExists(review, 'Review')
 
   // Verificar que el usuario es el propietario
   if (review.userId !== deps.authenticatedUserId) {
-    throw new Error('No tienes permisos para editar esta review')
+    throw new Error(ERRORS.NO_PERMISSION('editar esta review'))
   }
 
-  // Validar rating si se proporciona
-  if (input.rating !== undefined && (input.rating < 1 || input.rating > 5)) {
-    throw new Error('El rating debe estar entre 1 y 5')
+  // Validar rating si se proporciona, usando validador compartido
+  if (input.rating !== undefined) {
+    validateRating(input.rating)
   }
 
   // Actualizar la review
@@ -32,24 +33,8 @@ export async function updateReview(
     throw new Error('Error al actualizar la review')
   }
 
-  // Actualizar estadísticas del workshop
-  await updateWorkshopStats(review.workshopId, deps.repo)
+  // Actualizar estadísticas del workshop usando servicio centralizado
+  await WorkshopStatsUpdater.updateStats(review.workshopId, deps.repo)
 
   return updatedReview
-}
-
-async function updateWorkshopStats(
-  workshopId: string,
-  repo: ReviewRepository
-) {
-  const averageRating = await repo.getWorkshopAverageRating(workshopId)
-  const reviewCount = await repo.getWorkshopReviewCount(workshopId)
-
-  await prisma.workshop.update({
-    where: { id: workshopId },
-    data: {
-      averageRating: averageRating || 0,
-      reviewCount,
-    },
-  })
 }

@@ -1,5 +1,6 @@
 import type { Order } from '../domain/entities/order'
 import type { OrderRepository } from '../domain/repositories/order-repository'
+import { verifyEntityExists, verifyAdminOrOwner } from '@/lib/authorization'
 
 interface GetOrderDeps {
   repo: OrderRepository
@@ -18,19 +19,15 @@ export async function getOrder(
   const { repo, authenticatedUserId, userRole } = deps
 
   const order = await repo.findById(orderId, true)
+  verifyEntityExists(order, 'Pedido')
 
-  if (!order) {
-    throw new Error('Pedido no encontrado')
-  }
-
-  // Verificar permisos
-  const isOwner = order.userId === authenticatedUserId
-  const isWorkshopOwner = order.workshop?.ownerId === authenticatedUserId
-  const isAdmin = userRole === 'ADMIN'
-
-  if (!isOwner && !isWorkshopOwner && !isAdmin) {
-    throw new Error('No tienes permisos para ver este pedido')
-  }
+  // Verificar permisos usando helper compartido
+  verifyAdminOrOwner(
+    order.userId,
+    authenticatedUserId,
+    userRole,
+    order.workshop?.ownerId
+  )
 
   return order
 }
