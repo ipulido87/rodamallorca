@@ -20,6 +20,35 @@ export class UserRepositoryPrisma implements UserRepository {
       : null
   }
 
+  async create(input: {
+    email: string
+    password: string
+    name: string
+    birthDate?: Date
+    phone?: string
+    role?: string
+  }): Promise<UserDTO> {
+    const u = await prisma.user.create({
+      data: {
+        email: input.email,
+        password: input.password,
+        name: input.name,
+        birthDate: input.birthDate,
+        phone: input.phone,
+        role: (input.role as UserRole) || UserRole.USER,
+      },
+    })
+
+    return {
+      id: u.id,
+      email: u.email,
+      name: u.name,
+      picture: u.picture,
+      googleId: u.googleId,
+      role: u.role,
+    }
+  }
+
   async upsertGoogleUser(input: {
     email: string
     googleId: string
