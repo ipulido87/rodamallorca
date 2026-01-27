@@ -169,6 +169,83 @@ export const UpdateProductSchema = z.object({
     .array(ImageSchema)
     .max(10, 'No se pueden agregar más de 10 imágenes')
     .optional(),
+  // Campos de alquiler
+  isRental: z
+    .boolean()
+    .optional()
+    .describe('Indica si el producto es para alquiler'),
+  rentalPricePerDay: z
+    .number()
+    .int('El precio por día debe ser un número entero (centavos)')
+    .nonnegative('El precio por día debe ser mayor o igual a 0')
+    .optional()
+    .nullable(),
+  rentalPricePerWeek: z
+    .number()
+    .int('El precio por semana debe ser un número entero (centavos)')
+    .nonnegative('El precio por semana debe ser mayor o igual a 0')
+    .optional()
+    .nullable(),
+  availableQuantity: z
+    .number()
+    .int('La cantidad debe ser un número entero')
+    .positive('La cantidad debe ser mayor que 0')
+    .min(1)
+    .optional(),
+  bikeType: z
+    .string()
+    .max(100, 'El tipo de bicicleta no puede exceder 100 caracteres')
+    .optional()
+    .nullable(),
+  bikeSize: z
+    .string()
+    .max(50, 'El tamaño de bicicleta no puede exceder 50 caracteres')
+    .optional()
+    .nullable(),
+  bikeBrand: z
+    .string()
+    .max(100, 'La marca no puede exceder 100 caracteres')
+    .optional()
+    .nullable(),
+  bikeModel: z
+    .string()
+    .max(100, 'El modelo no puede exceder 100 caracteres')
+    .optional()
+    .nullable(),
+  frameSize: z
+    .number()
+    .positive('El tamaño del cuadro debe ser mayor que 0')
+    .optional()
+    .nullable(),
+  includesHelmet: z
+    .boolean()
+    .optional(),
+  includesLock: z
+    .boolean()
+    .optional(),
+  includesLights: z
+    .boolean()
+    .optional(),
+  depositAmount: z
+    .number()
+    .int('El depósito debe ser un número entero (centavos)')
+    .nonnegative('El depósito debe ser mayor o igual a 0')
+    .optional()
+    .nullable(),
+  minRentalDays: z
+    .number()
+    .int('Los días mínimos deben ser un número entero')
+    .positive('Los días mínimos deben ser mayor que 0')
+    .min(1)
+    .optional()
+    .nullable(),
+  maxRentalDays: z
+    .number()
+    .int('Los días máximos deben ser un número entero')
+    .positive('Los días máximos deben ser mayor que 0')
+    .min(1)
+    .optional()
+    .nullable(),
 })
 
 export type UpdateProductInput = z.infer<typeof UpdateProductSchema>
