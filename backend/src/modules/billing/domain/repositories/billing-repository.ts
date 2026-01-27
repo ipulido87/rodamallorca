@@ -26,10 +26,24 @@ export interface BillingRepository {
   // Invoices
   createInvoice(data: CreateInvoiceInput): Promise<Invoice>
   findInvoiceById(id: string): Promise<Invoice | null>
+  findInvoiceByIdWithDetails(id: string): Promise<InvoiceWithDetails | null>
   findInvoicesByWorkshop(workshopId: string, filters?: {
     status?: string
     customerId?: string
   }): Promise<Invoice[]>
   updateInvoice(id: string, data: UpdateInvoiceInput): Promise<Invoice>
   deleteInvoice(id: string): Promise<void>
+}
+
+/**
+ * Factura con items incluidos (para emails, PDFs, etc.)
+ */
+export interface InvoiceWithDetails extends Invoice {
+  items: Array<{
+    id: string
+    description: string
+    quantity: number
+    unitPrice: number
+    totalPrice: number
+  }>
 }

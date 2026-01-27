@@ -201,6 +201,16 @@ export const billingRepositoryPrisma: BillingRepository = {
     return invoice ? toDomainInvoice(invoice) : null
   },
 
+  async findInvoiceByIdWithDetails(id: string): Promise<any | null> {
+    const invoice = await prisma.invoice.findUnique({
+      where: { id },
+      include: {
+        items: true,
+      },
+    })
+    return invoice
+  },
+
   async findInvoicesByWorkshop(
     workshopId: string,
     filters?: { status?: string; customerId?: string }

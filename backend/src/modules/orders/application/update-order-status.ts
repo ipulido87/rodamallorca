@@ -1,10 +1,9 @@
 import { OrderStatus } from '../domain/enums/order-status'
 import type { Order, UpdateOrderStatusInput } from '../domain/entities/order'
 import type { OrderRepository } from '../domain/repositories/order-repository'
-import { billingRepositoryPrisma } from '../../billing/infrastructure/persistence/prisma/billing-repository-prisma'
+import type { BillingRepository } from '../../billing/domain/repositories/billing-repository'
 import { generateInvoiceFromOrder } from '../../billing/application/generate-invoice-from-order'
 import { sendInvoiceEmail } from '../../notifications/services/email-service'
-import prisma from '../../../lib/prisma'
 import { verifyEntityExists, verifyWorkshopOwnership } from '../../../lib/authorization'
 
 interface WorkshopRepository {
@@ -14,6 +13,7 @@ interface WorkshopRepository {
 interface UpdateOrderStatusDeps {
   repo: OrderRepository
   workshopRepo: WorkshopRepository
+  billingRepo: BillingRepository
   authenticatedUserId: string
   userRole: string
 }
@@ -28,7 +28,7 @@ export async function updateOrderStatus(
   input: UpdateOrderStatusInput,
   deps: UpdateOrderStatusDeps
 ): Promise<Order> {
-  const { repo, workshopRepo, authenticatedUserId, userRole } = deps
+  const { repo, workshopRepo, billingRepo, authenticatedUserId, userRole } = deps
 
   // Obtener el pedido actual usando helper compartido
   const order = await repo.findById(orderId, false)
@@ -50,35 +50,19 @@ export async function updateOrderStatus(
   if (input.status === OrderStatus.CONFIRMED && order.status !== OrderStatus.CONFIRMED) {
     try {
       const invoice = await generateInvoiceFromOrder(orderId, {
-        billingRepo: billingRepositoryPrisma,
+        billingRepo,
       })
       console.log(`✅ [AUTO-INVOICE] Factura generada automáticamente para pedido ${orderId}`)
 
       // 📧 Enviar email al cliente con la factura
       setImmediate(async () => {
         try {
-          // Obtener datos completos del pedido y factura
-          const fullOrder = await prisma.order.findUnique({
-            where: { id: orderId },
-            include: {
-              user: true,
-              workshop: true,
-              items: {
-                include: {
-                  product: true,
-                },
-              },
-            },
-          })
+          // Obtener datos completos del pedido y factura usando repositorios
+          const fullOrder = await repo.findByIdWithDetails(orderId)
 
           if (!fullOrder) return
 
-          const fullInvoice = await prisma.invoice.findUnique({
-            where: { id: invoice.id },
-            include: {
-              items: true,
-            },
-          })
+          const fullInvoice = await billingRepo.findInvoiceByIdWithDetails(invoice.id)
 
           if (!fullInvoice) return
 
