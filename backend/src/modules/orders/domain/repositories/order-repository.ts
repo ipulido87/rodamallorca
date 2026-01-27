@@ -27,43 +27,10 @@ export interface CreateOrderRepoInput {
 export interface OrderRepository {
   create(input: CreateOrderRepoInput): Promise<Order>
   findById(id: string, includeItems?: boolean): Promise<Order | null>
-  findByIdWithDetails(id: string): Promise<OrderWithDetails | null>
+  findByIdWithDetails(id: string): Promise<any | null>
   findByUserId(userId: string, includeItems?: boolean): Promise<Order[]>
   findByWorkshopId(workshopId: string, includeItems?: boolean): Promise<Order[]>
   updateStatus(id: string, input: { status: OrderStatus }): Promise<Order>
   findByStatus(status: OrderStatus, includeItems?: boolean): Promise<Order[]>
   delete(id: string): Promise<void>
-}
-
-/**
- * Orden con todas las relaciones incluidas (para notificaciones, etc.)
- */
-export interface OrderWithDetails extends Order {
-  user: {
-    id: string
-    name: string | null
-    email: string
-  }
-  workshop: {
-    id: string
-    name: string
-    owner: {
-      id: string
-      name: string | null
-      email: string
-    }
-  }
-  items: Array<{
-    id: string
-    productId: string | null
-    quantity: number
-    priceAtOrder: number
-    currency: string
-    description: string | null
-    isRental: boolean
-    rentalStartDate: Date | null
-    rentalEndDate: Date | null
-    rentalDays: number | null
-    depositPaid: number | null
-  }>
 }

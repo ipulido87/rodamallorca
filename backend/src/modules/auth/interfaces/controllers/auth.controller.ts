@@ -12,6 +12,8 @@ import {
   handleCallback,
 } from '../../infrastructure/adapters/oidc/google-client'
 import { UserRepositoryPrisma } from '../../infrastructure/persistence/prisma/user-repository-prisma'
+import { JwtTokenService } from '../../infrastructure/adapters/jwt/token-service-impl'
+import { GoogleOidcService } from '../../infrastructure/adapters/oidc/oidc-service-impl'
 import { LoginUserSchema } from '../http/schemas/login.schema'
 import { RegisterUserSchema } from '../http/schemas/register.schema'
 import { generators } from 'openid-client'
@@ -42,7 +44,8 @@ export const registerUser = async (req: Request, res: Response) => {
   }
 
   try {
-    const user = await registerUserUseCase(parsed.data)
+    const userRepo = new UserRepositoryPrisma()
+    const user = await registerUserUseCase(parsed.data, { userRepo })
     console.log('✅ [REGISTER] Usuario creado:', user)
 
     // ✅ CREAR WORKSHOP
@@ -313,6 +316,8 @@ export const handleGoogleCallback = async (req: Request, res: Response) => {
     }
 
     const repo = new UserRepositoryPrisma()
+    const tokenService = new JwtTokenService()
+    const oidcService = new GoogleOidcService()
     const codeVerifier = req.cookies?.oauth_code_verifier as string
     if (!codeVerifier) throw new Error('Missing code verifier')
 
@@ -326,7 +331,7 @@ export const handleGoogleCallback = async (req: Request, res: Response) => {
         role: stateData.role,
         codeVerifier,
       },
-      { repo }
+      { repo, tokenService, oidcService }
     )
 
     res.clearCookie('oauth_state')

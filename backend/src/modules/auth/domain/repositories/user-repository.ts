@@ -9,6 +9,14 @@ export interface UserDTO {
 
 export interface UserRepository {
   findByEmail(email: string): Promise<UserDTO | null>
+  create(input: {
+    email: string
+    password: string
+    name: string
+    birthDate?: Date
+    phone?: string
+    role?: string
+  }): Promise<UserDTO>
   upsertGoogleUser(input: {
     email: string
     googleId: string
