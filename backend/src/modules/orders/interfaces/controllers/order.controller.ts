@@ -7,7 +7,7 @@ import { getWorkshopOrders } from '../../application/get-workshop-orders'
 import { updateOrderStatus } from '../../application/update-order-status'
 import { OrderRepositoryPrisma } from '../../infrastructure/persistence/prisma/order-repository-prisma'
 import { WorkshopRepositoryPrisma } from '../../../workshops/infrastructure/persistence/prisma/workshop-repository-prisma'
-import { BillingRepositoryPrisma } from '../../../billing/infrastructure/persistence/prisma/billing-repository-prisma'
+import { billingRepositoryPrisma } from '../../../billing/infrastructure/persistence/prisma/billing-repository-prisma'
 import {
   createOrderSchema,
   updateOrderStatusSchema,
@@ -15,7 +15,7 @@ import {
 
 const orderRepo = new OrderRepositoryPrisma()
 const workshopRepo = new WorkshopRepositoryPrisma()
-const billingRepo = new BillingRepositoryPrisma()
+const billingRepo = billingRepositoryPrisma
 
 /**
  * POST /api/orders
