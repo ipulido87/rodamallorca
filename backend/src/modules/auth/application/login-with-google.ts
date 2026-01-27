@@ -1,6 +1,6 @@
 import { UserRepository } from '../domain/repositories/user-repository'
-import { signJwt } from '../infrastructure/adapters/jwt/jwt.service'
-import { handleCallback } from '../infrastructure/adapters/oidc/google-client'
+import { TokenService } from '../domain/services/token-service'
+import { OidcService } from '../domain/services/oidc-service'
 
 interface GoogleLoginParams {
   state: string
@@ -12,6 +12,8 @@ interface GoogleLoginParams {
 
 interface GoogleLoginDeps {
   repo: UserRepository
+  tokenService: TokenService
+  oidcService: OidcService
 }
 
 export async function loginWithGoogleUseCase(
@@ -19,14 +21,14 @@ export async function loginWithGoogleUseCase(
   deps: GoogleLoginDeps
 ) {
   const { state, code, cookieState, role, codeVerifier } = params
-  const { repo } = deps
+  const { repo, tokenService, oidcService } = deps
 
   console.log('🔍 [USE_CASE] Rol recibido:', role)
 
   if (!state || state !== cookieState) throw new Error('Invalid state')
 
-  const u = await handleCallback(state, code, codeVerifier)
-  if (!u.email || !u.email_verified) throw new Error('Email not verified')
+  const u = await oidcService.handleCallback(state, code, codeVerifier)
+  if (!u.email || !u.emailVerified) throw new Error('Email not verified')
 
   console.log('🔍 [USE_CASE] Buscando/creando usuario Google:', u.email)
 
@@ -46,7 +48,7 @@ export async function loginWithGoogleUseCase(
       role: user.role,
     })
 
-    const token = signJwt({
+    const token = tokenService.sign({
       id: user.id,
       email: user.email,
       role: user.role || undefined,

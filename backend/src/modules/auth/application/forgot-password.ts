@@ -1,7 +1,7 @@
-import prisma from '../../../lib/prisma'
 import { PasswordResetToken } from '../domain/entities/password-reset-token'
 import { PasswordResetRepository } from '../domain/repositories/password-reset-repository'
-import { sendPasswordResetEmail } from '../infrastructure/adapters/email/password-reset-email'
+import { UserRepository } from '../domain/repositories/user-repository'
+import { EmailService } from '../domain/services/email-service'
 
 interface ForgotPasswordInput {
   email: string
@@ -9,6 +9,8 @@ interface ForgotPasswordInput {
 
 interface ForgotPasswordDeps {
   repo: PasswordResetRepository
+  userRepo: UserRepository
+  emailService: EmailService
 }
 
 export class ForgotPasswordUseCase {
@@ -17,10 +19,8 @@ export class ForgotPasswordUseCase {
   async execute(input: ForgotPasswordInput): Promise<{ message: string }> {
     const emailNorm = input.email.trim().toLowerCase()
 
-    // Verificar si el usuario existe
-    const user = await prisma.user.findUnique({
-      where: { email: emailNorm },
-    })
+    // Verificar si el usuario existe usando repositorio
+    const user = await this.deps.userRepo.findByEmail(emailNorm)
 
     if (!user) {
       return {
@@ -35,9 +35,9 @@ export class ForgotPasswordUseCase {
     // Guardar token
     await this.deps.repo.saveResetToken(emailNorm, resetToken)
 
-    // Enviar email
+    // Enviar email usando servicio inyectado
     try {
-      await sendPasswordResetEmail(user.email, resetToken.token)
+      await this.deps.emailService.sendPasswordResetEmail(user.email, resetToken.token)
     } catch (error) {
       console.error('[FORGOT_PASSWORD] Error sending email:', error)
       // No fallar si el email no se envía, solo logear

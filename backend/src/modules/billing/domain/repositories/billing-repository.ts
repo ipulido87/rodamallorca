@@ -26,6 +26,7 @@ export interface BillingRepository {
   // Invoices
   createInvoice(data: CreateInvoiceInput): Promise<Invoice>
   findInvoiceById(id: string): Promise<Invoice | null>
+  findInvoiceByIdWithDetails(id: string): Promise<any | null>
   findInvoicesByWorkshop(workshopId: string, filters?: {
     status?: string
     customerId?: string

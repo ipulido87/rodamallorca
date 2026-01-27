@@ -3,6 +3,8 @@ import { Request, Response } from 'express'
 import { ForgotPasswordUseCase } from '../../application/forgot-password'
 import { ResetPasswordUseCase } from '../../application/reset-password'
 import { PasswordResetRepositoryPrisma } from '../../infrastructure/persistence/prisma/password-reset-repository-prisma'
+import { UserRepositoryPrisma } from '../../infrastructure/persistence/prisma/user-repository-prisma'
+import { EmailServiceImpl } from '../../infrastructure/adapters/email/email-service-impl'
 import { type ForgotPasswordInput } from '../http/schemas/forgot-password.schema'
 import { type ResetPasswordInput } from '../http/schemas/reset-password.schema'
 
@@ -11,9 +13,11 @@ export const forgotPasswordController = async (req: Request, res: Response) => {
     // Validación ya realizada por middleware validateBody
     const input: ForgotPasswordInput = req.body
 
-    // Ejecutar use case
+    // Ejecutar use case con todas las dependencias
     const repo = new PasswordResetRepositoryPrisma()
-    const useCase = new ForgotPasswordUseCase({ repo })
+    const userRepo = new UserRepositoryPrisma()
+    const emailService = new EmailServiceImpl()
+    const useCase = new ForgotPasswordUseCase({ repo, userRepo, emailService })
     const response = await useCase.execute(input)
 
     return res.status(200).json(response)

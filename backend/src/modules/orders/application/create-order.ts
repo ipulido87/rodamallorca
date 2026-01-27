@@ -7,7 +7,6 @@ import type { WorkshopRepository } from '../../../modules/workshops/domain/repos
 import { sendNewOrderEmail } from '../../notifications/services/email-service'
 import { sendNewOrderPush } from '../../notifications/services/push-service'
 import { checkAvailability } from '../../rentals/services/rental-availability.service'
-import prisma from '../../../lib/prisma'
 
 interface CreateOrderDeps {
   repo: OrderRepository
@@ -100,18 +99,7 @@ export async function createOrder(
   setImmediate(async () => {
     try {
       // Obtener datos completos del pedido, workshop y usuario para las notificaciones
-      const fullOrder = await prisma.order.findUnique({
-        where: { id: order.id },
-        include: {
-          user: true,
-          workshop: {
-            include: {
-              owner: true,
-            },
-          },
-          items: true,
-        },
-      })
+      const fullOrder = await repo.findByIdWithDetails(order.id)
 
       if (!fullOrder) return
 

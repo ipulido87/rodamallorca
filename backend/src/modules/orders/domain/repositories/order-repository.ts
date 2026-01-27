@@ -27,6 +27,7 @@ export interface CreateOrderRepoInput {
 export interface OrderRepository {
   create(input: CreateOrderRepoInput): Promise<Order>
   findById(id: string, includeItems?: boolean): Promise<Order | null>
+  findByIdWithDetails(id: string): Promise<any | null>
   findByUserId(userId: string, includeItems?: boolean): Promise<Order[]>
   findByWorkshopId(workshopId: string, includeItems?: boolean): Promise<Order[]>
   updateStatus(id: string, input: { status: OrderStatus }): Promise<Order>
