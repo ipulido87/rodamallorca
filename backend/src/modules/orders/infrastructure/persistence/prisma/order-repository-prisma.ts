@@ -82,6 +82,36 @@ export class OrderRepositoryPrisma implements OrderRepository {
     return order ? this.mapToOrder(order) : null
   }
 
+  async findByIdWithDetails(id: string): Promise<any | null> {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        workshop: {
+          select: {
+            id: true,
+            name: true,
+            owner: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+        items: true,
+      },
+    })
+    return order
+  }
+
   async findByUserId(userId: string, includeItems = false): Promise<Order[]> {
     const orders = await this.prisma.order.findMany({
       where: { userId },
