@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt'
 import crypto from 'crypto'
 import { Request, Response } from 'express'
 import { verify as jwtVerify } from 'jsonwebtoken'
@@ -5,7 +6,6 @@ import prisma from '../../../../lib/prisma'
 import { sanitizeUser } from '../../../../utils/sanitize-user'
 import { loginUser } from '../../application/login-user'
 import { loginWithGoogleUseCase } from '../../application/login-with-google'
-import { registerUserUseCase } from '../../application/register-user'
 import { sendVerificationEmail } from '../../infrastructure/adapters/email/email-service'
 import {
   getGoogleClient,
@@ -44,8 +44,25 @@ export const registerUser = async (req: Request, res: Response) => {
   }
 
   try {
-    const userRepo = new UserRepositoryPrisma()
-    const user = await registerUserUseCase(parsed.data, { userRepo })
+    // Generar verificationCode
+    const verificationCode = crypto.randomUUID()
+    const codeExpiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 minutos
+    const passwordHash = await bcrypt.hash(parsed.data.password, 10)
+
+    // Crear usuario directamente con Prisma para tener acceso a todos los campos
+    const user = await prisma.user.create({
+      data: {
+        email: parsed.data.email.trim().toLowerCase(),
+        password: passwordHash,
+        name: parsed.data.name,
+        birthDate: parsed.data.birthDate ?? null,
+        phone: parsed.data.phone ?? null,
+        role: parsed.data.role || 'USER',
+        verificationCode,
+        codeExpiresAt,
+        verified: false,
+      },
+    })
     console.log('✅ [REGISTER] Usuario creado:', user)
 
     // ✅ CREAR WORKSHOP
