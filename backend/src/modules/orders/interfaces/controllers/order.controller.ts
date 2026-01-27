@@ -7,6 +7,7 @@ import { getWorkshopOrders } from '../../application/get-workshop-orders'
 import { updateOrderStatus } from '../../application/update-order-status'
 import { OrderRepositoryPrisma } from '../../infrastructure/persistence/prisma/order-repository-prisma'
 import { WorkshopRepositoryPrisma } from '../../../workshops/infrastructure/persistence/prisma/workshop-repository-prisma'
+import { BillingRepositoryPrisma } from '../../../billing/infrastructure/persistence/prisma/billing-repository-prisma'
 import {
   createOrderSchema,
   updateOrderStatusSchema,
@@ -14,6 +15,7 @@ import {
 
 const orderRepo = new OrderRepositoryPrisma()
 const workshopRepo = new WorkshopRepositoryPrisma()
+const billingRepo = new BillingRepositoryPrisma()
 
 /**
  * POST /api/orders
@@ -151,6 +153,7 @@ export const updateOrderStatusController = async (
     const result = await updateOrderStatus(req.params.id, body, {
       repo: orderRepo,
       workshopRepo,
+      billingRepo,
       authenticatedUserId: req.user.id,
       userRole: req.user.role,
     })
