@@ -1,4 +1,4 @@
-import { saveUser } from '../infrastructure/services/user.service'
+import { UserRepository } from '../domain/repositories/user-repository'
 
 export type RegisterInput = {
   email: string
@@ -9,8 +9,15 @@ export type RegisterInput = {
   role?: 'USER' | 'WORKSHOP_OWNER' | 'ADMIN'
 }
 
-export const registerUserUseCase = async (input: RegisterInput) => {
+interface RegisterUserDeps {
+  userRepo: UserRepository
+}
+
+export const registerUserUseCase = async (
+  input: RegisterInput,
+  deps: RegisterUserDeps
+) => {
   const email = input.email.trim().toLowerCase()
-  const user = await saveUser({ ...input, email })
+  const user = await deps.userRepo.create({ ...input, email })
   return user
 }
