@@ -74,29 +74,56 @@ interface Category {
 }
 
 // Zod schema para validación del formulario
-const editProductSchema = z.object({
-  title: z.string().min(2, 'El título debe tener al menos 2 caracteres'),
-  description: z.string().optional(),
-  price: z.number().min(0.01, 'El precio debe ser mayor a 0').optional(),
-  categoryId: z.string().optional(),
-  status: z.enum(['DRAFT', 'PUBLISHED']),
-  // Campos de alquiler
-  isRental: z.boolean().optional(),
-  rentalPricePerDay: z.number().min(0).optional(),
-  rentalPricePerWeek: z.number().min(0).optional(),
-  availableQuantity: z.number().min(1).optional(),
-  bikeType: z.string().optional(),
-  bikeSize: z.string().optional(),
-  bikeBrand: z.string().optional(),
-  bikeModel: z.string().optional(),
-  frameSize: z.number().optional(),
-  includesHelmet: z.boolean().optional(),
-  includesLock: z.boolean().optional(),
-  includesLights: z.boolean().optional(),
-  depositAmount: z.number().min(0).optional(),
-  minRentalDays: z.number().min(1).optional(),
-  maxRentalDays: z.number().min(1).optional(),
-})
+const editProductSchema = z
+  .object({
+    title: z.string().min(2, 'El título debe tener al menos 2 caracteres'),
+    description: z.string().optional(),
+    price: z.number().min(0).optional(),
+    categoryId: z.string().optional(),
+    status: z.enum(['DRAFT', 'PUBLISHED']),
+    // Campos de alquiler
+    isRental: z.boolean().optional(),
+    rentalPricePerDay: z.number().min(0).optional(),
+    rentalPricePerWeek: z.number().min(0).optional(),
+    availableQuantity: z.number().min(1).optional(),
+    bikeType: z.string().optional(),
+    bikeSize: z.string().optional(),
+    bikeBrand: z.string().optional(),
+    bikeModel: z.string().optional(),
+    frameSize: z.number().optional(),
+    includesHelmet: z.boolean().optional(),
+    includesLock: z.boolean().optional(),
+    includesLights: z.boolean().optional(),
+    depositAmount: z.number().min(0).optional(),
+    minRentalDays: z.number().min(1).optional(),
+    maxRentalDays: z.number().min(1).optional(),
+  })
+  .refine(
+    (data) => {
+      // Si NO es alquiler, price debe ser mayor a 0
+      if (!data.isRental) {
+        return data.price !== undefined && data.price > 0
+      }
+      return true
+    },
+    {
+      message: 'El precio debe ser mayor a 0',
+      path: ['price'],
+    }
+  )
+  .refine(
+    (data) => {
+      // Si es alquiler, rentalPricePerDay debe ser mayor a 0
+      if (data.isRental) {
+        return data.rentalPricePerDay !== undefined && data.rentalPricePerDay > 0
+      }
+      return true
+    },
+    {
+      message: 'El precio por día debe ser mayor a 0',
+      path: ['rentalPricePerDay'],
+    }
+  )
 
 type EditProductFormData = z.infer<typeof editProductSchema>
 
@@ -184,13 +211,13 @@ export const EditProduct = () => {
         setFormData({
           title: product.title,
           description: product.description || '',
-          price: product.price, // El precio ya viene en euros
+          price: product.price / 100, // Convertir centavos a euros
           categoryId: product.categoryId || '',
           status: product.status,
           // Campos de alquiler
           isRental: product.isRental || false,
-          rentalPricePerDay: product.rentalPricePerDay || 0,
-          rentalPricePerWeek: product.rentalPricePerWeek || 0,
+          rentalPricePerDay: (product.rentalPricePerDay || 0) / 100, // Convertir centavos a euros
+          rentalPricePerWeek: (product.rentalPricePerWeek || 0) / 100, // Convertir centavos a euros
           availableQuantity: product.availableQuantity || 1,
           bikeType: product.bikeType || '',
           bikeSize: product.bikeSize || '',
@@ -200,7 +227,7 @@ export const EditProduct = () => {
           includesHelmet: product.includesHelmet || false,
           includesLock: product.includesLock || false,
           includesLights: product.includesLights || false,
-          depositAmount: product.depositAmount || 0,
+          depositAmount: (product.depositAmount || 0) / 100, // Convertir centavos a euros
           minRentalDays: product.minRentalDays || 1,
           maxRentalDays: product.maxRentalDays || 30,
         })
@@ -271,7 +298,6 @@ export const EditProduct = () => {
       const updateData: any = {
         title: result.data.title.trim(),
         description: result.data.description?.trim() || null,
-        price: result.data.price, // Enviar precio en euros
         categoryId: result.data.categoryId || null,
         status: result.data.status,
       }
@@ -279,9 +305,9 @@ export const EditProduct = () => {
       // Si es alquiler, agregar campos de rental
       if (result.data.isRental) {
         updateData.isRental = true
-        updateData.rentalPricePerDay = result.data.rentalPricePerDay || 0
+        updateData.rentalPricePerDay = Math.round((result.data.rentalPricePerDay || 0) * 100) // Convertir euros a centavos
         if (result.data.rentalPricePerWeek && result.data.rentalPricePerWeek > 0) {
-          updateData.rentalPricePerWeek = result.data.rentalPricePerWeek
+          updateData.rentalPricePerWeek = Math.round(result.data.rentalPricePerWeek * 100) // Convertir euros a centavos
         }
         updateData.availableQuantity = result.data.availableQuantity || 1
         updateData.bikeType = result.data.bikeType || undefined
@@ -292,13 +318,29 @@ export const EditProduct = () => {
         updateData.includesHelmet = result.data.includesHelmet || false
         updateData.includesLock = result.data.includesLock || false
         updateData.includesLights = result.data.includesLights || false
-        // Siempre enviar depositAmount, incluso si es 0
-        updateData.depositAmount = result.data.depositAmount || 0
+        updateData.depositAmount = Math.round((result.data.depositAmount || 0) * 100) // Convertir euros a centavos
         updateData.minRentalDays = result.data.minRentalDays || 1
         updateData.maxRentalDays = result.data.maxRentalDays || 30
+        // NO enviar price cuando es alquiler
       } else {
-        // Si NO es alquiler, asegurarse de limpiar los campos
+        // Si NO es alquiler, enviar price y limpiar campos de alquiler
         updateData.isRental = false
+        updateData.price = Math.round((result.data.price || 0) * 100) // Convertir euros a centavos
+        // Limpiar todos los campos de alquiler
+        updateData.rentalPricePerDay = null
+        updateData.rentalPricePerWeek = null
+        updateData.availableQuantity = null
+        updateData.bikeType = null
+        updateData.bikeSize = null
+        updateData.bikeBrand = null
+        updateData.bikeModel = null
+        updateData.frameSize = null
+        updateData.includesHelmet = false
+        updateData.includesLock = false
+        updateData.includesLights = false
+        updateData.depositAmount = null
+        updateData.minRentalDays = null
+        updateData.maxRentalDays = null
       }
 
       await API.put(`/owner/products/${id}`, updateData)
@@ -438,22 +480,35 @@ export const EditProduct = () => {
                 helperText={validationErrors.description}
               />
 
-              {/* Campos de Precio - condicional según modo */}
-              <TextField
-                label={formData.isRental ? 'Precio por Día (€)' : 'Precio (€)'}
-                type="number"
-                value={formData.isRental ? formData.rentalPricePerDay : formData.price}
-                onChange={handleChange(formData.isRental ? 'rentalPricePerDay' : 'price')}
-                required
-                fullWidth
-                disabled={saving}
-                inputProps={{ min: 0, step: 0.01 }}
-                helperText={
-                  formData.isRental
-                    ? 'Precio de alquiler por día en euros'
-                    : 'Precio de venta en euros'
-                }
-              />
+              {/* Campo de Precio para VENTA */}
+              {!formData.isRental && (
+                <TextField
+                  label="Precio de Venta (€)"
+                  type="number"
+                  value={formData.price}
+                  onChange={handleChange('price')}
+                  required
+                  fullWidth
+                  disabled={saving}
+                  inputProps={{ min: 0, step: 0.01 }}
+                  helperText="Precio de venta en euros"
+                />
+              )}
+
+              {/* Campo de Precio para ALQUILER */}
+              {formData.isRental && (
+                <TextField
+                  label="Precio por Día (€)"
+                  type="number"
+                  value={formData.rentalPricePerDay}
+                  onChange={handleChange('rentalPricePerDay')}
+                  required
+                  fullWidth
+                  disabled={saving}
+                  inputProps={{ min: 0, step: 0.01 }}
+                  helperText="Precio de alquiler por día en euros"
+                />
+              )}
 
               {/* Campos adicionales de alquiler */}
               <Collapse in={formData.isRental}>
