@@ -302,9 +302,8 @@ export const EditProduct = () => {
         status: result.data.status,
       }
 
-      // Si es alquiler, agregar campos de rental
+      // Si es alquiler, agregar campos de rental (NO enviar isRental, no se puede cambiar)
       if (result.data.isRental) {
-        updateData.isRental = true
         updateData.rentalPricePerDay = Math.round((result.data.rentalPricePerDay || 0) * 100) // Convertir euros a centavos
         if (result.data.rentalPricePerWeek && result.data.rentalPricePerWeek > 0) {
           updateData.rentalPricePerWeek = Math.round(result.data.rentalPricePerWeek * 100) // Convertir euros a centavos
@@ -323,8 +322,7 @@ export const EditProduct = () => {
         updateData.maxRentalDays = result.data.maxRentalDays || 30
         // NO enviar price cuando es alquiler
       } else {
-        // Si NO es alquiler, enviar price y NO enviar campos de alquiler
-        updateData.isRental = false
+        // Si NO es alquiler, enviar price (NO enviar isRental, no se puede cambiar)
         updateData.price = Math.round((result.data.price || 0) * 100) // Convertir euros a centavos
         // No enviar campos de alquiler (dejar undefined para que no se incluyan en la petición)
       }
@@ -411,31 +409,23 @@ export const EditProduct = () => {
       <Card>
         <CardContent sx={{ p: 4 }}>
           <Box component="form" onSubmit={handleSubmit}>
-            {/* Toggle Alquiler vs Venta */}
-            <Paper sx={{ p: 2, mb: 3, bgcolor: 'grey.50' }}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={formData.isRental || false}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, isRental: e.target.checked }))
-                    }
-                    color="success"
-                  />
-                }
-                label={
-                  <Box>
-                    <Typography variant="subtitle1" fontWeight="600">
-                      ¿Es para alquiler?
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {formData.isRental
-                        ? 'Configurando como bicicleta de alquiler'
-                        : 'Configurando como producto para venta'}
-                    </Typography>
-                  </Box>
-                }
-              />
+            {/* Indicador de tipo (bloqueado, no editable) */}
+            <Paper sx={{ p: 2, mb: 3, bgcolor: formData.isRental ? 'success.50' : 'grey.50', border: '1px solid', borderColor: formData.isRental ? 'success.light' : 'grey.300' }}>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                {formData.isRental ? (
+                  <PedalBike sx={{ fontSize: 32, color: 'success.main' }} />
+                ) : (
+                  <Inventory sx={{ fontSize: 32, color: 'primary.main' }} />
+                )}
+                <Box>
+                  <Typography variant="subtitle1" fontWeight="600">
+                    {formData.isRental ? 'Bicicleta de Alquiler' : 'Producto para Venta'}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    El tipo de producto no se puede cambiar después de crearlo
+                  </Typography>
+                </Box>
+              </Stack>
             </Paper>
 
             <Stack spacing={3}>

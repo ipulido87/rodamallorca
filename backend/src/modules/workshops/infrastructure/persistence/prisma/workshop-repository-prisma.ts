@@ -66,4 +66,40 @@ export class WorkshopRepositoryPrisma implements WorkshopRepository {
       },
     })
   }
+
+  async updateStripeAccount(
+    workshopId: string,
+    accountId: string | null,
+    onboardingComplete: boolean
+  ): Promise<void> {
+    await prisma.workshop.update({
+      where: { id: workshopId },
+      data: {
+        stripeConnectedAccountId: accountId,
+        stripeOnboardingComplete: onboardingComplete,
+      },
+    })
+  }
+
+  async findByIdWithStripe(id: string): Promise<WorkshopDTO | null> {
+    const w = await prisma.workshop.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        ownerId: true,
+        name: true,
+        description: true,
+        address: true,
+        city: true,
+        country: true,
+        phone: true,
+        logoOriginal: true,
+        logoMedium: true,
+        logoThumbnail: true,
+        stripeConnectedAccountId: true,
+        stripeOnboardingComplete: true,
+      },
+    })
+    return w ? { ...w } : null
+  }
 }

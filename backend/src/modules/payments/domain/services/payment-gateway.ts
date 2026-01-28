@@ -40,6 +40,28 @@ export interface AccountLink {
   url: string
 }
 
+export interface SubscriptionParams {
+  customerId?: string
+  email: string
+  name?: string
+  priceId: string
+  trialPeriodDays?: number
+  workshopId: string
+  successUrl: string
+  cancelUrl: string
+}
+
+export interface CustomerInfo {
+  id: string
+  email: string
+  name?: string
+}
+
+export interface BillingPortalParams {
+  customerId: string
+  returnUrl: string
+}
+
 export interface PaymentGateway {
   /**
    * Crea una sesión de checkout para procesar un pago
@@ -64,4 +86,25 @@ export interface PaymentGateway {
     country: string
     type: 'express' | 'standard'
   }): Promise<{ accountId: string }>
+
+  // Métodos para suscripciones
+  /**
+   * Crea un cliente en el gateway de pagos
+   */
+  createCustomer(params: { email: string; name?: string; metadata?: Record<string, string> }): Promise<CustomerInfo>
+
+  /**
+   * Crea una sesión de checkout para suscripción
+   */
+  createSubscriptionCheckoutSession(params: SubscriptionParams): Promise<CheckoutSession>
+
+  /**
+   * Cancela una suscripción
+   */
+  cancelSubscription(subscriptionId: string, cancelImmediately: boolean): Promise<void>
+
+  /**
+   * Crea una sesión del portal de facturación
+   */
+  createBillingPortalSession(params: BillingPortalParams): Promise<{ url: string }>
 }

@@ -2,6 +2,9 @@ import { Request, Response, NextFunction } from 'express'
 import prisma from '../../../../lib/prisma'
 import * as subscriptionService from '../../application/subscription-service'
 import { handleStripeWebhook } from '../../application/webhook-handler'
+import { SubscriptionRepositoryPrisma } from '../../infrastructure/persistence/prisma/subscription-repository-prisma'
+import { WorkshopRepositoryPrisma } from '../../../workshops/infrastructure/persistence/prisma/workshop-repository-prisma'
+import { StripePaymentGateway } from '../../../payments/infrastructure/gateways/stripe-payment-gateway'
 
 /**
  * POST /api/subscriptions/checkout
@@ -34,12 +37,20 @@ export const createCheckoutSessionController = async (
 
     // Crear sesión de checkout
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
-    const session = await subscriptionService.createCheckoutSession({
-      workshopId,
-      ownerEmail: req.user.email,
-      successUrl: `${frontendUrl}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancelUrl: `${frontendUrl}/subscription/cancel`,
-    })
+
+    const subscriptionRepo = new SubscriptionRepositoryPrisma()
+    const workshopRepo = new WorkshopRepositoryPrisma()
+    const paymentGateway = new StripePaymentGateway()
+
+    const session = await subscriptionService.createCheckoutSession(
+      {
+        workshopId,
+        ownerEmail: req.user.email,
+        successUrl: `${frontendUrl}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${frontendUrl}/subscription/cancel`,
+      },
+      { subscriptionRepo, workshopRepo, paymentGateway }
+    )
 
     res.json(session)
   } catch (error) {
@@ -74,7 +85,15 @@ export const cancelSubscriptionController = async (
       return res.status(403).json({ error: 'No tienes permisos' })
     }
 
-    const subscription = await subscriptionService.cancelSubscription(workshopId, immediate)
+    const subscriptionRepo = new SubscriptionRepositoryPrisma()
+    const workshopRepo = new WorkshopRepositoryPrisma()
+    const paymentGateway = new StripePaymentGateway()
+
+    const subscription = await subscriptionService.cancelSubscription(
+      workshopId,
+      immediate,
+      { subscriptionRepo, workshopRepo, paymentGateway }
+    )
 
     res.json({
       message: immediate
@@ -113,7 +132,14 @@ export const getSubscriptionStatusController = async (
       return res.status(403).json({ error: 'No tienes permisos' })
     }
 
-    const status = await subscriptionService.checkWorkshopSubscription(workshopId)
+    const subscriptionRepo = new SubscriptionRepositoryPrisma()
+    const workshopRepo = new WorkshopRepositoryPrisma()
+    const paymentGateway = new StripePaymentGateway()
+
+    const status = await subscriptionService.checkWorkshopSubscription(
+      workshopId,
+      { subscriptionRepo, workshopRepo, paymentGateway }
+    )
 
     res.json(status)
   } catch (error) {
@@ -148,10 +174,15 @@ export const createPortalSessionController = async (
       return res.status(403).json({ error: 'No tienes permisos' })
     }
 
+    const subscriptionRepo = new SubscriptionRepositoryPrisma()
+    const workshopRepo = new WorkshopRepositoryPrisma()
+    const paymentGateway = new StripePaymentGateway()
+
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
     const portal = await subscriptionService.createBillingPortalSession(
       workshopId,
-      `${frontendUrl}/dashboard`
+      `${frontendUrl}/dashboard`,
+      { subscriptionRepo, workshopRepo, paymentGateway }
     )
 
     res.json(portal)
@@ -180,7 +211,20 @@ export const stripeWebhookController = async (
     // El body debe ser raw buffer (configurado en express)
     const payload = req.body
 
-    await handleStripeWebhook(payload, signature)
+    const subscriptionRepo = new SubscriptionRepositoryPrisma()
+    const workshopRepo = new WorkshopRepositoryPrisma()
+    const paymentGateway = new StripePaymentGateway()
+    const { OrderRepositoryPrisma } = await import('../../../orders/infrastructure/persistence/prisma/order-repository-prisma')
+    const orderRepo = new OrderRepositoryPrisma()
+    const { ProductRepositoryPrisma } = await import('../../../products/infrastructure/persistence/prisma/product-repository-prisma')
+    const productRepo = new ProductRepositoryPrisma()
+
+    await handleStripeWebhook(payload, signature, {
+      subscriptionRepo,
+      workshopRepo,
+      orderRepo,
+      productRepo,
+    })
 
     res.json({ received: true })
   } catch (error) {

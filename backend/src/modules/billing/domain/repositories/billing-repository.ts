@@ -14,6 +14,7 @@ export interface BillingRepository {
   createCustomer(data: CreateCustomerInput): Promise<Customer>
   findCustomerById(id: string): Promise<Customer | null>
   findCustomersByWorkshop(workshopId: string): Promise<Customer[]>
+  findCustomerByWorkshopAndEmail(workshopId: string, email: string): Promise<Customer | null>
   updateCustomer(id: string, data: UpdateCustomerInput): Promise<Customer>
   deleteCustomer(id: string): Promise<void>
 
@@ -27,6 +28,7 @@ export interface BillingRepository {
   createInvoice(data: CreateInvoiceInput): Promise<Invoice>
   findInvoiceById(id: string): Promise<Invoice | null>
   findInvoiceByIdWithDetails(id: string): Promise<any | null>
+  findInvoiceByOrderId(orderId: string): Promise<Invoice | null>
   findInvoicesByWorkshop(workshopId: string, filters?: {
     status?: string
     customerId?: string

@@ -60,6 +60,16 @@ export const billingRepositoryPrisma: BillingRepository = {
     return customers as Customer[]
   },
 
+  async findCustomerByWorkshopAndEmail(workshopId: string, email: string): Promise<Customer | null> {
+    const customer = await prisma.customer.findFirst({
+      where: {
+        workshopId,
+        email,
+      },
+    })
+    return customer as Customer | null
+  },
+
   async updateCustomer(id: string, data: UpdateCustomerInput): Promise<Customer> {
     const customer = await prisma.customer.update({
       where: { id },
@@ -209,6 +219,18 @@ export const billingRepositoryPrisma: BillingRepository = {
       },
     })
     return invoice
+  },
+
+  async findInvoiceByOrderId(orderId: string): Promise<Invoice | null> {
+    const invoice = await prisma.invoice.findUnique({
+      where: { orderId },
+      include: {
+        customer: true,
+        series: true,
+        items: true,
+      },
+    })
+    return invoice ? toDomainInvoice(invoice) : null
   },
 
   async findInvoicesByWorkshop(

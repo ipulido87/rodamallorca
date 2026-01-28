@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import * as paymentService from '../../application/payment-service'
+import { WorkshopRepositoryPrisma } from '../../../workshops/infrastructure/persistence/prisma/workshop-repository-prisma'
+import { ProductRepositoryPrisma } from '../../../products/infrastructure/persistence/prisma/product-repository-prisma'
+import { StripePaymentGateway } from '../../infrastructure/gateways/stripe-payment-gateway'
 
 /**
  * POST /api/payments/checkout
@@ -24,14 +27,22 @@ export const createProductCheckoutController = async (
     console.log(`✅ [PAYMENT] Success URL: ${frontendUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`)
     console.log(`❌ [PAYMENT] Cancel URL: ${frontendUrl}/checkout/cancel`)
 
-    const session = await paymentService.createProductCheckoutSession({
-      userId: req.user.id,
-      userEmail: req.user.email,
-      workshopId,
-      items,
-      successUrl: `${frontendUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancelUrl: `${frontendUrl}/checkout/cancel`,
-    })
+    // Instanciar dependencias
+    const workshopRepo = new WorkshopRepositoryPrisma()
+    const productRepo = new ProductRepositoryPrisma()
+    const paymentGateway = new StripePaymentGateway()
+
+    const session = await paymentService.createProductCheckoutSession(
+      {
+        userId: req.user.id,
+        userEmail: req.user.email,
+        workshopId,
+        items,
+        successUrl: `${frontendUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${frontendUrl}/checkout/cancel`,
+      },
+      { workshopRepo, productRepo, paymentGateway }
+    )
 
     res.json(session)
   } catch (error) {

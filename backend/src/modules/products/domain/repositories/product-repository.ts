@@ -41,4 +41,7 @@ export interface ProductRepository {
     page?: number
     size?: number
   }): Promise<{ items: ProductDTO[]; total: number }>
+
+  // Para validación de productos en checkout
+  findByIds(ids: string[]): Promise<Array<ProductDTO & { title: string; description?: string | null }>>
 }

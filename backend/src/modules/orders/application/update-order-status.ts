@@ -51,6 +51,7 @@ export async function updateOrderStatus(
     try {
       const invoice = await generateInvoiceFromOrder(orderId, {
         billingRepo,
+        orderRepo: repo,
       })
       console.log(`✅ [AUTO-INVOICE] Factura generada automáticamente para pedido ${orderId}`)
 
