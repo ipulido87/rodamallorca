@@ -37,6 +37,10 @@ export class OrderRepositoryPrisma implements OrderRepository {
         totalAmount: input.totalAmount,
         currency: 'EUR',
         notes: input.notes,
+        // Campos de pago (Stripe)
+        paymentStatus: input.paymentStatus || 'PENDING',
+        stripeSessionId: input.stripeSessionId ?? null,
+        stripePaymentIntentId: input.stripePaymentIntentId ?? null,
         items: {
           create: input.items.map((i) => ({
             productId: i.productId,
