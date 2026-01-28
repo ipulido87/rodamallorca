@@ -323,24 +323,10 @@ export const EditProduct = () => {
         updateData.maxRentalDays = result.data.maxRentalDays || 30
         // NO enviar price cuando es alquiler
       } else {
-        // Si NO es alquiler, enviar price y limpiar campos de alquiler
+        // Si NO es alquiler, enviar price y NO enviar campos de alquiler
         updateData.isRental = false
         updateData.price = Math.round((result.data.price || 0) * 100) // Convertir euros a centavos
-        // Limpiar todos los campos de alquiler
-        updateData.rentalPricePerDay = null
-        updateData.rentalPricePerWeek = null
-        updateData.availableQuantity = null
-        updateData.bikeType = null
-        updateData.bikeSize = null
-        updateData.bikeBrand = null
-        updateData.bikeModel = null
-        updateData.frameSize = null
-        updateData.includesHelmet = false
-        updateData.includesLock = false
-        updateData.includesLights = false
-        updateData.depositAmount = null
-        updateData.minRentalDays = null
-        updateData.maxRentalDays = null
+        // No enviar campos de alquiler (dejar undefined para que no se incluyan en la petición)
       }
 
       await API.put(`/owner/products/${id}`, updateData)
