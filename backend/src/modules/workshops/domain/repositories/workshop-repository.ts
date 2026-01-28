@@ -10,6 +10,8 @@ export interface WorkshopDTO {
   logoOriginal?: string | null
   logoMedium?: string | null
   logoThumbnail?: string | null
+  stripeConnectedAccountId?: string | null
+  stripeOnboardingComplete?: boolean
 }
 
 export interface WorkshopRepository {
@@ -22,4 +24,7 @@ export interface WorkshopRepository {
   findAll(): Promise<WorkshopDTO[]>
   // Método para actualizar estadísticas de reviews
   updateStats(workshopId: string, stats: { averageRating: number; reviewCount: number }): Promise<void>
+  // Métodos para Stripe Connect
+  updateStripeAccount(workshopId: string, accountId: string | null, onboardingComplete: boolean): Promise<void>
+  findByIdWithStripe(id: string): Promise<WorkshopDTO | null>
 }

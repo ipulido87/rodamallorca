@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import { checkWorkshopSubscription } from '../application/subscription-service'
+import { SubscriptionRepositoryPrisma } from './persistence/prisma/subscription-repository-prisma'
+import { WorkshopRepositoryPrisma } from '../../workshops/infrastructure/persistence/prisma/workshop-repository-prisma'
+import { StripePaymentGateway } from '../../payments/infrastructure/gateways/stripe-payment-gateway'
 
 /**
  * Middleware para verificar que un workshop tiene suscripción activa
@@ -22,7 +25,15 @@ export const requireActiveSubscription = async (
     }
 
     // Verificar suscripción
-    const { isActive, status } = await checkWorkshopSubscription(workshopId)
+    const subscriptionRepo = new SubscriptionRepositoryPrisma()
+    const workshopRepo = new WorkshopRepositoryPrisma()
+    const paymentGateway = new StripePaymentGateway()
+
+    const { isActive, status } = await checkWorkshopSubscription(workshopId, {
+      subscriptionRepo,
+      workshopRepo,
+      paymentGateway,
+    })
 
     if (!isActive) {
       return res.status(403).json({
@@ -65,7 +76,15 @@ export const checkSubscription = async (req: Request, res: Response, next: NextF
     const workshopId = req.params.workshopId || req.body.workshopId
 
     if (workshopId) {
-      const subscriptionInfo = await checkWorkshopSubscription(workshopId)
+      const subscriptionRepo = new SubscriptionRepositoryPrisma()
+      const workshopRepo = new WorkshopRepositoryPrisma()
+      const paymentGateway = new StripePaymentGateway()
+
+      const subscriptionInfo = await checkWorkshopSubscription(workshopId, {
+        subscriptionRepo,
+        workshopRepo,
+        paymentGateway,
+      })
       ;(req as any).subscription = subscriptionInfo
     }
 

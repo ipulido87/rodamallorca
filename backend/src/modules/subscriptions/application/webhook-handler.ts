@@ -1,4 +1,3 @@
-import prisma from '../../../lib/prisma'
 import Stripe from 'stripe'
 import { stripe } from '../infrastructure/stripe.config'
 import {
@@ -7,11 +6,22 @@ import {
   sendPaymentSuccessEmail,
   sendNewOrderEmail,
 } from '../../notifications/services/email-service'
+import type { SubscriptionRepository } from '../domain/repositories/subscription-repository'
+import type { WorkshopRepository } from '../../workshops/domain/repositories/workshop-repository'
+import type { OrderRepository } from '../../orders/domain/repositories/order-repository'
+import type { ProductRepository } from '../../products/domain/repositories/product-repository'
+
+interface Dependencies {
+  subscriptionRepo: SubscriptionRepository
+  workshopRepo: WorkshopRepository
+  orderRepo: OrderRepository
+  productRepo: ProductRepository
+}
 
 /**
  * Maneja los webhooks de Stripe
  */
-export async function handleStripeWebhook(payload: Buffer, signature: string) {
+export async function handleStripeWebhook(payload: Buffer, signature: string, deps: Dependencies) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
   console.log('🔔 [Webhook] Webhook recibido desde Stripe')
@@ -40,43 +50,43 @@ export async function handleStripeWebhook(payload: Buffer, signature: string) {
       // Suscripción creada exitosamente
       case 'customer.subscription.created':
         console.log('🎉 [Webhook] Procesando customer.subscription.created')
-        await handleSubscriptionCreated(event.data.object as Stripe.Subscription)
+        await handleSubscriptionCreated(event.data.object as Stripe.Subscription, deps)
         break
 
       // Suscripción actualizada
       case 'customer.subscription.updated':
         console.log('🔄 [Webhook] Procesando customer.subscription.updated')
-        await handleSubscriptionUpdated(event.data.object as Stripe.Subscription)
+        await handleSubscriptionUpdated(event.data.object as Stripe.Subscription, deps)
         break
 
       // Suscripción cancelada
       case 'customer.subscription.deleted':
         console.log('❌ [Webhook] Procesando customer.subscription.deleted')
-        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription)
+        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription, deps)
         break
 
       // Trial está por terminar (3 días antes)
       case 'customer.subscription.trial_will_end':
         console.log('⏰ [Webhook] Procesando customer.subscription.trial_will_end')
-        await handleTrialWillEnd(event.data.object as Stripe.Subscription)
+        await handleTrialWillEnd(event.data.object as Stripe.Subscription, deps)
         break
 
       // Pago exitoso
       case 'invoice.payment_succeeded':
         console.log('💰 [Webhook] Procesando invoice.payment_succeeded')
-        await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice)
+        await handleInvoicePaymentSucceeded(event.data.object as Stripe.Invoice, deps)
         break
 
       // Pago fallido
       case 'invoice.payment_failed':
         console.log('⚠️ [Webhook] Procesando invoice.payment_failed')
-        await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice)
+        await handleInvoicePaymentFailed(event.data.object as Stripe.Invoice, deps)
         break
 
       // Checkout completado
       case 'checkout.session.completed':
         console.log('✅ [Webhook] Procesando checkout.session.completed')
-        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session)
+        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session, deps)
         break
 
       // Pago de producto completado (NO suscripción)
@@ -97,9 +107,10 @@ export async function handleStripeWebhook(payload: Buffer, signature: string) {
   }
 }
 
-async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
+async function handleSubscriptionCreated(subscription: Stripe.Subscription, deps: Dependencies) {
   console.log(`✅ [Webhook] Suscripción creada: ${subscription.id}`)
 
+  const { subscriptionRepo } = deps
   const workshopId = subscription.metadata.workshopId
 
   if (!workshopId) {
@@ -138,9 +149,11 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   console.log('   - currentPeriodStart:', currentPeriodStart)
   console.log('   - currentPeriodEnd:', currentPeriodEnd)
 
-  await prisma.subscription.upsert({
-    where: { workshopId },
-    update: {
+  // Check if subscription exists
+  const existing = await subscriptionRepo.findByWorkshopId(workshopId)
+
+  if (existing) {
+    await subscriptionRepo.update(workshopId, {
       stripeSubscriptionId: subscription.id,
       status: mapStripeStatus(subscription.status),
       currentPeriodStart,
@@ -148,8 +161,9 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
       trialStart,
       trialEnd,
       cancelAtPeriodEnd: sub.cancel_at_period_end,
-    },
-    create: {
+    })
+  } else {
+    await subscriptionRepo.create({
       workshopId,
       stripeCustomerId: subscription.customer as string,
       stripeSubscriptionId: subscription.id,
@@ -159,9 +173,8 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
       currentPeriodEnd,
       trialStart,
       trialEnd,
-      cancelAtPeriodEnd: sub.cancel_at_period_end,
-    },
-  })
+    })
+  }
 
   console.log(`✅ [Webhook] Suscripción actualizada en BD para workshop ${workshopId}`)
   console.log(`   - Status: ${subscription.status}`)
@@ -170,6 +183,10 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   // 📧 Enviar email de bienvenida si es un trial
   if (trialStart && trialEnd) {
     try {
+      // Note: We need to fetch workshop with owner, which requires a more complex query
+      // For now, this would need a specialized repository method or we keep minimal Prisma usage here
+      // Since email sending is infrastructure-level, it's acceptable to keep this Prisma call
+      const prisma = (await import('../../../lib/prisma')).default
       const workshop = await prisma.workshop.findUnique({
         where: { id: workshopId },
         include: { owner: true },
@@ -196,9 +213,10 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   }
 }
 
-async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+async function handleSubscriptionUpdated(subscription: Stripe.Subscription, deps: Dependencies) {
   console.log(`🔄 [Webhook] Suscripción actualizada: ${subscription.id}`)
 
+  const { subscriptionRepo } = deps
   const sub = subscription as any
   const trialStart = sub.trial_start
     ? new Date(sub.trial_start * 1000)
@@ -215,9 +233,9 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     ? new Date(sub.current_period_end * 1000)
     : (trialEnd || new Date())
 
-  await prisma.subscription.update({
-    where: { stripeSubscriptionId: subscription.id },
-    data: {
+  const existing = await subscriptionRepo.findByStripeSubscriptionId(subscription.id)
+  if (existing) {
+    await subscriptionRepo.update(existing.workshopId, {
       status: mapStripeStatus(subscription.status),
       currentPeriodStart,
       currentPeriodEnd,
@@ -225,27 +243,28 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       trialEnd,
       cancelAtPeriodEnd: sub.cancel_at_period_end,
       canceledAt: sub.canceled_at ? new Date(sub.canceled_at * 1000) : null,
-    },
-  })
+    })
+  }
 
   console.log(`✅ [Webhook] Estado actualizado: ${subscription.status}`)
 }
 
-async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription, deps: Dependencies) {
   console.log(`❌ [Webhook] Suscripción eliminada: ${subscription.id}`)
 
-  await prisma.subscription.update({
-    where: { stripeSubscriptionId: subscription.id },
-    data: {
+  const { subscriptionRepo } = deps
+  const existing = await subscriptionRepo.findByStripeSubscriptionId(subscription.id)
+  if (existing) {
+    await subscriptionRepo.update(existing.workshopId, {
       status: 'CANCELED',
       canceledAt: new Date(),
-    },
-  })
+    })
+  }
 
   console.log(`✅ [Webhook] Suscripción marcada como cancelada`)
 }
 
-async function handleTrialWillEnd(subscription: Stripe.Subscription) {
+async function handleTrialWillEnd(subscription: Stripe.Subscription, deps: Dependencies) {
   console.log(`⏰ [Webhook] Trial está por terminar: ${subscription.id}`)
 
   const workshopId = subscription.metadata.workshopId
@@ -256,6 +275,8 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription) {
   }
 
   try {
+    // Keep minimal Prisma usage for email sending (infrastructure concern)
+    const prisma = (await import('../../../lib/prisma')).default
     const workshop = await prisma.workshop.findUnique({
       where: { id: workshopId },
       include: { owner: true },
@@ -303,36 +324,32 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription) {
   }
 }
 
-async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
+async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice, deps: Dependencies) {
   console.log(`💰 [Webhook] Pago exitoso: ${invoice.id}`)
 
+  const { subscriptionRepo } = deps
   const invoiceSubscription = (invoice as any).subscription
   if (!invoiceSubscription) return
 
-  const subscription = await prisma.subscription.findUnique({
-    where: { stripeSubscriptionId: invoiceSubscription as string },
-    include: {
-      workshop: {
-        include: {
-          owner: true,
-        },
-      },
-    },
-  })
+  const subscription = await subscriptionRepo.findByStripeSubscriptionId(invoiceSubscription as string)
 
   if (subscription) {
     // Actualizar estado de la suscripción
-    const updatedSubscription = await prisma.subscription.update({
-      where: { id: subscription.id },
-      data: {
-        status: 'ACTIVE',
-      },
+    await subscriptionRepo.update(subscription.workshopId, {
+      status: 'ACTIVE',
     })
     console.log(`✅ [Webhook] Suscripción activada tras pago exitoso`)
 
     // 📧 Enviar email de confirmación de pago
     try {
-      if (subscription.workshop && subscription.workshop.owner) {
+      // Get workshop with owner for email
+      const prisma = (await import('../../../lib/prisma')).default
+      const workshop = await prisma.workshop.findUnique({
+        where: { id: subscription.workshopId },
+        include: { owner: true },
+      })
+
+      if (workshop && workshop.owner) {
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
         const amount = invoice.amount_paid
           ? `${(invoice.amount_paid / 100).toFixed(2)}€`
@@ -348,14 +365,14 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
           : 'Próximamente'
 
         await sendPaymentSuccessEmail({
-          workshopName: subscription.workshop.name,
-          ownerEmail: subscription.workshop.owner.email,
+          workshopName: workshop.name,
+          ownerEmail: workshop.owner.email,
           amount,
           nextBillingDate,
           invoiceUrl: invoice.hosted_invoice_url || `${frontendUrl}/subscription/invoices`,
           manageSubscriptionUrl: `${frontendUrl}/subscription/manage`,
         })
-        console.log(`📧 [Webhook] Email de pago exitoso enviado a ${subscription.workshop.owner.email}`)
+        console.log(`📧 [Webhook] Email de pago exitoso enviado a ${workshop.owner.email}`)
       }
     } catch (emailError) {
       console.error('❌ [Webhook] Error enviando email de pago:', emailError)
@@ -364,22 +381,18 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
   }
 }
 
-async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
+async function handleInvoicePaymentFailed(invoice: Stripe.Invoice, deps: Dependencies) {
   console.error(`❌ [Webhook] Pago fallido: ${invoice.id}`)
 
+  const { subscriptionRepo } = deps
   const invoiceSubscription = (invoice as any).subscription
   if (!invoiceSubscription) return
 
-  const subscription = await prisma.subscription.findUnique({
-    where: { stripeSubscriptionId: invoiceSubscription as string },
-  })
+  const subscription = await subscriptionRepo.findByStripeSubscriptionId(invoiceSubscription as string)
 
   if (subscription) {
-    await prisma.subscription.update({
-      where: { id: subscription.id },
-      data: {
-        status: 'PAST_DUE',
-      },
+    await subscriptionRepo.update(subscription.workshopId, {
+      status: 'PAST_DUE',
     })
     console.log(`⚠️ [Webhook] Suscripción marcada como PAST_DUE`)
 
@@ -387,7 +400,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
   }
 }
 
-async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session, deps: Dependencies) {
   console.log(`✅ [Webhook] Checkout completado: ${session.id}`)
 
   // Checkout de SUSCRIPCIÓN
@@ -408,7 +421,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
         // Procesar la suscripción (igual que en handleSubscriptionCreated)
         // Esto creará/actualizará el registro en BD y enviará emails
-        await handleSubscriptionCreated(subscription)
+        await handleSubscriptionCreated(subscription, deps)
 
         console.log(`✅ [Webhook] Suscripción procesada desde checkout para workshop ${workshopId}`)
       } catch (error) {
@@ -438,7 +451,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       const hasRentals = items.some((item: any) => item.isRental === true)
       const orderType = hasRentals ? 'RENTAL' : 'PRODUCT_ORDER'
 
-      // Crear la orden en la base de datos
+      // Crear la orden en la base de datos (keep Prisma for now as OrderRepository doesn't support payment fields)
+      const prisma = (await import('../../../lib/prisma')).default
       const order = await prisma.order.create({
         data: {
           workshopId,

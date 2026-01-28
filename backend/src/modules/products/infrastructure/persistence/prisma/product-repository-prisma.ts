@@ -184,4 +184,22 @@ export class ProductRepositoryPrisma implements ProductRepository {
 
     return { items, total }
   }
+
+  async findByIds(ids: string[]): Promise<Array<ProductDTO & { title: string; description?: string | null }>> {
+    const products = await prisma.product.findMany({
+      where: { id: { in: ids } },
+    })
+
+    return products.map((p) => ({
+      id: p.id,
+      workshopId: p.workshopId,
+      title: p.title,
+      price: p.price,
+      currency: p.currency,
+      status: p.status as 'DRAFT' | 'PUBLISHED' | 'SOLD',
+      condition: p.condition as 'new' | 'used' | 'refurb',
+      categoryId: p.categoryId,
+      description: p.description,
+    }))
+  }
 }
