@@ -15,3 +15,18 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Uploads (local files only)
+backend/uploads/
+uploads/
+
+# Documentation (except README)
+ANALISIS_ARQUITECTURA_BACKEND.md
+DEPLOYMENT.md
+STRIPE_CONFIG.md
+backend/CATEGORIZACION.md
+backend/TESTING.md
+frontend/EJEMPLOS_NOTIFICACIONES.md
+*.md
+!README.md
+!**/README.md
