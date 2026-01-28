@@ -1,58 +1,43 @@
 import type { BillingRepository } from '../domain/repositories/billing-repository'
+import type { OrderRepository } from '../../orders/domain/repositories/order-repository'
 import type { Invoice, Customer } from '../domain/entities/billing'
-import prisma from '../../../lib/prisma'
 
 interface Dependencies {
   billingRepo: BillingRepository
+  orderRepo: OrderRepository
 }
 
 /**
  * Genera automáticamente una factura desde un pedido confirmado
  * @param orderId - ID del pedido
- * @param deps - Dependencias (billing repository)
+ * @param deps - Dependencias (billing repository, order repository)
  * @returns Invoice creada
  */
 export const generateInvoiceFromOrder = async (
   orderId: string,
   deps: Dependencies
 ): Promise<Invoice> => {
-  const { billingRepo } = deps
+  const { billingRepo, orderRepo } = deps
 
   // 1. Obtener el pedido con todos sus datos
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
-    include: {
-      user: true,
-      items: {
-        include: {
-          product: true,
-          service: true,
-        },
-      },
-      workshop: true,
-    },
-  })
+  const order = await orderRepo.findByIdWithDetails(orderId)
 
   if (!order) {
     throw new Error('Pedido no encontrado')
   }
 
   // Verificar que no exista ya una factura para este pedido
-  const existingInvoice = await prisma.invoice.findUnique({
-    where: { orderId },
-  })
+  const existingInvoice = await billingRepo.findInvoiceByOrderId(orderId)
 
   if (existingInvoice) {
     throw new Error('Este pedido ya tiene una factura generada')
   }
 
   // 2. Buscar o crear cliente para el usuario del pedido
-  let customer: Customer | null = await prisma.customer.findFirst({
-    where: {
-      workshopId: order.workshopId,
-      email: order.user.email,
-    },
-  }) as Customer | null
+  let customer: Customer | null = await billingRepo.findCustomerByWorkshopAndEmail(
+    order.workshopId,
+    order.user.email
+  )
 
   // Si no existe, crear cliente automáticamente
   if (!customer) {
@@ -81,7 +66,7 @@ export const generateInvoiceFromOrder = async (
   }
 
   // 4. Preparar items de factura desde items del pedido
-  const invoiceItems = order.items.map((orderItem) => ({
+  const invoiceItems = order.items.map((orderItem: any) => ({
     description: orderItem.product?.title || orderItem.service?.name || orderItem.description || 'Item sin descripción',
     quantity: orderItem.quantity,
     unitPrice: orderItem.priceAtOrder, // Ya viene en céntimos
@@ -96,7 +81,7 @@ export const generateInvoiceFromOrder = async (
     seriesId: defaultSeries.id,
     orderId: order.id, // Vincular con el pedido
     status: 'DRAFT', // Dejar en borrador para que el taller pueda revisar
-    notes: `Factura generada automáticamente desde pedido\nFecha del pedido: ${order.createdAt.toLocaleDateString('es-ES')}${order.notes ? `\nNotas del cliente: ${order.notes}` : ''}`,
+    notes: `Factura generada automáticamente desde pedido\nFecha del pedido: ${new Date(order.createdAt).toLocaleDateString('es-ES')}${order.notes ? `\nNotas del cliente: ${order.notes}` : ''}`,
     internalNotes: `Generada automáticamente desde pedido #${order.id}`,
     items: invoiceItems,
   })

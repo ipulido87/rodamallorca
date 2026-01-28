@@ -111,9 +111,12 @@ export const loginUserController = async (req: Request, res: Response) => {
     return res.status(400).json({ errors: result.error.issues })
 
   try {
+    const userRepo = new UserRepositoryPrisma()
+    const tokenService = new JwtTokenService()
     const { token, user } = await loginUser(
       result.data.email,
-      result.data.password
+      result.data.password,
+      { userRepo, tokenService }
     )
 
     res.cookie('auth_token', token, {
