@@ -94,6 +94,19 @@ git push --no-verify
 
 ⚠️ **Advertencia**: Solo usa `--no-verify` en casos excepcionales (WIP, hotfix urgente). Los hooks están para proteger la calidad del código.
 
+### Comportamiento de los Hooks
+
+**Pre-commit:**
+- ✅ Ejecuta solo tests de archivos modificados (rápido)
+- ✅ Pasa si no hay archivos de test modificados
+- ❌ Bloquea si algún test falla
+
+**Pre-push:**
+- ✅ Ejecuta TODOS los tests del backend
+- ✅ Verifica que no haya test suites fallando
+- ❌ Bloquea si EXIT_CODE ≠ 0 o si hay tests fallando
+- ⚠️ **Importante**: No podrás hacer push si hay tests rotos
+
 ## 📈 Metas de Cobertura
 
 ### Por Tipo de Código

@@ -1,20 +1,30 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 echo "🧪 Running all tests before push..."
 
 # Change to backend directory
 cd backend || exit 1
 
-# Run all tests
+# Run all tests and capture output + exit code
 echo "Running complete test suite..."
-npm test 2>&1 | tail -40
-
+OUTPUT=$(npm test 2>&1)
 EXIT_CODE=$?
 
+# Show last 40 lines of output
+echo "$OUTPUT" | tail -40
+
+# Check if tests actually passed
 if [ $EXIT_CODE -ne 0 ]; then
+  echo ""
   echo "❌ Tests failed! Please fix all tests before pushing."
+  echo "Exit code: $EXIT_CODE"
   exit 1
 fi
 
+# Double-check that no test suites failed
+if echo "$OUTPUT" | grep -q "Test Suites:.*failed"; then
+  echo ""
+  echo "❌ Some test suites failed! Please fix before pushing."
+  exit 1
+fi
+
+echo ""
 echo "✅ All tests passed! Safe to push."

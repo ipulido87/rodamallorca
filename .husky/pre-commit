@@ -1,6 +1,3 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 echo "🔍 Running pre-commit checks for backend..."
 
 # Change to backend directory
@@ -8,13 +5,17 @@ cd backend || exit 1
 
 # Run tests only for changed files (fast)
 echo "Running tests for changed files..."
-npm test -- --bail --passWithNoTests --onlyChanged 2>&1 | tail -30
-
+OUTPUT=$(npm test -- --bail --passWithNoTests --onlyChanged 2>&1)
 EXIT_CODE=$?
 
+# Show last 30 lines of output
+echo "$OUTPUT" | tail -30
+
 if [ $EXIT_CODE -ne 0 ]; then
+  echo ""
   echo "❌ Tests failed! Please fix the errors before committing."
   exit 1
 fi
 
+echo ""
 echo "✅ Pre-commit checks passed!"
