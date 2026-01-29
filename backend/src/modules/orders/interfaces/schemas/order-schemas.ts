@@ -73,5 +73,10 @@ export const updateOrderStatusSchema = z.object({
   status: z.nativeEnum(OrderStatus),
 })
 
+export const cancelOrderSchema = z.object({
+  cancellationReason: z.string().optional().nullable(),
+})
+
 export type CreateOrderDTO = z.infer<typeof createOrderSchema>
 export type UpdateOrderStatusDTO = z.infer<typeof updateOrderStatusSchema>
+export type CancelOrderDTO = z.infer<typeof cancelOrderSchema>

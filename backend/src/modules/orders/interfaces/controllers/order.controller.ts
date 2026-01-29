@@ -11,6 +11,7 @@ import { billingRepositoryPrisma } from '../../../billing/infrastructure/persist
 import {
   createOrderSchema,
   updateOrderStatusSchema,
+  cancelOrderSchema,
 } from '../schemas/order-schemas'
 
 const orderRepo = new OrderRepositoryPrisma()
@@ -177,10 +178,14 @@ export const cancelOrderController = async (
       return res.status(401).json({ error: 'Usuario no autenticado' })
     }
 
+    // Parsear el body para obtener el motivo de cancelación (opcional)
+    const body = cancelOrderSchema.parse(req.body)
+
     const result = await cancelOrder(req.params.id, {
       repo: orderRepo,
       authenticatedUserId: req.user.id,
       userRole: req.user.role,
+      cancellationReason: body.cancellationReason || undefined,
     })
     res.json(result)
   } catch (e) {
