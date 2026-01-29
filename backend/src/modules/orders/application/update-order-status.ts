@@ -3,7 +3,7 @@ import type { Order, UpdateOrderStatusInput } from '../domain/entities/order'
 import type { OrderRepository } from '../domain/repositories/order-repository'
 import type { BillingRepository } from '../../billing/domain/repositories/billing-repository'
 import { generateInvoiceFromOrder } from '../../billing/application/generate-invoice-from-order'
-import { sendInvoiceEmail } from '../../notifications/services/email-service'
+import { sendInvoiceEmail, sendOrderStatusUpdateEmail } from '../../notifications/services/email-service'
 import { verifyEntityExists, verifyWorkshopOwnership } from '../../../lib/authorization'
 
 interface WorkshopRepository {
@@ -113,6 +113,44 @@ export async function updateOrderStatus(
       // No lanzar error para no bloquear la confirmación del pedido
       // La factura se puede generar manualmente después si falla
     }
+  }
+
+  // 🔔 NOTIFICACIONES: Enviar emails al cliente cuando cambia el estado
+  // Solo para cambios relevantes (IN_PROGRESS, READY, COMPLETED)
+  const notifiableStatuses = [OrderStatus.IN_PROGRESS, OrderStatus.READY, OrderStatus.COMPLETED]
+
+  if (notifiableStatuses.includes(input.status) && order.status !== input.status) {
+    setImmediate(async () => {
+      try {
+        const fullOrder = await repo.findByIdWithDetails(orderId)
+
+        if (!fullOrder) return
+
+        const orderNumber = fullOrder.id.slice(0, 8).toUpperCase()
+        const customerName = fullOrder.user.name || fullOrder.user.email
+
+        // Mensajes según el estado
+        const statusMessages: Record<string, string> = {
+          [OrderStatus.IN_PROGRESS]: '¡Tu pedido está en progreso! Nuestro equipo está trabajando en él.',
+          [OrderStatus.READY]: '¡Tu pedido está listo para recoger! Puedes pasar a buscarlo cuando quieras.',
+          [OrderStatus.COMPLETED]: '¡Tu pedido ha sido completado! Gracias por tu compra.',
+        }
+
+        await sendOrderStatusUpdateEmail({
+          customerName,
+          customerEmail: fullOrder.user.email,
+          workshopName: fullOrder.workshop.name,
+          orderNumber,
+          newStatus: input.status,
+          statusMessage: statusMessages[input.status] || 'Tu pedido ha sido actualizado.',
+          orderUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/orders/${orderId}`,
+        })
+
+        console.log(`✅ [NOTIFICATIONS] Email de actualización enviado para pedido ${orderNumber} - Estado: ${input.status}`)
+      } catch (error) {
+        console.error('❌ [NOTIFICATIONS] Error enviando email de actualización:', error)
+      }
+    })
   }
 
   return updatedOrder
