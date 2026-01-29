@@ -1,8 +1,4 @@
-import {
-  Prisma,
-  PrismaClient,
-  type $Enums, // 👈 para el tipo del enum
-} from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import prismaClient from '../../../../../lib/prisma'
 import type {
   CreateOrderRepoInput,
@@ -11,16 +7,14 @@ import type {
 import type { Order } from '../../../domain/entities/order'
 import { OrderStatus as DomainOrderStatus } from '../../../domain/enums/order-status'
 
-type PrismaOrderStatus = $Enums.OrderStatus
-type PrismaOrderWithItems = Prisma.OrderGetPayload<{ include: { items: true } }>
-type PrismaOrderWithoutItems = Prisma.OrderGetPayload<{
-  include: { items: false }
-}>
+// Local type definitions to avoid Prisma generation dependency
+type PrismaOrderStatus = string
+type PrismaOrderWithItems = any
+type PrismaOrderWithoutItems = any
 
-const toPrismaStatus = (s: DomainOrderStatus): PrismaOrderStatus =>
-  s as unknown as PrismaOrderStatus
+const toPrismaStatus = (s: DomainOrderStatus): PrismaOrderStatus => s
 const toDomainStatus = (s: PrismaOrderStatus): DomainOrderStatus =>
-  s as unknown as DomainOrderStatus
+  s as DomainOrderStatus
 
 export class OrderRepositoryPrisma implements OrderRepository {
   constructor(private prisma: PrismaClient = prismaClient) {}

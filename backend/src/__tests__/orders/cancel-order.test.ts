@@ -100,7 +100,7 @@ describe('cancelOrder', () => {
         authenticatedUserId: 'different-user',
         userRole: 'USER',
       })
-    ).rejects.toThrow('No tienes permisos para cancelar este pedido')
+    ).rejects.toThrow('No tienes permiso para acceder a este recurso')
   })
 
   it('debe permitir a un admin cancelar el pedido', async () => {

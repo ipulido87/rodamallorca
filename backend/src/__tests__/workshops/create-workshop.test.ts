@@ -12,7 +12,10 @@ describe('Create Workshop Use Case', () => {
       update: jest.fn(),
       delete: jest.fn(),
       findAll: jest.fn(),
-    };
+      updateStats: jest.fn(),
+      updateStripeAccount: jest.fn(),
+      findByIdWithStripe: jest.fn(),
+    } as any;
   });
 
   const validInput = {
