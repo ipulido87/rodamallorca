@@ -70,7 +70,7 @@ export const getOrderController = async (
       return res.status(401).json({ error: 'Usuario no autenticado' })
     }
 
-    const result = await getOrder(req.params.id, {
+    const result = await getOrder(req.params.id as string, {
       repo: orderRepo,
       authenticatedUserId: req.user.id,
       userRole: req.user.role,
@@ -95,7 +95,7 @@ export const getUserOrdersController = async (
       return res.status(401).json({ error: 'Usuario no autenticado' })
     }
 
-    const result = await getUserOrders(req.params.userId, {
+    const result = await getUserOrders(req.params.userId as string, {
       repo: orderRepo,
       authenticatedUserId: req.user.id,
       userRole: req.user.role,
@@ -122,7 +122,7 @@ export const getWorkshopOrdersController = async (
     }
 
     // Soportar ambos formatos de parámetros: :workshopId o :id
-    const workshopId = req.params.workshopId || req.params.id
+    const workshopId = (req.params.workshopId || req.params.id) as string
 
     const result = await getWorkshopOrders(workshopId, {
       repo: orderRepo,
@@ -151,7 +151,7 @@ export const updateOrderStatusController = async (
     }
 
     const body = updateOrderStatusSchema.parse(req.body)
-    const result = await updateOrderStatus(req.params.id, body, {
+    const result = await updateOrderStatus(req.params.id as string, body, {
       repo: orderRepo,
       workshopRepo,
       billingRepo,
@@ -181,7 +181,7 @@ export const cancelOrderController = async (
     // Parsear el body para obtener el motivo de cancelación (opcional)
     const body = cancelOrderSchema.parse(req.body)
 
-    const result = await cancelOrder(req.params.id, {
+    const result = await cancelOrder(req.params.id as string, {
       repo: orderRepo,
       authenticatedUserId: req.user.id,
       userRole: req.user.role,

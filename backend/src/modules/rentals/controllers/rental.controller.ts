@@ -188,7 +188,7 @@ export const checkBikeAvailability = async (req: Request, res: Response, next: N
     const end = new Date(endDate)
 
     const availability = await checkAvailability({
-      productId: id,
+      productId: id as string,
       startDate: start,
       endDate: end,
       quantity,
@@ -227,7 +227,7 @@ export const calculateBikeRentalPrice = async (
     const end = new Date(endDate)
 
     const pricing = await calculateRentalPrice({
-      productId: id,
+      productId: id as string,
       startDate: start,
       endDate: end,
     })
@@ -253,7 +253,7 @@ export const getBikeBlockedDates = async (req: Request, res: Response, next: Nex
   try {
     const { id } = req.params
 
-    const blockedDates = await getBlockedDates(id)
+    const blockedDates = await getBlockedDates(id as string)
 
     res.json({
       success: true,

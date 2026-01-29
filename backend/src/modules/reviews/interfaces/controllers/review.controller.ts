@@ -46,7 +46,7 @@ export const getWorkshopReviewsController = async (
   try {
     const { workshopId } = req.params
 
-    const reviews = await getWorkshopReviews(workshopId, { repo })
+    const reviews = await getWorkshopReviews(workshopId as string, { repo })
 
     res.json(reviews)
   } catch (e) {
@@ -70,7 +70,7 @@ export const updateReviewController = async (
     // Validación ya realizada por middleware validateBody
     const body = req.body
 
-    const review = await updateReview(reviewId, body, {
+    const review = await updateReview(reviewId as string, body, {
       repo,
       workshopRepo,
       authenticatedUserId: req.user.id,
@@ -96,7 +96,7 @@ export const deleteReviewController = async (
 
     const { reviewId } = req.params
 
-    await deleteReview(reviewId, {
+    await deleteReview(reviewId as string, {
       repo,
       workshopRepo,
       authenticatedUserId: req.user.id,
