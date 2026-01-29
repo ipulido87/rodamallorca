@@ -55,8 +55,8 @@ export async function updateOrderStatus(
       })
       console.log(`✅ [AUTO-INVOICE] Factura generada automáticamente para pedido ${orderId}`)
 
-      // 📧 Enviar email al cliente con la factura
-      setImmediate(async () => {
+      // 📧 Enviar email al cliente con la factura de forma asíncrona
+      ;(async () => {
         try {
           // Obtener datos completos del pedido y factura usando repositorios
           const fullOrder = await repo.findByIdWithDetails(orderId)
@@ -107,6 +107,8 @@ export async function updateOrderStatus(
         } catch (emailError) {
           console.error('❌ [EMAIL] Error enviando email de factura:', emailError)
         }
+      })().catch((error) => {
+        console.error('❌ [EMAIL] Error fatal en email de factura:', error)
       })
     } catch (error) {
       console.error(`❌ [AUTO-INVOICE] Error generando factura para pedido ${orderId}:`, error)
@@ -120,7 +122,8 @@ export async function updateOrderStatus(
   const notifiableStatuses = [OrderStatus.IN_PROGRESS, OrderStatus.READY, OrderStatus.COMPLETED]
 
   if (notifiableStatuses.includes(input.status) && order.status !== input.status) {
-    setImmediate(async () => {
+    // Enviar emails de forma asíncrona sin bloquear la respuesta
+    ;(async () => {
       try {
         const fullOrder = await repo.findByIdWithDetails(orderId)
 
@@ -150,6 +153,8 @@ export async function updateOrderStatus(
       } catch (error) {
         console.error('❌ [NOTIFICATIONS] Error enviando email de actualización:', error)
       }
+    })().catch((error) => {
+      console.error('❌ [NOTIFICATIONS] Error fatal en email de actualización:', error)
     })
   }
 
