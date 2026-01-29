@@ -445,70 +445,75 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, deps: D
     }
 
     try {
+      const { orderRepo } = deps
       const items = JSON.parse(itemsJson)
 
       // ✅ Determinar el tipo de orden basado en los items
       const hasRentals = items.some((item: any) => item.isRental === true)
       const orderType = hasRentals ? 'RENTAL' : 'PRODUCT_ORDER'
 
-      // Crear la orden en la base de datos (keep Prisma for now as OrderRepository doesn't support payment fields)
-      const prisma = (await import('../../../lib/prisma')).default
-      const order = await prisma.order.create({
-        data: {
-          workshopId,
-          userId,
-          status: 'PENDING',
-          type: orderType as any, // RENTAL o PRODUCT_ORDER
-          totalAmount: session.amount_total || 0,
-          paymentStatus: 'PAID', // ⭐ PAGADO
-          stripeSessionId: session.id,
-          stripePaymentIntentId: session.payment_intent as string,
-          items: {
-            create: items.map((item: any) => ({
-              productId: item.productId,
-              quantity: item.quantity,
-              priceAtOrder: item.priceAtOrder,
-              currency: item.currency,
-              description: item.description,
-              // ✅ Campos de alquiler
-              isRental: item.isRental ?? false,
-              rentalStartDate: item.rentalStartDate ? new Date(item.rentalStartDate) : null,
-              rentalEndDate: item.rentalEndDate ? new Date(item.rentalEndDate) : null,
-              rentalDays: item.rentalDays ?? null,
-              depositPaid: item.depositPaid ?? null,
-            })),
-          },
-        },
-        include: {
-          items: true,
-          workshop: {
-            include: {
-              owner: true,
-            },
-          },
-          user: true,
-        },
+      // ✅ Crear la orden usando OrderRepository
+      const order = await orderRepo.create({
+        workshopId,
+        userId,
+        notes: null,
+        type: orderType,
+        totalAmount: session.amount_total || 0,
+        // Campos de pago
+        paymentStatus: 'PAID',
+        stripeSessionId: session.id,
+        stripePaymentIntentId: session.payment_intent as string,
+        items: items.map((item: any) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          priceAtOrder: item.priceAtOrder,
+          currency: item.currency,
+          description: item.description,
+          // Campos de alquiler
+          isRental: item.isRental ?? false,
+          rentalStartDate: item.rentalStartDate ? new Date(item.rentalStartDate) : null,
+          rentalEndDate: item.rentalEndDate ? new Date(item.rentalEndDate) : null,
+          rentalDays: item.rentalDays ?? null,
+          depositPaid: item.depositPaid ?? null,
+        })),
       })
 
       console.log(`✅ [Webhook] Orden creada: ${order.id} - Estado: PAID`)
 
       // 📧 Enviar email de notificación al taller
       try {
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
-        const totalAmount = `${(order.totalAmount / 100).toFixed(2)}€`
-
-        await sendNewOrderEmail({
-          workshopName: order.workshop.name,
-          workshopOwnerEmail: order.workshop.owner.email,
-          orderNumber: order.id.slice(0, 8),
-          customerName: order.user.name || order.user.email,
-          customerEmail: order.user.email,
-          totalAmount,
-          itemsCount: order.items.length,
-          orderUrl: `${frontendUrl}/workshop-orders/${order.workshopId}`,
+        // Para el email necesitamos workshop con owner y user completo (usa Prisma mínimo)
+        const prisma = (await import('../../../lib/prisma')).default
+        const orderDetails = await prisma.order.findUnique({
+          where: { id: order.id },
+          include: {
+            workshop: {
+              include: {
+                owner: true,
+              },
+            },
+            user: true,
+            items: true,
+          },
         })
 
-        console.log(`📧 [Webhook] Email de nuevo pedido enviado al taller ${order.workshop.name}`)
+        if (orderDetails) {
+          const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
+          const totalAmount = `${(orderDetails.totalAmount / 100).toFixed(2)}€`
+
+          await sendNewOrderEmail({
+            workshopName: orderDetails.workshop.name,
+            workshopOwnerEmail: orderDetails.workshop.owner.email,
+            orderNumber: orderDetails.id.slice(0, 8),
+            customerName: orderDetails.user.name || orderDetails.user.email,
+            customerEmail: orderDetails.user.email,
+            totalAmount,
+            itemsCount: orderDetails.items.length,
+            orderUrl: `${frontendUrl}/workshop-orders/${orderDetails.workshopId}`,
+          })
+
+          console.log(`📧 [Webhook] Email de nuevo pedido enviado al taller ${orderDetails.workshop.name}`)
+        }
       } catch (emailError) {
         console.error('❌ [Webhook] Error enviando email al taller:', emailError)
         // No fallar el webhook por un error de email

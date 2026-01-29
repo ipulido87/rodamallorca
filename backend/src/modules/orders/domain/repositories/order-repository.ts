@@ -22,6 +22,10 @@ export interface CreateOrderRepoInput {
   totalAmount: number
   items: CreateOrderRepoItem[]
   type?: 'PRODUCT_ORDER' | 'SERVICE_REPAIR' | 'RENTAL'
+  // Campos de pago (Stripe)
+  paymentStatus?: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED'
+  stripeSessionId?: string | null
+  stripePaymentIntentId?: string | null
 }
 
 export interface OrderRepository {
