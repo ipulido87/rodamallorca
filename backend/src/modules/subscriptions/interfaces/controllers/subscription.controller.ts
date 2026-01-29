@@ -137,7 +137,7 @@ export const getSubscriptionStatusController = async (
     const paymentGateway = new StripePaymentGateway()
 
     const status = await subscriptionService.checkWorkshopSubscription(
-      workshopId,
+      workshopId as string,
       { subscriptionRepo, workshopRepo, paymentGateway }
     )
 

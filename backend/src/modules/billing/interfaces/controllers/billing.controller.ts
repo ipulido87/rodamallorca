@@ -60,7 +60,7 @@ export const listCustomersController = async (
     }
 
     const { workshopId } = req.params
-    const customers = await listCustomersByWorkshop(workshopId, { repo })
+    const customers = await listCustomersByWorkshop(workshopId as string, { repo })
 
     res.json(customers)
   } catch (e) {
@@ -107,13 +107,13 @@ export const listInvoiceSeriesController = async (
     }
 
     const { workshopId } = req.params
-    let series = await repo.findInvoiceSeriesByWorkshop(workshopId)
+    let series = await repo.findInvoiceSeriesByWorkshop(workshopId as string)
 
     // Si no existe ninguna serie, crear una por defecto automáticamente
     if (series.length === 0) {
       const currentYear = new Date().getFullYear()
       const defaultSeries = await repo.createInvoiceSeries({
-        workshopId,
+        workshopId: workshopId as string,
         name: 'Serie Principal',
         prefix: 'F',
         year: currentYear,
@@ -182,7 +182,7 @@ export const listInvoicesController = async (
     const { status, customerId } = req.query
 
     const invoices = await listInvoicesByWorkshop(
-      workshopId,
+      workshopId as string,
       {
         status: status as string,
         customerId: customerId as string,
@@ -211,7 +211,7 @@ export const getInvoiceByIdController = async (
     }
 
     const { id } = req.params
-    const invoice = await repo.findInvoiceById(id)
+    const invoice = await repo.findInvoiceById(id as string)
 
     if (!invoice) {
       return res.status(404).json({ error: 'Factura no encontrada' })
@@ -241,7 +241,7 @@ export const updateInvoiceController = async (
     // Validación ya realizada por middleware validateBody
     const body = req.body
 
-    const invoice = await repo.updateInvoice(id, {
+    const invoice = await repo.updateInvoice(id as string, {
       ...body,
       dueDate: body.dueDate ? new Date(body.dueDate) : undefined,
       paidAt: body.paidAt ? new Date(body.paidAt) : undefined,
@@ -268,7 +268,7 @@ export const deleteInvoiceController = async (
     }
 
     const { id } = req.params
-    await repo.deleteInvoice(id)
+    await repo.deleteInvoice(id as string)
 
     res.status(204).send()
   } catch (e) {
@@ -293,7 +293,7 @@ export const getWorkshopStatsController = async (
     const { workshopId } = req.params
 
     // Verificar que el taller existe y pertenece al usuario
-    const workshop = await workshopRepo.findById(workshopId)
+    const workshop = await workshopRepo.findById(workshopId as string)
     if (!workshop) {
       return res.status(404).json({ error: 'Taller no encontrado' })
     }
@@ -302,7 +302,7 @@ export const getWorkshopStatsController = async (
       return res.status(403).json({ error: 'No tienes permisos para ver las estadísticas de este taller' })
     }
 
-    const stats = await getWorkshopStats(workshopId, { billingRepo: repo })
+    const stats = await getWorkshopStats(workshopId as string, { billingRepo: repo })
 
     res.json(stats)
   } catch (e) {

@@ -64,7 +64,7 @@ export const listWorkshopServicesController = async (
     const { workshopId } = req.params
 
     // Verificar que el usuario es dueño del taller
-    const workshop = await workshopRepo.findById(workshopId)
+    const workshop = await workshopRepo.findById(workshopId as string)
 
     if (!workshop) {
       return res.status(404).json({ error: 'Taller no encontrado' })
@@ -76,7 +76,7 @@ export const listWorkshopServicesController = async (
         .json({ error: 'No tienes permisos para ver estos servicios' })
     }
 
-    const services = await listWorkshopServices(workshopId, { repo })
+    const services = await listWorkshopServices(workshopId as string, { repo })
 
     res.json(services)
   } catch (e) {
@@ -117,7 +117,7 @@ export const getServiceByIdController = async (
   try {
     const { id } = req.params
 
-    const service = await repo.findById(id)
+    const service = await repo.findById(id as string)
 
     if (!service) {
       return res.status(404).json({ error: 'Servicio no encontrado' })
@@ -147,7 +147,7 @@ export const updateServiceController = async (
     // Validación ya realizada por middleware validateBody
     const body = req.body
 
-    const service = await updateService(id, body, {
+    const service = await updateService(id as string, body, {
       repo,
       workshopRepo,
       authenticatedUserId: req.user.id,
@@ -175,7 +175,7 @@ export const deleteServiceController = async (
 
     const { id } = req.params
 
-    await deleteService(id, {
+    await deleteService(id as string, {
       repo,
       workshopRepo,
       authenticatedUserId: req.user.id,

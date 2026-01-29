@@ -57,7 +57,7 @@ export const getWorkshopController = async (
   next: NextFunction
 ) => {
   try {
-    const workshop = await repo.findById(req.params.id)
+    const workshop = await repo.findById(req.params.id as string)
 
     if (!workshop) {
       return res.status(404).json({ error: 'Workshop no encontrado' })
@@ -118,7 +118,7 @@ export const updateWorkshopController = async (
     const body = updateWorkshopSchema.parse(req.body)
 
     // Verificar que el taller pertenece al usuario
-    const existingWorkshop = await repo.findById(req.params.id)
+    const existingWorkshop = await repo.findById(req.params.id as string)
     if (!existingWorkshop) {
       return res.status(404).json({ error: 'Workshop no encontrado' })
     }
@@ -128,7 +128,7 @@ export const updateWorkshopController = async (
         .json({ error: 'No tienes permisos para editar este taller' })
     }
 
-    const result = await updateWorkshop(req.params.id, body, { repo })
+    const result = await updateWorkshop(req.params.id as string, body, { repo })
     res.json(result)
   } catch (e) {
     next(e)
@@ -151,7 +151,7 @@ export const deleteWorkshopController = async (
     }
 
     // Verificar que el taller pertenece al usuario
-    const existingWorkshop = await repo.findById(req.params.id)
+    const existingWorkshop = await repo.findById(req.params.id as string)
     if (!existingWorkshop) {
       return res.status(404).json({ error: 'Workshop no encontrado' })
     }
@@ -161,7 +161,7 @@ export const deleteWorkshopController = async (
         .json({ error: 'No tienes permisos para eliminar este taller' })
     }
 
-    await deleteWorkshop(req.params.id, { repo })
+    await deleteWorkshop(req.params.id as string, { repo })
     res.json({ message: 'Taller eliminado correctamente' })
   } catch (e) {
     next(e)

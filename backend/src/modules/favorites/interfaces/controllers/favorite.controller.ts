@@ -19,7 +19,7 @@ export const toggleFavoriteController = async (
 
     const { workshopId } = req.params
 
-    const result = await toggleFavorite(workshopId, {
+    const result = await toggleFavorite(workshopId as string, {
       repo: favoriteRepositoryPrisma,
       userId: req.user.id,
     })
@@ -73,7 +73,7 @@ export const checkFavoriteController = async (
 
     const isFavorite = await favoriteRepositoryPrisma.exists(
       req.user.id,
-      workshopId
+      workshopId as string
     )
 
     res.json({ isFavorite })

@@ -32,10 +32,10 @@ export const initiateStripeConnect = async (
     console.log(`🚀 [Controller] Iniciando Stripe Connect para workshop ${workshopId}`)
 
     // Crear o recuperar cuenta conectada
-    const account = await createConnectedAccount(workshopId, req.user.email)
+    const account = await createConnectedAccount(workshopId as string, req.user.email)
 
     // Crear link de onboarding
-    const accountLink = await createAccountLink(workshopId, returnUrl, refreshUrl)
+    const accountLink = await createAccountLink(workshopId as string, returnUrl, refreshUrl)
 
     res.json({
       success: true,
@@ -72,7 +72,7 @@ export const refreshOnboardingLink = async (
 
     console.log(`🔄 [Controller] Regenerando link de onboarding para workshop ${workshopId}`)
 
-    const accountLink = await createAccountLink(workshopId, returnUrl, refreshUrl)
+    const accountLink = await createAccountLink(workshopId as string, returnUrl, refreshUrl)
 
     res.json({
       success: true,
@@ -99,7 +99,7 @@ export const getStripeAccountStatus = async (
 
     console.log(`📊 [Controller] Obteniendo estado Stripe para workshop ${workshopId}`)
 
-    const status = await getAccountStatus(workshopId)
+    const status = await getAccountStatus(workshopId as string)
 
     res.json({
       success: true,
@@ -130,7 +130,7 @@ export const getStripeDashboardLink = async (
 
     console.log(`🔐 [Controller] Generando dashboard link para workshop ${workshopId}`)
 
-    const dashboardLink = await createDashboardLink(workshopId)
+    const dashboardLink = await createDashboardLink(workshopId as string)
 
     res.json({
       success: true,

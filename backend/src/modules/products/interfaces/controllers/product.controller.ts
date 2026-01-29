@@ -231,16 +231,16 @@ export const updateProduct = async (
     }
 
     // Actualizar producto
-    const result = await repo.update(id, workshop.id, productData)
+    const result = await repo.update(id as string, workshop.id, productData)
 
     // Actualizar imágenes si se proporcionaron
     if (images) {
-      await updateProductImages(id, images)
+      await updateProductImages(id as string, images)
     }
 
     // Obtener el producto actualizado con imágenes
     const updatedProduct = await prisma.product.findUnique({
-      where: { id },
+      where: { id: id as string },
       include: {
         category: { select: { id: true, name: true } },
         images: { orderBy: { position: 'asc' } },
@@ -267,7 +267,7 @@ export const publishProduct = async (
       return res.status(403).json({ message: 'You do not own a workshop' })
     }
 
-    await repo.publish(id, workshop.id)
+    await repo.publish(id as string, workshop.id)
     res.json({ message: 'Product published successfully' })
   } catch (e) {
     next(e)

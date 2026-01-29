@@ -75,7 +75,7 @@ export const recoverStripeAccountByEmail = async (
     console.log(`💾 [Recovery Email] Actualizando metadata en Stripe...`)
     await stripe.accounts.update(account.id, {
       metadata: {
-        workshopId: workshopId,
+        workshopId: workshopId as string,
         workshopName: workshop.name,
       },
     })

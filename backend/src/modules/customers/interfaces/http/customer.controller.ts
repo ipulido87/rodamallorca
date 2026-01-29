@@ -62,7 +62,7 @@ export const getCustomerByIdController = async (
       return res.status(403).json({ message: 'No tienes un taller asignado' })
     }
 
-    const customer = await getCustomerById(id, {
+    const customer = await getCustomerById(id as string, {
       customerRepository: customerRepositoryPrisma,
       workshopId: workshop.id,
     })
@@ -128,7 +128,7 @@ export const updateCustomerController = async (
       return res.status(403).json({ message: 'No tienes un taller asignado' })
     }
 
-    const customer = await updateCustomer(id, req.body, {
+    const customer = await updateCustomer(id as string, req.body, {
       customerRepository: customerRepositoryPrisma,
       workshopId: workshop.id,
     })
@@ -157,7 +157,7 @@ export const deleteCustomerController = async (
       return res.status(403).json({ message: 'No tienes un taller asignado' })
     }
 
-    await deleteCustomer(id, {
+    await deleteCustomer(id as string, {
       customerRepository: customerRepositoryPrisma,
       workshopId: workshop.id,
     })
