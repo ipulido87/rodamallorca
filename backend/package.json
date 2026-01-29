@@ -15,7 +15,8 @@
     "test:changed": "jest --onlyChanged",
     "test:verbose": "jest --verbose",
     "test:critical": "jest --testNamePattern=\"Payment Service|Subscription Service|Webhook Handler\"",
-    "build": "npx prisma db push --accept-data-loss && npx prisma generate && tsc",
+    "build": "tsc",
+    "build:full": "npx prisma db push --accept-data-loss && npx prisma generate && tsc",
     "start": "node dist/index.js",
     "seed": "pnpm prisma db seed",
     "postinstall": "prisma generate || echo 'Warning: Prisma client generation failed'"
