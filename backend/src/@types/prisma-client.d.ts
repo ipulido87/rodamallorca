@@ -28,9 +28,10 @@ declare module '@prisma/client' {
     export type OrderWhereInput = any
     export type WorkshopWhereInput = any
     export type UserWhereInput = any
-
-    // Add more as needed
-    [key: string]: any
+    export type ServiceWhereInput = any
+    export type ReviewWhereInput = any
+    export type InvoiceWhereInput = any
+    export type CustomerWhereInput = any
   }
 
   export namespace $Enums {
@@ -55,8 +56,48 @@ declare module '@prisma/client' {
       INCOMPLETE = 'INCOMPLETE',
       UNPAID = 'UNPAID',
     }
-    // Add more enums as needed
+    export enum UserRole {
+      USER = 'USER',
+      WORKSHOP_OWNER = 'WORKSHOP_OWNER',
+      ADMIN = 'ADMIN',
+    }
+    export enum VehicleType {
+      BICYCLE = 'BICYCLE',
+      E_BIKE = 'E_BIKE',
+      E_SCOOTER = 'E_SCOOTER',
+      ALL = 'ALL',
+    }
+    export enum ServiceStatus {
+      ACTIVE = 'ACTIVE',
+      INACTIVE = 'INACTIVE',
+    }
+    export enum InvoiceStatus {
+      DRAFT = 'DRAFT',
+      SENT = 'SENT',
+      PAID = 'PAID',
+      OVERDUE = 'OVERDUE',
+      CANCELLED = 'CANCELLED',
+    }
+    export enum CustomerType {
+      INDIVIDUAL = 'INDIVIDUAL',
+      BUSINESS = 'BUSINESS',
+    }
   }
+
+  export type UserRole = $Enums.UserRole
+  export type VehicleType = $Enums.VehicleType
+  export type ServiceStatus = $Enums.ServiceStatus
+  export type InvoiceStatus = $Enums.InvoiceStatus
+  export type CustomerType = $Enums.CustomerType
+
+  export const UserRole: typeof $Enums.UserRole
+  export const VehicleType: typeof $Enums.VehicleType
+  export const ServiceStatus: typeof $Enums.ServiceStatus
+  export const InvoiceStatus: typeof $Enums.InvoiceStatus
+  export const CustomerType: typeof $Enums.CustomerType
+  export const OrderStatus: typeof $Enums.OrderStatus
+  export const OrderType: typeof $Enums.OrderType
+  export const SubscriptionStatus: typeof $Enums.SubscriptionStatus
 
   export const Prisma: typeof Prisma
 }
