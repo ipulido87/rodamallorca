@@ -45,9 +45,9 @@ export async function cancelOrder(
     status: OrderStatus.CANCELLED,
   })
 
-  // 🔔 NOTIFICACIONES: Enviar emails de forma asíncrona
-  // No bloqueamos la respuesta si las notificaciones fallan
-  setImmediate(async () => {
+  // 🔔 NOTIFICACIONES: Enviar emails de forma asíncrona sin bloquear la respuesta
+  // Usar "fire-and-forget" pattern con .catch() para no bloquear
+  ;(async () => {
     try {
       // Obtener datos completos del pedido para las notificaciones
       const fullOrder = await repo.findByIdWithDetails(orderId)
@@ -76,6 +76,8 @@ export async function cancelOrder(
     } catch (error) {
       console.error('❌ [NOTIFICATIONS] Error enviando notificaciones de cancelación:', error)
     }
+  })().catch((error) => {
+    console.error('❌ [NOTIFICATIONS] Error fatal en notificaciones:', error)
   })
 
   return cancelledOrder
