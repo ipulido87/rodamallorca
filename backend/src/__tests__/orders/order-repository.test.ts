@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import type { PrismaClient } from '@prisma/client'
 import { beforeEach, describe, expect, it, jest } from '@jest/globals'
 
 // Mock lib/prisma before importing OrderRepositoryPrisma

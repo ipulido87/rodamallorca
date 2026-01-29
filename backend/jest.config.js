@@ -15,6 +15,9 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(.pnpm|@react-pdf))',
+  ],
   setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
