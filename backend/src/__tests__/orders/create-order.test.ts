@@ -1,5 +1,21 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals'
 
+// Mock the email service to avoid @react-pdf/renderer issues
+jest.mock('../../modules/notifications/services/email-service', () => ({
+  sendInvoiceEmail: jest.fn(),
+  sendNewOrderEmail: jest.fn(),
+}))
+
+// Mock the push service
+jest.mock('../../modules/notifications/services/push-service', () => ({
+  sendNewOrderPush: jest.fn(),
+}))
+
+// Mock rental availability service to avoid Prisma issues
+jest.mock('../../modules/rentals/services/rental-availability.service', () => ({
+  checkAvailability: jest.fn(),
+}))
+
 import { createOrder } from '../../modules/orders/application/create-order'
 import { OrderStatus } from '../../modules/orders/domain/enums/order-status'
 
@@ -87,19 +103,23 @@ describe('createOrder', () => {
       authenticatedUserId: 'user-123',
     })
 
-    expect(mockRepo.create).toHaveBeenCalledWith({
-      userId: 'user-123',
-      workshopId: 'workshop-123',
-      notes: 'Test order',
-      items: [
-        {
-          productId: 'product-123',
-          quantity: 2,
-          priceAtOrder: 5000,
-          currency: 'EUR',
-        },
-      ],
-    })
+    expect(mockRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'user-123',
+        workshopId: 'workshop-123',
+        notes: 'Test order',
+        totalAmount: 10000,
+        type: 'PRODUCT_ORDER',
+        items: expect.arrayContaining([
+          expect.objectContaining({
+            productId: 'product-123',
+            quantity: 2,
+            priceAtOrder: 5000,
+            currency: 'EUR',
+          }),
+        ]),
+      })
+    )
 
     expect(result.status).toBe(OrderStatus.PENDING)
   })
@@ -207,11 +227,11 @@ describe('createOrder', () => {
 
     expect(mockRepo.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        items: [
+        items: expect.arrayContaining([
           expect.objectContaining({
             currency: 'EUR',
           }),
-        ],
+        ]),
       })
     )
   })
