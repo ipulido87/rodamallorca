@@ -1,5 +1,5 @@
 import { ProductRepositoryPrisma } from '../../modules/products/infrastructure/persistence/prisma/product-repository-prisma'
-import { PrismaClient } from '@prisma/client' // import de valor, no de tipo
+import type { PrismaClient } from '@prisma/client'
 
 // ===== Tipos mínimos usados por tus tests (sin any/unknown) =====
 type Status = 'DRAFT' | 'PUBLISHED'
@@ -135,7 +135,9 @@ describe('Product Repository Prisma', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     repository = new ProductRepositoryPrisma()
-    prisma = new PrismaClient() as unknown as MockPrismaClient
+    // Get PrismaClient from the mock
+    const { PrismaClient: MockedPrismaClient } = jest.requireMock('@prisma/client')
+    prisma = new MockedPrismaClient() as unknown as MockPrismaClient
   })
 
   describe('createDraft', () => {
