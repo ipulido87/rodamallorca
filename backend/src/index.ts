@@ -6,6 +6,17 @@ import morgan from 'morgan'
 import path from 'path'
 import { ZodError } from 'zod'
 
+// Cargar variables de entorno primero
+dotenv.config()
+
+// Validar variables de entorno al inicio (falla rápido si hay problemas)
+import { validateEnv } from './config/env.validation'
+import { config } from './config/config'
+
+console.log('🔍 Validando variables de entorno...')
+validateEnv()
+console.log('✅ Variables de entorno validadas correctamente\n')
+
 import authRoutes from './modules/auth/interfaces/http/auth.routes'
 import catalogRoutes from './modules/catalog/interfaces/http/catalog.routes'
 import mediaRoutes from './modules/media/interfaces/http/media.routes'
@@ -24,10 +35,8 @@ import directoryRoutes from './modules/workshops/routes/directory.routes'
 import rentalRoutes from './modules/rentals/routes/rental.routes'
 import reviewRoutes from './modules/reviews/interfaces/http/review.routes'
 
-dotenv.config()
-
 const app = express()
-const PORT = process.env.PORT || 4000
+const PORT = config.port
 
 app.use(morgan('dev'))
 
@@ -47,18 +56,16 @@ app.use(
         'https://frontend-production-2ce0.up.railway.app',
         'https://www.rodamallorca.es',
         'https://rodamallorca.es',
-        process.env.FRONTEND_URL
+        config.frontendUrl,
       ].filter(Boolean)
 
-      console.log('🔍 [CORS DEBUG] Origin recibido:', origin)
-      console.log('🔍 [CORS DEBUG] Allowed origins:', allowedOrigins)
-      console.log('🔍 [CORS DEBUG] FRONTEND_URL env:', process.env.FRONTEND_URL)
-
+      // Permitir requests sin origin (ej: Postman, curl) o desde origins permitidos
       if (!origin || allowedOrigins.includes(origin)) {
-        console.log('✅ [CORS DEBUG] Origen permitido')
         callback(null, true)
       } else {
-        console.log('❌ [CORS DEBUG] Origen RECHAZADO')
+        if (config.nodeEnv === 'development') {
+          console.warn(`⚠️ CORS: Origen no permitido: ${origin}`)
+        }
         callback(new Error('Not allowed by CORS'))
       }
     },
@@ -91,7 +98,10 @@ app.get('/api/health', (_req, res) => res.send('ok'))
 
 // Middleware de manejo de errores global (debe ir al final)
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  console.error('❌ Error:', err)
+  // Log del error en desarrollo
+  if (config.nodeEnv === 'development') {
+    console.error('❌ Error:', err)
+  }
 
   // Errores de validación de Zod
   if (err?.name === 'ZodError' || err?.issues) {
@@ -102,7 +112,17 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     })
   }
 
-  // Errores de negocio (mensajes en español)
+  // Errores personalizados de la aplicación (AppError y sus subclases)
+  if (err.statusCode) {
+    return res.status(err.statusCode).json({
+      error: err.message,
+      message: err.message,
+      code: err.code,
+      ...(err.errors && { details: err.errors }),
+    })
+  }
+
+  // Errores de negocio (mensajes en español) - backward compatibility
   if (err?.message) {
     // Determinar el código de estado basado en el mensaje
     let statusCode = 500
@@ -134,6 +154,7 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   }
 
   // Error genérico
+  console.error('❌ Error no manejado:', err)
   return res.status(500).json({
     error: 'Error interno del servidor',
     message: 'Ha ocurrido un error inesperado',
@@ -141,5 +162,7 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`API running on http://localhost:${PORT}`)
+  console.log(`🚀 API corriendo en modo ${config.nodeEnv}`)
+  console.log(`📡 Servidor: http://localhost:${PORT}`)
+  console.log(`🌐 Frontend: ${config.frontendUrl}`)
 })
