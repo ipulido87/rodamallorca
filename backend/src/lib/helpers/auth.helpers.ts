@@ -24,14 +24,14 @@ export const AUTH_COOKIE_OPTIONS = {
  * Establece una cookie de autenticación con la configuración estándar
  */
 export function setAuthCookie(res: Response, token: string): void {
-  res.cookie('token', token, AUTH_COOKIE_OPTIONS)
+  res.cookie('auth_token', token, AUTH_COOKIE_OPTIONS)
 }
 
 /**
  * Elimina la cookie de autenticación
  */
 export function clearAuthCookie(res: Response): void {
-  res.clearCookie('token', { path: '/' })
+  res.clearCookie('auth_token', { path: '/' })
 }
 
 /**
@@ -40,7 +40,8 @@ export function clearAuthCookie(res: Response): void {
  */
 export function requireAuthUser(req: Request): { id: string; email: string; role: string } {
   if (!req.user) {
-    throw new Error('Usuario no autenticado')
+    const { UnauthenticatedError } = require('./error.helpers')
+    throw new UnauthenticatedError('Usuario no autenticado')
   }
   return req.user
 }
@@ -52,7 +53,8 @@ export function requireAuthUser(req: Request): { id: string; email: string; role
 export function requireRole(req: Request, role: string): void {
   const user = requireAuthUser(req)
   if (user.role !== role) {
-    throw new Error('No tienes permisos para realizar esta acción')
+    const { UnauthorizedError } = require('./error.helpers')
+    throw new UnauthorizedError('No tienes permisos para realizar esta acción')
   }
 }
 
@@ -62,7 +64,8 @@ export function requireRole(req: Request, role: string): void {
 export function requireWorkshopOwner(req: Request): { id: string; email: string; role: string } {
   const user = requireAuthUser(req)
   if (user.role !== 'WORKSHOP_OWNER') {
-    throw new Error('Solo los propietarios de talleres pueden realizar esta acción')
+    const { UnauthorizedError } = require('./error.helpers')
+    throw new UnauthorizedError('Solo los propietarios de talleres pueden realizar esta acción')
   }
   return user
 }
