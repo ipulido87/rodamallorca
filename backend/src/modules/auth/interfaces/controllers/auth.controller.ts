@@ -497,11 +497,12 @@ export const getCurrentUser = asyncHandler(async (req: Request, res: Response) =
       return status === 'ACTIVE' || status === 'TRIALING'
     })
 
-    return res.json({
+    res.json({
       ...sanitized,
       hasActiveSubscription,
       workshopsCount: workshops.length,
     })
+    return
   }
 
   // Retornar usuario directamente (sin wrapper)

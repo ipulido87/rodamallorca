@@ -24,7 +24,7 @@ export const validateParams = (schema: ZodSchema) => {
     if (!result.success) {
       return res.status(400).json({ errors: result.error.issues });
     }
-    req.params = result.data;
+    req.params = result.data as typeof req.params;
     next();
   };
 };
@@ -38,7 +38,7 @@ export const validateQuery = (schema: ZodSchema) => {
     if (!result.success) {
       return res.status(400).json({ errors: result.error.issues });
     }
-    req.query = result.data;
+    req.query = result.data as typeof req.query;
     next();
   };
 };
