@@ -8,16 +8,23 @@ import {
   cancelOrderController,
 } from '../controllers/order.controller'
 import { verifyToken } from '../../../../modules/auth/interfaces/middlewares/auth.middleware'
+import { validateBody, validateParams } from '../../../auth/interfaces/middlewares/validate-body'
+import {
+  createOrderSchema,
+  updateOrderStatusSchema,
+  cancelOrderSchema,
+} from '../schemas/order-schemas'
+import { UuidParamSchema, UserIdParamSchema, WorkshopIdParamSchema } from '../../../../lib/schemas/common.schemas'
 
 const router = Router()
 
 router.use(verifyToken) // ✅ Usa verifyToken
 
-router.post('/', createOrderController)
-router.get('/:id', getOrderController)
-router.get('/user/:userId', getUserOrdersController)
-router.get('/workshop/:workshopId', getWorkshopOrdersController)
-router.patch('/:id/status', updateOrderStatusController)
-router.post('/:id/cancel', cancelOrderController)
+router.post('/', validateBody(createOrderSchema), createOrderController)
+router.get('/:id', validateParams(UuidParamSchema), getOrderController)
+router.get('/user/:userId', validateParams(UserIdParamSchema), getUserOrdersController)
+router.get('/workshop/:workshopId', validateParams(WorkshopIdParamSchema), getWorkshopOrdersController)
+router.patch('/:id/status', validateParams(UuidParamSchema), validateBody(updateOrderStatusSchema), updateOrderStatusController)
+router.post('/:id/cancel', validateParams(UuidParamSchema), validateBody(cancelOrderSchema), cancelOrderController)
 
 export default router
