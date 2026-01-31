@@ -55,7 +55,7 @@ export const getOrderController = asyncHandler(async (
   const user = requireAuthUser(req)
   // Validación ya realizada por middleware validateParams
 
-  const result = await getOrder(req.params.id, {
+  const result = await getOrder(req.params.id as string, {
     repo: orderRepo,
     authenticatedUserId: user.id,
     userRole: user.role,
@@ -74,7 +74,7 @@ export const getUserOrdersController = asyncHandler(async (
   const user = requireAuthUser(req)
   // Validación ya realizada por middleware validateParams
 
-  const result = await getUserOrders(req.params.userId, {
+  const result = await getUserOrders(req.params.userId as string, {
     repo: orderRepo,
     authenticatedUserId: user.id,
     userRole: user.role,
@@ -95,7 +95,7 @@ export const getWorkshopOrdersController = asyncHandler(async (
   // Validación ya realizada por middleware validateParams
 
   // Soportar ambos formatos de parámetros: :workshopId o :id
-  const workshopId = req.params.workshopId || req.params.id
+  const workshopId = (req.params.workshopId || req.params.id) as string
 
   const result = await getWorkshopOrders(workshopId, {
     repo: orderRepo,
@@ -117,7 +117,7 @@ export const updateOrderStatusController = asyncHandler(async (
   const user = requireAuthUser(req)
   // Validación ya realizada por middleware validateParams y validateBody
 
-  const result = await updateOrderStatus(req.params.id, req.body, {
+  const result = await updateOrderStatus(req.params.id as string, req.body, {
     repo: orderRepo,
     workshopRepo,
     billingRepo,
@@ -138,7 +138,7 @@ export const cancelOrderController = asyncHandler(async (
   const user = requireAuthUser(req)
   // Validación ya realizada por middleware validateParams y validateBody
 
-  const result = await cancelOrder(req.params.id, {
+  const result = await cancelOrder(req.params.id as string, {
     repo: orderRepo,
     authenticatedUserId: user.id,
     userRole: user.role,
