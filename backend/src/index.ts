@@ -17,6 +17,10 @@ console.log('🔍 Validando variables de entorno...')
 validateEnv()
 console.log('✅ Variables de entorno validadas correctamente\n')
 
+// Registrar dependencias en el contenedor IoC
+import { registerDependencies } from './lib/di/register-dependencies'
+registerDependencies()
+
 import authRoutes from './modules/auth/interfaces/http/auth.routes'
 import catalogRoutes from './modules/catalog/interfaces/http/catalog.routes'
 import mediaRoutes from './modules/media/interfaces/http/media.routes'
@@ -32,7 +36,7 @@ import webhookRoutes from './modules/subscriptions/interfaces/http/webhook.route
 import paymentRoutes from './modules/payments/interfaces/http/payment.routes'
 import stripeConnectRoutes from './modules/payments/routes/stripe-connect.routes'
 import directoryRoutes from './modules/workshops/routes/directory.routes'
-import rentalRoutes from './modules/rentals/routes/rental.routes'
+import rentalRoutes from './modules/rentals/interfaces/http/rental.routes'
 import reviewRoutes from './modules/reviews/interfaces/http/review.routes'
 
 const app = express()
