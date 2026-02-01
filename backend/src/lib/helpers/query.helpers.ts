@@ -76,7 +76,7 @@ export function parseNumberQuery(value: any): number | undefined {
     return undefined
   }
   const num = Number(value)
-  return isNaN(num) ? undefined : num
+  return Number.isNaN(num) ? undefined : num
 }
 
 /**

@@ -4,10 +4,10 @@ import { z } from 'zod'
  * Schema para verificar disponibilidad de una bicicleta
  */
 export const CheckAvailabilitySchema = z.object({
-  startDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+  startDate: z.string().refine((date) => !Number.isNaN(Date.parse(date)), {
     message: 'Fecha de inicio invalida',
   }),
-  endDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+  endDate: z.string().refine((date) => !Number.isNaN(Date.parse(date)), {
     message: 'Fecha de fin invalida',
   }),
   quantity: z.coerce.number().int().positive().default(1),
@@ -24,10 +24,10 @@ export const CheckAvailabilitySchema = z.object({
  * Schema para calcular precio de alquiler
  */
 export const CalculatePriceSchema = z.object({
-  startDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+  startDate: z.string().refine((date) => !Number.isNaN(Date.parse(date)), {
     message: 'Fecha de inicio invalida',
   }),
-  endDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+  endDate: z.string().refine((date) => !Number.isNaN(Date.parse(date)), {
     message: 'Fecha de fin invalida',
   }),
 }).refine((data) => {
