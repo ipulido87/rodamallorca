@@ -48,7 +48,8 @@ jobs:
           fail_ci_if_error: false
 
       - name: SonarCloud Scan (opcional - requiere configuración)
-        if: success()
+        if: success() && env.SONAR_TOKEN != ''
+        continue-on-error: true
         uses: SonarSource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
