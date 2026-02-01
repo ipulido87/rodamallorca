@@ -61,6 +61,10 @@ jobs:
           args: >
             -Dsonar.organization=ipulido87
             -Dsonar.projectKey=ipulido87_rodamallorca
+            -Dsonar.sources=backend/src
+            -Dsonar.tests=backend/src/__tests__
+            -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info
+            -Dsonar.coverage.exclusions=**/__tests__/**,**/node_modules/**
 
       - name: Comment PR with coverage (opcional)
         if: github.event_name == 'pull_request'
