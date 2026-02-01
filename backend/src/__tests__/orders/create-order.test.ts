@@ -32,6 +32,7 @@ type MockFunction = ReturnType<typeof jest.fn>
 interface MockOrderRepository {
   create: MockFunction
   findById: MockFunction
+  findByIdWithDetails: MockFunction
   findByUserId: MockFunction
   findByWorkshopId: MockFunction
   updateStatus: MockFunction
@@ -53,6 +54,7 @@ describe('createOrder', () => {
     mockRepo = {
       create: jest.fn(),
       findById: jest.fn(),
+      findByIdWithDetails: jest.fn(),
       findByUserId: jest.fn(),
       findByWorkshopId: jest.fn(),
       updateStatus: jest.fn(),
