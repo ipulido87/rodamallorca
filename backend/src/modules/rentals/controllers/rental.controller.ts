@@ -47,8 +47,8 @@ export const getRentalBikes = async (req: Request, res: Response, next: NextFunc
     // Filtrar por rango de precio
     if (minPrice || maxPrice) {
       where.rentalPricePerDay = {}
-      if (minPrice) where.rentalPricePerDay.gte = parseInt(minPrice as string)
-      if (maxPrice) where.rentalPricePerDay.lte = parseInt(maxPrice as string)
+      if (minPrice) where.rentalPricePerDay.gte = Number.parseInt(minPrice as string, 10)
+      if (maxPrice) where.rentalPricePerDay.lte = Number.parseInt(maxPrice as string, 10)
     }
 
     // Filtrar por talla
