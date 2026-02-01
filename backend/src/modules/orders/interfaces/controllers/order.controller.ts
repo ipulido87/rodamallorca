@@ -7,13 +7,15 @@ import { getOrder } from '../../application/get-order'
 import { getUserOrders } from '../../application/get-user-orders'
 import { getWorkshopOrders } from '../../application/get-workshop-orders'
 import { updateOrderStatus } from '../../application/update-order-status'
-import { OrderRepositoryPrisma } from '../../infrastructure/persistence/prisma/order-repository-prisma'
-import { WorkshopRepositoryPrisma } from '../../../workshops/infrastructure/persistence/prisma/workshop-repository-prisma'
-import { billingRepositoryPrisma } from '../../../billing/infrastructure/persistence/prisma/billing-repository-prisma'
+import { container, DI_KEYS } from '../../../../lib/di/register-dependencies'
+import type { OrderRepository } from '../../domain/repositories/order-repository'
+import type { WorkshopRepository } from '../../../workshops/domain/repositories/workshop-repository'
+import type { BillingRepository } from '../../../billing/domain/repositories/billing-repository'
 
-const orderRepo = new OrderRepositoryPrisma()
-const workshopRepo = new WorkshopRepositoryPrisma()
-const billingRepo = billingRepositoryPrisma
+// Obtener dependencias del contenedor IoC
+const orderRepo = container.get<OrderRepository>(DI_KEYS.ORDER_REPO)
+const workshopRepo = container.get<WorkshopRepository>(DI_KEYS.WORKSHOP_REPO)
+const billingRepo = container.get<BillingRepository>(DI_KEYS.BILLING_REPO)
 
 /**
  * POST /api/orders
