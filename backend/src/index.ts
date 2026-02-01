@@ -21,6 +21,9 @@ console.log('✅ Variables de entorno validadas correctamente\n')
 import { registerDependencies } from './lib/di/register-dependencies'
 registerDependencies()
 
+// Configuración de Swagger
+import { setupSwagger } from './config/swagger'
+
 import authRoutes from './modules/auth/interfaces/http/auth.routes'
 import catalogRoutes from './modules/catalog/interfaces/http/catalog.routes'
 import mediaRoutes from './modules/media/interfaces/http/media.routes'
@@ -41,6 +44,9 @@ import reviewRoutes from './modules/reviews/interfaces/http/review.routes'
 
 const app = express()
 const PORT = config.port
+
+// Setup Swagger documentation
+setupSwagger(app)
 
 app.use(morgan('dev'))
 
