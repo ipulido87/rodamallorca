@@ -207,7 +207,9 @@ export class RentalRepositoryPrisma implements RentalRepository {
       status: bike.status,
       images: bike.images?.map((img: any) => ({
         id: img.id,
-        url: img.url,
+        original: img.original,
+        medium: img.medium,
+        thumbnail: img.thumbnail,
         position: img.position,
       })) ?? [],
       workshop: {
