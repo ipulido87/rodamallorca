@@ -23,7 +23,9 @@ export interface RentalBike {
 
 export interface RentalBikeImage {
   id: string
-  url: string
+  original: string
+  medium: string
+  thumbnail: string
   position: number
 }
 
