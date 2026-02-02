@@ -77,24 +77,18 @@ export const LoginForm = () => {
     }
 
     try {
-      // ⭐ Obtener datos del usuario DIRECTAMENTE del login
       const loggedUser = await auth.login(result.data.email, result.data.password)
 
       if (!loggedUser) {
-        console.error('Usuario no disponible tras login')
         navigate('/catalog')
         return
       }
 
-      // ✅ Si es WORKSHOP_OWNER, verificar suscripción ANTES de redirigir
+      // Redirect based on role and subscription status
       if (loggedUser.role === 'WORKSHOP_OWNER') {
-        const hasSubscription = (loggedUser as any).hasActiveSubscription
-
-        if (!hasSubscription) {
-          console.log('🔒 Taller sin suscripción activa, redirigiendo a activación')
+        if (!loggedUser.hasActiveSubscription) {
           navigate('/activate-subscription', { replace: true })
         } else {
-          console.log('✅ Taller con suscripción activa, redirigiendo a dashboard')
           navigate('/dashboard', { replace: true })
         }
       } else if (loggedUser.role === 'USER') {
@@ -103,9 +97,7 @@ export const LoginForm = () => {
         navigate('/catalog', { replace: true })
       }
     } catch (error: unknown) {
-      console.error('Login failed:', error)
-
-      // ✅ MANEJAR ERROR DE EMAIL NO VERIFICADO
+      // Handle EMAIL_NOT_VERIFIED error
       if (
         error instanceof Error &&
         error.message.startsWith('EMAIL_NOT_VERIFIED:')
@@ -113,7 +105,6 @@ export const LoginForm = () => {
         const email = error.message.split(':')[1]
         setPendingVerificationEmail(email)
         setShowVerificationDialog(true)
-        return
       }
     }
   }
@@ -123,16 +114,9 @@ export const LoginForm = () => {
     try {
       await auth.resendVerification(pendingVerificationEmail)
       setShowVerificationDialog(false)
-
-      // ✅ MOSTRAR MENSAJE DE ÉXITO
       auth.clearError()
-      setTimeout(() => {
-        alert(
-          '✅ Email de verificación reenviado. Revisa tu bandeja de entrada.'
-        )
-      }, 100)
-    } catch (error: unknown) {
-      console.error('Error reenviando verificación:', error)
+    } catch {
+      // Error is already handled in auth context
     } finally {
       setResendLoading(false)
     }

@@ -4,7 +4,7 @@ import { Box, CircularProgress, Alert, Button } from '@mui/material'
 import { useAuth } from '../features/auth/hooks/useAuth'
 import { useEffect, useState } from 'react'
 
-const MAX_LOADING_TIME = 10000 // 10 segundos máximo
+const MAX_LOADING_TIME = 10000
 
 export const PrivateRoute = ({ children }: { children: ReactNode }) => {
   const { isAuthenticated, loading } = useAuth()
@@ -12,15 +12,12 @@ export const PrivateRoute = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (loading) {
-      console.log('⏳ [PrivateRoute] Iniciando verificación de autenticación...')
       const timer = setTimeout(() => {
-        console.error('❌ [PrivateRoute] TIMEOUT: La verificación de autenticación tardó más de 10 segundos')
         setIsTimeout(true)
       }, MAX_LOADING_TIME)
 
       return () => {
         clearTimeout(timer)
-        console.log('✅ [PrivateRoute] Verificación completada')
       }
     }
   }, [loading])

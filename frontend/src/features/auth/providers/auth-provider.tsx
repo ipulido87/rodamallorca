@@ -1,23 +1,21 @@
 import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { AxiosError } from 'axios'
-import { AuthContext } from '../features/auth/providers/auth-providers'
-import type { User, AuthContextType } from '../features/auth/providers/auth-providers'
+import { AuthContext } from './auth-providers'
+import type { User, AuthContextType } from './auth-providers'
 import {
   API,
   login as apiLogin,
   me as apiMe,
   register as apiRegister,
   verifyCode as apiVerifyCode,
-  resendVerification as apiResendVerification, // ✅ AGREGAR
-} from '../features/auth/services/auth-service'
-import { notify } from '../shared/services/notification-service'
+  resendVerification as apiResendVerification,
+} from '../services/auth-service'
+import { notify } from '../../../shared/services/notification-service'
 
-// Key para localStorage
 const TOKEN_KEY = 'token'
 const USER_KEY = 'user'
 
-// ✅ HELPER PARA MANEJAR ERRORES DE API
 const handleApiError = (error: unknown): string => {
   const axiosError = error as AxiosError<{
     error?: string
@@ -46,19 +44,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   )
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [authError, setAuthError] = useState<string | null>(null) // ✅ ERROR CENTRALIZADO
+  const [authError, setAuthError] = useState<string | null>(null)
 
-  // ✅ Usar ref para evitar recrear interceptores constantemente
   const tokenRef = useRef(token)
   const userRef = useRef(user)
 
-  // Actualizar refs cuando cambien los estados
   useEffect(() => {
     tokenRef.current = token
     userRef.current = user
   }, [token, user])
 
-  // ✅ Declarar persistToken ANTES de usarlo - SIN dependencias para que sea estable
   const persistToken = useCallback((t: string | null) => {
     if (t) {
       localStorage.setItem(TOKEN_KEY, t)
@@ -67,11 +62,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem(TOKEN_KEY)
       setToken(null)
     }
-  }, []) // Sin dependencias - setToken es estable
+  }, [])
 
-  // ---- Interceptor: adjunta Authorization si hay token ---- SOLO UNA VEZ
+  // Configure axios interceptors once on mount
   useEffect(() => {
-    // Rutas públicas que NO necesitan Authorization header
     const publicRoutes = [
       '/catalog/',
       '/service-categories',
@@ -80,34 +74,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       '/auth/forgot-password'
     ]
 
-    console.log('🔧 [AUTH] Configurando interceptores de Axios...')
-
-    // ⭐ INTERCEPTOR DE REQUEST: BLOQUEAR PETICIONES SIN SUSCRIPCIÓN
     const reqId = API.interceptors.request.use((config) => {
       const requestUrl = config.url || ''
 
-      // ✅ Verificar si es una ruta pública (pero NO si contiene /owner/ o /admin/)
       const isOwnerOrAdminRoute = requestUrl.includes('/owner/') || requestUrl.includes('/admin/')
       const isPublicRoute = !isOwnerOrAdminRoute && publicRoutes.some(route => requestUrl.includes(route))
 
-      // ⭐ Rutas de owner que SÍ deben funcionar SIN suscripción activa
       const allowedWithoutSubscription = [
-        '/subscriptions/create-checkout-session',  // Crear sesión de pago de Stripe
-        '/subscriptions/status',                    // Verificar estado de suscripción
-        '/auth/me',                                 // Obtener datos del usuario
+        '/subscriptions/create-checkout-session',
+        '/subscriptions/status',
+        '/auth/me',
       ]
 
-      // ⭐ Verificar /workshops SOLO para POST (crear) o GET simple (listar propios)
       const isWorkshopsRoute = requestUrl.includes('/workshops')
       const isWorkshopsAllowed = isWorkshopsRoute && (
-        config.method === 'post' ||  // Crear workshop
-        requestUrl === '/owner/workshops' ||  // Listar mis workshops
-        requestUrl.includes('/owner/workshops/mine')  // Listar mis workshops
+        config.method === 'post' ||
+        requestUrl === '/owner/workshops' ||
+        requestUrl.includes('/owner/workshops/mine')
       )
 
-      // ⭐ BLOQUEAR peticiones a rutas de owner si es taller sin suscripción
       if (isOwnerOrAdminRoute) {
-        // ✅ Verificar si es una ruta permitida sin suscripción
         const isAllowedRoute = allowedWithoutSubscription.some(route =>
           requestUrl.includes(route)
         ) || isWorkshopsAllowed
@@ -115,90 +101,63 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (!isAllowedRoute) {
           const currentUser = JSON.parse(localStorage.getItem(USER_KEY) || 'null')
 
-          if (currentUser?.role === 'WORKSHOP_OWNER') {
-            const hasActiveSubscription = currentUser.hasActiveSubscription
-
-            if (!hasActiveSubscription) {
-              console.log('🚫 [REQUEST INTERCEPTOR] Bloqueando petición a', requestUrl, '- sin suscripción activa')
-
-              // ⭐ SOLO cancelar la petición, SIN redirigir (el RoleRoute ya redirige)
-              return Promise.reject({
-                message: 'Subscription required',
-                isSubscriptionRequired: true,
-                blocked: true
-              })
-            }
+          if (currentUser?.role === 'WORKSHOP_OWNER' && !currentUser.hasActiveSubscription) {
+            return Promise.reject({
+              message: 'Subscription required',
+              isSubscriptionRequired: true,
+              blocked: true
+            })
           }
         }
       }
 
-      // ✅ Leer token DIRECTAMENTE de localStorage (más confiable que el estado)
       const currentToken = localStorage.getItem(TOKEN_KEY)
 
-      // Solo agregar Authorization a rutas NO públicas
       if (currentToken && config.headers && !isPublicRoute) {
         config.headers.Authorization = `Bearer ${currentToken}`
       }
       return config
     })
 
-    // ---- Interceptor de respuesta: maneja 401 (token expirado) ----
     const resId = API.interceptors.response.use(
       (response) => response,
       (error) => {
         const requestUrl = error.config?.url || ''
 
-        // ✅ Verificar si es una ruta pública (pero NO si contiene /owner/ o /admin/)
         const isOwnerOrAdminRoute = requestUrl.includes('/owner/') || requestUrl.includes('/admin/')
         const isPublicRoute = !isOwnerOrAdminRoute && publicRoutes.some(route => requestUrl.includes(route))
 
-        // ✅ NO redirigir si estamos en el callback de OAuth o en checkout success
         const isInOAuthCallback = window.location.pathname === '/auth/callback'
         const isInCheckoutFlow = window.location.pathname.includes('/checkout/')
 
-        // Si el token expiró en una ruta PRIVADA, hacer logout automático
         const currentToken = localStorage.getItem(TOKEN_KEY)
         if (error.response?.status === 401 && currentToken && !isPublicRoute && !isInOAuthCallback) {
-          console.warn('⚠️ [INTERCEPTOR] Token expirado o inválido (401)')
-
-          // Limpiar token y datos de usuario
           localStorage.removeItem(TOKEN_KEY)
           localStorage.removeItem(USER_KEY)
           setToken(null)
           setUser(null)
 
-          // Si estamos en checkout, NO forzar redirect - dejar que PrivateRoute lo maneje
           if (!isInCheckoutFlow) {
-            console.warn('🔄 [INTERCEPTOR] Redirigiendo a login...')
             setTimeout(() => {
               window.location.href = '/login?error=Sesión expirada, por favor inicia sesión nuevamente'
             }, 100)
-          } else {
-            console.warn('⏭️ [INTERCEPTOR] En checkout flow, dejando que PrivateRoute maneje el redirect')
           }
         }
         return Promise.reject(error)
       }
     )
 
-    console.log('✅ [AUTH] Interceptores configurados')
-
     return () => {
-      console.log('🧹 [AUTH] Limpiando interceptores...')
       API.interceptors.request.eject(reqId)
       API.interceptors.response.eject(resId)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // ← SOLO una vez al montar
+  }, [])
 
-  // ✅ Usar useRef para refreshMe para que sea estable
   const refreshMeRef = useRef<() => Promise<void>>()
 
   refreshMeRef.current = async () => {
-    console.log('🔄 [AUTH] refreshMe() iniciado')
     try {
       const fetchedUser = await apiMe()
-      console.log('✅ [AUTH] Usuario obtenido:', fetchedUser ? fetchedUser.email : 'null')
       setUser(fetchedUser ?? null)
       if (fetchedUser) {
         localStorage.setItem(USER_KEY, JSON.stringify(fetchedUser))
@@ -206,32 +165,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.removeItem(USER_KEY)
       }
       setAuthError(null)
-    } catch (error: any) {
-      console.error('❌ [AUTH] Error en refreshMe():', error)
-
-      // Si es 401 (token inválido/expirado), limpiar todo inmediatamente
-      if (error.response?.status === 401) {
-        console.warn('⚠️ [AUTH] Token inválido o expirado, limpiando sesión...')
+    } catch (error: unknown) {
+      const axiosErr = error as AxiosError
+      if (axiosErr.response?.status === 401) {
         setUser(null)
         localStorage.removeItem(USER_KEY)
         persistToken(null)
       } else {
-        console.warn('⚠️ [AUTH] Error de autenticación, limpiando sesión...')
         setUser(null)
         localStorage.removeItem(USER_KEY)
         persistToken(null)
       }
-    } finally {
-      console.log('🏁 [AUTH] refreshMe() completado')
     }
   }
 
-  // Función estable que siempre apunta a la versión más reciente
   const refreshMe = useCallback(async () => {
     await refreshMeRef.current?.()
   }, [])
 
-  // Carga inicial con timeout de seguridad - SOLO UNA VEZ al montar
+  // Initial load with timeout
   useEffect(() => {
     let timeoutId: NodeJS.Timeout
     let isMounted = true
@@ -240,12 +192,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (!isMounted) return
 
       setLoading(true)
-      console.log('🚀 [AUTH] Iniciando carga inicial de usuario...')
 
-      // Timeout de seguridad: 8 segundos máximo
       timeoutId = setTimeout(() => {
         if (!isMounted) return
-        console.error('⏰ [AUTH] TIMEOUT: refreshMe() tardó más de 8 segundos')
         setLoading(false)
         setAuthError('La verificación de sesión tardó demasiado. Por favor, recarga la página.')
       }, 8000)
@@ -253,13 +202,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         await refreshMe()
         if (timeoutId) clearTimeout(timeoutId)
-      } catch (error) {
-        console.error('❌ [AUTH] Error en carga inicial:', error)
+      } catch {
         if (timeoutId) clearTimeout(timeoutId)
       } finally {
         if (isMounted) {
           setLoading(false)
-          console.log('🏁 [AUTH] Carga inicial completada')
         }
       }
     })()
@@ -268,35 +215,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       isMounted = false
       if (timeoutId) clearTimeout(timeoutId)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // ← SOLO una vez al montar el componente
+  }, [])
 
-  // ✅ LOGIN MEJORADO - RETORNA DATOS DEL USUARIO DIRECTAMENTE
   const login = useCallback(
     async (email: string, password: string) => {
       setLoading(true)
       setAuthError(null)
 
       try {
-        const { token: newToken, user: u } = await apiLogin(email, password)
+        const { token: newToken } = await apiLogin(email, password)
         persistToken(newToken)
 
-        // ⭐ Llamar a /auth/me para obtener datos completos incluyendo hasActiveSubscription
         const fullUser = await apiMe()
         setUser(fullUser ?? null)
         if (fullUser) {
           localStorage.setItem(USER_KEY, JSON.stringify(fullUser))
         }
 
-        // ⭐ RETORNAR el usuario para uso inmediato
         return fullUser
       } catch (error: unknown) {
-        console.error('Login error in AuthProvider:', error)
-
         const errorMessage = handleApiError(error)
         const axiosError = error as AxiosError<{ error?: string }>
 
-        // ✅ MANEJAR ERROR DE EMAIL NO VERIFICADO
         if (
           axiosError.response?.status === 403 &&
           axiosError.response?.data?.error === 'EMAIL_NOT_VERIFIED'
@@ -305,7 +245,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           throw new Error(`EMAIL_NOT_VERIFIED:${email}`)
         }
 
-        // ✅ MANEJAR ERROR DE CREDENCIALES INVÁLIDAS
         if (
           axiosError.response?.status === 401 &&
           axiosError.response?.data?.error === 'INVALID_CREDENTIALS'
@@ -323,7 +262,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     [persistToken]
   )
 
-  // ✅ NUEVA FUNCIÓN PARA REENVIAR VERIFICACIÓN
   const resendVerification = useCallback(async (email: string) => {
     setLoading(true)
     setAuthError(null)
@@ -331,7 +269,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await apiResendVerification(email)
       setAuthError(
-        '✅ Email de verificación reenviado. Revisa tu bandeja de entrada.'
+        'Email de verificación reenviado. Revisa tu bandeja de entrada.'
       )
     } catch (error: unknown) {
       const errorMessage = handleApiError(error)
@@ -345,8 +283,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = useCallback(async () => {
     try {
       await API.post('/auth/logout')
-    } catch (error) {
-      console.warn('Backend logout failed:', error)
+    } catch {
+      // Silent fail for logout
     }
 
     persistToken(null)
@@ -401,12 +339,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [])
 
-  // ✅ FUNCIÓN PARA LIMPIAR ERRORES
   const clearError = useCallback(() => {
     setAuthError(null)
   }, [])
 
-  // Auto-logout por inactividad
+  // Auto-logout on inactivity
   useEffect(() => {
     if (!user) return
 
@@ -447,7 +384,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     () => ({
       token,
       user,
-      setUser, // ✅ Exponer setUser para callback handler
+      setUser,
       isAuthenticated: !!user,
       isWorkshopOwner: user?.role === 'WORKSHOP_OWNER',
       loading,
