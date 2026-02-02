@@ -7,17 +7,9 @@ interface SubscriptionGuardProps {
   children: React.ReactNode
 }
 
-interface SubscriptionStatus {
-  hasActiveSubscription: boolean
-  status?: string
-  workshopId?: string
-}
-
 /**
- * Componente que verifica si el usuario tiene suscripción activa
- * ANTES de renderizar contenido protegido.
- *
- * Evita el flash de contenido y peticiones fallidas.
+ * Component that verifies if the user has an active subscription
+ * BEFORE rendering protected content.
  */
 export const SubscriptionGuard = ({ children }: SubscriptionGuardProps) => {
   const { user } = useAuth()
@@ -27,40 +19,33 @@ export const SubscriptionGuard = ({ children }: SubscriptionGuardProps) => {
 
   useEffect(() => {
     const checkSubscription = () => {
-      // Si no hay usuario, esperar
       if (!user) {
         setChecking(true)
         return
       }
 
-      // Si no es WORKSHOP_OWNER, permitir acceso inmediatamente
+      // Non-WORKSHOP_OWNER users have immediate access
       if (user.role !== 'WORKSHOP_OWNER') {
         setHasAccess(true)
         setChecking(false)
         return
       }
 
-      // ⭐ Usar datos que vienen del /auth/me (sin peticiones adicionales)
-      const userWithSub = user as any
-
-      // Si no tiene talleres, redirigir a crear
-      if (!userWithSub.workshopsCount || userWithSub.workshopsCount === 0) {
-        console.log('🔒 [SubscriptionGuard] Sin talleres, redirigiendo a crear...')
+      // Redirect to create workshop if none exist
+      if (!user.workshopsCount || user.workshopsCount === 0) {
         navigate('/create-workshop', { replace: true })
         setChecking(false)
         return
       }
 
-      // Si no tiene suscripción activa, redirigir a activar
-      if (!userWithSub.hasActiveSubscription) {
-        console.log('🔒 [SubscriptionGuard] Sin suscripción activa, redirigiendo a pricing...')
+      // Redirect to activate subscription if not active
+      if (!user.hasActiveSubscription) {
         navigate('/activate-subscription', { replace: true })
         setChecking(false)
         return
       }
 
-      // Todo OK → permitir acceso
-      console.log('✅ [SubscriptionGuard] Suscripción activa verificada')
+      // All checks passed - allow access
       setHasAccess(true)
       setChecking(false)
     }
