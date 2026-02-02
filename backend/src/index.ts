@@ -45,8 +45,11 @@ import reviewRoutes from './modules/reviews/interfaces/http/review.routes'
 const app = express()
 const PORT = config.port
 
-// Setup Swagger documentation
-setupSwagger(app)
+// Setup Swagger documentation (solo en desarrollo)
+if (config.nodeEnv !== 'production') {
+  setupSwagger(app)
+  console.log('📚 Swagger disponible en /api/docs')
+}
 
 app.use(morgan('dev'))
 
