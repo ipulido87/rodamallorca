@@ -4,6 +4,11 @@ import { SubscriptionRepositoryPrisma } from './persistence/prisma/subscription-
 import { WorkshopRepositoryPrisma } from '../../workshops/infrastructure/persistence/prisma/workshop-repository-prisma'
 import { StripePaymentGateway } from '../../payments/infrastructure/gateways/stripe-payment-gateway'
 
+// Singletons - se crean una sola vez al cargar el módulo
+const subscriptionRepo = new SubscriptionRepositoryPrisma()
+const workshopRepo = new WorkshopRepositoryPrisma()
+const paymentGateway = new StripePaymentGateway()
+
 /**
  * Middleware para verificar que un workshop tiene suscripción activa
  * Usado para proteger endpoints premium
@@ -24,10 +29,7 @@ export const requireActiveSubscription = async (
       })
     }
 
-    // Verificar suscripción
-    const subscriptionRepo = new SubscriptionRepositoryPrisma()
-    const workshopRepo = new WorkshopRepositoryPrisma()
-    const paymentGateway = new StripePaymentGateway()
+    // Verificar suscripción (usa singletons del módulo)
 
     const { isActive, status } = await checkWorkshopSubscription(workshopId, {
       subscriptionRepo,
@@ -76,10 +78,6 @@ export const checkSubscription = async (req: Request, res: Response, next: NextF
     const workshopId = req.params.workshopId || req.body.workshopId
 
     if (workshopId) {
-      const subscriptionRepo = new SubscriptionRepositoryPrisma()
-      const workshopRepo = new WorkshopRepositoryPrisma()
-      const paymentGateway = new StripePaymentGateway()
-
       const subscriptionInfo = await checkWorkshopSubscription(workshopId, {
         subscriptionRepo,
         workshopRepo,
