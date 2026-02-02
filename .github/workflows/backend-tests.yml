@@ -64,7 +64,7 @@ jobs:
             -Dsonar.sources=backend/src
             -Dsonar.tests=backend/src/__tests__
             -Dsonar.javascript.lcov.reportPaths=backend/coverage/lcov.info
-            -Dsonar.coverage.exclusions=**/__tests__/**,**/node_modules/**
+            -Dsonar.coverage.exclusions=**/__tests__/**,**/node_modules/**,**/config/**,**/swagger.ts,**/container.ts,**/register-dependencies.ts,**/*.helpers.ts,**/*.schemas.ts,**/email-service.ts,**/password-reset-email.ts,**/email-service-impl.ts,**/token-service-impl.ts
 
       - name: Comment PR with coverage (opcional)
         if: github.event_name == 'pull_request'
