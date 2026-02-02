@@ -38,7 +38,10 @@ export const validateQuery = (schema: ZodSchema) => {
     if (!result.success) {
       return res.status(400).json({ errors: result.error.issues });
     }
-    req.query = result.data as typeof req.query;
+    // En Express 5.x req.query es de solo lectura, usamos Object.assign
+    // para modificar las propiedades sin reasignar el objeto
+    Object.keys(req.query).forEach(key => delete (req.query as Record<string, unknown>)[key]);
+    Object.assign(req.query, result.data);
     next();
   };
 };
