@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import {
-  Box,
   Card,
   CardContent,
   Container,
@@ -9,6 +8,7 @@ import {
   CircularProgress,
   Alert,
   GridLegacy as Grid,
+  Stack,
 } from '@mui/material'
 import { Favorite, LocationOn } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
@@ -57,43 +57,46 @@ export const Favorites = () => {
   if (loading) {
     return (
       <Container>
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <Stack alignItems="center" sx={{ mt: 4 }}>
           <CircularProgress />
-        </Box>
+        </Stack>
       </Container>
     )
   }
 
   return (
     <Container maxWidth="lg">
-      <Box sx={{ py: 4 }}>
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
+      <Stack spacing={3} sx={{ py: 4 }}>
+        <Typography variant="h4" fontWeight="bold">
           Mis Talleres Favoritos
         </Typography>
 
         {favorites.length === 0 ? (
-          <Alert severity="info" sx={{ mt: 2 }}>
+          <Alert severity="info">
             No tienes talleres favoritos. Explora el catálogo y marca tus talleres favoritos.
           </Alert>
         ) : (
-          <Grid container spacing={3} sx={{ mt: 2 }}>
+          <Grid container spacing={3}>
             {favorites.map((favorite) => (
               <Grid item xs={12} sm={6} md={4} key={favorite.id}>
                 <Card sx={{ height: '100%', cursor: 'pointer', '&:hover': { boxShadow: 6 } }}>
                   <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <Box sx={{ flexGrow: 1 }} onClick={() => handleNavigateToWorkshop(favorite.workshopId)}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                      <Stack
+                        flex={1}
+                        onClick={() => handleNavigateToWorkshop(favorite.workshopId)}
+                      >
                         <Typography variant="h6" fontWeight="bold" gutterBottom>
                           {favorite.workshop?.name || 'Taller'}
                         </Typography>
 
                         {favorite.workshop?.city && (
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                          <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 1 }}>
                             <LocationOn fontSize="small" color="action" />
                             <Typography variant="body2" color="text.secondary">
                               {favorite.workshop.city}
                             </Typography>
-                          </Box>
+                          </Stack>
                         )}
 
                         {favorite.workshop?.description && (
@@ -101,19 +104,19 @@ export const Favorites = () => {
                             {favorite.workshop.description}
                           </Typography>
                         )}
-                      </Box>
+                      </Stack>
 
                       <IconButton color="error" onClick={() => handleToggleFavorite(favorite.workshopId)}>
                         <Favorite />
                       </IconButton>
-                    </Box>
+                    </Stack>
                   </CardContent>
                 </Card>
               </Grid>
             ))}
           </Grid>
         )}
-      </Box>
+      </Stack>
     </Container>
   )
 }
