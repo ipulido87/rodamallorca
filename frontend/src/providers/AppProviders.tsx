@@ -19,10 +19,10 @@ const swrConfig = {
 }
 
 interface AppProvidersProps {
-  children: ReactNode
+  readonly children: ReactNode
 }
 
-export function AppProviders({ children }: AppProvidersProps) {
+export function AppProviders({ children }: Readonly<AppProvidersProps>) {
   return (
     <BrowserRouter>
       <SWRConfig value={swrConfig}>

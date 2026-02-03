@@ -3,7 +3,7 @@ import { AUTH_ENDPOINTS } from '../../../constants/api'
 import { API } from '../../../shared/api'
 
 // Re-export API for backwards compatibility during migration
-export { API }
+export { API } from '../../../shared/api'
 
 // ---- Endpoints ----
 export async function register(input: {
