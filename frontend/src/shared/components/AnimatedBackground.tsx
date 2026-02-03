@@ -46,17 +46,6 @@ const float3 = keyframes`
   }
 `
 
-const pulse = keyframes`
-  0%, 100% {
-    opacity: 0.4;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.02);
-  }
-`
-
 const twinkle = keyframes`
   0%, 100% {
     opacity: 0.3;
@@ -245,42 +234,6 @@ function CyclingRoadPath() {
           animation: `${roadMove} 8s linear infinite`,
         } as React.CSSProperties}
       />
-    </Box>
-  )
-}
-
-// Cyclist silhouette - MORE VISIBLE
-function CyclistSilhouette() {
-  return (
-    <Box
-      sx={{
-        position: 'absolute',
-        bottom: '12%',
-        right: '5%',
-        width: { xs: 120, md: 200 },
-        height: 'auto',
-        opacity: 0.25,
-        animation: `${pulse} 4s ease-in-out infinite`,
-        filter: 'drop-shadow(0 0 20px rgba(100,200,255,0.5))',
-      }}
-    >
-      <svg viewBox="0 0 100 60" fill="white">
-        {/* Wheels */}
-        <circle cx="20" cy="45" r="12" fill="none" stroke="white" strokeWidth="2.5" />
-        <circle cx="80" cy="45" r="12" fill="none" stroke="white" strokeWidth="2.5" />
-        {/* Wheel hubs */}
-        <circle cx="20" cy="45" r="3" fill="white" />
-        <circle cx="80" cy="45" r="3" fill="white" />
-        {/* Frame */}
-        <path d="M20,45 L45,25 L60,25 L80,45" fill="none" stroke="white" strokeWidth="3" />
-        <path d="M45,25 L35,45 M60,25 L60,45" fill="none" stroke="white" strokeWidth="2.5" />
-        {/* Handlebars */}
-        <path d="M60,25 L70,18 M70,18 L65,15 M70,18 L73,22" fill="none" stroke="white" strokeWidth="2.5" />
-        {/* Cyclist body */}
-        <circle cx="55" cy="10" r="7" fill="white" />
-        <path d="M55,17 L50,32 M50,26 L62,22" fill="none" stroke="white" strokeWidth="3" />
-        <path d="M50,32 L35,45 M50,32 L58,45" fill="none" stroke="white" strokeWidth="2.5" />
-      </svg>
     </Box>
   )
 }
@@ -494,8 +447,6 @@ export function AnimatedBackground() {
       {/* Mountain range - Serra de Tramuntana */}
       <MountainRange />
 
-      {/* Cyclist silhouette */}
-      <CyclistSilhouette />
 
       {/* Light beam from top */}
       <Box
