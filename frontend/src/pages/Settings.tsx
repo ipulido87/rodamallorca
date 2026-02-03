@@ -24,7 +24,7 @@ import {
 import { useState } from 'react'
 import useSWR from 'swr'
 import { useAuth } from '../features/auth/hooks/useAuth'
-import { API } from '../features/auth/services/auth-service'
+import { API } from '@/shared/api'
 import { useSnackbar } from '../shared/hooks/use-snackbar'
 
 // Tipos

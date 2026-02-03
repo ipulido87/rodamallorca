@@ -19,7 +19,7 @@ import type { SidebarProps } from '../../shared/types/layout'
 import { getIcon } from '../../utils/icon-mapper'
 import { useRealtimeNotifications } from '../../shared/hooks/use-realtime-notifications'
 import { NotificationBadge } from '../notifications/notification-badge'
-import { API } from '../../features/auth/services/auth-service'
+import { API } from '@/shared/api'
 
 const DRAWER_WIDTH = 280
 

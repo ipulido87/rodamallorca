@@ -4,7 +4,7 @@ import type { Mock } from 'vitest'
 // Create a mock for API.get before importing catalog-service
 const mockGet = vi.fn() as Mock
 
-vi.mock('@/features/auth/services/auth-service', () => ({
+vi.mock('@/shared/api', () => ({
   API: {
     get: mockGet,
   },

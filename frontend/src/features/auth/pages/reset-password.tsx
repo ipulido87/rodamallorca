@@ -15,7 +15,7 @@ import { AxiosError } from 'axios'
 import { useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
-import { API } from '../services/auth-service'
+import { API } from '@/shared/api'
 
 // Schema de validación con Zod
 const resetPasswordSchema = z

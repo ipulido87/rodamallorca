@@ -26,7 +26,7 @@ import {
   createProduct,
   type CreateProductData,
 } from '../services/product-service'
-import { API } from '../../auth/services/auth-service'
+import { API } from '@/shared/api'
 
 interface Category {
   id: string

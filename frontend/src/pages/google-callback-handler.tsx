@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Box, CircularProgress, Typography } from '@mui/material'
-import { API } from '../features/auth/services/auth-service'
+import { API } from '@/shared/api'
 import { useAuth } from '../features/auth/hooks/useAuth'
 import type { User } from '../features/auth/providers/auth-providers'
 
