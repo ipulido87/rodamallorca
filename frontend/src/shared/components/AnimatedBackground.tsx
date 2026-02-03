@@ -4,94 +4,84 @@ import { Box, keyframes } from '@mui/material'
 const float1 = keyframes`
   0%, 100% {
     transform: translate(0, 0) scale(1);
-    opacity: 0.6;
   }
   25% {
-    transform: translate(100px, -150px) scale(1.15);
-    opacity: 0.8;
+    transform: translate(80px, -120px) scale(1.1);
   }
   50% {
-    transform: translate(-80px, -80px) scale(0.9);
-    opacity: 0.5;
+    transform: translate(-60px, -60px) scale(0.95);
   }
   75% {
-    transform: translate(120px, 80px) scale(1.1);
-    opacity: 0.7;
+    transform: translate(100px, 60px) scale(1.05);
   }
 `
 
 const float2 = keyframes`
   0%, 100% {
-    transform: translate(0, 0) scale(1) rotate(0deg);
-    opacity: 0.5;
+    transform: translate(0, 0) scale(1);
   }
   33% {
-    transform: translate(-120px, 100px) scale(1.3) rotate(120deg);
-    opacity: 0.8;
+    transform: translate(-100px, 80px) scale(1.2);
   }
   66% {
-    transform: translate(80px, -80px) scale(0.8) rotate(240deg);
-    opacity: 0.4;
+    transform: translate(70px, -70px) scale(0.9);
   }
 `
 
 const float3 = keyframes`
   0%, 100% {
     transform: translate(0, 0) scale(1);
-    opacity: 0.4;
   }
   20% {
-    transform: translate(150px, 70px) scale(1.2);
-    opacity: 0.7;
+    transform: translate(120px, 50px) scale(1.15);
   }
   40% {
-    transform: translate(-70px, 150px) scale(0.85);
-    opacity: 0.3;
+    transform: translate(-50px, 120px) scale(0.9);
   }
   60% {
-    transform: translate(-150px, -50px) scale(1.1);
-    opacity: 0.6;
+    transform: translate(-120px, -40px) scale(1.1);
   }
   80% {
-    transform: translate(70px, -120px) scale(0.95);
-    opacity: 0.5;
+    transform: translate(60px, -100px) scale(0.95);
   }
 `
 
 const pulse = keyframes`
   0%, 100% {
-    opacity: 0.15;
+    opacity: 0.4;
     transform: scale(1);
   }
   50% {
-    opacity: 0.25;
-    transform: scale(1.05);
+    opacity: 0.7;
+    transform: scale(1.02);
+  }
+`
+
+const twinkle = keyframes`
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
   }
 `
 
 const moveParticle = keyframes`
   0% {
-    transform: translateY(100vh) translateX(0) rotate(0deg);
+    transform: translateY(0) translateX(0);
     opacity: 0;
   }
-  5% {
+  10% {
     opacity: 1;
   }
-  95% {
+  90% {
     opacity: 1;
   }
   100% {
-    transform: translateY(-20vh) translateX(50px) rotate(360deg);
+    transform: translateY(-100vh) translateX(30px);
     opacity: 0;
-  }
-`
-
-const shimmer = keyframes`
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
   }
 `
 
@@ -108,27 +98,21 @@ const gradientShift = keyframes`
   0%, 100% {
     background-position: 0% 50%;
   }
-  25% {
-    background-position: 50% 100%;
-  }
   50% {
     background-position: 100% 50%;
   }
-  75% {
-    background-position: 50% 0%;
-  }
 `
 
-const breathe = keyframes`
+const glow = keyframes`
   0%, 100% {
-    filter: blur(60px) brightness(1);
+    filter: blur(40px) brightness(1);
   }
   50% {
-    filter: blur(80px) brightness(1.2);
+    filter: blur(50px) brightness(1.3);
   }
 `
 
-// Glowing orb component
+// Glowing orb component - MORE VISIBLE
 interface GlowingOrbProps {
   readonly size: number
   readonly color: string
@@ -137,10 +121,10 @@ interface GlowingOrbProps {
   readonly animation: string
   readonly duration: string
   readonly blur?: number
-  readonly glow?: boolean
+  readonly opacity?: number
 }
 
-function GlowingOrb({ size, color, top, left, animation, duration, blur = 60, glow = false }: GlowingOrbProps) {
+function GlowingOrb({ size, color, top, left, animation, duration, blur = 40, opacity = 0.6 }: GlowingOrbProps) {
   return (
     <Box
       sx={{
@@ -148,30 +132,28 @@ function GlowingOrb({ size, color, top, left, animation, duration, blur = 60, gl
         width: size,
         height: size,
         borderRadius: '50%',
-        background: `radial-gradient(circle at 30% 30%, ${color}, transparent 70%)`,
+        background: `radial-gradient(circle at 30% 30%, ${color}, ${color}80 40%, transparent 70%)`,
         filter: `blur(${blur}px)`,
+        opacity,
         top,
         left,
-        animation: glow
-          ? `${animation} ${duration} ease-in-out infinite, ${breathe} 8s ease-in-out infinite`
-          : `${animation} ${duration} ease-in-out infinite`,
+        animation: `${animation} ${duration} ease-in-out infinite, ${glow} 4s ease-in-out infinite`,
         pointerEvents: 'none',
-        willChange: 'transform, opacity',
+        willChange: 'transform, opacity, filter',
       }}
     />
   )
 }
 
-// Particle component
+// Bright particle component
 interface ParticleProps {
   readonly left: string
   readonly delay: string
   readonly duration: string
   readonly size: number
-  readonly color?: string
 }
 
-function Particle({ left, delay, duration, size, color = 'rgba(255, 255, 255, 0.9)' }: ParticleProps) {
+function Particle({ left, delay, duration, size }: ParticleProps) {
   return (
     <Box
       sx={{
@@ -179,148 +161,195 @@ function Particle({ left, delay, duration, size, color = 'rgba(255, 255, 255, 0.
         width: size,
         height: size,
         borderRadius: '50%',
-        background: color,
-        boxShadow: `0 0 ${size * 3}px ${color}, 0 0 ${size * 6}px ${color}`,
+        background: 'white',
+        boxShadow: `0 0 ${size * 2}px white, 0 0 ${size * 4}px rgba(100,200,255,0.8)`,
         left,
-        bottom: '-5%',
+        bottom: 0,
         animation: `${moveParticle} ${duration} linear infinite`,
         animationDelay: delay,
         pointerEvents: 'none',
-        willChange: 'transform, opacity',
       }}
     />
   )
 }
 
-// Road path SVG
+// Twinkling star
+interface StarProps {
+  readonly top: string
+  readonly left: string
+  readonly delay: string
+  readonly size: number
+}
+
+function Star({ top, left, delay, size }: StarProps) {
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        background: 'white',
+        boxShadow: '0 0 10px white, 0 0 20px rgba(100,200,255,0.5)',
+        top,
+        left,
+        animation: `${twinkle} 3s ease-in-out infinite`,
+        animationDelay: delay,
+        pointerEvents: 'none',
+      }}
+    />
+  )
+}
+
+// Road path SVG - MORE VISIBLE
 function CyclingRoadPath() {
   return (
     <Box
       component="svg"
-      viewBox="0 0 1920 300"
+      viewBox="0 0 1920 200"
       sx={{
         position: 'absolute',
-        bottom: '10%',
+        bottom: '8%',
         left: 0,
         width: '100%',
         height: 'auto',
-        opacity: 0.15,
+        opacity: 0.4,
         overflow: 'visible',
       }}
     >
-      {/* Main road path */}
-      <path
-        d="M-100,150 Q200,100 400,120 T800,80 T1200,140 T1600,100 T2020,120"
-        fill="none"
-        stroke="rgba(255,255,255,0.8)"
-        strokeWidth="6"
-        strokeDasharray="30,15"
-        style={{
-          animation: `${roadMove} 10s linear infinite`,
-        } as React.CSSProperties}
-      />
-      {/* Road glow */}
-      <path
-        d="M-100,150 Q200,100 400,120 T800,80 T1200,140 T1600,100 T2020,120"
-        fill="none"
-        stroke="rgba(255,255,255,0.3)"
-        strokeWidth="20"
-        filter="url(#roadGlow)"
-      />
       <defs>
         <filter id="roadGlow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="10" result="coloredBlur"/>
+          <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
           <feMerge>
             <feMergeNode in="coloredBlur"/>
             <feMergeNode in="SourceGraphic"/>
           </feMerge>
         </filter>
       </defs>
+      {/* Glow path */}
+      <path
+        d="M-100,100 Q200,60 500,80 T1000,50 T1500,90 T2020,70"
+        fill="none"
+        stroke="rgba(100,200,255,0.3)"
+        strokeWidth="30"
+        filter="url(#roadGlow)"
+      />
+      {/* Main road path */}
+      <path
+        d="M-100,100 Q200,60 500,80 T1000,50 T1500,90 T2020,70"
+        fill="none"
+        stroke="rgba(255,255,255,0.9)"
+        strokeWidth="3"
+        strokeDasharray="20,10"
+        style={{
+          animation: `${roadMove} 8s linear infinite`,
+        } as React.CSSProperties}
+      />
     </Box>
   )
 }
 
-// Cyclist silhouette
+// Cyclist silhouette - MORE VISIBLE
 function CyclistSilhouette() {
   return (
     <Box
       sx={{
         position: 'absolute',
-        bottom: '18%',
-        right: '8%',
-        width: { xs: 100, md: 180 },
+        bottom: '12%',
+        right: '5%',
+        width: { xs: 120, md: 200 },
         height: 'auto',
-        opacity: 0.12,
-        animation: `${pulse} 5s ease-in-out infinite`,
+        opacity: 0.25,
+        animation: `${pulse} 4s ease-in-out infinite`,
+        filter: 'drop-shadow(0 0 20px rgba(100,200,255,0.5))',
       }}
     >
       <svg viewBox="0 0 100 60" fill="white">
         {/* Wheels */}
-        <circle cx="20" cy="45" r="12" fill="none" stroke="white" strokeWidth="2" />
-        <circle cx="80" cy="45" r="12" fill="none" stroke="white" strokeWidth="2" />
-        {/* Spokes */}
-        <line x1="20" y1="33" x2="20" y2="57" stroke="white" strokeWidth="0.5" />
-        <line x1="8" y1="45" x2="32" y2="45" stroke="white" strokeWidth="0.5" />
-        <line x1="80" y1="33" x2="80" y2="57" stroke="white" strokeWidth="0.5" />
-        <line x1="68" y1="45" x2="92" y2="45" stroke="white" strokeWidth="0.5" />
+        <circle cx="20" cy="45" r="12" fill="none" stroke="white" strokeWidth="2.5" />
+        <circle cx="80" cy="45" r="12" fill="none" stroke="white" strokeWidth="2.5" />
+        {/* Wheel hubs */}
+        <circle cx="20" cy="45" r="3" fill="white" />
+        <circle cx="80" cy="45" r="3" fill="white" />
         {/* Frame */}
-        <path d="M20,45 L45,25 L60,25 L80,45" fill="none" stroke="white" strokeWidth="2.5" />
-        <path d="M45,25 L35,45 M60,25 L60,45" fill="none" stroke="white" strokeWidth="2" />
+        <path d="M20,45 L45,25 L60,25 L80,45" fill="none" stroke="white" strokeWidth="3" />
+        <path d="M45,25 L35,45 M60,25 L60,45" fill="none" stroke="white" strokeWidth="2.5" />
         {/* Handlebars */}
-        <path d="M60,25 L70,20 M70,20 L65,18 M70,20 L72,25" fill="none" stroke="white" strokeWidth="2" />
+        <path d="M60,25 L70,18 M70,18 L65,15 M70,18 L73,22" fill="none" stroke="white" strokeWidth="2.5" />
         {/* Cyclist body */}
-        <circle cx="55" cy="12" r="6" fill="white" />
-        <path d="M55,18 L50,35 M50,28 L60,25" fill="none" stroke="white" strokeWidth="2.5" />
-        <path d="M50,35 L35,45 M50,35 L55,45" fill="none" stroke="white" strokeWidth="2" />
+        <circle cx="55" cy="10" r="7" fill="white" />
+        <path d="M55,17 L50,32 M50,26 L62,22" fill="none" stroke="white" strokeWidth="3" />
+        <path d="M50,32 L35,45 M50,32 L58,45" fill="none" stroke="white" strokeWidth="2.5" />
       </svg>
     </Box>
   )
 }
 
-// Mountain range
+// Mountain range - Serra de Tramuntana
 function MountainRange() {
   return (
     <Box
       component="svg"
-      viewBox="0 0 1920 400"
+      viewBox="0 0 1920 300"
       preserveAspectRatio="none"
       sx={{
         position: 'absolute',
         bottom: 0,
         left: 0,
         width: '100%',
-        height: '35%',
-        opacity: 0.08,
+        height: '25%',
+        opacity: 0.15,
       }}
     >
       <defs>
         <linearGradient id="mountainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="white" stopOpacity="0.3" />
+          <stop offset="0%" stopColor="white" stopOpacity="0.5" />
           <stop offset="100%" stopColor="white" stopOpacity="0" />
         </linearGradient>
       </defs>
-      {/* Serra de Tramuntana silhouette */}
       <path
-        d="M0,400 L0,300 L100,250 L200,280 L300,200 L400,220 L500,150 L600,180 L700,120 L800,160 L900,100 L1000,140 L1100,90 L1200,130 L1300,80 L1400,150 L1500,180 L1600,140 L1700,200 L1800,160 L1920,220 L1920,400 Z"
+        d="M0,300 L0,220 L150,180 L300,200 L450,140 L600,160 L750,100 L900,130 L1050,80 L1200,110 L1350,70 L1500,120 L1650,90 L1800,150 L1920,130 L1920,300 Z"
         fill="url(#mountainGrad)"
       />
     </Box>
   )
 }
 
+// Hexagonal grid pattern
+function HexGrid() {
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        opacity: 0.04,
+        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+        pointerEvents: 'none',
+      }}
+    />
+  )
+}
+
 export function AnimatedBackground() {
-  // Generate particles with varied properties
-  const particles = Array.from({ length: 30 }).map((_, i) => ({
+  // Generate particles
+  const particles = Array.from({ length: 40 }).map((_, i) => ({
     id: i,
-    left: `${(i * 3.3) % 100}%`,
-    delay: `${(i * 0.7) % 15}s`,
-    duration: `${18 + (i % 12)}s`,
-    size: 1.5 + (i % 4),
-    color: i % 3 === 0
-      ? 'rgba(100, 200, 255, 0.9)'
-      : i % 3 === 1
-        ? 'rgba(255, 180, 100, 0.8)'
-        : 'rgba(255, 255, 255, 0.9)',
+    left: `${(i * 2.5) % 100}%`,
+    delay: `${(i * 0.5) % 12}s`,
+    duration: `${12 + (i % 8)}s`,
+    size: 2 + (i % 3),
+  }))
+
+  // Generate stars
+  const stars = Array.from({ length: 25 }).map((_, i) => ({
+    id: i,
+    top: `${10 + (i * 3) % 60}%`,
+    left: `${(i * 4) % 95}%`,
+    delay: `${(i * 0.3) % 3}s`,
+    size: 2 + (i % 2),
   }))
 
   return (
@@ -333,112 +362,122 @@ export function AnimatedBackground() {
         bottom: 0,
         overflow: 'hidden',
         zIndex: 0,
-        // Animated gradient background - Deep Mediterranean blues
+        // Vibrant animated gradient
         background: `linear-gradient(
           135deg,
-          #050a15 0%,
-          #0a1929 15%,
-          #0d2137 30%,
-          #0d47a1 50%,
-          #1565c0 65%,
-          #0d2137 80%,
-          #0a1929 90%,
-          #050a15 100%
+          #0a0e27 0%,
+          #0d1b3e 20%,
+          #1a3a6e 40%,
+          #1565c0 60%,
+          #1a3a6e 80%,
+          #0d1b3e 90%,
+          #0a0e27 100%
         )`,
-        backgroundSize: '400% 400%',
-        animation: `${gradientShift} 25s ease infinite`,
+        backgroundSize: '300% 300%',
+        animation: `${gradientShift} 15s ease infinite`,
       }}
     >
-      {/* Large primary orbs - main visual elements */}
-      <GlowingOrb
-        size={800}
-        color="rgba(13, 71, 161, 0.5)"
-        top="-20%"
-        left="-15%"
-        animation={float1}
-        duration="30s"
-        blur={100}
-        glow
-      />
+      {/* Large vibrant orbs */}
       <GlowingOrb
         size={700}
-        color="rgba(0, 188, 212, 0.4)"
-        top="50%"
-        left="65%"
-        animation={float2}
-        duration="35s"
-        blur={90}
-        glow
+        color="#2196f3"
+        top="-15%"
+        left="-10%"
+        animation={float1}
+        duration="20s"
+        blur={60}
+        opacity={0.5}
       />
       <GlowingOrb
         size={600}
-        color="rgba(103, 58, 183, 0.35)"
-        top="20%"
-        left="45%"
+        color="#00bcd4"
+        top="40%"
+        left="60%"
+        animation={float2}
+        duration="25s"
+        blur={50}
+        opacity={0.4}
+      />
+      <GlowingOrb
+        size={500}
+        color="#7c4dff"
+        top="60%"
+        left="10%"
         animation={float3}
-        duration="40s"
-        blur={80}
+        duration="30s"
+        blur={45}
+        opacity={0.35}
       />
 
       {/* Medium accent orbs */}
       <GlowingOrb
         size={400}
-        color="rgba(0, 150, 136, 0.4)"
-        top="65%"
-        left="5%"
+        color="#00e5ff"
+        top="10%"
+        left="70%"
         animation={float2}
-        duration="28s"
-        blur={60}
+        duration="22s"
+        blur={35}
+        opacity={0.3}
       />
       <GlowingOrb
         size={350}
-        color="rgba(255, 152, 0, 0.3)"
-        top="5%"
+        color="#ff4081"
+        top="70%"
         left="75%"
         animation={float1}
-        duration="32s"
-        blur={55}
+        duration="28s"
+        blur={30}
+        opacity={0.25}
       />
       <GlowingOrb
         size={300}
-        color="rgba(33, 150, 243, 0.4)"
-        top="75%"
-        left="80%"
+        color="#69f0ae"
+        top="25%"
+        left="35%"
         animation={float3}
-        duration="25s"
-        blur={50}
+        duration="18s"
+        blur={30}
+        opacity={0.25}
       />
 
-      {/* Small detail orbs */}
+      {/* Smaller detail orbs */}
       <GlowingOrb
         size={200}
-        color="rgba(233, 30, 99, 0.3)"
-        top="45%"
-        left="15%"
-        animation={float3}
-        duration="22s"
-        blur={40}
+        color="#ffd740"
+        top="50%"
+        left="25%"
+        animation={float1}
+        duration="15s"
+        blur={25}
+        opacity={0.3}
       />
       <GlowingOrb
         size={180}
-        color="rgba(76, 175, 80, 0.25)"
-        top="15%"
-        left="30%"
-        animation={float1}
-        duration="38s"
-        blur={35}
-      />
-      <GlowingOrb
-        size={150}
-        color="rgba(255, 235, 59, 0.2)"
-        top="60%"
-        left="40%"
+        color="#18ffff"
+        top="5%"
+        left="50%"
         animation={float2}
         duration="20s"
-        blur={30}
+        blur={20}
+        opacity={0.35}
       />
 
-      {/* Floating particles */}
+      {/* Hexagonal grid pattern */}
+      <HexGrid />
+
+      {/* Twinkling stars */}
+      {stars.map((star) => (
+        <Star
+          key={star.id}
+          top={star.top}
+          left={star.left}
+          delay={star.delay}
+          size={star.size}
+        />
+      ))}
+
+      {/* Rising particles */}
       {particles.map((p) => (
         <Particle
           key={p.id}
@@ -446,58 +485,28 @@ export function AnimatedBackground() {
           delay={p.delay}
           duration={p.duration}
           size={p.size}
-          color={p.color}
         />
       ))}
 
       {/* Cycling road path */}
       <CyclingRoadPath />
 
-      {/* Cyclist silhouette */}
-      <CyclistSilhouette />
-
       {/* Mountain range - Serra de Tramuntana */}
       <MountainRange />
 
-      {/* Subtle noise texture overlay */}
+      {/* Cyclist silhouette */}
+      <CyclistSilhouette />
+
+      {/* Light beam from top */}
       <Box
         sx={{
           position: 'absolute',
           top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          opacity: 0.03,
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+          left: '30%',
+          width: '40%',
+          height: '100%',
+          background: 'linear-gradient(180deg, rgba(100,200,255,0.1) 0%, transparent 50%)',
           pointerEvents: 'none',
-        }}
-      />
-
-      {/* Shimmer line accent */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '30%',
-          left: 0,
-          right: 0,
-          height: '1px',
-          background: `linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)`,
-          backgroundSize: '200% 100%',
-          animation: `${shimmer} 8s linear infinite`,
-          opacity: 0.5,
-        }}
-      />
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '70%',
-          left: 0,
-          right: 0,
-          height: '1px',
-          background: `linear-gradient(90deg, transparent, rgba(100,200,255,0.4), transparent)`,
-          backgroundSize: '200% 100%',
-          animation: `${shimmer} 12s linear infinite reverse`,
-          opacity: 0.4,
         }}
       />
 
@@ -509,7 +518,7 @@ export function AnimatedBackground() {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0,0,0,0.4) 100%)',
+          background: 'radial-gradient(ellipse at center, transparent 0%, transparent 50%, rgba(5,10,25,0.5) 100%)',
           pointerEvents: 'none',
         }}
       />
