@@ -293,22 +293,128 @@ export const LandingPage = () => {
                 <Box
                   sx={{
                     textAlign: 'center',
+                    position: 'relative',
+                    height: { xs: 200, md: 300 },
                   }}
                 >
-                  <DirectionsBike
+                  {/* Tramuntana Mountains with Bikes Illustration */}
+                  <Box
+                    component="svg"
+                    viewBox="0 0 400 300"
                     sx={{
-                      fontSize: { xs: 120, md: 200 },
-                      color: theme.palette.common.white,
-                      filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.3))',
-                      animation: mounted
-                        ? 'pulse 3s ease-in-out infinite'
-                        : 'none',
-                      '@keyframes pulse': {
-                        '0%, 100%': { transform: 'scale(1)' },
-                        '50%': { transform: 'scale(1.1)' },
-                      },
+                      width: '100%',
+                      height: '100%',
+                      filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.2))',
                     }}
-                  />
+                  >
+                    <defs>
+                      {/* Gradient for mountains */}
+                      <linearGradient id="mountainGradient1" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="rgba(255,255,255,0.4)" />
+                        <stop offset="100%" stopColor="rgba(255,255,255,0.1)" />
+                      </linearGradient>
+                      <linearGradient id="mountainGradient2" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="rgba(255,255,255,0.25)" />
+                        <stop offset="100%" stopColor="rgba(255,255,255,0.05)" />
+                      </linearGradient>
+                      {/* Sun glow */}
+                      <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stopColor="rgba(255,200,100,0.8)" />
+                        <stop offset="100%" stopColor="rgba(255,200,100,0)" />
+                      </radialGradient>
+                    </defs>
+
+                    {/* Sun */}
+                    <circle cx="320" cy="60" r="40" fill="url(#sunGlow)" />
+                    <circle cx="320" cy="60" r="20" fill="rgba(255,220,150,0.9)" />
+
+                    {/* Back mountains - Serra de Tramuntana */}
+                    <path
+                      d="M0,200 L30,160 L60,180 L100,120 L140,150 L180,100 L220,130 L260,80 L300,110 L340,70 L380,100 L400,120 L400,300 L0,300 Z"
+                      fill="url(#mountainGradient2)"
+                    />
+
+                    {/* Front mountains */}
+                    <path
+                      d="M0,220 L50,180 L80,200 L130,150 L170,180 L210,140 L250,170 L290,130 L330,160 L370,140 L400,160 L400,300 L0,300 Z"
+                      fill="url(#mountainGradient1)"
+                    />
+
+                    {/* Road through mountains */}
+                    <path
+                      d="M0,280 Q100,260 150,270 T250,255 T350,265 T400,250"
+                      fill="none"
+                      stroke="rgba(255,255,255,0.4)"
+                      strokeWidth="8"
+                    />
+                    <path
+                      d="M0,280 Q100,260 150,270 T250,255 T350,265 T400,250"
+                      fill="none"
+                      stroke="rgba(255,255,255,0.8)"
+                      strokeWidth="2"
+                      strokeDasharray="10,8"
+                    />
+
+                    {/* Road bike 1 - Leading */}
+                    <g transform="translate(280, 230) scale(0.7)">
+                      {/* Wheels */}
+                      <circle cx="0" cy="30" r="22" fill="none" stroke="white" strokeWidth="3" />
+                      <circle cx="70" cy="30" r="22" fill="none" stroke="white" strokeWidth="3" />
+                      {/* Wheel centers */}
+                      <circle cx="0" cy="30" r="4" fill="white" />
+                      <circle cx="70" cy="30" r="4" fill="white" />
+                      {/* Frame */}
+                      <path d="M0,30 L25,5 L45,5 L70,30" fill="none" stroke="white" strokeWidth="3.5" />
+                      <path d="M25,5 L15,30 M45,5 L45,30" fill="none" stroke="white" strokeWidth="3" />
+                      {/* Handlebars */}
+                      <path d="M45,5 L55,0 M55,0 L52,-5 M55,0 L58,3" fill="none" stroke="white" strokeWidth="2.5" />
+                      {/* Cyclist */}
+                      <circle cx="38" cy="-12" r="8" fill="white" />
+                      <path d="M38,-4 L32,18 M32,10 L48,3" fill="none" stroke="white" strokeWidth="3" />
+                      <path d="M32,18 L15,30 M32,18 L40,32" fill="none" stroke="white" strokeWidth="2.5" />
+                    </g>
+
+                    {/* Road bike 2 - Following */}
+                    <g transform="translate(160, 245) scale(0.55)" opacity="0.7">
+                      {/* Wheels */}
+                      <circle cx="0" cy="30" r="22" fill="none" stroke="white" strokeWidth="3" />
+                      <circle cx="70" cy="30" r="22" fill="none" stroke="white" strokeWidth="3" />
+                      {/* Wheel centers */}
+                      <circle cx="0" cy="30" r="4" fill="white" />
+                      <circle cx="70" cy="30" r="4" fill="white" />
+                      {/* Frame */}
+                      <path d="M0,30 L25,5 L45,5 L70,30" fill="none" stroke="white" strokeWidth="3.5" />
+                      <path d="M25,5 L15,30 M45,5 L45,30" fill="none" stroke="white" strokeWidth="3" />
+                      {/* Handlebars */}
+                      <path d="M45,5 L55,0 M55,0 L52,-5 M55,0 L58,3" fill="none" stroke="white" strokeWidth="2.5" />
+                      {/* Cyclist */}
+                      <circle cx="38" cy="-12" r="8" fill="white" />
+                      <path d="M38,-4 L32,18 M32,10 L48,3" fill="none" stroke="white" strokeWidth="3" />
+                      <path d="M32,18 L15,30 M32,18 L40,32" fill="none" stroke="white" strokeWidth="2.5" />
+                    </g>
+
+                    {/* Road bike 3 - Behind */}
+                    <g transform="translate(70, 258) scale(0.4)" opacity="0.5">
+                      {/* Wheels */}
+                      <circle cx="0" cy="30" r="22" fill="none" stroke="white" strokeWidth="3" />
+                      <circle cx="70" cy="30" r="22" fill="none" stroke="white" strokeWidth="3" />
+                      {/* Wheel centers */}
+                      <circle cx="0" cy="30" r="4" fill="white" />
+                      <circle cx="70" cy="30" r="4" fill="white" />
+                      {/* Frame */}
+                      <path d="M0,30 L25,5 L45,5 L70,30" fill="none" stroke="white" strokeWidth="3.5" />
+                      <path d="M25,5 L15,30 M45,5 L45,30" fill="none" stroke="white" strokeWidth="3" />
+                      {/* Cyclist */}
+                      <circle cx="38" cy="-12" r="8" fill="white" />
+                      <path d="M38,-4 L32,18" fill="none" stroke="white" strokeWidth="3" />
+                    </g>
+
+                    {/* "312" Route marker */}
+                    <g transform="translate(30, 200)">
+                      <rect x="0" y="0" width="45" height="25" rx="4" fill="rgba(255,255,255,0.9)" />
+                      <text x="22" y="18" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#1565c0">312</text>
+                    </g>
+                  </Box>
                 </Box>
               </Fade>
             </Box>
