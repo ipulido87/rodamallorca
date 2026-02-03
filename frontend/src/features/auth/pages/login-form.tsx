@@ -86,10 +86,10 @@ export const LoginForm = () => {
 
       // Redirect based on role and subscription status
       if (loggedUser.role === 'WORKSHOP_OWNER') {
-        if (!loggedUser.hasActiveSubscription) {
-          navigate('/activate-subscription', { replace: true })
-        } else {
+        if (loggedUser.hasActiveSubscription) {
           navigate('/dashboard', { replace: true })
+        } else {
+          navigate('/activate-subscription', { replace: true })
         }
       } else if (loggedUser.role === 'USER') {
         navigate('/home', { replace: true })
