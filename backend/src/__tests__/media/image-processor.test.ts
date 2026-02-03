@@ -61,9 +61,8 @@ describe.skip('Image Processor', () => {
         undefined
       )
 
-      // Instanciamos para probar que se crea el directorio uploads
-      const _processor = new ImageProcessor()
-      void _processor // Silenciar warning de variable no usada
+      // Instantiate to trigger directory creation
+      new ImageProcessor()
 
       await new Promise((r) => setTimeout(r, 10))
 
