@@ -21,7 +21,7 @@ API.interceptors.response.use(
       error.response?.status === 403 &&
       error.response?.data?.error === 'NO_ACTIVE_SUBSCRIPTION'
     ) {
-      window.location.href = '/activate-subscription'
+      globalThis.location.href = '/activate-subscription'
       return Promise.reject({
         ...error,
         isSubscriptionRequired: true,

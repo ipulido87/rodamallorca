@@ -145,7 +145,7 @@ describe('useCatalogSearch', () => {
     })
 
     it('should set loading state while fetching products', async () => {
-      let resolvePromise: (value: PaginatedResponse<Product>) => void
+      let resolvePromise: (value: PaginatedResponse<Product>) => void = () => {}
       const promise = new Promise<PaginatedResponse<Product>>((resolve) => {
         resolvePromise = resolve
       })
@@ -160,7 +160,7 @@ describe('useCatalogSearch', () => {
       expect(result.current.productsLoading).toBe(true)
 
       await act(async () => {
-        resolvePromise!(mockProductsResponse)
+        resolvePromise(mockProductsResponse)
         await promise
       })
 

@@ -165,17 +165,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         localStorage.removeItem(USER_KEY)
       }
       setAuthError(null)
-    } catch (error: unknown) {
-      const axiosErr = error as AxiosError
-      if (axiosErr.response?.status === 401) {
-        setUser(null)
-        localStorage.removeItem(USER_KEY)
-        persistToken(null)
-      } else {
-        setUser(null)
-        localStorage.removeItem(USER_KEY)
-        persistToken(null)
-      }
+    } catch {
+      // Clear user state on any error
+      setUser(null)
+      localStorage.removeItem(USER_KEY)
+      persistToken(null)
     }
   }
 
