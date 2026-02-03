@@ -1,4 +1,4 @@
-import { API } from '../../auth/services/auth-service'
+import { API } from '@/shared/api'
 
 // Enums
 export const VehicleType = {

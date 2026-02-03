@@ -1,4 +1,4 @@
-import { API } from '../../../features/auth/services/auth-service'
+import { API } from '@/shared/api'
 
 export interface CreateWorkshopData {
   name: string

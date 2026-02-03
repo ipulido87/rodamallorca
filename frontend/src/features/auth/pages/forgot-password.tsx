@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { API } from '../services/auth-service'
+import { API } from '@/shared/api'
 
 export const ForgotPassword = () => {
   const navigate = useNavigate()

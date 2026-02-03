@@ -1,4 +1,4 @@
-import { API } from '../../auth/services/auth-service'
+import { API } from '@/shared/api'
 
 export const OrderStatus = {
   PENDING: 'PENDING',
@@ -84,16 +84,7 @@ export const getOrderById = async (orderId: string): Promise<Order> => {
  * Obtener todos los pedidos del usuario autenticado
  */
 export const getMyOrders = async (userId: string): Promise<Order[]> => {
-  console.log('🚀 [GETMYORDERS] Iniciando llamada API...')
-  console.log('🚀 [GETMYORDERS] UserId:', userId)
-  console.log(
-    '🚀 [GETMYORDERS] URL completa: http://localhost:4000/api/orders/user/' +
-      userId
-  )
   const response = await API.get(`/orders/user/${userId}`)
-  console.log('✅ [GETMYORDERS] Respuesta recibida:', response)
-  console.log('✅ [GETMYORDERS] Datos:', response.data)
-  console.log('✅ [GETMYORDERS] Status:', response.status)
   return response.data
 }
 

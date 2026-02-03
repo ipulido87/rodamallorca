@@ -29,7 +29,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { z } from 'zod'
 import { useAuth } from '../../auth/hooks/useAuth'
-import { API } from '../../auth/services/auth-service'
+import { API } from '@/shared/api'
 
 interface Product {
   id: string

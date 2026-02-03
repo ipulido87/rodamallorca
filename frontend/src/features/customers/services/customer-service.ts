@@ -1,5 +1,5 @@
 // frontend/src/features/customers/services/customer-service.ts
-import { API } from '../../auth/services/auth-service'
+import { API } from '@/shared/api'
 import type {
   Customer,
   CreateCustomerInput,

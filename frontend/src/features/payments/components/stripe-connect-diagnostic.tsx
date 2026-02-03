@@ -21,7 +21,7 @@ import {
   Link,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
-import { API } from '../../auth/services/auth-service'
+import { API } from '@/shared/api'
 import {
   getStripeAccountStatus,
   initiateStripeConnect,

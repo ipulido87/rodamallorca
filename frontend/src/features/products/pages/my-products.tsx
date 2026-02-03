@@ -30,7 +30,7 @@ import { adaptProductImages } from '../../../utils/adapt-product-Images'
 import { ModernProductLayout } from '../components/modern-product-layout'
 import type { Product } from '../services/product-service'
 import type { CardProduct } from '../types/products-types'
-import { API } from '../../auth/services/auth-service'
+import { API } from '@/shared/api'
 
 /* --------- Adaptador UI ← Backend --------- */
 const adaptProductForLayout = (product: Product): CardProduct => ({

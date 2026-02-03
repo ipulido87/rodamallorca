@@ -1,5 +1,5 @@
 // frontend/src/features/catalog/services/catalog-service.ts
-import { API } from '../../auth/services/auth-service'
+import { API } from '@/shared/api'
 import type {
   PaginatedResponse,
   Product,
