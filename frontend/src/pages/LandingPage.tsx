@@ -27,6 +27,7 @@ import {
 } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { AnimatedBackground } from '../shared/components/AnimatedBackground'
 
 // Hook optimizado para intersection observer
 const useInView = (threshold = 0.1) => {
@@ -154,12 +155,12 @@ export const LandingPage = () => {
           minHeight: '100vh',
           display: 'flex',
           alignItems: 'center',
-          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 50%, ${theme.palette.secondary.main} 100%)`,
           color: theme.palette.primary.contrastText,
           position: 'relative',
           overflow: 'hidden',
         }}
       >
+        <AnimatedBackground />
         <Container maxWidth="lg" sx={{ zIndex: 1 }}>
           <Stack
             direction={{ xs: 'column', md: 'row' }}
