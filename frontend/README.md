@@ -1,193 +1,220 @@
-# React + TypeScript + Vite
+# RodaMallorca Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación web para la plataforma de talleres de bicicletas en Mallorca.
 
-Currently, two official plugins are available:
+## Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **React 18** + TypeScript
+- **Vite** - Build tool
+- **Material UI (MUI)** - Component library
+- **React Router v6** - Routing
+- **SWR** - Data fetching & caching
+- **Zod** - Schema validation
+- **Axios** - HTTP client
+- **Vitest** - Testing
 
-## Expanding the ESLint configuration
+## Quick Start
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+```bash
+# Desde la raíz del monorepo
+pnpm install
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+# Desarrollo (requiere backend corriendo en :4000)
+pnpm --filter frontend dev
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+# O desde /frontend
+cd frontend && pnpm dev
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Build producción
+pnpm --filter frontend build
+
+# Tests
+pnpm --filter frontend test
+
+# Tests con coverage
+pnpm --filter frontend test:coverage
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Variables de Entorno
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Crear `.env` en la raíz de `/frontend`:
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```env
+VITE_API_URL=http://localhost:4000/api
+VITE_GOOGLE_CLIENT_ID=your-google-client-id
 ```
 
+## Arquitectura
+
+### Estructura de Carpetas
+
+```
+src/
+├── __tests__/           # Tests organizados por tipo
+│   ├── auth/
+│   ├── cart/
+│   ├── components/
+│   ├── hooks/
+│   ├── schemas/
+│   └── services/
+│
+├── components/          # Componentes compartidos de UI
+│   ├── layout/          # MainLayout, PublicLayout, Sidebar
+│   ├── notifications/
+│   └── ...
+│
+├── features/            # Módulos por dominio (feature-based)
+│   ├── auth/
+│   │   ├── hooks/       # useAuth
+│   │   ├── pages/       # login-form, register-form
+│   │   ├── providers/   # AuthProvider, auth-providers
+│   │   └── services/    # auth-service
+│   ├── billing/
+│   ├── cart/
+│   ├── catalog/
+│   ├── customers/
+│   ├── dashboard/
+│   ├── favorites/
+│   ├── media/
+│   ├── orders/
+│   ├── payments/
+│   ├── products/
+│   ├── rentals/
+│   ├── reviews/
+│   ├── services/
+│   ├── subscriptions/
+│   └── workshops/
+│
+├── pages/               # Páginas standalone (Landing, Home, Profile)
+│
+├── providers/           # Context providers globales
+│   └── AppProviders.tsx
+│
+├── router/              # Configuración de rutas
+│   ├── AppRoutes.tsx    # Definición de rutas
+│   ├── lazy-imports.ts  # Imports lazy por categoría
+│   └── index.ts
+│
+├── shared/              # Código compartido
+│   ├── api/             # Cliente API centralizado
+│   ├── components/      # PageLoader, etc.
+│   ├── constants/
+│   ├── hooks/           # useSnackbar, useConfirmDialog
+│   ├── schemas/         # Zod schemas compartidos
+│   ├── services/
+│   ├── theme/
+│   └── types/
+│
+└── App.tsx              # Punto de entrada (13 líneas)
 ```
 
-RODAMALLORCA/
-├─ backend/
-│  └─ (contenido no mostrado)
-├─ frontend/
-│  ├─ node_modules/
-│  ├─ public/
-│  ├─ src/
-│  │  ├─ api/
-│  │  │  └─ auth.ts
-│  │  ├─ assets/
-│  │  │  └─ react.svg
-│  │  ├─ components/
-│  │  │  └─ layout/
-│  │  │     ├─ main-layout.tsx
-│  │  │     ├─ public-footer.tsx
-│  │  │     ├─ public-header.tsx
-│  │  │     ├─ public-layout.tsx
-│  │  │     ├─ side-bar.tsx
-│  │  │     ├─ top-bar.tsx
-│  │  │     ├─ user-profile-menu.tsx
-│  │  │     ├─ google-login-button.tsx
-│  │  │     ├─ private-ruta.tsx
-│  │  │     └─ role-route.tsx
-│  │  ├─ constants/
-│  │  │  └─ api.ts
-│  │  ├─ features/
-│  │  │  ├─ auth/
-│  │  │  ├─ catalog/
-│  │  │  │  ├─ components/
-│  │  │  │  ├─ pages/
-│  │  │  │  │  └─ Catalog.tsx
-│  │  │  │  ├─ services/
-│  │  │  │  │  └─ catalog-service.ts
-│  │  │  │  └─ types/
-│  │  │  │     ├─ catalog.ts
-│  │  │  │     └─ index.ts
-│  │  │  ├─ dashboard/
-│  │  │  │  ├─ components/
-│  │  │  │  ├─ pages/
-│  │  │  │  ├─ services/
-│  │  │  │  └─ index.ts
-│  │  │  ├─ media/
-│  │  │  │  ├─ components/
-│  │  │  │  │  └─ image-downloads.tsx
-│  │  │  │  └─ services/
-│  │  │  │     └─ media-service.ts
-│  │  │  ├─ products/
-│  │  │  │  ├─ components/
-│  │  │  │  │  ├─ modern-product-layout.tsx
-│  │  │  │  │  └─ product-image-galery.tsx
-│  │  │  │  ├─ pages/
-│  │  │  │  │  ├─ create-product.tsx
-│  │  │  │  │  ├─ edit-product.tsx
-│  │  │  │  │  ├─ my-products.tsx
-│  │  │  │  │  └─ product-details.tsx
-│  │  │  │  ├─ services/
-│  │  │  │  │  └─ product-service.ts
-│  │  │  │  └─ types/
-│  │  │  │     └─ index.ts
-│  │  │  └─ workshops/
-│  │  │     ├─ components/
-│  │  │     ├─ pages/
-│  │  │     │  ├─ create-workshop.tsx
-│  │  │     │  ├─ edit-workshop.tsx
-│  │  │     │  ├─ my-work-shops.tsx
-│  │  │     │  └─ workshop-detail.tsx
-│  │  │     ├─ services/
-│  │  │     │  └─ workshop-service.ts
-│  │  │     └─ types/
-│  │  ├─ pages/
-│  │  │  ├─ edit-product.tsx
-│  │  │  ├─ HomePage.tsx
-│  │  │  ├─ LandingPage.tsx
-│  │  │  ├─ login-form.tsx
-│  │  │  └─ register-user.tsx
-│  │  ├─ providers/
-│  │  │  └─ auth-provider.tsx
-│  │  ├─ shared/
-│  │  │  ├─ components/
-│  │  │  │  └─ FilterBar.tsx
-│  │  │  ├─ constants/
-│  │  │  │  ├─ menu-items.ts
-│  │  │  │  ├─ product-filters.ts
-│  │  │  │  └─ validation.ts
-│  │  │  ├─ hooks/
-│  │  │  ├─ services/
-│  │  │  ├─ theme/
-│  │  │  │  └─ index.ts
-│  │  │  ├─ types/
-│  │  │  │  ├─ api.ts
-│  │  │  │  ├─ layout.ts
-│  │  │  │  └─ index.ts
-│  │  │  └─ utils/
-│  │  │     └─ index.ts
-│  │  ├─ utils/
-│  │  │  ├─ api-urls.ts
-│  │  │  └─ icon-mapper.tsx
-│  │  ├─ App.css
-│  │  ├─ App.tsx
-│  │  ├─ index.css
-│  │  ├─ main.tsx
-│  │  └─ vite-env.d.ts
-│  ├─ .env
-│  ├─ eslint.config.js
-│  ├─ index.html
-│  ├─ package.json
-│  ├─ pnpm-lock.yaml
-│  ├─ README.md
-│  ├─ reorganize-structure.sh
-│  ├─ tsconfig.app.json
-│  ├─ tsconfig.json
-│  ├─ tsconfig.node.json
-│  ├─ update-imports.cjs
-│  └─ vite.config.ts
-├─ node_modules/
-├─ .gitignore
-├─ package.json
-├─ pnpm-lock.yaml
-├─ pnpm-workspace.yaml
-└─ README.md
+### Patrones Clave
+
+#### 1. Feature-Based Architecture
+
+Cada feature es autónoma con su propia estructura:
+
 ```
+features/products/
+├── components/     # Componentes específicos del feature
+├── hooks/          # Hooks específicos
+├── pages/          # Páginas/vistas
+├── services/       # API calls
+├── types/          # TypeScript types
+└── index.ts        # Public API del módulo
+```
+
+#### 2. API Client Centralizado
+
+```typescript
+// Importar siempre desde @/shared/api
+import { API } from '@/shared/api'
+
+// El cliente incluye interceptors para:
+// - Manejo de errores de suscripción (403 NO_ACTIVE_SUBSCRIPTION)
+// - Manejo de email no verificado (403 EMAIL_NOT_VERIFIED)
+```
+
+#### 3. Lazy Loading
+
+Las rutas no críticas se cargan bajo demanda:
+
+```typescript
+// router/lazy-imports.ts
+const Dashboard = lazy(() =>
+  import('../features/dashboard/index').then((m) => ({ default: m.Dashboard }))
+)
+```
+
+#### 4. MUI Best Practices
+
+```tsx
+// ✅ Usar Stack para layouts flex
+<Stack direction="row" spacing={2} justifyContent="space-between">
+  <Typography>Left</Typography>
+  <Button>Right</Button>
+</Stack>
+
+// ❌ Evitar Box con display: flex
+<Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between' }}>
+```
+
+## Scripts Disponibles
+
+| Comando | Descripción |
+|---------|-------------|
+| `pnpm dev` | Servidor de desarrollo en :5173 |
+| `pnpm build` | Build de producción |
+| `pnpm preview` | Preview del build |
+| `pnpm lint` | Ejecutar ESLint |
+| `pnpm test` | Ejecutar tests |
+| `pnpm test:coverage` | Tests con reporte de coverage |
+
+## Testing
+
+Tests ubicados en `src/__tests__/` con estructura espejo:
+
+```bash
+# Ejecutar todos los tests
+pnpm test
+
+# Con UI
+pnpm test:ui
+
+# Coverage (mínimo 20%)
+pnpm test:coverage
+```
+
+### Cobertura Actual
+
+- **108 tests** pasando
+- Hooks: `useAuth`, `useCatalogSearch`
+- Services: `catalog-service`
+- Components: `RoleRoute`, `PrivateRoute`, `Cart`, `LoginForm`
+- Schemas: Validaciones Zod
+
+## Roles y Rutas
+
+| Rol | Rutas disponibles |
+|-----|-------------------|
+| `USER` | `/home`, `/my-orders`, `/cart`, `/favorites`, `/profile` |
+| `WORKSHOP_OWNER` | Todo lo anterior + `/dashboard`, `/my-workshops`, `/my-products`, `/billing/*` |
+| `ADMIN` | Todas las rutas |
+
+## Estado Global
+
+- **AuthContext**: Usuario autenticado, login/logout
+- **CartContext**: Carrito de compras
+- **SnackbarProvider**: Notificaciones toast
+- **ConfirmDialogProvider**: Diálogos de confirmación
+
+## Integración con Backend
+
+El frontend espera el backend corriendo en `VITE_API_URL` (default: `http://localhost:4000/api`).
+
+Endpoints principales:
+- `/auth/*` - Autenticación
+- `/catalog/*` - Catálogo público
+- `/owner/*` - Operaciones de workshop owner
+- `/orders/*` - Pedidos
+- `/workshops/*` - Talleres
