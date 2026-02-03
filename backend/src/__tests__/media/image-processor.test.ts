@@ -62,10 +62,11 @@ describe.skip('Image Processor', () => {
       )
 
       // Instantiate to trigger directory creation
-      new ImageProcessor()
+      const processor = new ImageProcessor()
 
       await new Promise((r) => setTimeout(r, 10))
 
+      expect(processor).toBeInstanceOf(ImageProcessor)
       expect(fs.mkdir).toHaveBeenCalledWith(
         expect.stringContaining('uploads'),
         { recursive: true }
