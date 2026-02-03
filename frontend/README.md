@@ -1,6 +1,6 @@
 # RodaMallorca Frontend
 
-Aplicación web para la plataforma de talleres de bicicletas en Mallorca.
+Web application for the bicycle workshop marketplace platform in Mallorca.
 
 ## Tech Stack
 
@@ -16,41 +16,41 @@ Aplicación web para la plataforma de talleres de bicicletas en Mallorca.
 ## Quick Start
 
 ```bash
-# Desde la raíz del monorepo
+# From monorepo root
 pnpm install
 
-# Desarrollo (requiere backend corriendo en :4000)
+# Development (requires backend running on :4000)
 pnpm --filter frontend dev
 
-# O desde /frontend
+# Or from /frontend
 cd frontend && pnpm dev
 
-# Build producción
+# Production build
 pnpm --filter frontend build
 
 # Tests
 pnpm --filter frontend test
 
-# Tests con coverage
+# Tests with coverage
 pnpm --filter frontend test:coverage
 ```
 
-## Variables de Entorno
+## Environment Variables
 
-Crear `.env` en la raíz de `/frontend`:
+Create `.env` in `/frontend` root:
 
 ```env
 VITE_API_URL=http://localhost:4000/api
 VITE_GOOGLE_CLIENT_ID=your-google-client-id
 ```
 
-## Arquitectura
+## Architecture
 
-### Estructura de Carpetas
+### Folder Structure
 
 ```
 src/
-├── __tests__/           # Tests organizados por tipo
+├── __tests__/           # Tests organized by type
 │   ├── auth/
 │   ├── cart/
 │   ├── components/
@@ -58,12 +58,12 @@ src/
 │   ├── schemas/
 │   └── services/
 │
-├── components/          # Componentes compartidos de UI
+├── components/          # Shared UI components
 │   ├── layout/          # MainLayout, PublicLayout, Sidebar
 │   ├── notifications/
 │   └── ...
 │
-├── features/            # Módulos por dominio (feature-based)
+├── features/            # Domain modules (feature-based)
 │   ├── auth/
 │   │   ├── hooks/       # useAuth
 │   │   ├── pages/       # login-form, register-form
@@ -85,59 +85,59 @@ src/
 │   ├── subscriptions/
 │   └── workshops/
 │
-├── pages/               # Páginas standalone (Landing, Home, Profile)
+├── pages/               # Standalone pages (Landing, Home, Profile)
 │
-├── providers/           # Context providers globales
+├── providers/           # Global context providers
 │   └── AppProviders.tsx
 │
-├── router/              # Configuración de rutas
-│   ├── AppRoutes.tsx    # Definición de rutas
-│   ├── lazy-imports.ts  # Imports lazy por categoría
+├── router/              # Route configuration
+│   ├── AppRoutes.tsx    # Route definitions
+│   ├── lazy-imports.ts  # Lazy imports by category
 │   └── index.ts
 │
-├── shared/              # Código compartido
-│   ├── api/             # Cliente API centralizado
+├── shared/              # Shared code
+│   ├── api/             # Centralized API client
 │   ├── components/      # PageLoader, etc.
 │   ├── constants/
 │   ├── hooks/           # useSnackbar, useConfirmDialog
-│   ├── schemas/         # Zod schemas compartidos
+│   ├── schemas/         # Shared Zod schemas
 │   ├── services/
 │   ├── theme/
 │   └── types/
 │
-└── App.tsx              # Punto de entrada (13 líneas)
+└── App.tsx              # Entry point (13 lines)
 ```
 
-### Patrones Clave
+### Key Patterns
 
 #### 1. Feature-Based Architecture
 
-Cada feature es autónoma con su propia estructura:
+Each feature is self-contained with its own structure:
 
 ```
 features/products/
-├── components/     # Componentes específicos del feature
-├── hooks/          # Hooks específicos
-├── pages/          # Páginas/vistas
+├── components/     # Feature-specific components
+├── hooks/          # Feature-specific hooks
+├── pages/          # Pages/views
 ├── services/       # API calls
 ├── types/          # TypeScript types
-└── index.ts        # Public API del módulo
+└── index.ts        # Module public API
 ```
 
-#### 2. API Client Centralizado
+#### 2. Centralized API Client
 
 ```typescript
-// Importar siempre desde @/shared/api
+// Always import from @/shared/api
 import { API } from '@/shared/api'
 
-// El cliente incluye interceptors para:
-// - Manejo de errores de suscripción (403 NO_ACTIVE_SUBSCRIPTION)
-// - Manejo de email no verificado (403 EMAIL_NOT_VERIFIED)
+// Client includes interceptors for:
+// - Subscription errors (403 NO_ACTIVE_SUBSCRIPTION)
+// - Email not verified (403 EMAIL_NOT_VERIFIED)
 ```
 
 #### 3. Lazy Loading
 
-Las rutas no críticas se cargan bajo demanda:
+Non-critical routes are loaded on demand:
 
 ```typescript
 // router/lazy-imports.ts
@@ -149,72 +149,72 @@ const Dashboard = lazy(() =>
 #### 4. MUI Best Practices
 
 ```tsx
-// ✅ Usar Stack para layouts flex
+// ✅ Use Stack for flex layouts
 <Stack direction="row" spacing={2} justifyContent="space-between">
   <Typography>Left</Typography>
   <Button>Right</Button>
 </Stack>
 
-// ❌ Evitar Box con display: flex
+// ❌ Avoid Box with display: flex
 <Box sx={{ display: 'flex', gap: 2, justifyContent: 'space-between' }}>
 ```
 
-## Scripts Disponibles
+## Available Scripts
 
-| Comando | Descripción |
+| Command | Description |
 |---------|-------------|
-| `pnpm dev` | Servidor de desarrollo en :5173 |
-| `pnpm build` | Build de producción |
-| `pnpm preview` | Preview del build |
-| `pnpm lint` | Ejecutar ESLint |
-| `pnpm test` | Ejecutar tests |
-| `pnpm test:coverage` | Tests con reporte de coverage |
+| `pnpm dev` | Development server on :5173 |
+| `pnpm build` | Production build |
+| `pnpm preview` | Preview build |
+| `pnpm lint` | Run ESLint |
+| `pnpm test` | Run tests |
+| `pnpm test:coverage` | Tests with coverage report |
 
 ## Testing
 
-Tests ubicados en `src/__tests__/` con estructura espejo:
+Tests located in `src/__tests__/` with mirror structure:
 
 ```bash
-# Ejecutar todos los tests
+# Run all tests
 pnpm test
 
-# Con UI
+# With UI
 pnpm test:ui
 
-# Coverage (mínimo 20%)
+# Coverage (minimum 20%)
 pnpm test:coverage
 ```
 
-### Cobertura Actual
+### Current Coverage
 
-- **108 tests** pasando
+- **108 tests** passing
 - Hooks: `useAuth`, `useCatalogSearch`
 - Services: `catalog-service`
 - Components: `RoleRoute`, `PrivateRoute`, `Cart`, `LoginForm`
-- Schemas: Validaciones Zod
+- Schemas: Zod validations
 
-## Roles y Rutas
+## Roles and Routes
 
-| Rol | Rutas disponibles |
-|-----|-------------------|
+| Role | Available Routes |
+|------|------------------|
 | `USER` | `/home`, `/my-orders`, `/cart`, `/favorites`, `/profile` |
-| `WORKSHOP_OWNER` | Todo lo anterior + `/dashboard`, `/my-workshops`, `/my-products`, `/billing/*` |
-| `ADMIN` | Todas las rutas |
+| `WORKSHOP_OWNER` | All above + `/dashboard`, `/my-workshops`, `/my-products`, `/billing/*` |
+| `ADMIN` | All routes |
 
-## Estado Global
+## Global State
 
-- **AuthContext**: Usuario autenticado, login/logout
-- **CartContext**: Carrito de compras
-- **SnackbarProvider**: Notificaciones toast
-- **ConfirmDialogProvider**: Diálogos de confirmación
+- **AuthContext**: Authenticated user, login/logout
+- **CartContext**: Shopping cart
+- **SnackbarProvider**: Toast notifications
+- **ConfirmDialogProvider**: Confirmation dialogs
 
-## Integración con Backend
+## Backend Integration
 
-El frontend espera el backend corriendo en `VITE_API_URL` (default: `http://localhost:4000/api`).
+Frontend expects backend running at `VITE_API_URL` (default: `http://localhost:4000/api`).
 
-Endpoints principales:
-- `/auth/*` - Autenticación
-- `/catalog/*` - Catálogo público
-- `/owner/*` - Operaciones de workshop owner
-- `/orders/*` - Pedidos
-- `/workshops/*` - Talleres
+Main endpoints:
+- `/auth/*` - Authentication
+- `/catalog/*` - Public catalog
+- `/owner/*` - Workshop owner operations
+- `/orders/*` - Orders
+- `/workshops/*` - Workshops
