@@ -146,20 +146,34 @@ export const LandingPage = () => {
   ]
 
   return (
-    <Box>
-      {/* Hero Section */}
+    <Box sx={{ position: 'relative', minHeight: '100vh' }}>
+      {/* Fixed animated background for entire page */}
       <Box
-        ref={heroRef}
         sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          color: theme.palette.primary.contrastText,
-          position: 'relative',
-          overflow: 'hidden',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 0,
         }}
       >
         <AnimatedBackground />
+      </Box>
+
+      {/* Page content */}
+      <Box sx={{ position: 'relative', zIndex: 1 }}>
+        {/* Hero Section */}
+        <Box
+          ref={heroRef}
+          sx={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            color: theme.palette.primary.contrastText,
+            position: 'relative',
+          }}
+        >
         <Container maxWidth="lg" sx={{ zIndex: 1 }}>
           <Stack
             direction={{ xs: 'column', md: 'row' }}
@@ -291,27 +305,25 @@ export const LandingPage = () => {
         </Container>
       </Box>
 
-      {/* Estadísticas */}
-      <Box
-        ref={statsRef}
-        sx={{
-          py: { xs: 8, md: 12 },
-          background: `linear-gradient(180deg, ${alpha(
-            theme.palette.primary.main,
-            0.03
-          )} 0%, ${theme.palette.background.paper} 100%)`,
-        }}
-      >
-        <Container maxWidth="lg">
-          <Typography
-            variant="h3"
-            textAlign="center"
-            sx={{
-              fontWeight: 700,
-              mb: 6,
-              color: theme.palette.text.primary,
-            }}
-          >
+        {/* Estadísticas */}
+        <Box
+          ref={statsRef}
+          sx={{
+            py: { xs: 8, md: 12 },
+            background: alpha('#0a1628', 0.85),
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <Container maxWidth="lg">
+            <Typography
+              variant="h3"
+              textAlign="center"
+              sx={{
+                fontWeight: 700,
+                mb: 6,
+                color: 'white',
+              }}
+            >
             Números que hablan por nosotros
           </Typography>
 
@@ -370,7 +382,7 @@ export const LandingPage = () => {
                     <Typography
                       variant="h6"
                       sx={{
-                        color: theme.palette.text.secondary,
+                        color: alpha('#ffffff', 0.7),
                         fontWeight: 500,
                       }}
                     >
@@ -382,34 +394,34 @@ export const LandingPage = () => {
             ))}
           </Stack>
         </Container>
-      </Box>
+        </Box>
 
-      {/* Features Principales */}
-      <Box ref={featuresRef} sx={{ py: { xs: 8, md: 12 } }}>
-        <Container maxWidth="lg">
-          <Typography
-            variant="h3"
-            textAlign="center"
-            sx={{
-              fontWeight: 700,
-              mb: 2,
-              color: theme.palette.text.primary,
-            }}
-          >
-            Todo lo que necesitas en un solo lugar
-          </Typography>
+        {/* Features Principales */}
+        <Box ref={featuresRef} sx={{ py: { xs: 8, md: 12 }, background: alpha('#0a1628', 0.9), backdropFilter: 'blur(10px)' }}>
+          <Container maxWidth="lg">
+            <Typography
+              variant="h3"
+              textAlign="center"
+              sx={{
+                fontWeight: 700,
+                mb: 2,
+                color: 'white',
+              }}
+            >
+              Todo lo que necesitas en un solo lugar
+            </Typography>
 
-          <Typography
-            variant="h6"
-            textAlign="center"
-            sx={{
-              color: theme.palette.text.secondary,
-              mb: 8,
-              fontWeight: 300,
-              maxWidth: 600,
-              mx: 'auto',
-            }}
-          >
+            <Typography
+              variant="h6"
+              textAlign="center"
+              sx={{
+                color: alpha('#ffffff', 0.7),
+                mb: 8,
+                fontWeight: 300,
+                maxWidth: 600,
+                mx: 'auto',
+              }}
+            >
             Conectamos ciclistas con los mejores talleres y productos de
             Mallorca
           </Typography>
@@ -601,49 +613,48 @@ export const LandingPage = () => {
               </CardContent>
             </Card>
           </Box>
-        </Container>
-      </Box>
+          </Container>
+        </Box>
 
-      {/* Pricing Section */}
-      <Box
-        sx={{
-          py: { xs: 8, md: 12 },
-          background: `linear-gradient(180deg, ${theme.palette.background.paper} 0%, ${alpha(
-            theme.palette.primary.main,
-            0.03
-          )} 100%)`,
-        }}
-      >
-        <Container maxWidth="lg">
-          <Stack spacing={2} alignItems="center" sx={{ mb: 8, textAlign: 'center' }}>
-            <Chip
-              label="💎 PRECIO ESPECIAL DE LANZAMIENTO"
-              color="primary"
-              sx={{
-                fontSize: '0.9rem',
-                fontWeight: 700,
-                px: 3,
-                py: 2.5,
-              }}
-            />
-            <Typography
-              variant="h2"
-              sx={{
-                fontWeight: 800,
-                fontSize: { xs: '2.5rem', md: '3.5rem' },
-                color: theme.palette.text.primary,
-              }}
-            >
-              Plan Perfecto para tu Taller
-            </Typography>
-            <Typography
-              variant="h6"
-              sx={{
-                color: theme.palette.text.secondary,
-                fontWeight: 300,
-                maxWidth: 600,
-              }}
-            >
+        {/* Pricing Section */}
+        <Box
+          sx={{
+            py: { xs: 8, md: 12 },
+            background: alpha('#0a1628', 0.85),
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <Container maxWidth="lg">
+            <Stack spacing={2} alignItems="center" sx={{ mb: 8, textAlign: 'center' }}>
+              <Chip
+                label="💎 PRECIO ESPECIAL DE LANZAMIENTO"
+                sx={{
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
+                  px: 3,
+                  py: 2.5,
+                  backgroundColor: alpha('#ffffff', 0.2),
+                  color: 'white',
+                }}
+              />
+              <Typography
+                variant="h2"
+                sx={{
+                  fontWeight: 800,
+                  fontSize: { xs: '2.5rem', md: '3.5rem' },
+                  color: 'white',
+                }}
+              >
+                Plan Perfecto para tu Taller
+              </Typography>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: alpha('#ffffff', 0.7),
+                  fontWeight: 300,
+                  maxWidth: 600,
+                }}
+              >
               Gestiona tu negocio, vende más y conecta con miles de ciclistas en Mallorca
             </Typography>
           </Stack>
@@ -780,65 +791,67 @@ export const LandingPage = () => {
               </CardContent>
             </Card>
           </Box>
-        </Container>
-      </Box>
+          </Container>
+        </Box>
 
-      {/* CTA Section */}
-      <Box
-        sx={{
-          py: { xs: 6, md: 8 },
-          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-          color: theme.palette.primary.contrastText,
-          textAlign: 'center',
-        }}
-      >
-        <Container maxWidth="md">
-          <TrendingUp sx={{ fontSize: 48, mb: 2, opacity: 0.9 }} />
+        {/* CTA Section */}
+        <Box
+          sx={{
+            py: { xs: 6, md: 8 },
+            background: alpha('#0a1628', 0.9),
+            backdropFilter: 'blur(10px)',
+            color: 'white',
+            textAlign: 'center',
+          }}
+        >
+          <Container maxWidth="md">
+            <TrendingUp sx={{ fontSize: 48, mb: 2, opacity: 0.9 }} />
 
-          <Typography
-            variant="h3"
-            sx={{
-              fontWeight: 700,
-              mb: 2,
-              fontSize: { xs: '2rem', md: '3rem' },
-            }}
-          >
-            Únete a la revolución ciclista
-          </Typography>
+            <Typography
+              variant="h3"
+              sx={{
+                fontWeight: 700,
+                mb: 2,
+                fontSize: { xs: '2rem', md: '3rem' },
+              }}
+            >
+              Únete a la revolución ciclista
+            </Typography>
 
-          <Typography
-            variant="h6"
-            sx={{
-              mb: 4,
-              opacity: 0.9,
-              fontWeight: 300,
-            }}
-          >
-            Más de 1000 ciclistas ya confían en nosotros
-          </Typography>
+            <Typography
+              variant="h6"
+              sx={{
+                mb: 4,
+                opacity: 0.9,
+                fontWeight: 300,
+              }}
+            >
+              Más de 1000 ciclistas ya confían en nosotros
+            </Typography>
 
-          <Button
-            variant="contained"
-            size="large"
-            onClick={() => navigate('/register')}
-            sx={{
-              backgroundColor: theme.palette.common.white,
-              color: theme.palette.primary.main,
-              px: 6,
-              py: 2,
-              fontSize: '1.2rem',
-              fontWeight: 600,
-              borderRadius: 2,
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              '&:hover': {
-                backgroundColor: alpha(theme.palette.common.white, 0.95),
-                transform: 'scale(1.05)',
-              },
-            }}
-          >
-            Comenzar Ahora
-          </Button>
-        </Container>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => navigate('/register')}
+              sx={{
+                backgroundColor: theme.palette.common.white,
+                color: theme.palette.primary.main,
+                px: 6,
+                py: 2,
+                fontSize: '1.2rem',
+                fontWeight: 600,
+                borderRadius: 2,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  backgroundColor: alpha(theme.palette.common.white, 0.95),
+                  transform: 'scale(1.05)',
+                },
+              }}
+            >
+              Comenzar Ahora
+            </Button>
+          </Container>
+        </Box>
       </Box>
     </Box>
   )
