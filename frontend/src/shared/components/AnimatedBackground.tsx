@@ -10,42 +10,30 @@ const gradientShift = keyframes`
   }
 `
 
-// Large wheel rotation (like Chiliz globe)
+// Wheel rotation
 const wheelSpin = keyframes`
   0% {
-    transform: translate(-50%, -50%) rotate(0deg);
+    transform: rotate(0deg);
   }
   100% {
-    transform: translate(-50%, -50%) rotate(360deg);
-  }
-`
-
-// Wheel glow pulse
-const glowPulse = keyframes`
-  0%, 100% {
-    opacity: 0.3;
-    filter: blur(30px);
-  }
-  50% {
-    opacity: 0.6;
-    filter: blur(40px);
+    transform: rotate(360deg);
   }
 `
 
 // Cyclist movement across screen
 const cyclistMove = keyframes`
   0% {
-    transform: translateX(-100px);
+    transform: translateX(-150px);
     opacity: 0;
   }
-  5% {
-    opacity: 1;
+  3% {
+    opacity: 0.8;
   }
-  95% {
-    opacity: 1;
+  97% {
+    opacity: 0.8;
   }
   100% {
-    transform: translateX(calc(100vw + 100px));
+    transform: translateX(calc(100vw + 150px));
     opacity: 0;
   }
 `
@@ -78,34 +66,21 @@ const floatUp = keyframes`
   }
 `
 
-// Large rotating bicycle wheel - central element like Chiliz globe
+// Subtle rotating bicycle wheel - positioned to the side
 function CentralBicycleWheel() {
   return (
     <Box
       sx={{
         position: 'absolute',
-        top: '50%',
-        left: '50%',
-        width: { xs: '300px', md: '500px', lg: '600px' },
-        height: { xs: '300px', md: '500px', lg: '600px' },
-        animation: `${wheelSpin} 20s linear infinite`,
+        top: '60%',
+        right: '-5%',
+        width: { xs: '150px', md: '200px', lg: '250px' },
+        height: { xs: '150px', md: '200px', lg: '250px' },
+        animation: `${wheelSpin} 30s linear infinite`,
         pointerEvents: 'none',
+        opacity: 0.4,
       }}
     >
-      {/* Glow behind wheel */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '120%',
-          height: '120%',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(100, 180, 255, 0.4) 0%, rgba(180, 100, 255, 0.2) 40%, transparent 70%)',
-          animation: `${glowPulse} 4s ease-in-out infinite`,
-        }}
-      />
       <svg
         viewBox="0 0 200 200"
         style={{ width: '100%', height: '100%' }}
@@ -369,11 +344,11 @@ export function AnimatedBackground() {
 
   // Cyclists with different timing for a "peloton" effect
   const cyclists = [
-    { delay: '0s', bottom: '8%', scale: 1.2, speed: '12s' },
-    { delay: '2s', bottom: '10%', scale: 1, speed: '13s' },
-    { delay: '4s', bottom: '6%', scale: 0.9, speed: '14s' },
-    { delay: '7s', bottom: '9%', scale: 1.1, speed: '11s' },
-    { delay: '10s', bottom: '7%', scale: 0.85, speed: '15s' },
+    { delay: '0s', bottom: '12%', scale: 1.5, speed: '14s' },
+    { delay: '3s', bottom: '15%', scale: 1.3, speed: '16s' },
+    { delay: '6s', bottom: '10%', scale: 1.2, speed: '15s' },
+    { delay: '9s', bottom: '14%', scale: 1.4, speed: '13s' },
+    { delay: '12s', bottom: '11%', scale: 1.1, speed: '17s' },
   ]
 
   return (
@@ -411,8 +386,43 @@ export function AnimatedBackground() {
         />
       ))}
 
-      {/* Central rotating bicycle wheel - like Chiliz globe */}
+      {/* Subtle rotating wheels in corners */}
       <CentralBicycleWheel />
+
+      {/* Second wheel on opposite corner */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '10%',
+          left: '-3%',
+          width: { xs: '100px', md: '150px', lg: '180px' },
+          height: { xs: '100px', md: '150px', lg: '180px' },
+          animation: `${wheelSpin} 25s linear infinite reverse`,
+          pointerEvents: 'none',
+          opacity: 0.25,
+        }}
+      >
+        <svg viewBox="0 0 200 200" style={{ width: '100%', height: '100%' }}>
+          <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" />
+          <circle cx="100" cy="100" r="85" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
+          <circle cx="100" cy="100" r="10" fill="rgba(255,255,255,0.5)" />
+          {Array.from({ length: 12 }).map((_, i) => {
+            const angle = (i * 360) / 12
+            const rad = (angle * Math.PI) / 180
+            return (
+              <line
+                key={i}
+                x1={100 + Math.cos(rad) * 12}
+                y1={100 + Math.sin(rad) * 12}
+                x2={100 + Math.cos(rad) * 83}
+                y2={100 + Math.sin(rad) * 83}
+                stroke="rgba(255,255,255,0.3)"
+                strokeWidth="1"
+              />
+            )
+          })}
+        </svg>
+      </Box>
 
       {/* Animated cyclists crossing the screen */}
       {cyclists.map((cyclist, i) => (
