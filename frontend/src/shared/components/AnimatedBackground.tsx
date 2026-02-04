@@ -31,6 +31,34 @@ const floatUp = keyframes`
   }
 `
 
+// Cat walking across screen (right to left)
+const catWalk = keyframes`
+  0% {
+    transform: translateX(calc(100vw + 50px)) scaleX(-1);
+    opacity: 0;
+  }
+  3% {
+    opacity: 1;
+  }
+  97% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100px) scaleX(-1);
+    opacity: 0;
+  }
+`
+
+// Cat tail wag
+const tailWag = keyframes`
+  0%, 100% {
+    transform: rotate(-20deg);
+  }
+  50% {
+    transform: rotate(20deg);
+  }
+`
+
 // Cyclist moving across screen
 const cyclistMove = keyframes`
   0% {
@@ -67,6 +95,55 @@ function Particle({ left, size, duration, delay }: { left: string; size: number;
         pointerEvents: 'none',
       }}
     />
+  )
+}
+
+// Black cat walking - Easter egg!
+function BlackCat() {
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        bottom: '2%',
+        left: 0,
+        width: 50,
+        height: 30,
+        animation: `${catWalk} 45s linear infinite`,
+        animationDelay: '20s',
+        pointerEvents: 'none',
+        opacity: 0,
+      }}
+    >
+      <svg viewBox="0 0 50 30" style={{ width: '100%', height: '100%' }}>
+        {/* Body */}
+        <ellipse cx="25" cy="22" rx="12" ry="6" fill="#1a1a1a" />
+        {/* Head */}
+        <circle cx="38" cy="16" r="6" fill="#1a1a1a" />
+        {/* Ears */}
+        <polygon points="35,11 37,6 39,11" fill="#1a1a1a" />
+        <polygon points="39,11 41,6 43,11" fill="#1a1a1a" />
+        {/* Eyes */}
+        <circle cx="36" cy="15" r="1.5" fill="#50fa7b" />
+        <circle cx="40" cy="15" r="1.5" fill="#50fa7b" />
+        <circle cx="36" cy="15" r="0.5" fill="#1a1a1a" />
+        <circle cx="40" cy="15" r="0.5" fill="#1a1a1a" />
+        {/* Legs */}
+        <rect x="16" y="26" width="2" height="4" fill="#1a1a1a" rx="1" />
+        <rect x="22" y="26" width="2" height="4" fill="#1a1a1a" rx="1" />
+        <rect x="28" y="26" width="2" height="4" fill="#1a1a1a" rx="1" />
+        <rect x="34" y="26" width="2" height="4" fill="#1a1a1a" rx="1" />
+        {/* Tail - animated */}
+        <g style={{ transformOrigin: '13px 22px', animation: `${tailWag} 0.5s ease-in-out infinite` }}>
+          <path
+            d="M13,22 Q5,18 3,10"
+            fill="none"
+            stroke="#1a1a1a"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+        </g>
+      </svg>
+    </Box>
   )
 }
 
@@ -197,6 +274,9 @@ export function AnimatedBackground() {
           speed={c.speed}
         />
       ))}
+
+      {/* Black cat Easter egg - walks across every 45s */}
+      <BlackCat />
 
       {/* Vignette */}
       <Box
