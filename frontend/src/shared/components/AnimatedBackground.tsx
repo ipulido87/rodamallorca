@@ -1,26 +1,79 @@
 import { Box, keyframes } from '@mui/material'
 
-// Smooth gradient animation
+// Gradient shift - more noticeable movement
 const gradientShift = keyframes`
-  0%, 100% {
+  0% {
     background-position: 0% 50%;
   }
   50% {
     background-position: 100% 50%;
   }
+  100% {
+    background-position: 0% 50%;
+  }
 `
 
-// Subtle pulse
-const pulse = keyframes`
+// Floating particles
+const floatUp = keyframes`
+  0% {
+    transform: translateY(100vh) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-20vh) translateX(30px);
+    opacity: 0;
+  }
+`
+
+// Glow pulse
+const glowPulse = keyframes`
   0%, 100% {
-    opacity: 0.2;
+    transform: scale(1);
+    opacity: 0.3;
   }
   50% {
-    opacity: 0.4;
+    transform: scale(1.1);
+    opacity: 0.5;
   }
 `
 
+// Particle component
+function Particle({ left, size, duration, delay }: { left: string; size: number; duration: number; delay: number }) {
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        left,
+        bottom: '-5%',
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        background: 'rgba(255, 255, 255, 0.6)',
+        boxShadow: '0 0 10px rgba(255, 255, 255, 0.3)',
+        animation: `${floatUp} ${duration}s linear infinite`,
+        animationDelay: `${delay}s`,
+        pointerEvents: 'none',
+      }}
+    />
+  )
+}
+
 export function AnimatedBackground() {
+  // Generate particles
+  const particles = Array.from({ length: 30 }).map((_, i) => ({
+    id: i,
+    left: `${(i * 3.5) % 100}%`,
+    size: 2 + (i % 4),
+    duration: 12 + (i % 8),
+    delay: (i * 0.7) % 12,
+  }))
+
   return (
     <Box
       sx={{
@@ -31,46 +84,59 @@ export function AnimatedBackground() {
         bottom: 0,
         overflow: 'hidden',
         zIndex: 0,
-        // Dark solid gradient
+        // Animated gradient with more contrast
         background: `linear-gradient(
           135deg,
           #0a0a1a 0%,
-          #0d1b2a 25%,
-          #1b263b 50%,
-          #0d1b2a 75%,
+          #0d1b2a 20%,
+          #1e3a5f 40%,
+          #2d5a87 50%,
+          #1e3a5f 60%,
+          #0d1b2a 80%,
           #0a0a1a 100%
         )`,
         backgroundSize: '400% 400%',
-        animation: `${gradientShift} 20s ease infinite`,
+        animation: `${gradientShift} 15s ease infinite`,
       }}
     >
-      {/* Subtle accent glow - top right */}
+      {/* Floating particles */}
+      {particles.map((p) => (
+        <Particle
+          key={p.id}
+          left={p.left}
+          size={p.size}
+          duration={p.duration}
+          delay={p.delay}
+        />
+      ))}
+
+      {/* Animated glow - top right */}
       <Box
         sx={{
           position: 'absolute',
-          top: '-20%',
-          right: '-10%',
-          width: '50%',
-          height: '50%',
+          top: '-10%',
+          right: '-5%',
+          width: '40%',
+          height: '40%',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(65, 105, 225, 0.12) 0%, transparent 70%)',
-          animation: `${pulse} 8s ease-in-out infinite`,
+          background: 'radial-gradient(circle, rgba(100, 150, 255, 0.25) 0%, transparent 70%)',
+          animation: `${glowPulse} 6s ease-in-out infinite`,
           pointerEvents: 'none',
         }}
       />
 
-      {/* Subtle accent glow - bottom left */}
+      {/* Animated glow - bottom left */}
       <Box
         sx={{
           position: 'absolute',
-          bottom: '-20%',
+          bottom: '-15%',
           left: '-10%',
-          width: '40%',
-          height: '40%',
+          width: '50%',
+          height: '50%',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(100, 80, 180, 0.08) 0%, transparent 70%)',
-          animation: `${pulse} 10s ease-in-out infinite`,
-          animationDelay: '2s',
+          background: 'radial-gradient(circle, rgba(80, 120, 200, 0.2) 0%, transparent 70%)',
+          animation: `${glowPulse} 8s ease-in-out infinite`,
+          animationDelay: '3s',
           pointerEvents: 'none',
         }}
       />
@@ -83,7 +149,7 @@ export function AnimatedBackground() {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'radial-gradient(ellipse at center, transparent 0%, transparent 50%, rgba(0,0,0,0.3) 100%)',
+          background: 'radial-gradient(ellipse at center, transparent 0%, transparent 50%, rgba(0,0,0,0.4) 100%)',
           pointerEvents: 'none',
         }}
       />
