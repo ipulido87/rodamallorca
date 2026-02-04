@@ -238,6 +238,60 @@ function CyclingRoadPath() {
   )
 }
 
+// Minimalist bike wheel - elegant and subtle
+const spinWheel = keyframes`
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`
+
+interface BikeWheelProps {
+  readonly size: number
+  readonly top: string
+  readonly left: string
+  readonly opacity: number
+  readonly duration: string
+}
+
+function BikeWheel({ size, top, left, opacity, duration }: BikeWheelProps) {
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        top,
+        left,
+        width: size,
+        height: size,
+        opacity,
+        animation: `${spinWheel} ${duration} linear infinite`,
+        pointerEvents: 'none',
+      }}
+    >
+      <svg viewBox="0 0 100 100" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="1">
+        {/* Outer rim */}
+        <circle cx="50" cy="50" r="45" />
+        {/* Inner rim */}
+        <circle cx="50" cy="50" r="40" />
+        {/* Hub */}
+        <circle cx="50" cy="50" r="8" fill="rgba(255,255,255,0.3)" />
+        <circle cx="50" cy="50" r="4" fill="rgba(255,255,255,0.5)" />
+        {/* Spokes - 8 spokes */}
+        <line x1="50" y1="12" x2="50" y2="42" />
+        <line x1="50" y1="58" x2="50" y2="88" />
+        <line x1="12" y1="50" x2="42" y2="50" />
+        <line x1="58" y1="50" x2="88" y2="50" />
+        <line x1="23" y1="23" x2="43" y2="43" />
+        <line x1="57" y1="57" x2="77" y2="77" />
+        <line x1="77" y1="23" x2="57" y2="43" />
+        <line x1="43" y1="57" x2="23" y2="77" />
+      </svg>
+    </Box>
+  )
+}
+
 // Mountain range - Serra de Tramuntana
 function MountainRange() {
   return (
@@ -268,23 +322,6 @@ function MountainRange() {
   )
 }
 
-// Hexagonal grid pattern
-function HexGrid() {
-  return (
-    <Box
-      sx={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        opacity: 0.04,
-        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        pointerEvents: 'none',
-      }}
-    />
-  )
-}
 
 export function AnimatedBackground() {
   // Generate particles
@@ -416,8 +453,11 @@ export function AnimatedBackground() {
         opacity={0.35}
       />
 
-      {/* Hexagonal grid pattern */}
-      <HexGrid />
+      {/* Subtle spinning bike wheels */}
+      <BikeWheel size={200} top="5%" left="85%" opacity={0.08} duration="30s" />
+      <BikeWheel size={150} top="60%" left="-3%" opacity={0.06} duration="25s" />
+      <BikeWheel size={120} top="75%" left="90%" opacity={0.05} duration="20s" />
+      <BikeWheel size={80} top="20%" left="5%" opacity={0.04} duration="35s" />
 
       {/* Twinkling stars */}
       {stars.map((star) => (
