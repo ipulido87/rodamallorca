@@ -40,7 +40,7 @@ export const MainLayout: React.FC<MainLayoutProps> = () => {
   }
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#0a1628' }}>
       <CssBaseline />
 
       <TopBar
@@ -61,6 +61,7 @@ export const MainLayout: React.FC<MainLayoutProps> = () => {
           flexGrow: 1,
           p: 3,
           width: { md: `calc(100% - 280px)` },
+          background: 'linear-gradient(135deg, #0a1628 0%, #0d1b2a 50%, #0a1628 100%)',
         }}
       >
         <Toolbar /> {/* Espaciado para el AppBar fijo */}

@@ -6,9 +6,13 @@ export const PublicFooter = () => {
     <Box
       component="footer"
       sx={{
-        bgcolor: 'text.primary',
+        bgcolor: 'rgba(10, 15, 30, 0.85)',
+        backdropFilter: 'blur(20px)',
         color: 'white',
         mt: 'auto',
+        position: 'relative',
+        zIndex: 1,
+        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
       }}
     >
       <Container maxWidth="lg" sx={{ py: 6 }}>
