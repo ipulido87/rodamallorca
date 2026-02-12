@@ -160,6 +160,31 @@ export const LandingPage = () => {
               },
               inLanguage: 'es-ES',
             },
+            {
+              '@type': 'SiteNavigationElement',
+              name: 'Productos',
+              url: 'https://rodamallorca.com/productos',
+            },
+            {
+              '@type': 'SiteNavigationElement',
+              name: 'Talleres',
+              url: 'https://rodamallorca.com/talleres',
+            },
+            {
+              '@type': 'SiteNavigationElement',
+              name: 'Alquileres',
+              url: 'https://rodamallorca.com/alquileres',
+            },
+            {
+              '@type': 'SiteNavigationElement',
+              name: 'Sobre Nosotros',
+              url: 'https://rodamallorca.com/sobre-nosotros',
+            },
+            {
+              '@type': 'SiteNavigationElement',
+              name: 'Centro de Ayuda',
+              url: 'https://rodamallorca.com/centro-de-ayuda',
+            },
           ],
         }}
       />
