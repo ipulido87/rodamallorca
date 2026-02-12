@@ -15,6 +15,8 @@ const legalLinks = [
 ]
 
 export const PublicFooter = () => {
+  const currentYear = new Date().getFullYear()
+
   return (
     <Box
       component="footer"
@@ -126,7 +128,7 @@ export const PublicFooter = () => {
           spacing={2}
         >
           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)' }}>
-            © 2024 RodaMallorca. Todos los derechos reservados.
+            © {currentYear} RodaMallorca. Todos los derechos reservados.
           </Typography>
 
           <Stack direction="row" spacing={3}>
