@@ -6,7 +6,7 @@ interface SeoProps {
   keywords?: string
   canonicalPath?: string
   robots?: string
-  structuredData?: Record<string, unknown>
+  structuredData?: Record<string, unknown> | Record<string, unknown>[]
 }
 
 const BASE_URL = 'https://rodamallorca.com'

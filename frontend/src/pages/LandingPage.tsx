@@ -25,6 +25,7 @@ import { useNavigate } from 'react-router-dom'
 import { HeroSection } from '../shared/components/HeroSection'
 import { ScrollReveal, staggerItemVariants } from '../shared/components/ScrollReveal'
 import { Seo } from '../shared/components/Seo'
+import { landingStructuredData } from '../shared/constants/seo-structured-data'
 
 const MotionBox = motion.create(Box)
 const MotionCard = motion.create(Card)
@@ -122,17 +123,7 @@ export const LandingPage = () => {
         description="Alquila bicicletas, encuentra talleres verificados y compra productos ciclistas en Mallorca con RodaMallorca."
         canonicalPath="/"
         keywords="marketplace bicicletas Mallorca, alquiler bicicletas, talleres ciclismo, tienda ciclismo Mallorca"
-        structuredData={{
-          '@context': 'https://schema.org',
-          '@type': 'WebSite',
-          name: 'RodaMallorca',
-          url: 'https://rodamallorca.com',
-          potentialAction: {
-            '@type': 'SearchAction',
-            target: 'https://rodamallorca.com/productos',
-            'query-input': 'required name=search_term_string',
-          },
-        }}
+        structuredData={landingStructuredData}
       />
 
       <Box sx={{ position: 'relative', minHeight: '100vh', background: '#0a1628' }}>
