@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Container,
+  Pagination,
   TextField,
   Typography,
 } from '@mui/material'
@@ -28,6 +29,7 @@ export const Talleres = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [workshopFilters, setWorkshopFilters] = useState<FilterValues>({})
   const [favoriteWorkshopIds, setFavoriteWorkshopIds] = useState<string[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
 
   // Hook personalizado
   const {
@@ -43,8 +45,12 @@ export const Talleres = () => {
 
   // Cargar datos cuando cambien filtros o query con debounce
   useEffect(() => {
-    loadWorkshops(debouncedQuery, workshopFilters)
-  }, [debouncedQuery, workshopFilters, loadWorkshops])
+    setCurrentPage(1)
+  }, [debouncedQuery, workshopFilters])
+
+  useEffect(() => {
+    loadWorkshops(debouncedQuery, workshopFilters, currentPage)
+  }, [currentPage, debouncedQuery, workshopFilters, loadWorkshops])
 
   // Cargar favoritos si el usuario está autenticado
   useEffect(() => {
@@ -72,6 +78,7 @@ export const Talleres = () => {
   const clearWorkshopFilters = () => {
     setWorkshopFilters({})
     setSearchQuery('')
+    setCurrentPage(1)
   }
 
   const handleToggleFavorite = async (workshopId: string) => {
@@ -114,10 +121,19 @@ export const Talleres = () => {
         />
 
         {workshopsPagination.total > 0 && (
-          <Box textAlign="center" sx={{ mt: 4 }}>
+          <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
             <Typography variant="body2" color="text.secondary">
-              Mostrando {workshops.length} de {workshopsPagination.total} talleres
+              Mostrando {(workshopsPagination.page - 1) * workshopsPagination.size + 1}
+              -{Math.min(workshopsPagination.page * workshopsPagination.size, workshopsPagination.total)}
+              {' '}de {workshopsPagination.total} talleres
             </Typography>
+
+            <Pagination
+              color="primary"
+              count={Math.ceil(workshopsPagination.total / workshopsPagination.size)}
+              page={workshopsPagination.page}
+              onChange={(_, page) => setCurrentPage(page)}
+            />
           </Box>
         )}
       </>
@@ -161,7 +177,10 @@ export const Talleres = () => {
         />
         <Button
           variant="contained"
-          onClick={() => loadWorkshops(debouncedQuery, workshopFilters)}
+          onClick={() => {
+            setCurrentPage(1)
+            loadWorkshops(debouncedQuery, workshopFilters, 1)
+          }}
           sx={{ minWidth: 120 }}
         >
           Buscar
