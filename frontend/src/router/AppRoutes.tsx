@@ -79,7 +79,7 @@ export function AppRoutes() {
     <Suspense fallback={<PageLoader />}>
       <Routes>
         {/* ========== PUBLIC ROUTES ========== */}
-        <Route path="/" element={<PublicLayout showFooter={false}><LandingPage /></PublicLayout>} />
+        <Route path="/" element={<PublicLayout><LandingPage /></PublicLayout>} />
         <Route path="/login" element={<PublicLayout><LoginForm /></PublicLayout>} />
         <Route path="/register" element={<PublicLayout><Register /></PublicLayout>} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

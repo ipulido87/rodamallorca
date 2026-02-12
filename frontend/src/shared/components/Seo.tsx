@@ -11,6 +11,16 @@ interface SeoProps {
 
 const BASE_URL = 'https://rodamallorca.com'
 
+const SITE_URL = (import.meta.env.VITE_SITE_URL ?? BASE_URL).replace(/\/+$/, '')
+
+const normalizePath = (path: string) => {
+  if (!path.startsWith('/')) {
+    return `/${path}`
+  }
+
+  return path
+}
+
 export const Seo = ({
   title,
   description,
@@ -24,10 +34,10 @@ export const Seo = ({
 
     const buildCanonicalUrl = () => {
       if (canonicalPath) {
-        return `${BASE_URL}${canonicalPath}`
+        return `${SITE_URL}${normalizePath(canonicalPath)}`
       }
 
-      return window.location.href
+      return `${SITE_URL}${window.location.pathname}`
     }
 
     const canonicalUrl = buildCanonicalUrl()
@@ -57,6 +67,7 @@ export const Seo = ({
     setMetaTag('og:description', description, 'property')
     setMetaTag('og:type', 'website', 'property')
     setMetaTag('og:locale', 'es_ES', 'property')
+    setMetaTag('og:site_name', 'RodaMallorca', 'property')
     setMetaTag('twitter:card', 'summary_large_image')
     setMetaTag('twitter:title', title)
     setMetaTag('twitter:description', description)
