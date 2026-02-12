@@ -1,5 +1,18 @@
 import { DirectionsBike, Email, LocationOn, Phone } from '@mui/icons-material'
-import { Box, Container, Divider, Stack, Typography } from '@mui/material'
+import { Box, Container, Divider, Link, Stack, Typography } from '@mui/material'
+import { Link as RouterLink } from 'react-router-dom'
+
+const footerLinks = [
+  { label: 'Sobre Nosotros', to: '/sobre-nosotros' },
+  { label: 'Cómo Funciona', to: '/como-funciona' },
+  { label: 'Rutas Recomendadas', to: '/rutas-recomendadas' },
+  { label: 'Centro de Ayuda', to: '/centro-de-ayuda' },
+]
+
+const legalLinks = [
+  { label: 'Términos de Servicio', to: '/terminos-de-servicio' },
+  { label: 'Política de Privacidad', to: '/politica-de-privacidad' },
+]
 
 export const PublicFooter = () => {
   return (
@@ -50,42 +63,20 @@ export const PublicFooter = () => {
               Enlaces Rápidos
             </Typography>
             <Stack spacing={1}>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: 'rgba(255,255,255,0.8)',
-                  '&:hover': { color: 'primary.light', cursor: 'pointer' },
-                }}
-              >
-                Sobre Nosotros
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: 'rgba(255,255,255,0.8)',
-                  '&:hover': { color: 'primary.light', cursor: 'pointer' },
-                }}
-              >
-                Cómo Funciona
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: 'rgba(255,255,255,0.8)',
-                  '&:hover': { color: 'primary.light', cursor: 'pointer' },
-                }}
-              >
-                Rutas Recomendadas
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: 'rgba(255,255,255,0.8)',
-                  '&:hover': { color: 'primary.light', cursor: 'pointer' },
-                }}
-              >
-                Centro de Ayuda
-              </Typography>
+              {footerLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  component={RouterLink}
+                  to={link.to}
+                  underline="none"
+                  sx={{
+                    color: 'rgba(255,255,255,0.8)',
+                    '&:hover': { color: 'primary.light' },
+                  }}
+                >
+                  {link.label}
+                </Link>
+              ))}
             </Stack>
           </Box>
 
@@ -139,24 +130,20 @@ export const PublicFooter = () => {
           </Typography>
 
           <Stack direction="row" spacing={3}>
-            <Typography
-              variant="body2"
-              sx={{
-                color: 'rgba(255,255,255,0.6)',
-                '&:hover': { color: 'primary.light', cursor: 'pointer' },
-              }}
-            >
-              Términos de Servicio
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                color: 'rgba(255,255,255,0.6)',
-                '&:hover': { color: 'primary.light', cursor: 'pointer' },
-              }}
-            >
-              Política de Privacidad
-            </Typography>
+            {legalLinks.map((link) => (
+              <Link
+                key={link.to}
+                component={RouterLink}
+                to={link.to}
+                underline="none"
+                sx={{
+                  color: 'rgba(255,255,255,0.6)',
+                  '&:hover': { color: 'primary.light' },
+                }}
+              >
+                {link.label}
+              </Link>
+            ))}
           </Stack>
         </Stack>
       </Container>

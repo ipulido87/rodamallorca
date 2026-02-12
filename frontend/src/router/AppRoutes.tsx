@@ -65,6 +65,13 @@ import {
   StripeConnectSuccess,
   StripeConnectRefresh,
   StripeDiagnosticPage,
+  // SEO pages
+  AboutUsPage,
+  HowItWorksPage,
+  RoutesPage,
+  HelpCenterPage,
+  TermsPage,
+  PrivacyPage,
 } from './lazy-imports'
 
 export function AppRoutes() {
@@ -85,6 +92,14 @@ export function AppRoutes() {
         <Route path="/alquileres/:id" element={<PublicLayout><RentalDetail /></PublicLayout>} />
         <Route path="/product/:id" element={<PublicLayout><ProductDetail /></PublicLayout>} />
         <Route path="/workshop/:id" element={<PublicLayout><WorkshopDetail /></PublicLayout>} />
+
+        {/* SEO pages */}
+        <Route path="/sobre-nosotros" element={<PublicLayout><AboutUsPage /></PublicLayout>} />
+        <Route path="/como-funciona" element={<PublicLayout><HowItWorksPage /></PublicLayout>} />
+        <Route path="/rutas-recomendadas" element={<PublicLayout><RoutesPage /></PublicLayout>} />
+        <Route path="/centro-de-ayuda" element={<PublicLayout><HelpCenterPage /></PublicLayout>} />
+        <Route path="/terminos-de-servicio" element={<PublicLayout><TermsPage /></PublicLayout>} />
+        <Route path="/politica-de-privacidad" element={<PublicLayout><PrivacyPage /></PublicLayout>} />
 
         {/* Legacy redirects */}
         <Route path="/catalog" element={<Navigate to="/productos" replace />} />
