@@ -169,3 +169,26 @@ export const StripeConnectRefresh = lazy(() =>
 export const StripeDiagnosticPage = lazy(() =>
   import('../features/payments/pages/stripe-diagnostic-page').then((m) => ({ default: m.StripeDiagnosticPage }))
 )
+
+
+// ============================================
+// LAZY LOADED - SEO info pages
+// ============================================
+export const AboutUsPage = lazy(() =>
+  import('../pages/info/about-us-page').then((m) => ({ default: m.AboutUsPage }))
+)
+export const HowItWorksPage = lazy(() =>
+  import('../pages/info/how-it-works-page').then((m) => ({ default: m.HowItWorksPage }))
+)
+export const RoutesPage = lazy(() =>
+  import('../pages/info/routes-page').then((m) => ({ default: m.RoutesPage }))
+)
+export const HelpCenterPage = lazy(() =>
+  import('../pages/info/help-center-page').then((m) => ({ default: m.HelpCenterPage }))
+)
+export const TermsPage = lazy(() =>
+  import('../pages/info/terms-page').then((m) => ({ default: m.TermsPage }))
+)
+export const PrivacyPage = lazy(() =>
+  import('../pages/info/privacy-page').then((m) => ({ default: m.PrivacyPage }))
+)
