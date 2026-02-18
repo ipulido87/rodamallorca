@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { GoogleLoginButton } from '../components/google-login-button'
 import { useAuth } from '../hooks/useAuth'
+import { Seo } from '../../../shared/components/Seo'
 
 const loginSchema = z.object({
   email: z
@@ -123,7 +124,13 @@ export const LoginForm = () => {
   }
 
   return (
-    <Container maxWidth="xs">
+    <>
+      <Seo
+        title="Iniciar Sesión | RodaMallorca"
+        description="Accede a tu cuenta de RodaMallorca para gestionar tus alquileres, reservas y compras de ciclismo en Mallorca."
+        robots="noindex,nofollow"
+      />
+      <Container maxWidth="xs">
       <Paper elevation={3} sx={{ p: 4, mt: 10 }}>
         <Typography variant="h5" textAlign="center" gutterBottom>
           Iniciar Sesión
@@ -251,5 +258,6 @@ export const LoginForm = () => {
         </DialogActions>
       </Dialog>
     </Container>
+    </>
   )
 }

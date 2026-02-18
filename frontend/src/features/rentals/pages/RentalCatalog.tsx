@@ -101,6 +101,23 @@ export const RentalCatalog = () => {
         description="Alquila bicicletas de carretera, montaña, eléctricas y gravel en Mallorca. Talleres verificados con bicicletas de calidad. Reserva online y recoge en el taller."
         canonicalPath="/alquileres"
         keywords="alquiler bicicletas Mallorca, alquilar bici Palma, alquiler bicicleta eléctrica Mallorca, bicicleta alquiler Mallorca precio"
+        structuredData={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://rodamallorca.es/' },
+              { '@type': 'ListItem', position: 2, name: 'Alquiler de Bicicletas', item: 'https://rodamallorca.es/alquileres' },
+            ],
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: 'Alquiler de Bicicletas en Mallorca',
+            description: 'Alquila bicicletas de carretera, montaña, eléctricas y gravel en Mallorca. Talleres verificados con bicicletas de calidad.',
+            url: 'https://rodamallorca.es/alquileres',
+          },
+        ]}
       />
       <Container maxWidth="xl">
         {/* Header */}

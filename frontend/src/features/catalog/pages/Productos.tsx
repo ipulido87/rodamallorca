@@ -112,6 +112,23 @@ export const Productos = () => {
         description="Compra recambios, componentes y accesorios para tu bicicleta en Mallorca. Piezas de talleres verificados con envío y recogida en Mallorca."
         canonicalPath="/productos"
         keywords="recambios bicicleta Mallorca, componentes ciclismo Mallorca, piezas bicicleta Palma, accesorios bici Mallorca"
+        structuredData={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://rodamallorca.es/' },
+              { '@type': 'ListItem', position: 2, name: 'Productos', item: 'https://rodamallorca.es/productos' },
+            ],
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: 'Recambios y Componentes de Bicicleta en Mallorca',
+            description: 'Compra recambios, componentes y accesorios para tu bicicleta en Mallorca. Piezas de talleres verificados con envío y recogida en Mallorca.',
+            url: 'https://rodamallorca.es/productos',
+          },
+        ]}
       />
       {/* Hero Section */}
       <Box sx={{ textAlign: 'center', mb: 6 }}>

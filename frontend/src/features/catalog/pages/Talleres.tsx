@@ -148,6 +148,23 @@ export const Talleres = () => {
         description="Encuentra talleres de bicicletas verificados en Mallorca. Reparación, mantenimiento y servicios de ciclismo. Reserva cita online con los mejores mecánicos de Palma y toda la isla."
         canonicalPath="/talleres"
         keywords="talleres bicicletas Mallorca, reparación bicicleta Mallorca, mecánico bicicletas Palma, taller ciclismo Mallorca"
+        structuredData={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://rodamallorca.es/' },
+              { '@type': 'ListItem', position: 2, name: 'Talleres', item: 'https://rodamallorca.es/talleres' },
+            ],
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: 'Talleres de Bicicletas en Mallorca',
+            description: 'Encuentra talleres de bicicletas verificados en Mallorca. Reparación, mantenimiento y servicios de ciclismo.',
+            url: 'https://rodamallorca.es/talleres',
+          },
+        ]}
       />
       {/* Hero Section */}
       <Box sx={{ textAlign: 'center', mb: 6 }}>

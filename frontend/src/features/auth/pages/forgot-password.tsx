@@ -10,6 +10,7 @@ import {
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { API } from '@/shared/api'
+import { Seo } from '@/shared/components/Seo'
 
 export const ForgotPassword = () => {
   const navigate = useNavigate()
@@ -59,7 +60,13 @@ export const ForgotPassword = () => {
   }
 
   return (
-    <Container maxWidth="xs">
+    <>
+      <Seo
+        title="Restablecer Contraseña | RodaMallorca"
+        description="Recupera el acceso a tu cuenta de RodaMallorca."
+        robots="noindex,nofollow"
+      />
+      <Container maxWidth="xs">
       <Paper elevation={3} sx={{ p: 4, mt: 10 }}>
         <Typography variant="h5" textAlign="center" gutterBottom>
           Restablecer Contraseña
@@ -117,5 +124,6 @@ export const ForgotPassword = () => {
         </Box>
       </Paper>
     </Container>
+    </>
   )
 }

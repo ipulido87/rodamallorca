@@ -16,6 +16,7 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 import { API } from '@/shared/api'
+import { Seo } from '@/shared/components/Seo'
 
 // Schema de validación con Zod
 const resetPasswordSchema = z
@@ -155,7 +156,13 @@ export const ResetPassword = () => {
   }
 
   return (
-    <Container maxWidth="xs">
+    <>
+      <Seo
+        title="Nueva Contraseña | RodaMallorca"
+        description="Establece una nueva contraseña para tu cuenta de RodaMallorca."
+        robots="noindex,nofollow"
+      />
+      <Container maxWidth="xs">
       <Paper elevation={3} sx={{ p: 4, mt: 10 }}>
         <Typography variant="h5" textAlign="center" gutterBottom>
           Nueva Contraseña
@@ -259,5 +266,6 @@ export const ResetPassword = () => {
         </Box>
       </Paper>
     </Container>
+    </>
   )
 }
