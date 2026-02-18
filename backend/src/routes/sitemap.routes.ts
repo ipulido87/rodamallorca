@@ -3,7 +3,7 @@ import prisma from '../lib/prisma'
 
 const router = Router()
 
-const SITE_URL = 'https://rodamallorca.com'
+const SITE_URL = 'https://rodamallorca.es'
 
 const STATIC_URLS = [
   { loc: '/', changefreq: 'weekly', priority: '1.0' },

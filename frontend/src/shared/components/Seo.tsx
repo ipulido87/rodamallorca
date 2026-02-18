@@ -10,7 +10,7 @@ interface SeoProps {
   structuredData?: Record<string, unknown> | Record<string, unknown>[]
 }
 
-const BASE_URL = 'https://rodamallorca.com'
+const BASE_URL = 'https://rodamallorca.es'
 const SITE_URL = (import.meta.env.VITE_SITE_URL ?? BASE_URL).replace(/\/+$/, '')
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.png`
 
