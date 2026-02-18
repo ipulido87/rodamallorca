@@ -16,12 +16,22 @@ export const API = axios.create({
 API.interceptors.response.use(
   (response) => response,
   (error) => {
+    const currentPath = globalThis.location?.pathname ?? ''
+    const isSubscriptionPage =
+      currentPath === '/activate-subscription' ||
+      currentPath === '/pricing' ||
+      currentPath.startsWith('/subscription/')
+
     // Handle inactive subscription error
     if (
       error.response?.status === 403 &&
       error.response?.data?.error === 'NO_ACTIVE_SUBSCRIPTION'
     ) {
-      globalThis.location.href = '/activate-subscription'
+      // Avoid redirect loops while the user is already in subscription pages.
+      if (!isSubscriptionPage) {
+        globalThis.location.href = '/activate-subscription'
+      }
+
       return Promise.reject({
         ...error,
         isSubscriptionRequired: true,
