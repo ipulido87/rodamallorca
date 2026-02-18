@@ -6,6 +6,7 @@ import {
   ShoppingCart,
   Store,
 } from '@mui/icons-material'
+import { Seo } from '../../../shared/components/Seo'
 import {
   Box,
   Button,
@@ -116,8 +117,45 @@ export const ProductDetail = () => {
     )
   }
 
+  const productImage = product.images?.[0]?.original ?? undefined
+
   return (
     <Container maxWidth="lg">
+      <Seo
+        title={`${product.title} | RodaMallorca`}
+        description={
+          product.description
+            ? `${product.description.slice(0, 140)}. Disponible en ${product.workshop.city ?? 'Mallorca'}.`
+            : `${product.title} en venta en ${product.workshop.name}. Taller verificado en ${product.workshop.city ?? 'Mallorca'}.`
+        }
+        canonicalPath={`/product/${product.id}`}
+        keywords={`${product.title}, recambios bicicleta Mallorca, ${product.category?.name ?? 'componentes'} bicicleta`}
+        image={productImage}
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: product.title,
+          description: product.description ?? undefined,
+          image: productImage,
+          offers: {
+            '@type': 'Offer',
+            price: (product.price / 100).toFixed(2),
+            priceCurrency: product.currency ?? 'EUR',
+            availability: product.status?.toUpperCase() === 'PUBLISHED'
+              ? 'https://schema.org/InStock'
+              : 'https://schema.org/OutOfStock',
+            seller: {
+              '@type': 'LocalBusiness',
+              name: product.workshop.name,
+              address: {
+                '@type': 'PostalAddress',
+                addressLocality: product.workshop.city ?? 'Mallorca',
+                addressCountry: 'ES',
+              },
+            },
+          },
+        }}
+      />
       <Box sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
           <IconButton onClick={() => navigate('/catalog')} sx={{ mr: 2 }}>

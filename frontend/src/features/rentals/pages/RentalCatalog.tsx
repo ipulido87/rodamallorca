@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Seo } from '../../../shared/components/Seo'
 import {
   Box,
   Container,
@@ -95,6 +96,12 @@ export const RentalCatalog = () => {
 
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', py: 4 }}>
+      <Seo
+        title="Alquiler de Bicicletas en Mallorca | RodaMallorca"
+        description="Alquila bicicletas de carretera, montaña, eléctricas y gravel en Mallorca. Talleres verificados con bicicletas de calidad. Reserva online y recoge en el taller."
+        canonicalPath="/alquileres"
+        keywords="alquiler bicicletas Mallorca, alquilar bici Palma, alquiler bicicleta eléctrica Mallorca, bicicleta alquiler Mallorca precio"
+      />
       <Container maxWidth="xl">
         {/* Header */}
         <Box sx={{ mb: 4 }}>

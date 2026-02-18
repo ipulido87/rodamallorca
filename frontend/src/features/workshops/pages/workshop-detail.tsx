@@ -12,6 +12,7 @@ import {
   ShoppingCart,
   Verified,
 } from '@mui/icons-material'
+import { Seo } from '../../../shared/components/Seo'
 import {
   Alert,
   alpha,
@@ -177,8 +178,45 @@ export const WorkshopDetail = () => {
     )
   }
 
+  const workshopImage = workshop.logoOriginal ?? workshop.logoMedium ?? undefined
+
   return (
     <Container maxWidth="lg">
+      <Seo
+        title={`${workshop.name} | Taller de Bicicletas en ${workshop.city ?? 'Mallorca'} | RodaMallorca`}
+        description={
+          workshop.description
+            ? `${workshop.description.slice(0, 140)}. Taller en ${workshop.city ?? 'Mallorca'}.`
+            : `${workshop.name} — taller de bicicletas verificado en ${workshop.city ?? 'Mallorca'}. Reparación, mantenimiento y venta de componentes.`
+        }
+        canonicalPath={`/workshop/${workshop.id}`}
+        keywords={`${workshop.name}, taller bicicletas ${workshop.city ?? 'Mallorca'}, reparación bicicleta ${workshop.city ?? 'Mallorca'}, mecánico bicicletas Mallorca`}
+        image={workshopImage}
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'LocalBusiness',
+          '@id': `https://rodamallorca.com/workshop/${workshop.id}`,
+          name: workshop.name,
+          description: workshop.description ?? undefined,
+          image: workshopImage,
+          url: `https://rodamallorca.com/workshop/${workshop.id}`,
+          telephone: workshop.phone ?? undefined,
+          email: workshop.email ?? undefined,
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: workshop.address ?? undefined,
+            addressLocality: workshop.city ?? 'Mallorca',
+            addressCountry: 'ES',
+          },
+          ...(workshop.averageRating && {
+            aggregateRating: {
+              '@type': 'AggregateRating',
+              ratingValue: workshop.averageRating,
+              reviewCount: workshop.reviewCount ?? 1,
+            },
+          }),
+        }}
+      />
       <Box sx={{ py: 4 }}>
         {/* Header con navegación */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
