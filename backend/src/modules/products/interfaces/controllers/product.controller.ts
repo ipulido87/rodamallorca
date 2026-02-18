@@ -8,6 +8,9 @@ import {
   CreateProductSchema,
   UpdateProductSchema,
 } from '../http/schemas/product.schemas'
+import { ImageProcessor } from '../../../media/application/image-processor'
+
+const imageProcessor = new ImageProcessor()
 
 const repo = new ProductRepositoryPrisma()
 
@@ -288,16 +291,23 @@ export const deleteProduct = async (
       return res.status(403).json({ message: 'You do not own a workshop' })
     }
 
-    const deleted = await prisma.product.deleteMany({
-      where: {
-        id,
-        workshopId: workshop.id,
-      },
+    const product = await prisma.product.findFirst({
+      where: { id, workshopId: workshop.id },
+      include: { images: true },
     })
 
-    if (deleted.count === 0) {
+    if (!product) {
       return res.status(404).json({ message: 'Product not found' })
     }
+
+    // Clean up Cloudinary images before cascade delete
+    if (product.images.length > 0) {
+      await Promise.all(
+        product.images.map((img) => imageProcessor.deleteImage(img.original))
+      )
+    }
+
+    await prisma.product.delete({ where: { id } })
 
     res.json({ message: 'Product deleted successfully' })
   } catch (e) {

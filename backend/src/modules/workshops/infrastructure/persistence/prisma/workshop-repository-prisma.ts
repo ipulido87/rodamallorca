@@ -3,6 +3,9 @@ import {
   WorkshopDTO,
   WorkshopRepository,
 } from '../../../domain/repositories/workshop-repository'
+import { ImageProcessor } from '../../../../media/application/image-processor'
+
+const imageProcessor = new ImageProcessor()
 
 export class WorkshopRepositoryPrisma implements WorkshopRepository {
   async create(input: Omit<WorkshopDTO, 'id'>): Promise<WorkshopDTO> {
@@ -40,6 +43,38 @@ export class WorkshopRepositoryPrisma implements WorkshopRepository {
 
   async delete(id: string): Promise<boolean> {
     try {
+      // Fetch all images before cascade delete to clean up Cloudinary
+      const workshop = await prisma.workshop.findUnique({
+        where: { id },
+        select: {
+          logoOriginal: true,
+          logoMedium: true,
+          products: {
+            select: {
+              images: { select: { original: true } },
+            },
+          },
+        },
+      })
+
+      if (workshop) {
+        const cloudinaryUrls: string[] = []
+
+        if (workshop.logoOriginal) cloudinaryUrls.push(workshop.logoOriginal)
+
+        for (const product of workshop.products) {
+          for (const img of product.images) {
+            cloudinaryUrls.push(img.original)
+          }
+        }
+
+        if (cloudinaryUrls.length > 0) {
+          await Promise.all(
+            cloudinaryUrls.map((url) => imageProcessor.deleteImage(url))
+          )
+        }
+      }
+
       await prisma.workshop.delete({ where: { id } })
       return true
     } catch {
