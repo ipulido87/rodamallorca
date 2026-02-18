@@ -38,6 +38,18 @@ export const WorkshopLogoUpload = ({
     if (!file) return
 
     // Validar tipo de archivo
+    const ext = file.name.toLowerCase()
+    if (
+      file.type === 'image/heic' ||
+      file.type === 'image/heif' ||
+      ext.endsWith('.heic') ||
+      ext.endsWith('.heif')
+    ) {
+      setError(
+        'El formato HEIC/HEIF (fotos de iPhone) no está soportado. Convierte la imagen a JPG o PNG antes de subirla.'
+      )
+      return
+    }
     if (!file.type.startsWith('image/')) {
       setError('Solo se permiten imágenes')
       return
@@ -132,7 +144,7 @@ export const WorkshopLogoUpload = ({
           )}
 
           <Typography variant="caption" color="text.secondary">
-            Max 5MB. JPG, PNG, WebP, GIF
+            Max 5MB. JPG, PNG, WebP (no HEIC/HEIF)
           </Typography>
         </Box>
       </Box>
