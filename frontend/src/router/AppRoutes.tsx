@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { Route, Routes, Navigate } from 'react-router-dom'
+import { Route, Routes, Navigate, useParams } from 'react-router-dom'
 import { MainLayout } from '../components/layout/main-layout'
 import { PublicLayout } from '../components/layout/public-layout'
 import { PrivateRoute } from '../components/private-ruta'
@@ -74,6 +74,11 @@ import {
   PrivacyPage,
 } from './lazy-imports'
 
+const RentalsIdRedirect = () => {
+  const { id } = useParams<{ id: string }>()
+  return <Navigate to={`/alquileres/${id}`} replace />
+}
+
 export function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
@@ -103,8 +108,8 @@ export function AppRoutes() {
 
         {/* Legacy redirects */}
         <Route path="/catalog" element={<Navigate to="/productos" replace />} />
-        <Route path="/rentals" element={<PublicLayout><RentalCatalog /></PublicLayout>} />
-        <Route path="/rentals/:id" element={<PublicLayout><RentalDetail /></PublicLayout>} />
+        <Route path="/rentals" element={<Navigate to="/alquileres" replace />} />
+        <Route path="/rentals/:id" element={<RentalsIdRedirect />} />
 
         {/* Auth callbacks */}
         <Route path="/auth/callback" element={<GoogleCallbackHandler />} />

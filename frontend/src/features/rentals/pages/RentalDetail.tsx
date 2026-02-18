@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { Seo } from '../../../shared/components/Seo'
 import {
   Box,
   Container,
@@ -166,8 +167,52 @@ export const RentalDetail = () => {
     )
   }
 
+  const bikeImage = bike.images[0]?.original ?? undefined
+  const pricePerDay = (bike.rentalPricePerDay / 100).toFixed(0)
+
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', py: 4 }}>
+      <Seo
+        title={`${bike.title} — Alquiler ${bike.bikeType ? `Bicicleta ${bike.bikeType === 'road' ? 'Carretera' : bike.bikeType === 'mountain' ? 'Montaña' : bike.bikeType === 'ebike' ? 'Eléctrica' : bike.bikeType === 'gravel' ? 'Gravel' : bike.bikeType} ` : ''}en ${bike.workshop.city ?? 'Mallorca'} | RodaMallorca`}
+        description={
+          bike.description
+            ? `${bike.description.slice(0, 130)}. Desde ${pricePerDay}€/día en ${bike.workshop.name}, ${bike.workshop.city ?? 'Mallorca'}.`
+            : `Alquila ${bike.title}${bike.bikeBrand ? ` (${bike.bikeBrand})` : ''} desde ${pricePerDay}€/día en ${bike.workshop.name}. Taller verificado en ${bike.workshop.city ?? 'Mallorca'}.`
+        }
+        canonicalPath={`/alquileres/${bike.id}`}
+        keywords={`alquiler ${bike.title} Mallorca, ${bike.bikeType ? `alquiler bicicleta ${bike.bikeType} Mallorca` : 'alquiler bicicleta Mallorca'}, ${bike.workshop.city ?? 'Mallorca'} bici alquiler`}
+        image={bikeImage}
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: bike.title,
+          description: bike.description ?? undefined,
+          image: bikeImage,
+          brand: bike.bikeBrand ? { '@type': 'Brand', name: bike.bikeBrand } : undefined,
+          offers: {
+            '@type': 'Offer',
+            price: pricePerDay,
+            priceCurrency: 'EUR',
+            priceSpecification: {
+              '@type': 'UnitPriceSpecification',
+              price: pricePerDay,
+              priceCurrency: 'EUR',
+              unitText: 'DAY',
+            },
+            availability: 'https://schema.org/InStock',
+            seller: {
+              '@type': 'LocalBusiness',
+              name: bike.workshop.name,
+              address: {
+                '@type': 'PostalAddress',
+                streetAddress: bike.workshop.address ?? undefined,
+                addressLocality: bike.workshop.city ?? 'Mallorca',
+                addressCountry: 'ES',
+              },
+            },
+          },
+        }}
+      />
       <Container maxWidth="lg">
         {/* Botón volver */}
         <Button startIcon={<ArrowBack />} onClick={() => navigate('/rentals')} sx={{ mb: 3 }}>

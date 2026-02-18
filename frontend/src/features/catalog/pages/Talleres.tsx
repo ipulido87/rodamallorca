@@ -9,6 +9,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { Seo } from '../../../shared/components/Seo'
 import { useDebounce } from '../../../shared/hooks/use-debounce'
 import { FilterBar } from '../../../shared/components/FilterBar'
 import {
@@ -142,6 +143,12 @@ export const Talleres = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 6 }}>
+      <Seo
+        title="Talleres de Bicicletas en Mallorca | RodaMallorca"
+        description="Encuentra talleres de bicicletas verificados en Mallorca. Reparación, mantenimiento y servicios de ciclismo. Reserva cita online con los mejores mecánicos de Palma y toda la isla."
+        canonicalPath="/talleres"
+        keywords="talleres bicicletas Mallorca, reparación bicicleta Mallorca, mecánico bicicletas Palma, taller ciclismo Mallorca"
+      />
       {/* Hero Section */}
       <Box sx={{ textAlign: 'center', mb: 6 }}>
         <Typography

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { Helmet } from 'react-helmet-async'
 
 interface SeoProps {
   title: string
@@ -6,20 +6,15 @@ interface SeoProps {
   keywords?: string
   canonicalPath?: string
   robots?: string
+  image?: string
   structuredData?: Record<string, unknown> | Record<string, unknown>[]
 }
 
 const BASE_URL = 'https://rodamallorca.com'
-
 const SITE_URL = (import.meta.env.VITE_SITE_URL ?? BASE_URL).replace(/\/+$/, '')
+const DEFAULT_OG_IMAGE = `${BASE_URL}/og-image.png`
 
-const normalizePath = (path: string) => {
-  if (!path.startsWith('/')) {
-    return `/${path}`
-  }
-
-  return path
-}
+const normalizePath = (path: string) => (path.startsWith('/') ? path : `/${path}`)
 
 export const Seo = ({
   title,
@@ -27,82 +22,46 @@ export const Seo = ({
   keywords,
   canonicalPath,
   robots = 'index,follow',
+  image,
   structuredData,
 }: SeoProps) => {
-  useEffect(() => {
-    document.title = title
+  const canonicalUrl = canonicalPath
+    ? `${SITE_URL}${normalizePath(canonicalPath)}`
+    : SITE_URL
 
-    const buildCanonicalUrl = () => {
-      if (canonicalPath) {
-        return `${SITE_URL}${normalizePath(canonicalPath)}`
-      }
+  const ogImage = image ?? DEFAULT_OG_IMAGE
 
-      return `${SITE_URL}${window.location.pathname}`
-    }
+  return (
+    <Helmet>
+      <title>{title}</title>
+      <meta name="description" content={description} />
+      <meta name="robots" content={robots} />
+      {keywords && <meta name="keywords" content={keywords} />}
+      <link rel="canonical" href={canonicalUrl} />
 
-    const canonicalUrl = buildCanonicalUrl()
+      {/* Open Graph */}
+      <meta property="og:title" content={title} />
+      <meta property="og:description" content={description} />
+      <meta property="og:type" content="website" />
+      <meta property="og:locale" content="es_ES" />
+      <meta property="og:site_name" content="RodaMallorca" />
+      <meta property="og:url" content={canonicalUrl} />
+      <meta property="og:image" content={ogImage} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
 
-    const setMetaTag = (name: string, content: string, attribute: 'name' | 'property' = 'name') => {
-      let tag = document.querySelector(`meta[${attribute}="${name}"]`)
+      {/* Twitter Card */}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={ogImage} />
 
-      if (!tag) {
-        tag = document.createElement('meta')
-        tag.setAttribute(attribute, name)
-        document.head.appendChild(tag)
-      }
-
-      tag.setAttribute('content', content)
-    }
-
-    setMetaTag('description', description)
-    setMetaTag('robots', robots)
-
-    if (keywords) {
-      setMetaTag('keywords', keywords)
-    } else {
-      document.querySelector('meta[name="keywords"]')?.remove()
-    }
-
-    setMetaTag('og:title', title, 'property')
-    setMetaTag('og:description', description, 'property')
-    setMetaTag('og:type', 'website', 'property')
-    setMetaTag('og:locale', 'es_ES', 'property')
-    setMetaTag('og:site_name', 'RodaMallorca', 'property')
-    setMetaTag('twitter:card', 'summary_large_image')
-    setMetaTag('twitter:title', title)
-    setMetaTag('twitter:description', description)
-
-    let canonicalTag = document.querySelector('link[rel="canonical"]')
-
-    if (!canonicalTag) {
-      canonicalTag = document.createElement('link')
-      canonicalTag.setAttribute('rel', 'canonical')
-      document.head.appendChild(canonicalTag)
-    }
-
-    canonicalTag.setAttribute('href', canonicalUrl)
-    setMetaTag('og:url', canonicalUrl, 'property')
-
-    let structuredDataTag: HTMLScriptElement | null = null
-
-    if (structuredData) {
-      document.querySelectorAll('script[data-seo-structured-data="true"]').forEach((tag) => {
-        tag.remove()
-      })
-
-      structuredDataTag = document.createElement('script')
-      structuredDataTag.type = 'application/ld+json'
-      structuredDataTag.text = JSON.stringify(structuredData)
-      structuredDataTag.setAttribute('data-seo-structured-data', 'true')
-      document.head.appendChild(structuredDataTag)
-    }
-
-    return () => {
-      if (structuredDataTag) {
-        structuredDataTag.remove()
-      }
-    }
-  }, [canonicalPath, description, keywords, robots, structuredData, title])
-
-  return null
+      {/* JSON-LD Structured Data */}
+      {structuredData && (
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+      )}
+    </Helmet>
+  )
 }

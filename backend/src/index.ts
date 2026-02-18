@@ -41,6 +41,7 @@ import stripeConnectRoutes from './modules/payments/routes/stripe-connect.routes
 import directoryRoutes from './modules/workshops/routes/directory.routes'
 import rentalRoutes from './modules/rentals/interfaces/http/rental.routes'
 import reviewRoutes from './modules/reviews/interfaces/http/review.routes'
+import sitemapRoutes from './routes/sitemap.routes'
 
 const app = express()
 const PORT = config.port
@@ -103,6 +104,7 @@ app.use('/api/workshops', stripeConnectRoutes) // Rutas de Stripe Connect
 app.use('/api/directory', directoryRoutes) // Directorio público de talleres
 app.use('/api/rentals', rentalRoutes) // Rutas de alquiler de bicicletas
 app.use('/api', reviewRoutes) // Rutas de reviews
+app.use('/', sitemapRoutes) // Sitemap dinámico
 
 // Servir archivos estáticos
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))

@@ -8,6 +8,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { Seo } from '../../../shared/components/Seo'
 import { useDebounce } from '../../../shared/hooks/use-debounce'
 import { FilterBar } from '../../../shared/components/FilterBar'
 import { productFilterConfig } from '../../../shared/constants/product-filters'
@@ -106,6 +107,12 @@ export const Productos = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 6 }}>
+      <Seo
+        title="Recambios y Componentes de Bicicleta en Mallorca | RodaMallorca"
+        description="Compra recambios, componentes y accesorios para tu bicicleta en Mallorca. Piezas de talleres verificados con envío y recogida en Mallorca."
+        canonicalPath="/productos"
+        keywords="recambios bicicleta Mallorca, componentes ciclismo Mallorca, piezas bicicleta Palma, accesorios bici Mallorca"
+      />
       {/* Hero Section */}
       <Box sx={{ textAlign: 'center', mb: 6 }}>
         <Typography
