@@ -47,6 +47,18 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
     // Validar tipos de archivo
     const validFiles = Array.from(files).filter((file) => {
+      const ext = file.name.toLowerCase()
+      if (
+        file.type === 'image/heic' ||
+        file.type === 'image/heif' ||
+        ext.endsWith('.heic') ||
+        ext.endsWith('.heif')
+      ) {
+        setError(
+          'El formato HEIC/HEIF (fotos de iPhone) no está soportado. Convierte la imagen a JPG o PNG antes de subirla.'
+        )
+        return false
+      }
       if (!file.type.startsWith('image/')) {
         setError('Solo se permiten archivos de imagen')
         return false
@@ -97,8 +109,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       </Typography>
 
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Máximo {maxImages} imágenes. Formatos: JPG, PNG, WebP. Tamaño máximo:
-        5MB por imagen.
+        Máximo {maxImages} imágenes. Formatos: JPG, PNG, WebP (no HEIC/HEIF). Tamaño máximo: 5MB por imagen.
       </Typography>
 
       {error && (
