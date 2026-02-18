@@ -28,6 +28,7 @@ import { z } from 'zod'
 import { PASSWORD_MIN_LENGTH } from '../../../shared/constants/validation'
 import { register as apiRegister } from '../../auth/services/auth-service'
 import { GoogleLoginButton } from '../../auth/components/google-login-button'
+import { Seo } from '../../../shared/components/Seo'
 
 type UserRole = 'user' | 'owner'
 
@@ -233,7 +234,13 @@ export const Register = () => {
   }
 
   return (
-    <Container maxWidth="sm">
+    <>
+      <Seo
+        title="Crear Cuenta | RodaMallorca"
+        description="Regístrate en RodaMallorca para alquilar bicicletas, reservar talleres y comprar componentes de ciclismo en Mallorca."
+        robots="noindex,nofollow"
+      />
+      <Container maxWidth="sm">
       <Paper elevation={3} sx={{ p: 4, mt: 6 }}>
         {step === 'form' ? (
           <>
@@ -528,5 +535,6 @@ export const Register = () => {
         )}
       </Paper>
     </Container>
+    </>
   )
 }
