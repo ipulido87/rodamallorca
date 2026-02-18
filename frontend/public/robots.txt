@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://rodamallorca.com/sitemap.xml
+Sitemap: https://rodamallorca.es/sitemap.xml
