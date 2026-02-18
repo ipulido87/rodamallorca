@@ -111,6 +111,39 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
 
 app.get('/api/health', (_req, res) => res.send('ok'))
 
+app.get('/api/status', async (_req, res) => {
+  const startTime = Date.now()
+  const status: Record<string, unknown> = {
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: config.nodeEnv,
+    version: process.env.npm_package_version || '1.0.0',
+    node: process.version,
+    memory: {
+      rss: `${Math.round(process.memoryUsage().rss / 1024 / 1024)}MB`,
+      heapUsed: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`,
+      heapTotal: `${Math.round(process.memoryUsage().heapTotal / 1024 / 1024)}MB`,
+    },
+    services: {} as Record<string, string>,
+  }
+
+  // Check database connectivity
+  try {
+    const { default: prisma } = await import('./lib/prisma')
+    await prisma.$queryRaw`SELECT 1`
+    ;(status.services as Record<string, string>).database = 'connected'
+  } catch {
+    ;(status.services as Record<string, string>).database = 'disconnected'
+    status.status = 'degraded'
+  }
+
+  status.responseTime = `${Date.now() - startTime}ms`
+
+  const httpStatus = status.status === 'ok' ? 200 : 503
+  res.status(httpStatus).json(status)
+})
+
 // Middleware de manejo de errores global (debe ir al final)
 app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   // Log del error en desarrollo
