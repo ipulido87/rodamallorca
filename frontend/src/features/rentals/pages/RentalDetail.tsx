@@ -32,13 +32,17 @@ import {
   Phone,
   Language,
   ArrowBack,
+  EventBusy,
+  Savings,
 } from '@mui/icons-material'
 import {
   getRentalBikeDetails,
   checkAvailability,
   calculatePrice,
+  getBlockedDates,
   type RentalBike,
   type PriceCalculation,
+  type BlockedDate,
 } from '../../../services/rental.service'
 
 export const RentalDetail = () => {
@@ -60,14 +64,21 @@ export const RentalDetail = () => {
   const [pricing, setPricing] = useState<PriceCalculation | null>(null)
   const [availabilityError, setAvailabilityError] = useState<string | null>(null)
 
+  // Fechas bloqueadas
+  const [blockedDates, setBlockedDates] = useState<BlockedDate[]>([])
+
   // Cargar detalles de la bici
   useEffect(() => {
     if (!id) return
 
     setLoading(true)
-    getRentalBikeDetails(id)
-      .then((response) => {
-        setBike(response.bike)
+    Promise.all([
+      getRentalBikeDetails(id),
+      getBlockedDates(id).catch(() => ({ blockedDates: [] })),
+    ])
+      .then(([bikeResponse, blockedResponse]) => {
+        setBike(bikeResponse.bike)
+        setBlockedDates(blockedResponse.blockedDates ?? [])
         setLoading(false)
       })
       .catch((err) => {
@@ -136,6 +147,36 @@ export const RentalDetail = () => {
     navigate('/checkout/rental')
   }
 
+  const addDays = (dateStr: string, days: number) => {
+    const date = new Date(dateStr)
+    date.setDate(date.getDate() + days)
+    return date.toISOString().split('T')[0]
+  }
+
+  const formatDateShort = (dateStr: string) =>
+    new Date(dateStr).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+
+  const fullyBlockedRanges = bike
+    ? blockedDates.filter((b) => b.quantityBlocked >= bike.availableQuantity)
+    : []
+
+  const isRangeConflicting = (start: string, end: string) => {
+    if (!start || !end) return false
+    return fullyBlockedRanges.some(
+      (b) => start <= b.endDate && end >= b.startDate
+    )
+  }
+
+  const getEndDateMin = () => {
+    if (!startDate || !bike) return new Date().toISOString().split('T')[0]
+    return addDays(startDate, bike.minRentalDays)
+  }
+
+  const getEndDateMax = () => {
+    if (!startDate || !bike) return undefined
+    return addDays(startDate, bike.maxRentalDays)
+  }
+
   const getBikeTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
       road: 'Carretera',
@@ -182,36 +223,73 @@ export const RentalDetail = () => {
         canonicalPath={`/alquileres/${bike.id}`}
         keywords={`alquiler ${bike.title} Mallorca, ${bike.bikeType ? `alquiler bicicleta ${bike.bikeType} Mallorca` : 'alquiler bicicleta Mallorca'}, ${bike.workshop.city ?? 'Mallorca'} bici alquiler`}
         image={bikeImage}
-        structuredData={{
-          '@context': 'https://schema.org',
-          '@type': 'Product',
-          name: bike.title,
-          description: bike.description ?? undefined,
-          image: bikeImage,
-          brand: bike.bikeBrand ? { '@type': 'Brand', name: bike.bikeBrand } : undefined,
-          offers: {
-            '@type': 'Offer',
-            price: pricePerDay,
-            priceCurrency: 'EUR',
-            priceSpecification: {
-              '@type': 'UnitPriceSpecification',
-              price: pricePerDay,
-              priceCurrency: 'EUR',
-              unitText: 'DAY',
-            },
-            availability: 'https://schema.org/InStock',
-            seller: {
-              '@type': 'LocalBusiness',
-              name: bike.workshop.name,
-              address: {
-                '@type': 'PostalAddress',
-                streetAddress: bike.workshop.address ?? undefined,
-                addressLocality: bike.workshop.city ?? 'Mallorca',
-                addressCountry: 'ES',
-              },
-            },
+        ogType="product"
+        structuredData={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://rodamallorca.es/' },
+              { '@type': 'ListItem', position: 2, name: 'Alquiler de Bicicletas', item: 'https://rodamallorca.es/alquileres' },
+              { '@type': 'ListItem', position: 3, name: bike.title, item: `https://rodamallorca.es/alquileres/${bike.id}` },
+            ],
           },
-        }}
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: bike.title,
+            description: bike.description ?? undefined,
+            image: bikeImage,
+            url: `https://rodamallorca.es/alquileres/${bike.id}`,
+            brand: bike.bikeBrand ? { '@type': 'Brand', name: bike.bikeBrand } : undefined,
+            offers: [
+              {
+                '@type': 'Offer',
+                price: pricePerDay,
+                priceCurrency: 'EUR',
+                priceSpecification: {
+                  '@type': 'UnitPriceSpecification',
+                  price: pricePerDay,
+                  priceCurrency: 'EUR',
+                  unitText: 'DAY',
+                },
+                availability: 'https://schema.org/InStock',
+                url: `https://rodamallorca.es/alquileres/${bike.id}`,
+                seller: {
+                  '@type': 'LocalBusiness',
+                  name: bike.workshop.name,
+                  address: {
+                    '@type': 'PostalAddress',
+                    streetAddress: bike.workshop.address ?? undefined,
+                    addressLocality: bike.workshop.city ?? 'Mallorca',
+                    addressCountry: 'ES',
+                  },
+                },
+              },
+              ...(bike.rentalPricePerWeek
+                ? [
+                    {
+                      '@type': 'Offer',
+                      price: (bike.rentalPricePerWeek / 100).toFixed(0),
+                      priceCurrency: 'EUR',
+                      priceSpecification: {
+                        '@type': 'UnitPriceSpecification',
+                        price: (bike.rentalPricePerWeek / 100).toFixed(0),
+                        priceCurrency: 'EUR',
+                        unitText: 'WK',
+                      },
+                      availability: 'https://schema.org/InStock',
+                      url: `https://rodamallorca.es/alquileres/${bike.id}`,
+                      seller: {
+                        '@type': 'LocalBusiness',
+                        name: bike.workshop.name,
+                      },
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ]}
       />
       <Container maxWidth="lg">
         {/* Botón volver */}
@@ -313,6 +391,29 @@ export const RentalDetail = () => {
               </List>
             </Paper>
 
+            {/* Fechas no disponibles */}
+            {fullyBlockedRanges.length > 0 && (
+              <Paper sx={{ p: 3, mb: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <EventBusy color="warning" fontSize="small" />
+                  <Typography variant="h6">Fechas no disponibles</Typography>
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  Esta bicicleta ya está reservada en los siguientes períodos:
+                </Typography>
+                {fullyBlockedRanges.map((b, i) => (
+                  <Chip
+                    key={i}
+                    label={`${formatDateShort(b.startDate)} → ${formatDateShort(b.endDate)}`}
+                    size="small"
+                    color="warning"
+                    variant="outlined"
+                    sx={{ mr: 0.5, mb: 0.5 }}
+                  />
+                ))}
+              </Paper>
+            )}
+
             {/* Info del taller */}
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
@@ -372,7 +473,10 @@ export const RentalDetail = () => {
                 label="Fecha de Inicio"
                 type="date"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={(e) => {
+                  setStartDate(e.target.value)
+                  setEndDate('')
+                }}
                 InputLabelProps={{ shrink: true }}
                 inputProps={{ min: new Date().toISOString().split('T')[0] }}
                 sx={{ mb: 2 }}
@@ -385,9 +489,24 @@ export const RentalDetail = () => {
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 InputLabelProps={{ shrink: true }}
-                inputProps={{ min: startDate || new Date().toISOString().split('T')[0] }}
+                inputProps={{
+                  min: getEndDateMin(),
+                  max: getEndDateMax(),
+                }}
+                disabled={!startDate}
+                helperText={
+                  startDate && bike
+                    ? `Mínimo ${bike.minRentalDays} día${bike.minRentalDays !== 1 ? 's' : ''}, máximo ${bike.maxRentalDays} días`
+                    : 'Selecciona primero la fecha de inicio'
+                }
                 sx={{ mb: 2 }}
               />
+
+              {startDate && endDate && isRangeConflicting(startDate, endDate) && (
+                <Alert severity="warning" icon={<EventBusy />} sx={{ mb: 2 }}>
+                  Este rango incluye fechas sin disponibilidad. Prueba otras fechas.
+                </Alert>
+              )}
 
               <TextField
                 fullWidth
@@ -417,6 +536,17 @@ export const RentalDetail = () => {
                   <Alert severity="success" sx={{ mb: 2 }}>
                     ¡Disponible! {bike.availableQuantity} unidades disponibles
                   </Alert>
+
+                  {pricing.pricePerWeek && pricing.days >= 7 && (
+                    <Chip
+                      icon={<Savings />}
+                      label="Tarifa semanal aplicada — precio más económico"
+                      color="success"
+                      variant="outlined"
+                      size="small"
+                      sx={{ mb: 2, width: '100%' }}
+                    />
+                  )}
 
                   <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default' }}>
                     <Typography variant="body2" color="text.secondary" gutterBottom>

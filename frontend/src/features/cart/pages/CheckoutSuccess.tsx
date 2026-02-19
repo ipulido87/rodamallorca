@@ -5,29 +5,24 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCart } from '../hooks/useCart'
 
 export const CheckoutSuccess = () => {
-  console.log('🔄 [CheckoutSuccess] Componente renderizando...')
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { clearCart } = useCart()
   const sessionId = searchParams.get('session_id')
-  console.log('📋 [CheckoutSuccess] sessionId:', sessionId)
+  const isRental = localStorage.getItem('lastCheckoutType') === 'rental'
 
   useEffect(() => {
-    // Limpiar carrito cuando llega a la página de éxito - SOLO UNA VEZ
     if (sessionId) {
-      console.log('🧹 [CheckoutSuccess] Limpiando carrito y localStorage...')
       try {
         clearCart()
-        // Limpiar también el localStorage del rental checkout si existe
         localStorage.removeItem('rentalCheckoutData')
-        console.log('✅ [CheckoutSuccess] Limpieza completada')
+        localStorage.removeItem('lastCheckoutType')
       } catch (error) {
-        console.error('❌ [CheckoutSuccess] Error limpiando carrito:', error)
-        // No bloquear la UI si hay error
+        console.error('Error limpiando carrito:', error)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId]) // SOLO depende de sessionId, NO de clearCart
+  }, [sessionId])
 
   return (
     <Container maxWidth="sm">
@@ -40,29 +35,30 @@ export const CheckoutSuccess = () => {
           </Typography>
 
           <Typography variant="h6" color="text.secondary">
-            Tu pedido ha sido confirmado y pagado
+            {isRental ? 'Tu alquiler ha sido confirmado y pagado' : 'Tu pedido ha sido confirmado y pagado'}
           </Typography>
 
           <Typography variant="body1" color="text.secondary">
-            Recibirás un email de confirmación con los detalles de tu pedido.
-            El taller comenzará a preparar tu compra.
+            {isRental
+              ? 'Recibirás un email de confirmación con los detalles del alquiler. Recoge la bicicleta en el taller el día de inicio.'
+              : 'Recibirás un email de confirmación con los detalles de tu pedido. El taller comenzará a preparar tu compra.'}
           </Typography>
 
           <Stack direction="row" spacing={2} sx={{ mt: 4 }}>
             <Button
               variant="contained"
               size="large"
-              onClick={() => navigate('/my-orders')}
+              onClick={() => navigate(isRental ? '/customer-rentals' : '/my-orders')}
             >
-              Ver Mis Pedidos
+              {isRental ? 'Ver Mis Alquileres' : 'Ver Mis Pedidos'}
             </Button>
 
             <Button
               variant="outlined"
               size="large"
-              onClick={() => navigate('/catalog')}
+              onClick={() => navigate(isRental ? '/alquileres' : '/catalog')}
             >
-              Seguir Comprando
+              {isRental ? 'Ver más Bicis' : 'Seguir Comprando'}
             </Button>
           </Stack>
         </Stack>

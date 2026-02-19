@@ -7,6 +7,7 @@ interface SeoProps {
   canonicalPath?: string
   robots?: string
   image?: string
+  ogType?: string
   structuredData?: Record<string, unknown> | Record<string, unknown>[]
 }
 
@@ -23,6 +24,7 @@ export const Seo = ({
   canonicalPath,
   robots = 'index,follow',
   image,
+  ogType = 'website',
   structuredData,
 }: SeoProps) => {
   const canonicalUrl = canonicalPath
@@ -42,7 +44,7 @@ export const Seo = ({
       {/* Open Graph */}
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
-      <meta property="og:type" content="website" />
+      <meta property="og:type" content={ogType} />
       <meta property="og:locale" content="es_ES" />
       <meta property="og:site_name" content="RodaMallorca" />
       <meta property="og:url" content={canonicalUrl} />
