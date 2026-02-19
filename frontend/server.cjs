@@ -2,7 +2,7 @@
 // - Serves static files from dist/
 // - Proxies /sitemap.xml to the backend so Google gets the dynamic sitemap
 // - Falls back to index.html for SPA routing
-// Requires: BACKEND_BASE_URL env var (e.g. https://backend.railway.app)
+// Requires: VITE_API_URL env var (e.g. https://api.rodamallorca.es/api)
 //           PORT env var (set automatically by Railway)
 
 const http = require('http')
@@ -12,7 +12,11 @@ const path = require('path')
 
 const PORT = process.env.PORT || 3000
 const DIST = path.join(__dirname, 'dist')
-const BACKEND_BASE_URL = (process.env.BACKEND_BASE_URL || '').replace(/\/+$/, '')
+
+// Derive backend base URL from VITE_API_URL by stripping the /api suffix
+const BACKEND_BASE_URL = (process.env.VITE_API_URL || process.env.BACKEND_BASE_URL || '')
+  .replace(/\/api\/?$/, '')
+  .replace(/\/+$/, '')
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
