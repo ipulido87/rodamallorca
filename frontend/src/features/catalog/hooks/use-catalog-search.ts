@@ -99,7 +99,7 @@ export const useCatalogSearch = (): UseCatalogSearchResult => {
       try {
         const params: ProductSearchParams = {
           page,
-          size: 12,
+          size: 50,
         }
 
         if (query) params.q = query
