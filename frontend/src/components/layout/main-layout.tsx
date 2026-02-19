@@ -1,5 +1,6 @@
 import { Box, CssBaseline, Toolbar } from '@mui/material'
 import { useMemo, useState } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../features/auth/hooks/useAuth' // Ajustar ruta según donde tengas el hook
 import { getMenuItemsForRole } from '../../shared/constants/menu-items'
@@ -41,6 +42,9 @@ export const MainLayout: React.FC<MainLayoutProps> = () => {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#0a1628' }}>
+      <Helmet>
+        <meta name="robots" content="noindex,nofollow" />
+      </Helmet>
       <CssBaseline />
 
       <TopBar
