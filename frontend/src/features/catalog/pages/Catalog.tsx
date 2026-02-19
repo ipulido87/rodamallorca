@@ -149,9 +149,8 @@ export const Catalog = () => {
   // Carga inicial
   useEffect(() => {
     loadWorkshops(undefined, undefined, 1)
-    loadProducts()
     // loadServices() // Comentado - no se usa en el catálogo ahora
-  }, [loadProducts, loadWorkshops])
+  }, [loadWorkshops])
 
   // Cargar favoritos del usuario
   useEffect(() => {
