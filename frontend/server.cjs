@@ -13,10 +13,12 @@ const path = require('path')
 const PORT = process.env.PORT || 3000
 const DIST = path.join(__dirname, 'dist')
 
-// Derive backend base URL from VITE_API_URL by stripping the /api suffix
-const BACKEND_BASE_URL = (process.env.VITE_API_URL || process.env.BACKEND_BASE_URL || '')
-  .replace(/\/api\/?$/, '')
-  .replace(/\/+$/, '')
+// Derive backend base URL: explicit var, or strip /api from VITE_API_URL, or hardcoded default
+const BACKEND_BASE_URL = (
+  process.env.BACKEND_BASE_URL ||
+  (process.env.VITE_API_URL || '').replace(/\/api\/?$/, '') ||
+  'https://api.rodamallorca.es'
+).replace(/\/+$/, '')
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
