@@ -102,6 +102,9 @@ export const RentalCheckout = () => {
         },
       ]
 
+      // Marcar tipo de checkout para la página de éxito
+      localStorage.setItem('lastCheckoutType', 'rental')
+
       // Redirigir a Stripe Checkout
       await redirectToProductCheckout(rentalData.workshopId, items)
 
