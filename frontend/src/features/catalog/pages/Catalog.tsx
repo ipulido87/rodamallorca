@@ -11,7 +11,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useDebounce } from '../../../features/../shared/hooks/use-debounce'
 import { FilterBar } from '../../../shared/components/FilterBar'
 import {
@@ -79,9 +79,6 @@ export const Catalog = () => {
   const [productsPage, setProductsPage] = useState(1)
   const [favoriteWorkshopIds, setFavoriteWorkshopIds] = useState<string[]>([])
 
-  // Refs para scroll infinito de productos
-  const productsSentinelRef = useRef<HTMLDivElement>(null)
-  const isLoadingMoreProductsRef = useRef(false)
 
   // Hook personalizado
   const {
@@ -157,32 +154,6 @@ export const Catalog = () => {
     // loadServices() // Comentado - no se usa en el catálogo ahora
   }, [loadWorkshops])
 
-  // Reset flag de carga al terminar de cargar productos
-  useEffect(() => {
-    if (!productsLoading) {
-      isLoadingMoreProductsRef.current = false
-    }
-  }, [productsLoading])
-
-  // IntersectionObserver para scroll infinito de productos
-  useEffect(() => {
-    if (tabValue !== 1) return
-    const sentinel = productsSentinelRef.current
-    if (!sentinel) return
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !isLoadingMoreProductsRef.current && productsPagination.hasMore) {
-          isLoadingMoreProductsRef.current = true
-          setProductsPage(prev => prev + 1)
-        }
-      },
-      { rootMargin: '300px' }
-    )
-
-    observer.observe(sentinel)
-    return () => observer.disconnect()
-  }, [tabValue, productsPagination.hasMore])
 
   // Cargar favoritos del usuario
   useEffect(() => {
@@ -304,19 +275,22 @@ export const Catalog = () => {
             favoriteIds={[]}
           />
 
-          {/* Sentinel para scroll infinito */}
-          <div ref={productsSentinelRef} style={{ height: '1px' }} />
-
-          {productsLoading && products.length > 0 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-              <CircularProgress size={32} />
-            </Box>
-          )}
-
           {productsPagination.total > 0 && (
-            <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mt: 1, mb: 2 }}>
+            <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mt: 3, mb: 1 }}>
               Mostrando {products.length} de {productsPagination.total} recambios
             </Typography>
+          )}
+
+          {productsPagination.hasMore && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1, mb: 3 }}>
+              {productsLoading ? (
+                <CircularProgress size={32} />
+              ) : (
+                <Button variant="outlined" onClick={() => setProductsPage(prev => prev + 1)}>
+                  Cargar más
+                </Button>
+              )}
+            </Box>
           )}
         </>
       )}
