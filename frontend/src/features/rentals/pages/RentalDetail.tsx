@@ -182,36 +182,73 @@ export const RentalDetail = () => {
         canonicalPath={`/alquileres/${bike.id}`}
         keywords={`alquiler ${bike.title} Mallorca, ${bike.bikeType ? `alquiler bicicleta ${bike.bikeType} Mallorca` : 'alquiler bicicleta Mallorca'}, ${bike.workshop.city ?? 'Mallorca'} bici alquiler`}
         image={bikeImage}
-        structuredData={{
-          '@context': 'https://schema.org',
-          '@type': 'Product',
-          name: bike.title,
-          description: bike.description ?? undefined,
-          image: bikeImage,
-          brand: bike.bikeBrand ? { '@type': 'Brand', name: bike.bikeBrand } : undefined,
-          offers: {
-            '@type': 'Offer',
-            price: pricePerDay,
-            priceCurrency: 'EUR',
-            priceSpecification: {
-              '@type': 'UnitPriceSpecification',
-              price: pricePerDay,
-              priceCurrency: 'EUR',
-              unitText: 'DAY',
-            },
-            availability: 'https://schema.org/InStock',
-            seller: {
-              '@type': 'LocalBusiness',
-              name: bike.workshop.name,
-              address: {
-                '@type': 'PostalAddress',
-                streetAddress: bike.workshop.address ?? undefined,
-                addressLocality: bike.workshop.city ?? 'Mallorca',
-                addressCountry: 'ES',
-              },
-            },
+        ogType="product"
+        structuredData={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://rodamallorca.es/' },
+              { '@type': 'ListItem', position: 2, name: 'Alquiler de Bicicletas', item: 'https://rodamallorca.es/alquileres' },
+              { '@type': 'ListItem', position: 3, name: bike.title, item: `https://rodamallorca.es/alquileres/${bike.id}` },
+            ],
           },
-        }}
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: bike.title,
+            description: bike.description ?? undefined,
+            image: bikeImage,
+            url: `https://rodamallorca.es/alquileres/${bike.id}`,
+            brand: bike.bikeBrand ? { '@type': 'Brand', name: bike.bikeBrand } : undefined,
+            offers: [
+              {
+                '@type': 'Offer',
+                price: pricePerDay,
+                priceCurrency: 'EUR',
+                priceSpecification: {
+                  '@type': 'UnitPriceSpecification',
+                  price: pricePerDay,
+                  priceCurrency: 'EUR',
+                  unitText: 'DAY',
+                },
+                availability: 'https://schema.org/InStock',
+                url: `https://rodamallorca.es/alquileres/${bike.id}`,
+                seller: {
+                  '@type': 'LocalBusiness',
+                  name: bike.workshop.name,
+                  address: {
+                    '@type': 'PostalAddress',
+                    streetAddress: bike.workshop.address ?? undefined,
+                    addressLocality: bike.workshop.city ?? 'Mallorca',
+                    addressCountry: 'ES',
+                  },
+                },
+              },
+              ...(bike.rentalPricePerWeek
+                ? [
+                    {
+                      '@type': 'Offer',
+                      price: (bike.rentalPricePerWeek / 100).toFixed(0),
+                      priceCurrency: 'EUR',
+                      priceSpecification: {
+                        '@type': 'UnitPriceSpecification',
+                        price: (bike.rentalPricePerWeek / 100).toFixed(0),
+                        priceCurrency: 'EUR',
+                        unitText: 'WK',
+                      },
+                      availability: 'https://schema.org/InStock',
+                      url: `https://rodamallorca.es/alquileres/${bike.id}`,
+                      seller: {
+                        '@type': 'LocalBusiness',
+                        name: bike.workshop.name,
+                      },
+                    },
+                  ]
+                : []),
+            ],
+          },
+        ]}
       />
       <Container maxWidth="lg">
         {/* Botón volver */}

@@ -112,10 +112,66 @@ export const RentalCatalog = () => {
           },
           {
             '@context': 'https://schema.org',
-            '@type': 'CollectionPage',
+            '@type': 'Service',
             name: 'Alquiler de Bicicletas en Mallorca',
-            description: 'Alquila bicicletas de carretera, montaña, eléctricas y gravel en Mallorca. Talleres verificados con bicicletas de calidad.',
+            description: 'Alquila bicicletas de carretera, montaña, eléctricas y gravel en Mallorca con talleres verificados.',
             url: 'https://rodamallorca.es/alquileres',
+            areaServed: {
+              '@type': 'Place',
+              name: 'Mallorca, Islas Baleares, España',
+            },
+            provider: {
+              '@type': 'Organization',
+              name: 'RodaMallorca',
+              url: 'https://rodamallorca.es',
+            },
+            serviceType: 'Alquiler de bicicletas',
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: [
+              {
+                '@type': 'Question',
+                name: '¿Cuánto cuesta alquilar una bicicleta en Mallorca?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'El precio varía según el tipo de bicicleta y el taller. En RodaMallorca encontrarás bicicletas de carretera, montaña, eléctricas y gravel desde diferentes tarifas diarias y semanales. Compara precios y reserva online.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: '¿Qué tipos de bicicletas se pueden alquilar en Mallorca?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'En RodaMallorca puedes alquilar bicicletas de carretera, montaña, híbridas, eléctricas (e-bike), gravel y de ciudad. Todos los talleres están verificados y ofrecen bicicletas en perfecto estado.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: '¿Se puede alquilar una bicicleta eléctrica en Mallorca?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Sí, en RodaMallorca ofrecemos alquiler de bicicletas eléctricas (e-bike) en Mallorca a través de talleres verificados. Perfectas para explorar la isla sin esfuerzo.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: '¿Incluye el alquiler casco y candado?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Depende del taller. En el catálogo puedes filtrar por bicicletas que incluyen casco, candado o luces. Muchos talleres ofrecen estos accesorios incluidos en el precio.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: '¿Cómo funciona la reserva de bicicletas en RodaMallorca?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Selecciona la bicicleta, elige las fechas, comprueba la disponibilidad y reserva online. Recibirás confirmación y recoges la bicicleta directamente en el taller en Mallorca.',
+                },
+              },
+            ],
           },
         ]}
       />
