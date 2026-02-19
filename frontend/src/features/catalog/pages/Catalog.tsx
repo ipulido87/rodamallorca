@@ -75,6 +75,7 @@ export const Catalog = () => {
   const [workshopFilters, setWorkshopFilters] = useState<FilterValues>({})
   const [serviceFilters, setServiceFilters] = useState<FilterValues>({})
   const [workshopsPage, setWorkshopsPage] = useState(1)
+  const [productsPage, setProductsPage] = useState(1)
   const [favoriteWorkshopIds, setFavoriteWorkshopIds] = useState<string[]>([])
 
   // Hook personalizado
@@ -116,12 +117,15 @@ export const Catalog = () => {
         searchButtonText: 'Buscar',
       }
 
-  // Reset de página para talleres cuando cambia búsqueda/filtros/tab
+  // Reset de páginas cuando cambia búsqueda/filtros/tab
   useEffect(() => {
     if (tabValue === 0) {
       setWorkshopsPage(1)
     }
-  }, [debouncedQuery, workshopFilters, tabValue])
+    if (tabValue === 1) {
+      setProductsPage(1)
+    }
+  }, [debouncedQuery, workshopFilters, productFilters, tabValue])
 
   // Cargar talleres paginados
   useEffect(() => {
@@ -132,9 +136,9 @@ export const Catalog = () => {
 
   useEffect(() => {
     if (tabValue === 1) {
-      loadProducts(debouncedQuery, productFilters)
+      loadProducts(debouncedQuery, productFilters, productsPage)
     }
-  }, [debouncedQuery, productFilters, tabValue, loadProducts])
+  }, [debouncedQuery, productFilters, tabValue, productsPage, loadProducts])
 
   // useEffect(() => {
   //   if (tabValue === 2 && !isWorkshopOwner) {
@@ -181,7 +185,7 @@ export const Catalog = () => {
     setServiceFilters((prev) => ({ ...prev, [key]: value }))
   }
 
-  const clearProductFilters = () => setProductFilters({})
+  const clearProductFilters = () => { setProductFilters({}); setProductsPage(1) }
   const clearWorkshopFilters = () => {
     setWorkshopFilters({})
     setWorkshopsPage(1)
@@ -270,10 +274,18 @@ export const Catalog = () => {
           />
 
           {productsPagination.total > 0 && (
-            <Box textAlign="center" sx={{ mt: 4 }}>
+            <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                Mostrando {products.length} de {productsPagination.total} productos
+                Mostrando {(productsPagination.page - 1) * productsPagination.size + 1}
+                -{Math.min(productsPagination.page * productsPagination.size, productsPagination.total)}
+                {' '}de {productsPagination.total} productos
               </Typography>
+              <Pagination
+                color="primary"
+                count={Math.ceil(productsPagination.total / productsPagination.size)}
+                page={productsPagination.page}
+                onChange={(_, page) => setProductsPage(page)}
+              />
             </Box>
           )}
         </>
