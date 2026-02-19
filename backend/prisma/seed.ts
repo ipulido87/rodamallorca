@@ -68,9 +68,20 @@ const serviceCategories = [
 ]
 
 // ─── Talleres ────────────────────────────────────────────────────────────────
+const WORKSHOP_IDS = {
+  'seed-workshop-01': '550e8400-e29b-41d4-a716-446655440001',
+  'seed-workshop-02': '550e8400-e29b-41d4-a716-446655440002',
+  'seed-workshop-03': '550e8400-e29b-41d4-a716-446655440003',
+  'seed-workshop-04': '550e8400-e29b-41d4-a716-446655440004',
+  'seed-workshop-05': '550e8400-e29b-41d4-a716-446655440005',
+  'seed-workshop-06': '550e8400-e29b-41d4-a716-446655440006',
+  'seed-workshop-07': '550e8400-e29b-41d4-a716-446655440007',
+  'seed-workshop-08': '550e8400-e29b-41d4-a716-446655440008',
+} as const
+
 const workshopsData = [
   {
-    id: 'seed-workshop-01',
+    id: WORKSHOP_IDS['seed-workshop-01'],
     email: 'owner01@rodamallorca.es',
     name: 'Ciclos Mallorca',
     city: 'Palma',
@@ -88,7 +99,7 @@ const workshopsData = [
     longitude: 2.6502,
   },
   {
-    id: 'seed-workshop-02',
+    id: WORKSHOP_IDS['seed-workshop-02'],
     email: 'owner02@rodamallorca.es',
     name: 'Veloce Cycling Palma',
     city: 'Palma',
@@ -106,7 +117,7 @@ const workshopsData = [
     longitude: 2.6178,
   },
   {
-    id: 'seed-workshop-03',
+    id: WORKSHOP_IDS['seed-workshop-03'],
     email: 'owner03@rodamallorca.es',
     name: 'MTB Mallorca Sóller',
     city: 'Sóller',
@@ -124,7 +135,7 @@ const workshopsData = [
     longitude: 2.7149,
   },
   {
-    id: 'seed-workshop-04',
+    id: WORKSHOP_IDS['seed-workshop-04'],
     email: 'owner04@rodamallorca.es',
     name: 'BiciPort Alcúdia',
     city: 'Alcúdia',
@@ -142,7 +153,7 @@ const workshopsData = [
     longitude: 3.1272,
   },
   {
-    id: 'seed-workshop-05',
+    id: WORKSHOP_IDS['seed-workshop-05'],
     email: 'owner05@rodamallorca.es',
     name: 'Ciclisme Pollença',
     city: 'Pollença',
@@ -158,7 +169,7 @@ const workshopsData = [
     longitude: 3.0143,
   },
   {
-    id: 'seed-workshop-06',
+    id: WORKSHOP_IDS['seed-workshop-06'],
     email: 'owner06@rodamallorca.es',
     name: 'Bici Inca Center',
     city: 'Inca',
@@ -174,7 +185,7 @@ const workshopsData = [
     longitude: 2.9121,
   },
   {
-    id: 'seed-workshop-07',
+    id: WORKSHOP_IDS['seed-workshop-07'],
     email: 'owner07@rodamallorca.es',
     name: 'Island Bikes Arenal',
     city: "s'Arenal",
@@ -190,7 +201,7 @@ const workshopsData = [
     longitude: 2.7412,
   },
   {
-    id: 'seed-workshop-08',
+    id: WORKSHOP_IDS['seed-workshop-08'],
     email: 'owner08@rodamallorca.es',
     name: 'Ciclos Manacor',
     city: 'Manacor',
@@ -211,7 +222,7 @@ const workshopsData = [
 // ─── Productos por taller ─────────────────────────────────────────────────────
 const getProductsForWorkshop = (workshopId: string, categoryIds: Record<string, string>) => {
   const allProducts: Record<string, object[]> = {
-    'seed-workshop-01': [
+    [WORKSHOP_IDS['seed-workshop-01']]: [
       {
         workshopId,
         title: 'Grupo Shimano 105 R7000 11v - Segunda mano',
@@ -249,7 +260,7 @@ const getProductsForWorkshop = (workshopId: string, categoryIds: Record<string, 
         categoryId: categoryIds['Componentes'],
       },
     ],
-    'seed-workshop-02': [
+    [WORKSHOP_IDS['seed-workshop-02']]: [
       {
         workshopId,
         title: 'Alquiler Bicicleta Carretera Cervélo S3',
@@ -309,7 +320,7 @@ const getProductsForWorkshop = (workshopId: string, categoryIds: Record<string, 
         categoryId: categoryIds['Transmisión'],
       },
     ],
-    'seed-workshop-03': [
+    [WORKSHOP_IDS['seed-workshop-03']]: [
       {
         workshopId,
         title: 'Alquiler MTB Doble Suspensión Trek Fuel EX',
@@ -358,7 +369,7 @@ const getProductsForWorkshop = (workshopId: string, categoryIds: Record<string, 
         categoryId: categoryIds['Frenos'],
       },
     ],
-    'seed-workshop-04': [
+    [WORKSHOP_IDS['seed-workshop-04']]: [
       {
         workshopId,
         title: 'Alquiler Bicicleta Eléctrica Riese & Müller',
@@ -411,7 +422,7 @@ const getProductsForWorkshop = (workshopId: string, categoryIds: Record<string, 
         categoryId: categoryIds['Electrónica'],
       },
     ],
-    'seed-workshop-05': [
+    [WORKSHOP_IDS['seed-workshop-05']]: [
       {
         workshopId,
         title: 'Bicicleta urbana Peugeot clásica restaurada',
@@ -440,7 +451,7 @@ const getProductsForWorkshop = (workshopId: string, categoryIds: Record<string, 
         categoryId: categoryIds['Bicicletas'],
       },
     ],
-    'seed-workshop-06': [
+    [WORKSHOP_IDS['seed-workshop-06']]: [
       {
         workshopId,
         title: 'Cassette Shimano Ultegra R8000 11-28 - Usada',
@@ -469,7 +480,7 @@ const getProductsForWorkshop = (workshopId: string, categoryIds: Record<string, 
         categoryId: categoryIds['Componentes'],
       },
     ],
-    'seed-workshop-07': [
+    [WORKSHOP_IDS['seed-workshop-07']]: [
       {
         workshopId,
         title: 'Alquiler Bici Eléctrica Ciudad por días',
@@ -517,7 +528,7 @@ const getProductsForWorkshop = (workshopId: string, categoryIds: Record<string, 
         categoryId: categoryIds['Accesorios'],
       },
     ],
-    'seed-workshop-08': [
+    [WORKSHOP_IDS['seed-workshop-08']]: [
       {
         workshopId,
         title: 'Bicicleta Specialized Stumpjumper 2021 Talla M',
@@ -554,6 +565,15 @@ const getProductsForWorkshop = (workshopId: string, categoryIds: Record<string, 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 async function main() {
   console.log('🌱 Iniciando seed de base de datos...')
+
+  // Eliminar talleres con IDs legacy (no-UUID) para evitar duplicados
+  const legacyWorkshopIds = Object.keys(WORKSHOP_IDS)
+  const deletedLegacy = await prisma.workshop.deleteMany({
+    where: { id: { in: legacyWorkshopIds } },
+  })
+  if (deletedLegacy.count > 0) {
+    console.log(`🧹 Eliminados ${deletedLegacy.count} talleres con IDs legacy`)
+  }
 
   // Categorías de productos
   console.log('📦 Creando categorías de productos...')
