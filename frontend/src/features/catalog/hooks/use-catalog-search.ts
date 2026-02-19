@@ -118,7 +118,7 @@ export const useCatalogSearch = (): UseCatalogSearchResult => {
 
         const response = await searchProducts(params)
 
-        setProducts(response.items)
+        setProducts(prev => page === 1 ? response.items : [...prev, ...response.items])
         setProductsPagination({
           total: response.total,
           page: response.page,

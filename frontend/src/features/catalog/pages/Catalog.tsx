@@ -3,14 +3,14 @@ import {
   Alert,
   Box,
   Button,
+  CircularProgress,
   Container,
-  Pagination,
   Tab,
   Tabs,
   TextField,
   Typography,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useDebounce } from '../../../features/../shared/hooks/use-debounce'
 import { FilterBar } from '../../../shared/components/FilterBar'
 import {
@@ -77,6 +77,10 @@ export const Catalog = () => {
   const [workshopsPage, setWorkshopsPage] = useState(1)
   const [productsPage, setProductsPage] = useState(1)
   const [favoriteWorkshopIds, setFavoriteWorkshopIds] = useState<string[]>([])
+
+  // Refs para scroll infinito de productos
+  const productsSentinelRef = useRef<HTMLDivElement>(null)
+  const isLoadingMoreProductsRef = useRef(false)
 
   // Hook personalizado
   const {
@@ -151,6 +155,33 @@ export const Catalog = () => {
     loadWorkshops(undefined, undefined, 1)
     // loadServices() // Comentado - no se usa en el catálogo ahora
   }, [loadWorkshops])
+
+  // Reset flag de carga al terminar de cargar productos
+  useEffect(() => {
+    if (!productsLoading) {
+      isLoadingMoreProductsRef.current = false
+    }
+  }, [productsLoading])
+
+  // IntersectionObserver para scroll infinito de productos
+  useEffect(() => {
+    if (tabValue !== 1) return
+    const sentinel = productsSentinelRef.current
+    if (!sentinel) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isLoadingMoreProductsRef.current && productsPagination.hasMore) {
+          isLoadingMoreProductsRef.current = true
+          setProductsPage(prev => prev + 1)
+        }
+      },
+      { rootMargin: '300px' }
+    )
+
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [tabValue, productsPagination.hasMore])
 
   // Cargar favoritos del usuario
   useEffect(() => {
@@ -259,7 +290,7 @@ export const Catalog = () => {
         </Alert>
       )}
 
-      {productsLoading ? (
+      {productsLoading && products.length === 0 ? (
         <ProductSkeletonGrid count={8} />
       ) : (
         <>
@@ -272,20 +303,19 @@ export const Catalog = () => {
             favoriteIds={[]}
           />
 
-          {productsPagination.total > 0 && (
-            <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-              <Typography variant="body2" color="text.secondary">
-                Mostrando {(productsPagination.page - 1) * productsPagination.size + 1}
-                -{Math.min(productsPagination.page * productsPagination.size, productsPagination.total)}
-                {' '}de {productsPagination.total} productos
-              </Typography>
-              <Pagination
-                color="primary"
-                count={Math.ceil(productsPagination.total / productsPagination.size)}
-                page={productsPagination.page}
-                onChange={(_, page) => setProductsPage(page)}
-              />
+          {/* Sentinel para scroll infinito */}
+          <div ref={productsSentinelRef} style={{ height: '1px' }} />
+
+          {productsLoading && products.length > 0 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+              <CircularProgress size={32} />
             </Box>
+          )}
+
+          {productsPagination.total > 0 && (
+            <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mt: 1, mb: 2 }}>
+              Mostrando {products.length} de {productsPagination.total} recambios
+            </Typography>
           )}
         </>
       )}
