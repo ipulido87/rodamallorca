@@ -47,8 +47,8 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({
           flex: 1,
           position: 'relative',
           zIndex: 1,
-          bgcolor: 'rgba(10, 22, 40, 0.4)',
-          backdropFilter: 'blur(6px)',
+          bgcolor: 'rgba(248, 250, 252, 0.93)',
+          backdropFilter: 'blur(20px)',
         }}
       >
         {children}

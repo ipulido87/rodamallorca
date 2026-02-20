@@ -96,7 +96,7 @@ export const ProductDetail = () => {
     return (
       <Container maxWidth="lg">
         <Box sx={{ py: 4, textAlign: 'center' }}>
-          <Typography variant="h6">Loading product...</Typography>
+          <Typography variant="h6">Cargando producto...</Typography>
         </Box>
       </Container>
     )
@@ -107,10 +107,10 @@ export const ProductDetail = () => {
       <Container maxWidth="lg">
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <Typography variant="h6" color="error" gutterBottom>
-            {error || 'Product not found'}
+            {error || 'Producto no encontrado'}
           </Typography>
           <Button variant="contained" onClick={() => navigate('/catalog')}>
-            Back to Catalog
+            Volver al Catálogo
           </Button>
         </Box>
       </Container>
@@ -161,7 +161,7 @@ export const ProductDetail = () => {
           <IconButton onClick={() => navigate('/catalog')} sx={{ mr: 2 }}>
             <ArrowBack />
           </IconButton>
-          <Typography variant="h4">Product Details</Typography>
+          <Typography variant="h4" fontWeight="bold">Detalles del Producto</Typography>
         </Box>
 
         <Box
@@ -213,18 +213,14 @@ export const ProductDetail = () => {
 
             {product.category && (
               <Typography variant="body1" gutterBottom>
-                <strong>Category:</strong> {product.category.name}
+                <strong>Categoría:</strong> {product.category.name}
               </Typography>
             )}
-
-            <Typography variant="body1" gutterBottom>
-              <strong>Currency:</strong> {product.currency}
-            </Typography>
 
             {product.description && (
               <Box sx={{ my: 3 }}>
                 <Typography variant="h6" gutterBottom>
-                  Description
+                  Descripción
                 </Typography>
                 <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
                   {product.description}
@@ -237,7 +233,7 @@ export const ProductDetail = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <Store sx={{ mr: 1, color: 'primary.main' }} />
-                  <Typography variant="h6">Workshop Information</Typography>
+                  <Typography variant="h6">Información del Taller</Typography>
                 </Box>
 
                 <Typography variant="h6" gutterBottom>
@@ -253,9 +249,14 @@ export const ProductDetail = () => {
                   </Typography>
                 </Box>
 
-                <Typography variant="caption" color="text.secondary">
-                  Workshop ID: {product.workshop.id}
-                </Typography>
+                <Button
+                  variant="text"
+                  size="small"
+                  onClick={() => navigate(`/workshop/${product.workshop.id}`)}
+                  sx={{ mt: 1, p: 0 }}
+                >
+                  Ver taller
+                </Button>
               </CardContent>
             </Card>
 
@@ -352,11 +353,11 @@ export const ProductDetail = () => {
           </Box>
         </Box>
 
-        {/* Product Metadata */}
+        {/* Información adicional */}
         <Card sx={{ mt: 4 }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              Product Information
+              Información del Producto
             </Typography>
             <Box
               sx={{
@@ -367,24 +368,20 @@ export const ProductDetail = () => {
             >
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Product ID
-                </Typography>
-                <Typography variant="body2">{product.id}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Listed Date
+                  Publicado
                 </Typography>
                 <Typography variant="body2">
-                  {new Date(product.createdAt).toLocaleDateString()}
+                  {new Date(product.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
                 </Typography>
               </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Status
-                </Typography>
-                <Typography variant="body2">{product.status}</Typography>
-              </Box>
+              {product.category && (
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Categoría
+                  </Typography>
+                  <Typography variant="body2">{product.category.name}</Typography>
+                </Box>
+              )}
             </Box>
           </CardContent>
         </Card>
