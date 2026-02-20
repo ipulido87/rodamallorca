@@ -179,7 +179,7 @@ export const RentalCatalog = () => {
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
-            🚴 Alquiler de Bicicletas en Mallorca
+            Alquiler de Bicicletas en Mallorca
           </Typography>
           <Typography variant="h6" color="text.secondary">
             Encuentra la bici perfecta para tu aventura

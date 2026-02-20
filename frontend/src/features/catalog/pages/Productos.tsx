@@ -136,13 +136,7 @@ export const Productos = () => {
           variant="h3"
           component="h1"
           gutterBottom
-          sx={{
-            fontWeight: 700,
-            background: 'linear-gradient(45deg, #3949ab, #5c6bc0)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-          }}
+          sx={{ fontWeight: 700, color: 'text.primary' }}
         >
           Recambios y Componentes
         </Typography>
