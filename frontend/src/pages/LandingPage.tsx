@@ -101,18 +101,21 @@ export const LandingPage = () => {
       title: 'Búsqueda Avanzada',
       description: 'Filtros inteligentes para encontrar tu bicicleta ideal',
       gradient: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+      action: '/productos',
     },
     {
       icon: <Build sx={{ fontSize: 40 }} />,
       title: 'Talleres Verificados',
       description: 'Red de profesionales certificados en toda Mallorca',
       gradient: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
+      action: '/talleres',
     },
     {
       icon: <Security sx={{ fontSize: 40 }} />,
       title: 'Compra Segura',
       description: 'Transacciones protegidas con garantía total',
       gradient: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
+      action: '/como-funciona',
     },
   ]
 
@@ -282,6 +285,7 @@ export const LandingPage = () => {
                     <MotionCard
                       whileHover={{ y: -10, scale: 1.02 }}
                       transition={{ duration: 0.3 }}
+                      onClick={() => navigate(feature.action)}
                       sx={{
                         height: '100%',
                         background: feature.gradient,
