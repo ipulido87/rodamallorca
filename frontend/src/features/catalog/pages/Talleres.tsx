@@ -74,9 +74,16 @@ export const Talleres = () => {
     setSearchParams(params, { replace: true })
   }
 
-  // Carga inicial
+  // Carga inicial + aplicar query proveniente de la landing page (?q=...)
   useEffect(() => {
     loadWorkshops('', {}, 1)
+    const urlQ = searchParams.get('q')
+    if (urlQ) {
+      setQuery(urlQ)
+      const params = new URLSearchParams(searchParams)
+      params.delete('q')
+      setSearchParams(params, { replace: true })
+    }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reload al cambiar filtros manuales (solo en grid, en mapa usamos client-side)

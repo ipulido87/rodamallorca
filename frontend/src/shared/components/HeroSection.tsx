@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, Build, KeyboardArrowDown } from '@mui/icons-material'
+import { HeroSearchBar } from './HeroSearchBar'
 
 // Wrap MUI components for Framer Motion
 const MotionBox = motion.create(Box)
@@ -338,9 +339,14 @@ export function HeroSection() {
                 </Box>
               </motion.div>
 
+              {/* AI Search bar */}
+              <motion.div variants={itemVariants}>
+                <HeroSearchBar />
+              </motion.div>
+
               {/* CTA Buttons */}
               <motion.div variants={itemVariants}>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 2 }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 1 }}>
                   <MotionButton
                     variant="contained"
                     size="large"

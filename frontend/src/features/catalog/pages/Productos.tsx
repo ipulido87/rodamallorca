@@ -5,6 +5,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Seo } from '../../../shared/components/Seo'
 import { FilterBar } from '../../../shared/components/FilterBar'
 import { ProductSkeletonGrid } from '../../../shared/components/ProductSkeleton'
@@ -36,6 +37,7 @@ const adaptCatalogProductForLayout = (product: PublicProduct) => ({
 })
 
 export const Productos = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [productFilters, setProductFilters] = useState<FilterValues>({})
 
   const {
@@ -83,6 +85,17 @@ export const Productos = () => {
 
     return base
   }, [smartResults, products, isFiltered, parsedQuery, productFilters])
+
+  // Carga inicial + aplicar query proveniente de la landing page (?q=...)
+  useEffect(() => {
+    const urlQ = searchParams.get('q')
+    if (urlQ) {
+      setQuery(urlQ)
+      const params = new URLSearchParams(searchParams)
+      params.delete('q')
+      setSearchParams(params, { replace: true })
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Carga inicial y cambios de filtros
   useEffect(() => {
