@@ -72,6 +72,7 @@ import {
   HelpCenterPage,
   TermsPage,
   PrivacyPage,
+  NotFoundPage,
 } from './lazy-imports'
 
 const RentalsIdRedirect = () => {
@@ -114,6 +115,9 @@ export function AppRoutes() {
         {/* Auth callbacks */}
         <Route path="/auth/callback" element={<GoogleCallbackHandler />} />
         <Route path="/email-verified" element={<EmailVerifiedCallback />} />
+
+        {/* Pricing - público para SEO (talleres potenciales) */}
+        <Route path="/pricing" element={<PublicLayout><PricingPage /></PublicLayout>} />
 
         {/* ========== PRIVATE ROUTES ========== */}
         <Route path="/*" element={<PrivateRoute><MainLayout /></PrivateRoute>}>
@@ -159,7 +163,6 @@ export function AppRoutes() {
           <Route path="billing/:workshopId/create" element={<RoleRoute requiredRole="WORKSHOP_OWNER"><CreateInvoice /></RoleRoute>} />
 
           {/* Subscriptions */}
-          <Route path="pricing" element={<PricingPage />} />
           <Route path="activate-subscription" element={<ActivateSubscription />} />
           <Route path="subscription/success" element={<SubscriptionSuccess />} />
           <Route path="subscription/cancel" element={<SubscriptionCancel />} />
@@ -168,6 +171,9 @@ export function AppRoutes() {
           <Route path="workshops/:id/stripe/success" element={<StripeConnectSuccess />} />
           <Route path="workshops/:id/stripe/refresh" element={<StripeConnectRefresh />} />
           <Route path="workshops/:workshopId/stripe/diagnostic" element={<StripeDiagnosticPage />} />
+
+          {/* 404 para rutas privadas desconocidas */}
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
     </Suspense>

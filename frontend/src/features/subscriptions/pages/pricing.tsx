@@ -6,6 +6,7 @@ import {
   TrendingUp,
   Email,
 } from '@mui/icons-material'
+import { Seo } from '../../../shared/components/Seo'
 import {
   Box,
   Button,
@@ -107,6 +108,26 @@ export const PricingPage = () => {
 
   return (
     <Container maxWidth="lg">
+      <Seo
+        title="Planes y Precios para Talleres | RodaMallorca"
+        description="Digitaliza tu taller de bicicletas en Mallorca. Publica productos ilimitados, gestiona alquileres y recibe pagos online. Prueba gratuita 7 días, luego 18,30€/mes."
+        keywords="precios taller bicicletas Mallorca, marketplace talleres ciclismo, software gestión taller bicicletas, vender bicicletas online Mallorca"
+        canonicalPath="/pricing"
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: 'RodaMallorca Plan Taller',
+          description: 'Plan de suscripción mensual para talleres de bicicletas en Mallorca. Incluye publicación de productos, gestión de alquileres, facturación y pagos online.',
+          offers: {
+            '@type': 'Offer',
+            price: '18.30',
+            priceCurrency: 'EUR',
+            priceValidUntil: '2026-12-31',
+            availability: 'https://schema.org/InStock',
+            url: 'https://rodamallorca.es/pricing',
+          },
+        }}
+      />
       <Box sx={{ py: 8 }}>
         {/* Header */}
         <Stack spacing={2} alignItems="center" sx={{ mb: 8 }}>
