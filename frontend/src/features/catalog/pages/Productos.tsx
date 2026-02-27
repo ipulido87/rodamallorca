@@ -89,7 +89,7 @@ export const Productos = () => {
     loadProducts('', productFilters)
   }, [productFilters]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleProductFilterChange = (filterKey: string, value: unknown) => {
+  const handleProductFilterChange = (filterKey: string, value: FilterValues[string]) => {
     setProductFilters((prev) => ({ ...prev, [filterKey]: value }))
   }
 

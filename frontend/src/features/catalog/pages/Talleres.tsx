@@ -111,7 +111,7 @@ export const Talleres = () => {
     }
   }, [user])
 
-  const handleWorkshopFilterChange = (filterKey: string, value: unknown) => {
+  const handleWorkshopFilterChange = (filterKey: string, value: FilterValues[string]) => {
     setWorkshopFilters((prev) => ({ ...prev, [filterKey]: value }))
   }
 
