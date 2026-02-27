@@ -45,12 +45,12 @@ export function useSmartSearch<T>(
     }
     const fuseOptions: IFuseOptions<T> = {
       keys: optionsRef.current.keys as IFuseOptions<T>['keys'],
-      threshold: optionsRef.current.threshold ?? 0.35,
+      threshold: optionsRef.current.threshold ?? 0.2,
       includeScore: true,
-      minMatchCharLength: 2,
+      minMatchCharLength: 3,
       shouldSort: true,
       ignoreLocation: true,
-      findAllMatches: true,
+      findAllMatches: false,
     }
     fuseRef.current = new Fuse(items, fuseOptions)
   }, [items])
