@@ -1,38 +1,48 @@
-import { Search } from '@mui/icons-material'
 import {
   Alert,
   Box,
-  Button,
   Container,
   Pagination,
-  TextField,
   Typography,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Seo } from '../../../shared/components/Seo'
-import { useDebounce } from '../../../shared/hooks/use-debounce'
 import { FilterBar } from '../../../shared/components/FilterBar'
+import { WorkshopSkeletonGrid } from '../../../shared/components/WorkshopSkeleton'
+import { useSmartSearch } from '../../../shared/search'
 import {
   getUserFavorites,
   toggleFavorite,
 } from '../../favorites/services/favorite-service'
 import { workshopFilterConfig } from '../../../shared/constants/product-filters'
-import { WorkshopSkeletonGrid } from '../../../shared/components/WorkshopSkeleton'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { ModernWorkshopLayout } from '../../products/components/modern-product-layout'
 import { useCatalogSearch } from '../hooks/use-catalog-search'
-import type { FilterValues } from '../types/catalog'
+import { WorkshopMap, SmartSearchBar, MapViewToggle } from '../components'
+import type { CatalogView } from '../components'
+import type { FilterValues, Workshop } from '../types/catalog'
+
+// Configuración de búsqueda fuzzy para talleres
+const WORKSHOP_SEARCH_KEYS = [
+  { name: 'name' as const, weight: 0.6 },
+  { name: 'city' as const, weight: 0.3 },
+  { name: 'description' as const, weight: 0.1 },
+]
 
 export const Talleres = () => {
   const { user } = useAuth()
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  // Estado local
-  const [searchQuery, setSearchQuery] = useState('')
+  // Vista: grid o mapa (persistida en la URL para que sea compartible)
+  const [view, setView] = useState<CatalogView>(
+    (searchParams.get('view') as CatalogView) ?? 'grid'
+  )
+
   const [workshopFilters, setWorkshopFilters] = useState<FilterValues>({})
   const [favoriteWorkshopIds, setFavoriteWorkshopIds] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
 
-  // Hook personalizado
   const {
     workshops,
     workshopsLoading,
@@ -41,44 +51,73 @@ export const Talleres = () => {
     loadWorkshops,
   } = useCatalogSearch()
 
-  // Debounce para búsqueda
-  const debouncedQuery = useDebounce(searchQuery, 500)
+  // Búsqueda inteligente client-side sobre los workshops ya cargados
+  const { results: smartResults, rawQuery, parsedQuery, isFiltered, setQuery } =
+    useSmartSearch<Workshop>(workshops, { keys: WORKSHOP_SEARCH_KEYS })
 
-  // Cargar datos cuando cambien filtros o query con debounce
+  // Aplicar filtro de ciudad extraído del NLP si no hay filtro manual
+  const filteredWorkshops = useMemo(() => {
+    const base = isFiltered ? smartResults : workshops
+
+    if (parsedQuery.city && !workshopFilters.city) {
+      return base.filter(
+        (w) => w.city?.toLowerCase() === parsedQuery.city!.toLowerCase()
+      )
+    }
+    return base
+  }, [smartResults, workshops, isFiltered, parsedQuery.city, workshopFilters.city])
+
+  const handleViewChange = (next: CatalogView) => {
+    setView(next)
+    const params = new URLSearchParams(searchParams)
+    params.set('view', next)
+    setSearchParams(params, { replace: true })
+  }
+
+  // Carga inicial
   useEffect(() => {
-    setCurrentPage(1)
-  }, [debouncedQuery, workshopFilters])
+    loadWorkshops('', {}, 1)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reload al cambiar filtros manuales (solo en grid, en mapa usamos client-side)
+  useEffect(() => {
+    if (view === 'grid') {
+      setCurrentPage(1)
+      loadWorkshops('', workshopFilters, 1)
+    }
+  }, [workshopFilters]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    loadWorkshops(debouncedQuery, workshopFilters, currentPage)
-  }, [currentPage, debouncedQuery, workshopFilters, loadWorkshops])
+    if (view === 'grid') {
+      loadWorkshops('', workshopFilters, currentPage)
+    }
+  }, [currentPage]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Cargar favoritos si el usuario está autenticado
+  // Al cambiar a mapa, cargar todos sin paginación (tamaño grande)
+  useEffect(() => {
+    if (view === 'map') {
+      loadWorkshops('', workshopFilters, 1)
+    }
+  }, [view]) // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (user) {
       getUserFavorites()
         .then((favs) => {
-          const workshopIds = favs
-            .filter((f) => f.workshopId)
-            .map((f) => f.workshopId!)
-          setFavoriteWorkshopIds(workshopIds)
+          const ids = favs.filter((f) => f.workshopId).map((f) => f.workshopId!)
+          setFavoriteWorkshopIds(ids)
         })
         .catch((err) => console.error('Error loading favorites:', err))
     }
   }, [user])
 
-  // Handlers
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value)
-  }
-
-  const handleWorkshopFilterChange = (filterKey: string, value: any) => {
+  const handleWorkshopFilterChange = (filterKey: string, value: unknown) => {
     setWorkshopFilters((prev) => ({ ...prev, [filterKey]: value }))
   }
 
-  const clearWorkshopFilters = () => {
+  const clearFilters = () => {
     setWorkshopFilters({})
-    setSearchQuery('')
+    setQuery('')
     setCurrentPage(1)
   }
 
@@ -96,39 +135,57 @@ export const Talleres = () => {
     }
   }
 
-  const renderWorkshopsContent = () => {
+  const renderContent = () => {
     if (workshopsLoading) return <WorkshopSkeletonGrid count={6} />
+
     if (workshopsError)
       return (
         <Alert severity="error" sx={{ mt: 2 }}>
           Error al cargar talleres: {workshopsError}
         </Alert>
       )
-    if (workshops.length === 0)
+
+    if (view === 'map') {
+      return <WorkshopMap workshops={filteredWorkshops} height={520} />
+    }
+
+    if (filteredWorkshops.length === 0) {
       return (
         <Alert severity="info" sx={{ mt: 2 }}>
           No se encontraron talleres con estos filtros.
         </Alert>
       )
+    }
 
     return (
       <>
         <ModernWorkshopLayout
-          workshops={workshops}
+          workshops={filteredWorkshops}
           loading={false}
           emptyMessage="No se encontraron talleres"
           onFavoriteToggle={handleToggleFavorite}
           favoriteIds={favoriteWorkshopIds}
         />
 
-        {workshopsPagination.total > 0 && (
-          <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+        {workshopsPagination.total > 0 && !isFiltered && (
+          <Box
+            sx={{
+              mt: 4,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 2,
+            }}
+          >
             <Typography variant="body2" color="text.secondary">
-              Mostrando {(workshopsPagination.page - 1) * workshopsPagination.size + 1}
-              -{Math.min(workshopsPagination.page * workshopsPagination.size, workshopsPagination.total)}
-              {' '}de {workshopsPagination.total} talleres
+              Mostrando{' '}
+              {(workshopsPagination.page - 1) * workshopsPagination.size + 1}–
+              {Math.min(
+                workshopsPagination.page * workshopsPagination.size,
+                workshopsPagination.total
+              )}{' '}
+              de {workshopsPagination.total} talleres
             </Typography>
-
             <Pagination
               color="primary"
               count={Math.ceil(workshopsPagination.total / workshopsPagination.size)}
@@ -161,12 +218,13 @@ export const Talleres = () => {
             '@context': 'https://schema.org',
             '@type': 'CollectionPage',
             name: 'Talleres de Bicicletas en Mallorca',
-            description: 'Encuentra talleres de bicicletas verificados en Mallorca. Reparación, mantenimiento y servicios de ciclismo.',
+            description: 'Encuentra talleres de bicicletas verificados en Mallorca.',
             url: 'https://rodamallorca.es/talleres',
           },
         ]}
       />
-      {/* Hero Section */}
+
+      {/* Hero */}
       <Box sx={{ textAlign: 'center', mb: 6 }}>
         <Typography
           variant="h3"
@@ -187,40 +245,39 @@ export const Talleres = () => {
         </Typography>
       </Box>
 
-      {/* Search Bar */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 4, maxWidth: 600, mx: 'auto' }}>
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Buscar talleres por nombre o ciudad..."
-          value={searchQuery}
-          onChange={handleSearchChange}
-          InputProps={{
-            startAdornment: <Search sx={{ mr: 1, color: 'action.active' }} />,
-          }}
-        />
-        <Button
-          variant="contained"
-          onClick={() => {
-            setCurrentPage(1)
-            loadWorkshops(debouncedQuery, workshopFilters, 1)
-          }}
-          sx={{ minWidth: 120 }}
-        >
-          Buscar
-        </Button>
+      {/* Search + Toggle de vista */}
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', sm: 'row' },
+          alignItems: { xs: 'stretch', sm: 'flex-start' },
+          gap: 2,
+          mb: 3,
+        }}
+      >
+        <Box sx={{ flex: 1 }}>
+          <SmartSearchBar
+            value={rawQuery}
+            onChange={setQuery}
+            placeholder='Busca por nombre, ciudad o describe lo que necesitas...'
+            parsedQuery={parsedQuery}
+          />
+        </Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', pt: { xs: 0, sm: 0.5 } }}>
+          <MapViewToggle value={view} onChange={handleViewChange} />
+        </Box>
       </Box>
 
-      {/* Filters */}
+      {/* Filtros */}
       <FilterBar
         filters={workshopFilterConfig}
         values={workshopFilters}
         onChange={handleWorkshopFilterChange}
-        onClear={clearWorkshopFilters}
+        onClear={clearFilters}
       />
 
-      {/* Content */}
-      {renderWorkshopsContent()}
+      {/* Contenido: grid o mapa */}
+      {renderContent()}
     </Container>
   )
 }

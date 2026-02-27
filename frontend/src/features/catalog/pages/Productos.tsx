@@ -1,29 +1,32 @@
-import { Search } from '@mui/icons-material'
 import {
   Alert,
   Box,
-  Button,
   Container,
-  TextField,
   Typography,
 } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Seo } from '../../../shared/components/Seo'
-import { useDebounce } from '../../../shared/hooks/use-debounce'
 import { FilterBar } from '../../../shared/components/FilterBar'
-import { productFilterConfig } from '../../../shared/constants/product-filters'
 import { ProductSkeletonGrid } from '../../../shared/components/ProductSkeleton'
+import { useSmartSearch } from '../../../shared/search'
+import { productFilterConfig } from '../../../shared/constants/product-filters'
 import { adaptProductImages } from '../../../utils/adapt-product-Images'
 import { ModernProductLayout } from '../../products/components/modern-product-layout'
 import { useCatalogSearch } from '../hooks/use-catalog-search'
-import type { FilterValues, Product } from '../types/catalog'
+import { SmartSearchBar } from '../components'
+import type { FilterValues, PublicProduct } from '../types/catalog'
 
-// Adaptador para productos del catálogo
-const adaptCatalogProductForLayout = (product: Product) => ({
+// Configuración de búsqueda fuzzy para productos
+const PRODUCT_SEARCH_KEYS = [
+  { name: 'title' as const, weight: 0.6 },
+  { name: 'description' as const, weight: 0.2 },
+]
+
+const adaptCatalogProductForLayout = (product: PublicProduct) => ({
   id: product.id,
   title: product.title,
   price: product.price,
-  condition: 'used' as const,
+  condition: product.condition ?? ('used' as const),
   status: product.status,
   images: adaptProductImages(product.images),
   workshop: {
@@ -33,11 +36,8 @@ const adaptCatalogProductForLayout = (product: Product) => ({
 })
 
 export const Productos = () => {
-  // Estado local
-  const [searchQuery, setSearchQuery] = useState('')
   const [productFilters, setProductFilters] = useState<FilterValues>({})
 
-  // Hook personalizado
   const {
     products,
     productsLoading,
@@ -46,48 +46,81 @@ export const Productos = () => {
     loadProducts,
   } = useCatalogSearch()
 
-  // Debounce para búsqueda
-  const debouncedQuery = useDebounce(searchQuery, 500)
+  // Búsqueda inteligente client-side sobre los productos ya cargados
+  const { results: smartResults, rawQuery, parsedQuery, isFiltered, setQuery } =
+    useSmartSearch<PublicProduct>(products as PublicProduct[], { keys: PRODUCT_SEARCH_KEYS })
 
-  // Cargar datos cuando cambien filtros o query con debounce
+  // Aplicar filtros del parser NLP que no se pueden resolver server-side
+  const filteredProducts = useMemo(() => {
+    let base = isFiltered ? smartResults : (products as PublicProduct[])
+
+    if (parsedQuery.city && !productFilters.city) {
+      base = base.filter(
+        (p) => p.workshop?.city?.toLowerCase() === parsedQuery.city!.toLowerCase()
+      )
+    }
+
+    if (parsedQuery.condition && !productFilters.condition) {
+      base = base.filter((p) => p.condition === parsedQuery.condition)
+    }
+
+    if (parsedQuery.maxPrice) {
+      base = base.filter((p) => p.price <= parsedQuery.maxPrice!)
+    }
+    if (parsedQuery.minPrice) {
+      base = base.filter((p) => p.price >= parsedQuery.minPrice!)
+    }
+
+    if (parsedQuery.sort === 'price_asc') {
+      base = [...base].sort((a, b) => a.price - b.price)
+    } else if (parsedQuery.sort === 'price_desc') {
+      base = [...base].sort((a, b) => b.price - a.price)
+    } else if (parsedQuery.sort === 'newest') {
+      base = [...base].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+    }
+
+    return base
+  }, [smartResults, products, isFiltered, parsedQuery, productFilters])
+
+  // Carga inicial y cambios de filtros
   useEffect(() => {
-    loadProducts(debouncedQuery, productFilters)
-  }, [debouncedQuery, productFilters, loadProducts])
+    loadProducts('', productFilters)
+  }, [productFilters]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Handlers
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value)
-  }
-
-  const handleProductFilterChange = (filterKey: string, value: any) => {
+  const handleProductFilterChange = (filterKey: string, value: unknown) => {
     setProductFilters((prev) => ({ ...prev, [filterKey]: value }))
   }
 
-  const clearProductFilters = () => {
+  const clearFilters = () => {
     setProductFilters({})
-    setSearchQuery('')
+    setQuery('')
   }
 
-  const renderProductsContent = () => {
+  const renderContent = () => {
     if (productsLoading) return <ProductSkeletonGrid count={6} />
+
     if (productsError)
       return (
         <Alert severity="error" sx={{ mt: 2 }}>
           Error al cargar recambios: {productsError}
         </Alert>
       )
-    if (products.length === 0)
+
+    if (filteredProducts.length === 0)
       return (
         <Alert severity="info" sx={{ mt: 2 }}>
           No se encontraron recambios con estos filtros.
         </Alert>
       )
 
-    const adaptedProducts = products.map(adaptCatalogProductForLayout)
+    const adapted = filteredProducts.map(adaptCatalogProductForLayout)
+
     return (
       <>
         <ModernProductLayout
-          products={adaptedProducts}
+          products={adapted}
           loading={false}
           emptyMessage="No se encontraron recambios"
           onFavoriteToggle={() => {}}
@@ -97,7 +130,7 @@ export const Productos = () => {
         {productsPagination.total > 0 && (
           <Box textAlign="center" sx={{ mt: 4 }}>
             <Typography variant="body2" color="text.secondary">
-              Mostrando {products.length} de {productsPagination.total} recambios
+              Mostrando {filteredProducts.length} de {productsPagination.total} recambios
             </Typography>
           </Box>
         )}
@@ -125,12 +158,13 @@ export const Productos = () => {
             '@context': 'https://schema.org',
             '@type': 'CollectionPage',
             name: 'Recambios y Componentes de Bicicleta en Mallorca',
-            description: 'Compra recambios, componentes y accesorios para tu bicicleta en Mallorca. Piezas de talleres verificados con envío y recogida en Mallorca.',
+            description: 'Compra recambios, componentes y accesorios para tu bicicleta en Mallorca.',
             url: 'https://rodamallorca.es/productos',
           },
         ]}
       />
-      {/* Hero Section */}
+
+      {/* Hero */}
       <Box sx={{ textAlign: 'center', mb: 6 }}>
         <Typography
           variant="h3"
@@ -145,37 +179,26 @@ export const Productos = () => {
         </Typography>
       </Box>
 
-      {/* Search Bar */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 4, maxWidth: 600, mx: 'auto' }}>
-        <TextField
-          fullWidth
-          variant="outlined"
-          placeholder="Buscar recambios, marcas, componentes..."
-          value={searchQuery}
-          onChange={handleSearchChange}
-          InputProps={{
-            startAdornment: <Search sx={{ mr: 1, color: 'action.active' }} />,
-          }}
+      {/* Búsqueda inteligente */}
+      <Box sx={{ mb: 3 }}>
+        <SmartSearchBar
+          value={rawQuery}
+          onChange={setQuery}
+          placeholder='Describe lo que buscas: "llanta usada barata en Palma"...'
+          parsedQuery={parsedQuery}
         />
-        <Button
-          variant="contained"
-          onClick={() => loadProducts(debouncedQuery, productFilters)}
-          sx={{ minWidth: 120 }}
-        >
-          Buscar
-        </Button>
       </Box>
 
-      {/* Filters */}
+      {/* Filtros */}
       <FilterBar
         filters={productFilterConfig}
         values={productFilters}
         onChange={handleProductFilterChange}
-        onClear={clearProductFilters}
+        onClear={clearFilters}
       />
 
-      {/* Content */}
-      {renderProductsContent()}
+      {/* Contenido */}
+      {renderContent()}
     </Container>
   )
 }
