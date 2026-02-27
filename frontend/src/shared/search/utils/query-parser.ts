@@ -146,6 +146,31 @@ const cleanQuery = (text: string, city?: string): string => {
   return cleaned.replace(/\s+/g, ' ').trim()
 }
 
+// Palabras clave que indican el usuario busca un taller/servicio
+const TALLER_HINTS = [
+  'taller', 'talleres', 'mecánico', 'mecanico', 'mecánica', 'mecanica',
+  'reparar', 'reparación', 'reparacion', 'arreglar', 'revisión', 'revision',
+  'servicio', 'servicios', 'mantenimiento', 'ajuste', 'puesta a punto',
+]
+
+// Palabras clave que indican alquiler
+const ALQUILER_HINTS = [
+  'alquilar', 'alquiler', 'alquilo', 'alquilaría', 'rental', 'rent',
+  'reservar', 'reserva', 'arrendar',
+]
+
+export type SearchIntent = 'talleres' | 'productos' | 'alquiler'
+
+/**
+ * Detecta la intención de búsqueda del usuario.
+ * Devuelve 'talleres', 'productos' o 'alquiler'.
+ */
+export const detectIntent = (input: string): SearchIntent => {
+  if (containsAny(input, ALQUILER_HINTS)) return 'alquiler'
+  if (containsAny(input, TALLER_HINTS)) return 'talleres'
+  return 'productos'
+}
+
 /**
  * Parsea una query en lenguaje natural español y extrae parámetros de búsqueda estructurados.
  *
