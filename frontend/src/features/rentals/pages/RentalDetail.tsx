@@ -10,7 +10,6 @@ import {
   Button,
   Chip,
   Paper,
-  TextField,
   Alert,
   CircularProgress,
   Divider,
@@ -26,11 +25,9 @@ import {
   Security,
   Lightbulb,
   CalendarMonth,
-  AttachMoney,
   Info,
   CheckCircleOutline,
   Phone,
-  Language,
   ArrowBack,
   EventBusy,
   Savings,
@@ -44,6 +41,7 @@ import {
   type PriceCalculation,
   type BlockedDate,
 } from '../../../services/rental.service'
+import { RentalDateRangePicker } from '../components/RentalDateRangePicker'
 
 export const RentalDetail = () => {
   const { id } = useParams<{ id: string }>()
@@ -147,35 +145,12 @@ export const RentalDetail = () => {
     navigate('/checkout/rental')
   }
 
-  const addDays = (dateStr: string, days: number) => {
-    const date = new Date(dateStr)
-    date.setDate(date.getDate() + days)
-    return date.toISOString().split('T')[0]
-  }
-
   const formatDateShort = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
 
   const fullyBlockedRanges = bike
     ? blockedDates.filter((b) => b.quantityBlocked >= bike.availableQuantity)
     : []
-
-  const isRangeConflicting = (start: string, end: string) => {
-    if (!start || !end) return false
-    return fullyBlockedRanges.some(
-      (b) => start <= b.endDate && end >= b.startDate
-    )
-  }
-
-  const getEndDateMin = () => {
-    if (!startDate || !bike) return new Date().toISOString().split('T')[0]
-    return addDays(startDate, bike.minRentalDays)
-  }
-
-  const getEndDateMax = () => {
-    if (!startDate || !bike) return undefined
-    return addDays(startDate, bike.maxRentalDays)
-  }
 
   const getBikeTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
@@ -468,45 +443,17 @@ export const RentalDetail = () => {
               <Divider sx={{ my: 3 }} />
 
               {/* Selector de fechas */}
-              <TextField
-                fullWidth
-                label="Fecha de Inicio"
-                type="date"
-                value={startDate}
-                onChange={(e) => {
-                  setStartDate(e.target.value)
-                  setEndDate('')
+              <RentalDateRangePicker
+                startDate={startDate}
+                endDate={endDate}
+                onDatesChange={(start, end) => {
+                  setStartDate(start)
+                  setEndDate(end)
                 }}
-                InputLabelProps={{ shrink: true }}
-                inputProps={{ min: new Date().toISOString().split('T')[0] }}
-                sx={{ mb: 2 }}
+                blockedRanges={fullyBlockedRanges}
+                minDays={bike.minRentalDays}
+                maxDays={bike.maxRentalDays}
               />
-
-              <TextField
-                fullWidth
-                label="Fecha de Fin"
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                InputLabelProps={{ shrink: true }}
-                inputProps={{
-                  min: getEndDateMin(),
-                  max: getEndDateMax(),
-                }}
-                disabled={!startDate}
-                helperText={
-                  startDate && bike
-                    ? `Mínimo ${bike.minRentalDays} día${bike.minRentalDays !== 1 ? 's' : ''}, máximo ${bike.maxRentalDays} días`
-                    : 'Selecciona primero la fecha de inicio'
-                }
-                sx={{ mb: 2 }}
-              />
-
-              {startDate && endDate && isRangeConflicting(startDate, endDate) && (
-                <Alert severity="warning" icon={<EventBusy />} sx={{ mb: 2 }}>
-                  Este rango incluye fechas sin disponibilidad. Prueba otras fechas.
-                </Alert>
-              )}
 
               <TextField
                 fullWidth
