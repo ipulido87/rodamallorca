@@ -1,9 +1,9 @@
 import { Box, Button, Chip, Container, Stack, useTheme, alpha } from '@mui/material'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, Build, KeyboardArrowDown } from '@mui/icons-material'
-import { HeroSearchBar } from './HeroSearchBar'
+import { SmartSearchBar } from './SmartSearchBar'
 
 // Wrap MUI components for Framer Motion
 const MotionBox = motion.create(Box)
@@ -171,6 +171,7 @@ export function HeroSection() {
   const theme = useTheme()
   const navigate = useNavigate()
   const heroRef = useRef<HTMLDivElement>(null)
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Parallax scroll effect - image zooms and fades as you scroll
   const { scrollYProgress } = useScroll({
@@ -341,7 +342,7 @@ export function HeroSection() {
 
               {/* AI Search bar */}
               <motion.div variants={itemVariants}>
-                <HeroSearchBar />
+                <SmartSearchBar variant="hero" value={searchQuery} onChange={setSearchQuery} />
               </motion.div>
 
               {/* CTA Buttons */}
