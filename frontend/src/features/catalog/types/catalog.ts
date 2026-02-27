@@ -115,6 +115,8 @@ export interface PublicProduct {
     name: string
     city?: string
     country?: string
+    phone?: string
+    canAcceptPayments?: boolean
   }
   category: {
     id: string

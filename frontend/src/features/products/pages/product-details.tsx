@@ -2,6 +2,7 @@ import {
   Add,
   ArrowBack,
   LocationOn,
+  Phone,
   Remove,
   ShoppingCart,
   Store,
@@ -79,7 +80,11 @@ export const ProductDetail = () => {
         price: product.price,
         currency: product.currency,
       },
-      quantity
+      quantity,
+      {
+        canAcceptPayments: product.workshop.canAcceptPayments,
+        phone: product.workshop.phone,
+      }
     )
 
     // Mostrar feedback visual con snackbar
@@ -262,7 +267,45 @@ export const ProductDetail = () => {
 
             {/* Add to Cart Section */}
             <Box sx={{ mt: 4 }}>
-              {product.status.toUpperCase() === 'PUBLISHED' && user && (
+              {product.status.toUpperCase() === 'PUBLISHED' && user && product.workshop.canAcceptPayments !== true && (
+                <Box
+                  sx={{
+                    p: 3,
+                    border: '1px solid',
+                    borderColor: 'info.main',
+                    borderRadius: 2,
+                    bgcolor: 'info.50',
+                  }}
+                >
+                  <Typography variant="body1" color="info.dark" gutterBottom fontWeight={600}>
+                    Este producto no está disponible para compra online
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
+                    El taller aún no tiene habilitados los pagos online. Visita su página o llámales directamente para adquirirlo.
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+                    <Button
+                      variant="contained"
+                      size="medium"
+                      onClick={() => navigate(`/workshop/${product.workshop.id}`)}
+                    >
+                      Ver página del taller
+                    </Button>
+                    {product.workshop.phone && (
+                      <Button
+                        variant="outlined"
+                        size="medium"
+                        startIcon={<Phone />}
+                        href={`tel:${product.workshop.phone}`}
+                      >
+                        {product.workshop.phone}
+                      </Button>
+                    )}
+                  </Box>
+                </Box>
+              )}
+
+              {product.status.toUpperCase() === 'PUBLISHED' && user && product.workshop.canAcceptPayments === true && (
                 <>
                   <Box
                     sx={{

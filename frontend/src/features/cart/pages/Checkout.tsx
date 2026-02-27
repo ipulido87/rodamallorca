@@ -1,5 +1,6 @@
-import { CheckCircle } from '@mui/icons-material'
+import { CheckCircle, Phone, Store } from '@mui/icons-material'
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -72,10 +73,16 @@ export const Checkout = () => {
       // La redirección limpiará el carrito cuando vuelva del éxito
     } catch (err: any) {
       console.error('Error iniciando checkout:', err)
+      const apiMessage = err.response?.data?.message || err.message || ''
+      const isStripeConnectError =
+        apiMessage.includes('Stripe Connect') ||
+        apiMessage.includes('no puede recibir pagos') ||
+        apiMessage.includes('verificación de Stripe')
+
       setError(
-        err.response?.data?.message ||
-          err.message ||
-          'Error al iniciar el pago. Por favor intenta de nuevo.'
+        isStripeConnectError
+          ? `${cart.items[0]?.workshopName || 'Este taller'} aún no acepta pagos online. Por favor, contacta directamente con el taller.`
+          : apiMessage || 'Error al iniciar el pago. Por favor intenta de nuevo.'
       )
       setLoading(false)
     }
@@ -295,25 +302,55 @@ export const Checkout = () => {
                   </Box>
                 )}
 
-                <Button
-                  variant="contained"
-                  fullWidth
-                  size="large"
-                  onClick={handleSubmitOrder}
-                  disabled={loading}
-                >
-                  {loading ? 'Redirigiendo a pago...' : 'Pagar con Tarjeta'}
-                </Button>
+                {cart.workshopCanAcceptPayments === false ? (
+                  <>
+                    <Alert severity="info" sx={{ mb: 2 }}>
+                      Este taller aún no tiene habilitados los pagos online. Contacta directamente con ellos para realizar tu compra.
+                    </Alert>
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      size="large"
+                      startIcon={<Store />}
+                      onClick={() => navigate(`/workshop/${cart.workshopId}`)}
+                      sx={{ mb: 1.5 }}
+                    >
+                      Ver página del taller
+                    </Button>
+                    {cart.workshopPhone && (
+                      <Button
+                        variant="outlined"
+                        fullWidth
+                        size="large"
+                        startIcon={<Phone />}
+                        href={`tel:${cart.workshopPhone}`}
+                        sx={{ mb: 1.5 }}
+                      >
+                        Llamar: {cart.workshopPhone}
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    size="large"
+                    onClick={handleSubmitOrder}
+                    disabled={loading}
+                    sx={{ mb: 1.5 }}
+                  >
+                    {loading ? 'Redirigiendo a pago...' : 'Pagar con Tarjeta'}
+                  </Button>
+                )}
 
                 <Button
                   variant="outlined"
                   fullWidth
                   size="large"
                   onClick={() => navigate('/cart')}
-                  sx={{ mt: 2 }}
                   disabled={loading}
                 >
-                  Back to Cart
+                  Volver al Carrito
                 </Button>
               </CardContent>
             </Card>
