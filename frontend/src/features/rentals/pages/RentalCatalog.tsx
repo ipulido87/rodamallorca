@@ -350,19 +350,19 @@ export const RentalCatalog = () => {
                   }}
                 >
                   {bikes.map((bike) => (
-                    <Box key={bike.id}>
-                      <Card
-                        sx={{
-                          height: '100%',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          transition: 'transform 0.2s, box-shadow 0.2s',
-                          '&:hover': {
-                            transform: 'translateY(-4px)',
-                            boxShadow: 4,
-                          },
-                        }}
-                      >
+                    <Card
+                      key={bike.id}
+                      sx={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: 4,
+                        },
+                      }}
+                    >
                         {/* Imagen */}
                         <CardMedia
                           component="img"
@@ -459,8 +459,7 @@ export const RentalCatalog = () => {
                             Ver Disponibilidad
                           </Button>
                         </CardActions>
-                      </Card>
-                    </Box>
+                    </Card>
                   ))}
                 </Box>
               </>
