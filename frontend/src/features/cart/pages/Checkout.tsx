@@ -72,10 +72,16 @@ export const Checkout = () => {
       // La redirección limpiará el carrito cuando vuelva del éxito
     } catch (err: any) {
       console.error('Error iniciando checkout:', err)
+      const apiMessage = err.response?.data?.message || err.message || ''
+      const isStripeConnectError =
+        apiMessage.includes('Stripe Connect') ||
+        apiMessage.includes('no puede recibir pagos') ||
+        apiMessage.includes('verificación de Stripe')
+
       setError(
-        err.response?.data?.message ||
-          err.message ||
-          'Error al iniciar el pago. Por favor intenta de nuevo.'
+        isStripeConnectError
+          ? `${cart.items[0]?.workshopName || 'Este taller'} aún no acepta pagos online. Por favor, contacta directamente con el taller.`
+          : apiMessage || 'Error al iniciar el pago. Por favor intenta de nuevo.'
       )
       setLoading(false)
     }

@@ -2,6 +2,7 @@ import {
   Add,
   ArrowBack,
   LocationOn,
+  Phone,
   Remove,
   ShoppingCart,
   Store,
@@ -262,7 +263,37 @@ export const ProductDetail = () => {
 
             {/* Add to Cart Section */}
             <Box sx={{ mt: 4 }}>
-              {product.status.toUpperCase() === 'PUBLISHED' && user && (
+              {product.status.toUpperCase() === 'PUBLISHED' && user && product.workshop.canAcceptPayments === false && (
+                <Box
+                  sx={{
+                    p: 3,
+                    border: '1px solid',
+                    borderColor: 'warning.main',
+                    borderRadius: 2,
+                    bgcolor: 'warning.50',
+                  }}
+                >
+                  <Typography variant="body1" color="warning.dark" gutterBottom fontWeight={500}>
+                    Este taller aún no acepta pagos online.
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Contacta directamente con el taller para adquirir este producto.
+                  </Typography>
+                  {product.workshop.phone && (
+                    <Button
+                      variant="contained"
+                      color="warning"
+                      startIcon={<Phone />}
+                      href={`tel:${product.workshop.phone}`}
+                      sx={{ mr: 1 }}
+                    >
+                      Llamar: {product.workshop.phone}
+                    </Button>
+                  )}
+                </Box>
+              )}
+
+              {product.status.toUpperCase() === 'PUBLISHED' && user && product.workshop.canAcceptPayments !== false && (
                 <>
                   <Box
                     sx={{

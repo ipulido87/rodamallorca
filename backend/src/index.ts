@@ -42,6 +42,7 @@ import directoryRoutes from './modules/workshops/routes/directory.routes'
 import rentalRoutes from './modules/rentals/interfaces/http/rental.routes'
 import reviewRoutes from './modules/reviews/interfaces/http/review.routes'
 import sitemapRoutes from './routes/sitemap.routes'
+import adminNotificationsRoutes from './modules/notifications/interfaces/http/admin-notifications.routes'
 
 const app = express()
 const PORT = config.port
@@ -105,6 +106,7 @@ app.use('/api/directory', directoryRoutes) // Directorio público de talleres
 app.use('/api/rentals', rentalRoutes) // Rutas de alquiler de bicicletas
 app.use('/api', reviewRoutes) // Rutas de reviews
 app.use('/', sitemapRoutes) // Sitemap dinámico
+app.use('/api/admin', adminNotificationsRoutes) // Rutas de administración
 
 // Servir archivos estáticos
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))
