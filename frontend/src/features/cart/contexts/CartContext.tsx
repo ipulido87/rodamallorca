@@ -14,11 +14,18 @@ export interface CartItem {
 export interface Cart {
   items: CartItem[]
   workshopId: string | null // Solo se puede pedir de un taller a la vez
+  workshopCanAcceptPayments?: boolean
+  workshopPhone?: string
+}
+
+interface WorkshopMeta {
+  canAcceptPayments?: boolean
+  phone?: string
 }
 
 export interface CartContextValue {
   cart: Cart
-  addToCart: (item: Omit<CartItem, 'quantity'>, quantity?: number) => void
+  addToCart: (item: Omit<CartItem, 'quantity'>, quantity?: number, workshopMeta?: WorkshopMeta) => void
   removeFromCart: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void
@@ -64,7 +71,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const addToCart = (
     item: Omit<CartItem, 'quantity'>,
-    quantity: number = 1
+    quantity: number = 1,
+    workshopMeta?: WorkshopMeta
   ) => {
     setCart((prev) => {
       // Si el carrito está vacío o es del mismo taller, agregar
@@ -86,6 +94,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
           // Agregar nuevo item
           return {
             workshopId: item.workshopId,
+            workshopCanAcceptPayments: workshopMeta?.canAcceptPayments,
+            workshopPhone: workshopMeta?.phone,
             items: [...prev.items, { ...item, quantity }],
           }
         }
@@ -96,6 +106,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         )
         return {
           workshopId: item.workshopId,
+          workshopCanAcceptPayments: workshopMeta?.canAcceptPayments,
+          workshopPhone: workshopMeta?.phone,
           items: [{ ...item, quantity }],
         }
       }
