@@ -1,5 +1,5 @@
+import Fuse, { type IFuseOptions } from 'fuse.js'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { FuseSearchProvider } from '../providers/fuse-provider'
 import { parseQuery } from '../utils/query-parser'
 import type { ParsedQuery, SmartSearchOptions } from '../types'
 
@@ -18,9 +18,9 @@ interface UseSmartSearchResult<T> {
  * - Fuzzy search sobre los items ya cargados (aguanta typos)
  * - Genérico: funciona para cualquier tipo T
  *
- * @param items      - Array de items sobre los que buscar
- * @param options    - Configuración de Fuse.js (keys y pesos)
- * @param debounceMs - Debounce en ms (por defecto 300ms)
+ * IMPORTANTE: La instancia de Fuse se guarda en un ref para evitar que una
+ * referencia nueva de 'options' (objeto literal en el componente) destruya y
+ * recree el índice en cada render antes de que pueda ser usado.
  */
 export function useSmartSearch<T>(
   items: T[],
@@ -31,16 +31,30 @@ export function useSmartSearch<T>(
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const provider = useMemo(() => new FuseSearchProvider<T>(options), [options])
+  // Ref estable para la instancia de Fuse — nunca se recrea por cambios de options
+  const fuseRef = useRef<Fuse<T> | null>(null)
+  // Guardamos las options en un ref para poder leerlas en el effect sin recrear Fuse
+  const optionsRef = useRef(options)
+  optionsRef.current = options
 
-  // Re-indexar cuando cambian los items
+  // Re-indexar solo cuando cambian los items
   useEffect(() => {
-    if (items.length > 0) {
-      provider.index(items)
+    if (items.length === 0) {
+      fuseRef.current = null
+      return
     }
-  }, [items, provider])
+    const fuseOptions: IFuseOptions<T> = {
+      keys: optionsRef.current.keys as IFuseOptions<T>['keys'],
+      threshold: optionsRef.current.threshold ?? 0.35,
+      includeScore: true,
+      minMatchCharLength: 2,
+      shouldSort: true,
+      ignoreLocation: true,
+      findAllMatches: true,
+    }
+    fuseRef.current = new Fuse(items, fuseOptions)
+  }, [items])
 
-  // Debounce del query
   const setQuery = useCallback(
     (query: string) => {
       setRawQuery(query)
@@ -57,14 +71,14 @@ export function useSmartSearch<T>(
   const results = useMemo((): T[] => {
     if (!debouncedQuery.trim()) return items
 
-    // Si hay término de búsqueda semántico, usar fuzzy
-    if (parsedQuery.q.trim()) {
-      return provider.search(parsedQuery.q)
+    // Si hay término semántico real tras el parsing NLP, buscar con Fuse
+    if (parsedQuery.q.trim() && fuseRef.current) {
+      return fuseRef.current.search(parsedQuery.q).map((r) => r.item)
     }
 
-    // Si solo hay filtros (ciudad, condición, etc.) sin término textual, devolver todos
+    // Solo filtros NLP (ciudad, condición, precio) sin término textual → devolver todos
     return items
-  }, [debouncedQuery, parsedQuery.q, items, provider])
+  }, [debouncedQuery, parsedQuery.q, items])
 
   return {
     results,
