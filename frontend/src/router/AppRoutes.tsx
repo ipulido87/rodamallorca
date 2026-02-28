@@ -68,7 +68,7 @@ import {
   // SEO pages
   AboutUsPage,
   HowItWorksPage,
-  RoutesPage,
+  RutasPage,
   HelpCenterPage,
   TermsPage,
   PrivacyPage,
@@ -102,7 +102,8 @@ export function AppRoutes() {
         {/* SEO pages */}
         <Route path="/sobre-nosotros" element={<PublicLayout><AboutUsPage /></PublicLayout>} />
         <Route path="/como-funciona" element={<PublicLayout><HowItWorksPage /></PublicLayout>} />
-        <Route path="/rutas-recomendadas" element={<PublicLayout><RoutesPage /></PublicLayout>} />
+        <Route path="/rutas-recomendadas" element={<Navigate to="/rutas" replace />} />
+        <Route path="/rutas" element={<PublicLayout><RutasPage /></PublicLayout>} />
         <Route path="/centro-de-ayuda" element={<PublicLayout><HelpCenterPage /></PublicLayout>} />
         <Route path="/terminos-de-servicio" element={<PublicLayout><TermsPage /></PublicLayout>} />
         <Route path="/politica-de-privacidad" element={<PublicLayout><PrivacyPage /></PublicLayout>} />

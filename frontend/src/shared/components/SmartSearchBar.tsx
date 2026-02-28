@@ -197,7 +197,7 @@ const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 
     const params = new URLSearchParams({ q })
     if (destination === 'talleres') navigate(`/talleres?${params}`)
     else if (destination === 'alquiler') navigate(`/rentals?${params}`)
-    else if (destination === 'rutas') navigate('/#rutas')
+    else if (destination === 'rutas') navigate('/rutas')
     else navigate(`/productos?${params}`)
   }
 
