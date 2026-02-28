@@ -23,6 +23,7 @@ import { motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { HeroSection } from '../shared/components/HeroSection'
+import { RoutesSection } from '../shared/components/RoutesSection'
 import { ScrollReveal, staggerItemVariants } from '../shared/components/ScrollReveal'
 import { Seo } from '../shared/components/Seo'
 import { landingStructuredData } from '../shared/constants/seo-structured-data'
@@ -454,6 +455,9 @@ export const LandingPage = () => {
             </ScrollReveal>
           </Container>
         </Box>
+
+        {/* Rutas */}
+        <RoutesSection />
 
         {/* Pricing Section */}
         <Box

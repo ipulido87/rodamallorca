@@ -267,6 +267,7 @@ export const Home = () => {
                   <Button
                     variant="contained"
                     size="large"
+                    onClick={() => navigate(isWorkshopOwner ? '/contacto' : '/#rutas')}
                     sx={{
                       background: 'linear-gradient(135deg, #ff7043 0%, #ff5722 100%)',
                       '&:hover': {
