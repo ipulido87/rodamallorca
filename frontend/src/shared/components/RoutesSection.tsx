@@ -1,96 +1,189 @@
-import { DirectionsBike, OpenInNew } from '@mui/icons-material'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
+import { DirectionsBike, OpenInNew, Timer, Terrain } from '@mui/icons-material'
 import {
   alpha,
   Box,
   Button,
   Chip,
   Container,
+  Divider,
   Stack,
   Typography,
   useTheme,
 } from '@mui/material'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { MapContainer, TileLayer, Polyline, Marker, useMap } from 'react-leaflet'
 import { ScrollReveal } from './ScrollReveal'
 
-// ─── Datos de rutas ────────────────────────────────────────────────────────────
-// Actualiza name, distance, elevation y difficulty con los datos reales de Komoot.
+// Fix Leaflet marker icons in Vite
+delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+})
 
-interface Route {
+// ─── Tipos ────────────────────────────────────────────────────────────────────
+
+type Difficulty = 'Fácil' | 'Medio' | 'Difícil' | 'Épica'
+
+interface CyclingRoute {
   id: string
   name: string
+  subtitle: string
   distance: string
   elevation: string
-  difficulty: 'Fácil' | 'Medio' | 'Difícil' | 'Épica'
+  duration: string
+  difficulty: Difficulty
   bikeType: string
-  embedUrl: string
+  color: string
+  mapCenter: [number, number]
+  zoom: number
+  coords: [number, number][]
   komootUrl: string
 }
 
-const ROUTES: Route[] = [
+// ─── Rutas reales de Mallorca ─────────────────────────────────────────────────
+
+const ROUTES: CyclingRoute[] = [
   {
-    id: 'route-1',
-    name: 'Ruta 1 — Mallorca',
-    distance: '—',
-    elevation: '—',
-    difficulty: 'Medio',
-    bikeType: 'Carretera',
-    embedUrl: 'https://www.komoot.com/smarttour/31967033/embed?profile=1',
+    id: 'can-pere-antoni',
+    name: "Can Pere Antoni",
+    subtitle: "Bucle costero desde Les Meravelles",
+    distance: '~20',
+    elevation: '80',
+    duration: '1-1.5h',
+    difficulty: 'Fácil',
+    bikeType: 'Carretera / Híbrida',
+    color: '#0097a7',
+    mapCenter: [39.561, 2.684],
+    zoom: 13,
+    coords: [
+      [39.549, 2.730], [39.554, 2.712], [39.561, 2.694],
+      [39.569, 2.668], [39.573, 2.648], [39.567, 2.633],
+      [39.558, 2.648], [39.551, 2.684], [39.549, 2.730],
+    ],
     komootUrl: 'https://www.komoot.com/es-es/smarttour/31967033',
   },
   {
-    id: 'route-2',
-    name: 'Ruta 2 — Mallorca',
-    distance: '—',
-    elevation: '—',
-    difficulty: 'Difícil',
+    id: 'sa-calobra',
+    name: 'Sa Calobra',
+    subtitle: 'Bucle desde Escorca — el descenso más épico',
+    distance: '~40',
+    elevation: '1.200',
+    duration: '2-3h',
+    difficulty: 'Épica',
     bikeType: 'Carretera',
-    embedUrl: 'https://www.komoot.com/smarttour/38147187/embed?profile=1',
+    color: '#e53935',
+    mapCenter: [39.863, 2.818],
+    zoom: 13,
+    coords: [
+      [39.854, 2.840], [39.857, 2.832], [39.860, 2.824],
+      [39.861, 2.817], [39.862, 2.811], [39.865, 2.808],
+      [39.864, 2.804], [39.866, 2.801], [39.869, 2.799],
+      [39.866, 2.801], [39.864, 2.804], [39.865, 2.808],
+      [39.858, 2.820], [39.854, 2.840],
+    ],
     komootUrl: 'https://www.komoot.com/es-es/smarttour/38147187',
   },
   {
-    id: 'route-3',
-    name: 'Ruta 3 — Mallorca',
-    distance: '—',
-    elevation: '—',
-    difficulty: 'Épica',
-    bikeType: 'Carretera',
-    embedUrl: 'https://www.komoot.com/smarttour/32559666/embed?profile=1',
+    id: 'campanet',
+    name: 'Campanet',
+    subtitle: 'Valle de Maffay — bucle desde Platja de Muro',
+    distance: '~50',
+    elevation: '350',
+    duration: '2-3h',
+    difficulty: 'Medio',
+    bikeType: 'Carretera / Gravel',
+    color: '#2e7d32',
+    mapCenter: [39.814, 3.046],
+    zoom: 12,
+    coords: [
+      [39.793, 3.124], [39.802, 3.105], [39.815, 3.070],
+      [39.825, 3.030], [39.833, 2.968], [39.825, 2.985],
+      [39.810, 3.048], [39.799, 3.086], [39.793, 3.124],
+    ],
     komootUrl: 'https://www.komoot.com/es-es/smarttour/32559666',
   },
   {
-    id: 'route-4',
-    name: 'Highlight — Mallorca',
-    distance: '—',
-    elevation: '—',
+    id: 'cami-vell-pollenca',
+    name: 'Camí Vell de Pollença',
+    subtitle: 'El camino histórico por las montañas',
+    distance: '~15',
+    elevation: '200',
+    duration: '1-1.5h',
     difficulty: 'Fácil',
-    bikeType: 'Carretera / Gravel',
-    embedUrl: 'https://www.komoot.com/highlight/178576/embed',
+    bikeType: 'Gravel / MTB',
+    color: '#6a1b9a',
+    mapCenter: [39.882, 3.012],
+    zoom: 13,
+    coords: [
+      [39.875, 3.015], [39.879, 3.013], [39.883, 3.010],
+      [39.888, 3.007], [39.893, 3.003], [39.898, 2.998],
+    ],
     komootUrl: 'https://www.komoot.com/es-es/highlight/178576',
   },
   {
-    id: 'route-5',
-    name: 'Ruta 5 — Mallorca',
-    distance: '—',
-    elevation: '—',
+    id: 'randa',
+    name: 'Randa',
+    subtitle: 'Bucle por el interior desde Algaida',
+    distance: '~30',
+    elevation: '280',
+    duration: '1.5-2.5h',
     difficulty: 'Medio',
-    bikeType: 'Gravel',
-    embedUrl: 'https://www.komoot.com/smarttour/40381010/embed?profile=1',
+    bikeType: 'Carretera / Gravel',
+    color: '#f57c00',
+    mapCenter: [39.535, 2.918],
+    zoom: 13,
+    coords: [
+      [39.552, 2.890], [39.540, 2.908], [39.527, 2.924],
+      [39.519, 2.939], [39.514, 2.953], [39.522, 2.948],
+      [39.535, 2.930], [39.548, 2.908], [39.552, 2.890],
+    ],
     komootUrl: 'https://www.komoot.com/smarttour/40381010',
   },
 ]
 
-const DIFFICULTY_COLOR: Record<Route['difficulty'], string> = {
-  'Fácil': '#2e7d32',
-  'Medio': '#f57c00',
+const DIFFICULTY_COLOR: Record<Difficulty, string> = {
+  'Fácil':   '#00897b',
+  'Medio':   '#f57c00',
   'Difícil': '#c62828',
-  'Épica': '#6a1b9a',
+  'Épica':   '#ad1457',
 }
 
-// ─── Componente ────────────────────────────────────────────────────────────────
+// ─── Subcomponentes ───────────────────────────────────────────────────────────
+
+function MapFlyTo({ center, zoom }: { center: [number, number]; zoom: number }) {
+  const map = useMap()
+  useEffect(() => {
+    map.flyTo(center, zoom, { duration: 0.8 })
+  }, [center, zoom, map])
+  return null
+}
+
+const makeIcon = (color: string, label: 'A' | 'B') =>
+  L.divIcon({
+    className: '',
+    html: `<div style="
+      width:26px;height:26px;border-radius:50%;
+      background:${color};border:2.5px solid white;
+      box-shadow:0 2px 8px rgba(0,0,0,0.45);
+      display:flex;align-items:center;justify-content:center;
+      font-size:11px;font-weight:700;color:white;font-family:sans-serif;
+    ">${label}</div>`,
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+  })
+
+// ─── Componente principal ─────────────────────────────────────────────────────
 
 export function RoutesSection() {
   const theme = useTheme()
-  const [selected, setSelected] = useState<Route>(ROUTES[0])
+  const [selected, setSelected] = useState<CyclingRoute>(ROUTES[0])
+
+  const start = selected.coords[0]
+  const end   = selected.coords[selected.coords.length - 1]
 
   return (
     <Box
@@ -125,179 +218,199 @@ export function RoutesSection() {
               variant="h6"
               sx={{ color: alpha('#ffffff', 0.6), fontWeight: 300, maxWidth: 560 }}
             >
-              Explora las rutas más espectaculares de la isla antes de reservar tu bici
+              Explora las mejores rutas de la isla antes de reservar tu bici
             </Typography>
           </Stack>
         </ScrollReveal>
 
-        {/* Selector de rutas */}
+        {/* Tabs de selección */}
         <ScrollReveal delay={0.1}>
-          <Stack
-            direction="row"
-            spacing={1.5}
-            sx={{ mb: 3, flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}
-          >
-            {ROUTES.map((route) => (
-              <Box
-                key={route.id}
-                onClick={() => setSelected(route)}
-                sx={{
-                  cursor: 'pointer',
-                  px: 2.5,
-                  py: 1.2,
-                  borderRadius: 2,
-                  border: '1.5px solid',
-                  borderColor:
-                    selected.id === route.id
-                      ? theme.palette.primary.main
-                      : alpha('#ffffff', 0.15),
-                  backgroundColor:
-                    selected.id === route.id
-                      ? alpha(theme.palette.primary.main, 0.15)
-                      : 'transparent',
-                  transition: 'all 0.2s',
-                  '&:hover': {
-                    borderColor: alpha(theme.palette.primary.main, 0.6),
-                    backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                  },
-                }}
-              >
-                <Typography
-                  variant="body2"
+          <Stack direction="row" sx={{ mb: 0, flexWrap: 'wrap', gap: 1 }}>
+            {ROUTES.map((route) => {
+              const active = selected.id === route.id
+              return (
+                <Box
+                  key={route.id}
+                  onClick={() => setSelected(route)}
                   sx={{
-                    color: selected.id === route.id ? theme.palette.primary.light : alpha('#ffffff', 0.7),
-                    fontWeight: selected.id === route.id ? 600 : 400,
-                    whiteSpace: 'nowrap',
+                    cursor: 'pointer',
+                    px: 2.5,
+                    py: 1,
+                    borderRadius: '8px 8px 0 0',
+                    border: '1.5px solid',
+                    borderBottom: 'none',
+                    borderColor: active ? route.color : alpha('#ffffff', 0.12),
+                    backgroundColor: active ? alpha(route.color, 0.14) : 'transparent',
+                    transition: 'all 0.2s',
+                    '&:hover': {
+                      borderColor: alpha(route.color, 0.5),
+                      backgroundColor: alpha(route.color, 0.07),
+                    },
                   }}
                 >
-                  {route.name}
-                </Typography>
-              </Box>
-            ))}
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: active ? 'white' : alpha('#ffffff', 0.55),
+                      fontWeight: active ? 700 : 400,
+                      whiteSpace: 'nowrap',
+                      fontSize: '0.85rem',
+                    }}
+                  >
+                    {route.name}
+                  </Typography>
+                </Box>
+              )
+            })}
           </Stack>
         </ScrollReveal>
 
-        {/* Iframe + stats */}
+        {/* Mapa + stats */}
         <ScrollReveal delay={0.15}>
           <Box
             sx={{
-              borderRadius: 3,
+              borderRadius: '0 8px 8px 8px',
               overflow: 'hidden',
-              border: `1px solid ${alpha('#ffffff', 0.1)}`,
-              boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+              border: `1.5px solid ${alpha(selected.color, 0.45)}`,
+              boxShadow: `0 20px 60px rgba(0,0,0,0.4)`,
+              transition: 'border-color 0.3s',
             }}
           >
-            {/* Stats bar */}
-            <Box
-              sx={{
-                px: 3,
-                py: 1.5,
-                background: alpha('#0a1628', 0.95),
-                borderBottom: `1px solid ${alpha('#ffffff', 0.08)}`,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 3,
-                flexWrap: 'wrap',
-              }}
-            >
-              <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 700, mr: 1 }}>
-                {selected.name}
-              </Typography>
-
-              {selected.distance !== '—' && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.5) }}>📍</Typography>
-                  <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.8), fontWeight: 600 }}>
-                    {selected.distance} km
-                  </Typography>
-                </Box>
-              )}
-
-              {selected.elevation !== '—' && (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.5) }}>⬆</Typography>
-                  <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.8), fontWeight: 600 }}>
-                    {selected.elevation} m
-                  </Typography>
-                </Box>
-              )}
-
-              <Chip
-                label={selected.difficulty}
-                size="small"
-                sx={{
-                  backgroundColor: alpha(DIFFICULTY_COLOR[selected.difficulty], 0.2),
-                  color: DIFFICULTY_COLOR[selected.difficulty],
-                  fontWeight: 700,
-                  fontSize: '0.7rem',
-                  border: `1px solid ${alpha(DIFFICULTY_COLOR[selected.difficulty], 0.3)}`,
-                }}
-              />
-
-              <Chip
-                label={selected.bikeType}
-                size="small"
-                sx={{
-                  backgroundColor: alpha('#ffffff', 0.08),
-                  color: alpha('#ffffff', 0.6),
-                  fontSize: '0.7rem',
-                }}
-              />
-
-              <Button
-                href={selected.komootUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                size="small"
-                endIcon={<OpenInNew sx={{ fontSize: 14 }} />}
-                sx={{
-                  ml: 'auto',
-                  color: theme.palette.primary.light,
-                  fontSize: '0.8rem',
-                  textTransform: 'none',
-                  '&:hover': { color: theme.palette.primary.main },
-                }}
+            {/* Mapa */}
+            <Box sx={{ height: { xs: 320, md: 440 } }}>
+              <MapContainer
+                center={selected.mapCenter}
+                zoom={selected.zoom}
+                style={{ height: '100%', width: '100%' }}
+                zoomControl={false}
               >
-                Ver en Komoot
-              </Button>
+                <MapFlyTo center={selected.mapCenter} zoom={selected.zoom} />
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                />
+                <Polyline
+                  positions={selected.coords}
+                  pathOptions={{ color: selected.color, weight: 5, opacity: 0.9, lineJoin: 'round', lineCap: 'round' }}
+                />
+                <Marker position={start} icon={makeIcon(selected.color, 'A')} />
+                <Marker position={end}   icon={makeIcon(selected.color, 'B')} />
+              </MapContainer>
             </Box>
 
-            {/* Komoot iframe */}
+            {/* Stats strip */}
             <Box
-              component="iframe"
-              key={selected.id}
-              src={selected.embedUrl}
-              title={`Ruta: ${selected.name}`}
               sx={{
-                display: 'block',
-                width: '100%',
-                height: { xs: 380, md: 500 },
-                border: 'none',
-                background: '#1a2a3a',
+                px: { xs: 2, md: 3 },
+                py: 2,
+                background: '#0a1628',
+                borderTop: `2px solid ${selected.color}`,
               }}
-              allowFullScreen
-            />
+            >
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={{ xs: 1.5, sm: 3 }}
+                alignItems={{ xs: 'flex-start', sm: 'center' }}
+              >
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Typography variant="subtitle1" sx={{ color: 'white', fontWeight: 700, lineHeight: 1.2 }}>
+                    {selected.name}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: alpha('#ffffff', 0.45) }}>
+                    {selected.subtitle}
+                  </Typography>
+                </Box>
+
+                <Divider orientation="vertical" flexItem sx={{ borderColor: alpha('#ffffff', 0.1), display: { xs: 'none', sm: 'block' } }} />
+
+                <Stack direction="row" spacing={2.5} alignItems="center" flexWrap="wrap" sx={{ gap: 1.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+                    <DirectionsBike sx={{ fontSize: 15, color: alpha('#ffffff', 0.4) }} />
+                    <Typography variant="body2" sx={{ color: 'white', fontWeight: 600 }}>
+                      {selected.distance} km
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+                    <Terrain sx={{ fontSize: 15, color: alpha('#ffffff', 0.4) }} />
+                    <Typography variant="body2" sx={{ color: 'white', fontWeight: 600 }}>
+                      +{selected.elevation} m
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+                    <Timer sx={{ fontSize: 15, color: alpha('#ffffff', 0.4) }} />
+                    <Typography variant="body2" sx={{ color: 'white', fontWeight: 600 }}>
+                      {selected.duration}
+                    </Typography>
+                  </Box>
+                  <Chip
+                    label={selected.difficulty}
+                    size="small"
+                    sx={{
+                      backgroundColor: alpha(DIFFICULTY_COLOR[selected.difficulty], 0.2),
+                      color: DIFFICULTY_COLOR[selected.difficulty],
+                      fontWeight: 700,
+                      fontSize: '0.7rem',
+                      border: `1px solid ${alpha(DIFFICULTY_COLOR[selected.difficulty], 0.35)}`,
+                    }}
+                  />
+                  <Chip
+                    label={selected.bikeType}
+                    size="small"
+                    sx={{ backgroundColor: alpha('#ffffff', 0.07), color: alpha('#ffffff', 0.55), fontSize: '0.7rem' }}
+                  />
+                </Stack>
+
+                <Divider orientation="vertical" flexItem sx={{ borderColor: alpha('#ffffff', 0.1), display: { xs: 'none', sm: 'block' } }} />
+
+                <Button
+                  href={selected.komootUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  size="small"
+                  endIcon={<OpenInNew sx={{ fontSize: 14 }} />}
+                  sx={{
+                    color: 'white',
+                    border: `1px solid ${alpha('#ffffff', 0.22)}`,
+                    borderRadius: 1.5,
+                    px: 2,
+                    py: 0.7,
+                    fontSize: '0.8rem',
+                    textTransform: 'none',
+                    flexShrink: 0,
+                    '&:hover': {
+                      borderColor: selected.color,
+                      backgroundColor: alpha(selected.color, 0.1),
+                    },
+                  }}
+                >
+                  Ver en Komoot
+                </Button>
+              </Stack>
+            </Box>
           </Box>
         </ScrollReveal>
 
         {/* CTA */}
         <ScrollReveal delay={0.2}>
-          <Box sx={{ textAlign: 'center', mt: 4 }}>
-            <Typography variant="body2" sx={{ color: alpha('#ffffff', 0.5), mb: 2 }}>
-              ¿Tienes una ruta favorita? Alquila la bici perfecta para hacerla
+          <Box sx={{ textAlign: 'center', mt: 5 }}>
+            <Typography variant="body2" sx={{ color: alpha('#ffffff', 0.4), mb: 2 }}>
+              ¿Ya tienes la ruta? Alquila la bici perfecta para hacerla
             </Typography>
             <Button
               href="/rentals"
               variant="outlined"
               startIcon={<DirectionsBike />}
               sx={{
-                borderColor: alpha('#ffffff', 0.3),
+                borderColor: alpha('#ffffff', 0.25),
                 color: 'white',
                 borderRadius: 2,
                 px: 4,
                 py: 1.2,
                 textTransform: 'none',
-                '&:hover': { borderColor: theme.palette.primary.main, backgroundColor: alpha(theme.palette.primary.main, 0.1) },
+                '&:hover': {
+                  borderColor: theme.palette.primary.main,
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                },
               }}
             >
               Ver bicicletas disponibles
