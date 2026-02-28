@@ -11,7 +11,6 @@ import {
   Button,
   Chip,
   Paper,
-  TextField,
   FormControl,
   InputLabel,
   Select,
@@ -33,6 +32,7 @@ import {
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { getRentalBikes, getRentalFiltersOptions, type RentalBike, type RentalFilters } from '../../../services/rental.service'
+import { RentalDateRangePicker } from '../components/RentalDateRangePicker'
 
 export const RentalCatalog = () => {
   const navigate = useNavigate()
@@ -229,23 +229,18 @@ export const RentalCatalog = () => {
               </FormControl>
 
               {/* Fechas */}
-              <TextField
-                fullWidth
-                label="Fecha de Inicio"
-                type="date"
-                value={filters.startDate || ''}
-                onChange={(e) => handleFilterChange('startDate', e.target.value || undefined)}
-                InputLabelProps={{ shrink: true }}
-                sx={{ mb: 2 }}
-              />
-              <TextField
-                fullWidth
-                label="Fecha de Fin"
-                type="date"
-                value={filters.endDate || ''}
-                onChange={(e) => handleFilterChange('endDate', e.target.value || undefined)}
-                InputLabelProps={{ shrink: true }}
-                sx={{ mb: 2 }}
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                Fechas
+              </Typography>
+              <RentalDateRangePicker
+                startDate={filters.startDate || ''}
+                endDate={filters.endDate || ''}
+                onDatesChange={(start, end) => {
+                  setFilters((prev) => ({ ...prev, startDate: start || undefined, endDate: end || undefined }))
+                }}
+                blockedRanges={[]}
+                minDays={1}
+                maxDays={365}
               />
 
               {/* Accesorios */}
