@@ -2,6 +2,7 @@ import {
   AutoAwesome,
   Build,
   Clear,
+  Map,
   PedalBike,
   Search,
   Store,
@@ -57,6 +58,7 @@ const INTENT_META: Record<SearchIntent, { label: string; icon: React.ReactNode; 
   talleres: { label: 'Buscar en Talleres', icon: <Build sx={{ fontSize: 18 }} />, color: '#5c6bc0' },
   productos: { label: 'Buscar en Productos', icon: <Store sx={{ fontSize: 18 }} />, color: '#26a69a' },
   alquiler: { label: 'Buscar Alquiler', icon: <PedalBike sx={{ fontSize: 18 }} />, color: '#4caf50' },
+  rutas: { label: 'Ver Rutas', icon: <Map sx={{ fontSize: 18 }} />, color: '#e53935' },
 }
 
 // ─── Chips de filtros detectados (compartido entre variantes) ──────────────────
@@ -195,6 +197,7 @@ const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 
     const params = new URLSearchParams({ q })
     if (destination === 'talleres') navigate(`/talleres?${params}`)
     else if (destination === 'alquiler') navigate(`/rentals?${params}`)
+    else if (destination === 'rutas') navigate('/#rutas')
     else navigate(`/productos?${params}`)
   }
 
