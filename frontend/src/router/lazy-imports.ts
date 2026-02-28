@@ -183,6 +183,9 @@ export const HowItWorksPage = lazy(() =>
 export const RoutesPage = lazy(() =>
   import('../pages/info/routes-page').then((m) => ({ default: m.RoutesPage }))
 )
+export const RutasPage = lazy(() =>
+  import('../pages/info/rutas-page').then((m) => ({ default: m.RutasPage }))
+)
 export const HelpCenterPage = lazy(() =>
   import('../pages/info/help-center-page').then((m) => ({ default: m.HelpCenterPage }))
 )
