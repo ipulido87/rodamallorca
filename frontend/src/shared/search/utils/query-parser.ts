@@ -159,15 +159,24 @@ const ALQUILER_HINTS = [
   'reservar', 'reserva', 'arrendar',
 ]
 
-export type SearchIntent = 'talleres' | 'productos' | 'alquiler'
+// Palabras clave que indican rutas ciclistas
+const RUTAS_HINTS = [
+  'ruta', 'rutas', 'recorrido', 'recorridos', 'itinerario', 'itinerarios',
+  'cicloturismo', 'ciclismo', 'trail', 'camino', 'ascenso', 'subida',
+  'descenso', 'bajada', 'sa calobra', 'formentor', 'tramuntana', 'campanet',
+  'randa', 'pollença', 'cami vell',
+]
+
+export type SearchIntent = 'talleres' | 'productos' | 'alquiler' | 'rutas'
 
 /**
  * Detecta la intención de búsqueda del usuario.
- * Devuelve 'talleres', 'productos' o 'alquiler'.
+ * Devuelve 'talleres', 'productos', 'alquiler' o 'rutas'.
  */
 export const detectIntent = (input: string): SearchIntent => {
   if (containsAny(input, ALQUILER_HINTS)) return 'alquiler'
   if (containsAny(input, TALLER_HINTS)) return 'talleres'
+  if (containsAny(input, RUTAS_HINTS)) return 'rutas'
   return 'productos'
 }
 
