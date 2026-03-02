@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Seo } from '../../../shared/components/Seo'
 import { getOptimizedImageUrl } from '../../../shared/utils/cloudinary'
-import { onImageError, getPlaceholderUrl } from '../../../shared/utils/placeholder'
+import { getPlaceholderUrl } from '../../../shared/utils/placeholder'
+import { BikeImage } from '../../../shared/components/BikeImage'
 import {
   Box,
   Container,
@@ -129,7 +130,7 @@ export const RentalDetail = () => {
     const rentalData = {
       bikeId: bike.id,
       bikeName: bike.title,
-      bikeImage: bike.images[0]?.original || getPlaceholderUrl(bike.id, bike.bikeType ?? 'default', 800, 600),
+      bikeImage: bike.images[0]?.original ?? '',
       workshopId: bike.workshop.id,
       workshopName: bike.workshop.name,
       startDate,
@@ -279,17 +280,13 @@ export const RentalDetail = () => {
           {/* Columna izquierda: Fotos e info */}
           <Box sx={{ flex: 1 }}>
             {/* Imagen principal */}
-            <Card sx={{ mb: 3 }}>
-              <Box
-                component="img"
-                src={getOptimizedImageUrl(bike.images[0]?.original, 'detail', bike.id) || getPlaceholderUrl(bike.id, bike.bikeType ?? 'default', 1200, 600)}
+            <Card sx={{ mb: 3, overflow: 'hidden' }}>
+              <BikeImage
+                src={bike.images[0]?.original}
+                preset="detail"
+                bikeType={bike.bikeType}
                 alt={bike.title}
-                onError={(e: React.SyntheticEvent<HTMLImageElement>) => onImageError(e, bike.id, bike.bikeType ?? 'default', 1200, 600)}
-                sx={{
-                  width: '100%',
-                  height: 400,
-                  objectFit: 'cover',
-                }}
+                height={400}
               />
             </Card>
 
