@@ -19,6 +19,8 @@
     "build:full": "npx prisma db push --accept-data-loss && npx prisma generate && tsc",
     "start": "node dist/index.js",
     "seed": "pnpm prisma db seed",
+    "seed:product-images": "npx tsx src/scripts/seed-product-images.ts",
+    "seed:product-images:dry": "npx tsx src/scripts/seed-product-images.ts --dry-run",
     "postinstall": "prisma generate || echo 'Warning: Prisma client generation failed'"
   },
   "keywords": [],
