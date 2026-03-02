@@ -23,6 +23,7 @@ import {
 } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { getOptimizedImageUrl } from '../../../shared/utils/cloudinary'
+import { onImageError, getPlaceholderUrl } from '../../../shared/utils/placeholder'
 
 interface ProductImage {
   id: string
@@ -159,8 +160,9 @@ export const ProductImageGallery = ({
 
           <CardMedia
             component="img"
-            image={getOptimizedImageUrl(currentImage.medium, 'catalog')}
+            image={getOptimizedImageUrl(currentImage.medium, 'catalog', currentImage.id) || getPlaceholderUrl(currentImage.id, 'product')}
             alt={`${productTitle} - Image ${selectedIndex + 1}`}
+            onError={(e: React.SyntheticEvent<HTMLImageElement>) => onImageError(e, currentImage.id, 'product', 800, 600)}
             onLoad={() => handleImageLoad(selectedIndex)}
             sx={{
               height: 400,
@@ -286,8 +288,9 @@ export const ProductImageGallery = ({
               }}
             >
               <img
-                src={getOptimizedImageUrl(image.thumbnail, 'thumbnail')}
+                src={getOptimizedImageUrl(image.thumbnail, 'thumbnail', image.id) || getPlaceholderUrl(image.id, 'product', 400, 300)}
                 alt={`${productTitle} thumbnail ${index + 1}`}
+                onError={(e: React.SyntheticEvent<HTMLImageElement>) => onImageError(e, image.id, 'product', 400, 300)}
                 loading="lazy"
                 style={{
                   height: '100%',
@@ -421,8 +424,9 @@ export const ProductImageGallery = ({
           {/* Zoomable image */}
           <img
             ref={zoomImageRef}
-            src={getOptimizedImageUrl(currentImage.original, 'detail')}
+            src={getOptimizedImageUrl(currentImage.original, 'detail', currentImage.id) || getPlaceholderUrl(currentImage.id, 'product', 1200, 900)}
             alt={`${productTitle} - Full size`}
+            onError={(e: React.SyntheticEvent<HTMLImageElement>) => onImageError(e, currentImage.id, 'product', 1200, 900)}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}

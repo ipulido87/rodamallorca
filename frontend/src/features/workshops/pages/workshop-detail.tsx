@@ -14,6 +14,7 @@ import {
 } from '@mui/icons-material'
 import { Seo } from '../../../shared/components/Seo'
 import { getOptimizedImageUrl } from '../../../shared/utils/cloudinary'
+import { getWorkshopPlaceholder } from '../../../shared/utils/placeholder'
 import {
   Alert,
   alpha,
@@ -258,22 +259,20 @@ export const WorkshopDetail = () => {
               >
                 {/* Avatar del taller */}
                 <Avatar
-                  src={getOptimizedImageUrl(workshop.logoMedium, 'logo')}
+                  src={getOptimizedImageUrl(workshop.logoMedium, 'logo', workshop.id) || getWorkshopPlaceholder(workshop.id)}
                   alt={workshop.name}
                   sx={{
                     width: 120,
                     height: 120,
                     fontSize: '3rem',
-                    backgroundColor: workshop.logoMedium ? 'transparent' : theme.palette.primary.main,
+                    backgroundColor: 'transparent',
                     border: `4px solid ${theme.palette.common.white}`,
                     boxShadow: `0 4px 20px ${alpha(
                       theme.palette.primary.main,
                       0.3
                     )}`,
                   }}
-                >
-                  {!workshop.logoMedium && <Build sx={{ fontSize: '3rem' }} />}
-                </Avatar>
+                />
 
                 {/* Información principal */}
                 <Box sx={{ flex: 1 }}>
