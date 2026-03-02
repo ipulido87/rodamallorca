@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Seo } from '../../../shared/components/Seo'
+import { getOptimizedImageUrl } from '../../../shared/utils/cloudinary'
 import {
   Box,
   Container,
@@ -362,7 +363,7 @@ export const RentalCatalog = () => {
                         <CardMedia
                           component="img"
                           height="200"
-                          image={bike.images[0]?.medium || '/placeholder-bike.jpg'}
+                          image={getOptimizedImageUrl(bike.images[0]?.medium, 'thumbnail')}
                           alt={bike.title}
                           sx={{ objectFit: 'cover' }}
                         />

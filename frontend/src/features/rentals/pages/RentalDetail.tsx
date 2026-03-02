@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Seo } from '../../../shared/components/Seo'
+import { getOptimizedImageUrl } from '../../../shared/utils/cloudinary'
 import {
   Box,
   Container,
@@ -280,7 +281,7 @@ export const RentalDetail = () => {
             <Card sx={{ mb: 3 }}>
               <Box
                 component="img"
-                src={bike.images[0]?.original || '/placeholder-bike.jpg'}
+                src={getOptimizedImageUrl(bike.images[0]?.original, 'detail')}
                 alt={bike.title}
                 sx={{
                   width: '100%',

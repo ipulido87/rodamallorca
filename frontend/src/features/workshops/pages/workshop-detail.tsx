@@ -13,6 +13,7 @@ import {
   Verified,
 } from '@mui/icons-material'
 import { Seo } from '../../../shared/components/Seo'
+import { getOptimizedImageUrl } from '../../../shared/utils/cloudinary'
 import {
   Alert,
   alpha,
@@ -257,7 +258,7 @@ export const WorkshopDetail = () => {
               >
                 {/* Avatar del taller */}
                 <Avatar
-                  src={workshop.logoMedium || undefined}
+                  src={getOptimizedImageUrl(workshop.logoMedium, 'logo')}
                   alt={workshop.name}
                   sx={{
                     width: 120,

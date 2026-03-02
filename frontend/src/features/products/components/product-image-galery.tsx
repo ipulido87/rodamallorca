@@ -22,6 +22,7 @@ import {
   useTheme,
 } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
+import { getOptimizedImageUrl } from '../../../shared/utils/cloudinary'
 
 interface ProductImage {
   id: string
@@ -158,7 +159,7 @@ export const ProductImageGallery = ({
 
           <CardMedia
             component="img"
-            image={currentImage.medium}
+            image={getOptimizedImageUrl(currentImage.medium, 'catalog')}
             alt={`${productTitle} - Image ${selectedIndex + 1}`}
             onLoad={() => handleImageLoad(selectedIndex)}
             sx={{
@@ -285,7 +286,7 @@ export const ProductImageGallery = ({
               }}
             >
               <img
-                src={image.thumbnail}
+                src={getOptimizedImageUrl(image.thumbnail, 'thumbnail')}
                 alt={`${productTitle} thumbnail ${index + 1}`}
                 loading="lazy"
                 style={{
@@ -420,7 +421,7 @@ export const ProductImageGallery = ({
           {/* Zoomable image */}
           <img
             ref={zoomImageRef}
-            src={currentImage.original}
+            src={getOptimizedImageUrl(currentImage.original, 'detail')}
             alt={`${productTitle} - Full size`}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
