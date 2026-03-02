@@ -30,6 +30,7 @@ import {
 } from '@mui/material'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getOptimizedImageUrl } from '../../../shared/utils/cloudinary'
 
 import type {
   CardProduct,
@@ -70,9 +71,10 @@ const ProductCard = ({
   const navigate = useNavigate()
   const [isHovered, setIsHovered] = useState(false)
   const [imageLoaded, setImageLoaded] = useState(false)
+  const [imgError, setImgError] = useState(false)
 
   const hasImages = product.images.length > 0
-  const currentImage = hasImages ? product.images[0] : undefined
+  const currentImage = hasImages && !imgError ? product.images[0] : undefined
   const formatPrice = (price: number) => `${(price / 100).toFixed(2)}€`
 
   const getConditionProps = (c: CardProduct['condition']) => {
@@ -129,13 +131,14 @@ const ProductCard = ({
       )}
 
       {/* Imagen */}
-      <Box sx={{ position: 'relative', height: 260, bgcolor: 'grey.50' }}>
+      <Box sx={{ position: 'relative', height: 260, overflow: 'hidden' }}>
         {currentImage ? (
           <CardMedia
             component="img"
-            image={currentImage.medium}
+            image={getOptimizedImageUrl(currentImage.medium, 'thumbnail', product.id)}
             alt={product.title}
             onLoad={() => setImageLoaded(true)}
+            onError={() => { setImgError(true); setImageLoaded(false) }}
             sx={{
               height: '100%',
               width: '100%',
@@ -150,12 +153,14 @@ const ProductCard = ({
             sx={{
               height: '100%',
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              bgcolor: 'grey.100',
+              gap: 1,
+              background: 'linear-gradient(135deg, #1a6b3c 0%, #2d9e5f 100%)',
             }}
           >
-            <Store sx={{ fontSize: 48, color: 'grey.400' }} />
+            <Store sx={{ fontSize: 52, color: 'rgba(255,255,255,0.8)' }} />
           </Box>
         )}
 
