@@ -3,6 +3,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { SWRConfig } from 'swr'
 import { AuthProvider } from '../features/auth'
 import { CartProvider } from '../features/cart/contexts/CartContext'
+import { AnalyticsProvider } from '../shared/analytics'
 import { SnackbarProvider } from '../shared/hooks/use-snackbar'
 import { ConfirmDialogProvider } from '../shared/hooks/use-confirm-dialog'
 
@@ -25,17 +26,19 @@ interface AppProvidersProps {
 export function AppProviders({ children }: Readonly<AppProvidersProps>) {
   return (
     <BrowserRouter>
-      <SWRConfig value={swrConfig}>
-        <AuthProvider>
-          <CartProvider>
-            <SnackbarProvider>
-              <ConfirmDialogProvider>
-                {children}
-              </ConfirmDialogProvider>
-            </SnackbarProvider>
-          </CartProvider>
-        </AuthProvider>
-      </SWRConfig>
+      <AnalyticsProvider>
+        <SWRConfig value={swrConfig}>
+          <AuthProvider>
+            <CartProvider>
+              <SnackbarProvider>
+                <ConfirmDialogProvider>
+                  {children}
+                </ConfirmDialogProvider>
+              </SnackbarProvider>
+            </CartProvider>
+          </AuthProvider>
+        </SWRConfig>
+      </AnalyticsProvider>
     </BrowserRouter>
   )
 }

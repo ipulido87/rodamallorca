@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Seo } from '../../../shared/components/Seo'
+import { getOptimizedImageUrl } from '../../../shared/utils/cloudinary'
+import { onImageError, getPlaceholderUrl } from '../../../shared/utils/placeholder'
 import {
   Box,
   Container,
@@ -362,8 +364,9 @@ export const RentalCatalog = () => {
                         <CardMedia
                           component="img"
                           height="200"
-                          image={bike.images[0]?.medium || '/placeholder-bike.jpg'}
+                          image={getOptimizedImageUrl(bike.images[0]?.medium, 'thumbnail', bike.id) || getPlaceholderUrl(bike.id, bike.bikeType ?? 'default')}
                           alt={bike.title}
+                          onError={(e: React.SyntheticEvent<HTMLImageElement>) => onImageError(e, bike.id, bike.bikeType ?? 'default', 400, 300)}
                           sx={{ objectFit: 'cover' }}
                         />
 

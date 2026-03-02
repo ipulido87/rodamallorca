@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Seo } from '../../../shared/components/Seo'
+import { getOptimizedImageUrl } from '../../../shared/utils/cloudinary'
+import { onImageError, getPlaceholderUrl } from '../../../shared/utils/placeholder'
 import {
   Box,
   Container,
@@ -127,7 +129,7 @@ export const RentalDetail = () => {
     const rentalData = {
       bikeId: bike.id,
       bikeName: bike.title,
-      bikeImage: bike.images[0]?.original || '/placeholder-bike.jpg',
+      bikeImage: bike.images[0]?.original || getPlaceholderUrl(bike.id, bike.bikeType ?? 'default', 800, 600),
       workshopId: bike.workshop.id,
       workshopName: bike.workshop.name,
       startDate,
@@ -280,8 +282,9 @@ export const RentalDetail = () => {
             <Card sx={{ mb: 3 }}>
               <Box
                 component="img"
-                src={bike.images[0]?.original || '/placeholder-bike.jpg'}
+                src={getOptimizedImageUrl(bike.images[0]?.original, 'detail', bike.id) || getPlaceholderUrl(bike.id, bike.bikeType ?? 'default', 1200, 600)}
                 alt={bike.title}
+                onError={(e: React.SyntheticEvent<HTMLImageElement>) => onImageError(e, bike.id, bike.bikeType ?? 'default', 1200, 600)}
                 sx={{
                   width: '100%',
                   height: 400,
