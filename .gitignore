@@ -1,6 +1,10 @@
 # Dependencies
 node_modules/
 
+# Lockfiles de otros gestores de paquetes (este proyecto usa pnpm)
+package-lock.json
+yarn.lock
+
 # Environment variables
 .env
 .env.local
