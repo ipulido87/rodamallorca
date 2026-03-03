@@ -195,3 +195,6 @@ export const PrivacyPage = lazy(() =>
 export const NotFoundPage = lazy(() =>
   import('../pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage }))
 )
+export const SystemStatusPage = lazy(() =>
+  import('../pages/SystemStatusPage').then((m) => ({ default: m.SystemStatusPage }))
+)

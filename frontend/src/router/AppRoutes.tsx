@@ -73,6 +73,7 @@ import {
   TermsPage,
   PrivacyPage,
   NotFoundPage,
+  SystemStatusPage,
 } from './lazy-imports'
 
 const RentalsIdRedirect = () => {
@@ -119,6 +120,9 @@ export function AppRoutes() {
 
         {/* Pricing - público para SEO (talleres potenciales) */}
         <Route path="/pricing" element={<PublicLayout><PricingPage /></PublicLayout>} />
+
+        {/* System status */}
+        <Route path="/status" element={<SystemStatusPage />} />
 
         {/* ========== PRIVATE ROUTES ========== */}
         <Route path="/*" element={<PrivateRoute><MainLayout /></PrivateRoute>}>
