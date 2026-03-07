@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { VERIFIED_WORKSHOPS, saveToDatabase } from '../src/scripts/scrape-mallorca-workshops'
 const prisma = new PrismaClient()
 
 const serviceCategories = [
@@ -643,6 +644,10 @@ async function main() {
       console.log(`  ⏭️  ${ws.name} ya tiene productos, omitiendo...`)
     }
   }
+
+  // Seed de talleres reales de Mallorca (scraping)
+  console.log('\n🚲 Añadiendo talleres reales de Mallorca al directorio...')
+  await saveToDatabase(VERIFIED_WORKSHOPS)
 
   console.log('🎉 Seed completado exitosamente!')
 }

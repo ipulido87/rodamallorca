@@ -19,7 +19,7 @@ import prisma from '../lib/prisma'
 
 // ─── Tipos ─────────────────────────────────────────────────────────────────────
 
-interface ScrapedWorkshop {
+export interface ScrapedWorkshop {
   name: string
   address?: string
   city?: string
@@ -37,7 +37,7 @@ interface ScrapedWorkshop {
 // Estos talleres fueron verificados manualmente desde sus webs oficiales,
 // Google Maps y directorios públicos. Son datos reales y verificables.
 
-const VERIFIED_WORKSHOPS: ScrapedWorkshop[] = [
+export const VERIFIED_WORKSHOPS: ScrapedWorkshop[] = [
   // === PALMA DE MALLORCA ===
   {
     name: 'Velo Mallorca',
@@ -716,7 +716,7 @@ function deduplicateWorkshops(workshops: ScrapedWorkshop[]): ScrapedWorkshop[] {
 
 // ─── Guardar en DB ─────────────────────────────────────────────────────────────
 
-async function saveToDatabase(workshops: ScrapedWorkshop[]) {
+export async function saveToDatabase(workshops: ScrapedWorkshop[]) {
   console.log('\n💾 Guardando en base de datos...\n')
 
   // Buscar o crear usuario sistema
@@ -869,13 +869,19 @@ async function main() {
   }
 }
 
-main()
-  .then(async () => {
-    await prisma.$disconnect()
-    console.log('\n🎉 ¡Proceso completado!')
-  })
-  .catch(async (error) => {
-    console.error('\n❌ Error fatal:', error)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+// Solo ejecutar main() cuando se ejecuta directamente (no cuando se importa)
+const isDirectRun =
+  process.argv[1]?.includes('scrape-mallorca-workshops')
+
+if (isDirectRun) {
+  main()
+    .then(async () => {
+      await prisma.$disconnect()
+      console.log('\n🎉 ¡Proceso completado!')
+    })
+    .catch(async (error) => {
+      console.error('\n❌ Error fatal:', error)
+      await prisma.$disconnect()
+      process.exit(1)
+    })
+}
