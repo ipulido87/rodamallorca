@@ -58,7 +58,7 @@ export const Productos = () => {
 
     if (parsedQuery.city && !productFilters.city) {
       base = base.filter(
-        (p) => p.workshop?.city?.toLowerCase() === parsedQuery.city!.toLowerCase()
+        (p) => p.workshop?.city?.toLowerCase() === parsedQuery.city.toLowerCase()
       )
     }
 
@@ -67,10 +67,10 @@ export const Productos = () => {
     }
 
     if (parsedQuery.maxPrice) {
-      base = base.filter((p) => p.price <= parsedQuery.maxPrice!)
+      base = base.filter((p) => p.price <= parsedQuery.maxPrice)
     }
     if (parsedQuery.minPrice) {
-      base = base.filter((p) => p.price >= parsedQuery.minPrice!)
+      base = base.filter((p) => p.price >= parsedQuery.minPrice)
     }
 
     if (parsedQuery.sort === 'price_asc') {

@@ -100,9 +100,15 @@ async function main() {
   }
 }
 
-main()
-  .catch((err) => {
+async function run() {
+  try {
+    await main()
+  } catch (err) {
     console.error('❌ Error:', err)
-    process.exit(1)
-  })
-  .finally(() => prisma.$disconnect())
+    process.exitCode = 1
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+void run()

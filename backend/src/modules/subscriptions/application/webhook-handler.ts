@@ -186,7 +186,14 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription, deps
       // Note: We need to fetch workshop with owner, which requires a more complex query
       // For now, this would need a specialized repository method or we keep minimal Prisma usage here
       // Since email sending is infrastructure-level, it's acceptable to keep this Prisma call
-      const prisma = (await import('../../../lib/prisma')).default
+      const prismaModule = await import('../../../lib/prisma')
+      const prisma = (prismaModule as any).default ?? prismaModule
+
+      if (!prisma?.workshop?.findUnique) {
+        console.warn('⚠️ [Webhook] Prisma workshop.findUnique no disponible para enviar email')
+        return
+      }
+
       const workshop = await prisma.workshop.findUnique({
         where: { id: workshopId },
         include: { owner: true },
@@ -276,7 +283,14 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription, deps: Depen
 
   try {
     // Keep minimal Prisma usage for email sending (infrastructure concern)
-    const prisma = (await import('../../../lib/prisma')).default
+    const prismaModule = await import('../../../lib/prisma')
+    const prisma = (prismaModule as any).default ?? prismaModule
+
+    if (!prisma?.workshop?.findUnique) {
+      console.warn('⚠️ [Webhook] Prisma workshop.findUnique no disponible para enviar email de trial')
+      return
+    }
+
     const workshop = await prisma.workshop.findUnique({
       where: { id: workshopId },
       include: { owner: true },
