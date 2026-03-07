@@ -317,7 +317,7 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription, deps: Depen
     const priceAmount = subscription.items.data[0]?.price?.unit_amount
     const amount = priceAmount
       ? `${(priceAmount / 100).toFixed(2)}€`
-      : '18.30€'
+      : '18.3€'
 
     await sendTrialEndingEmail({
       workshopName: workshop.name,
@@ -367,7 +367,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice, deps: Depe
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
         const amount = invoice.amount_paid
           ? `${(invoice.amount_paid / 100).toFixed(2)}€`
-          : '18.30€'
+          : '18.3€'
 
         // Calcular próxima fecha de facturación
         const nextBillingDate = subscription.currentPeriodEnd
