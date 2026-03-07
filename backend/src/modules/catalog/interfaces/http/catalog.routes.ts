@@ -6,6 +6,7 @@ import {
   searchServicesController,
   getCategoriesController,
 } from '../controllers/catalog.controller'
+import { aiSearchController } from '../controllers/ai-search.controller'
 
 const r = Router()
 
@@ -189,5 +190,41 @@ r.get('/products/:id', getProductByIdController)
  *                 $ref: '#/components/schemas/Service'
  */
 r.get('/services', searchServicesController)
+
+/**
+ * @swagger
+ * /api/catalog/ai-search:
+ *   get:
+ *     summary: Búsqueda inteligente con IA
+ *     description: Interpreta consultas en lenguaje natural usando Gemini AI (gratis) con fallback a parsing local
+ *     tags: [Catalog]
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Consulta en lenguaje natural (ej. "necesito arreglar mi bici en Palma")
+ *     responses:
+ *       200:
+ *         description: Resultados de búsqueda con contexto de IA
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 intent:
+ *                   type: string
+ *                   enum: [workshops, products, services, rentals, routes]
+ *                 filters:
+ *                   type: object
+ *                 aiMessage:
+ *                   type: string
+ *                 results:
+ *                   type: array
+ *                 total:
+ *                   type: integer
+ */
+r.get('/ai-search', aiSearchController)
 
 export default r

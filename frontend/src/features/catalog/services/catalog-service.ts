@@ -71,6 +71,28 @@ export const getWorkshopById = async (id: string): Promise<Workshop> => {
   return data
 }
 
+// Búsqueda inteligente con IA
+export interface AiSearchResponse {
+  intent: 'workshops' | 'products' | 'services' | 'rentals' | 'routes'
+  filters: {
+    q?: string
+    city?: string
+    category?: string
+    minPrice?: number
+    maxPrice?: number
+  }
+  aiMessage?: string
+  results: unknown[]
+  total: number
+}
+
+export const aiSearch = async (query: string): Promise<AiSearchResponse> => {
+  const { data } = await API.get<AiSearchResponse>(
+    `/catalog/ai-search?q=${encodeURIComponent(query)}`
+  )
+  return data
+}
+
 // Alias para compatibilidad
 export const getProductById = getProduct
 

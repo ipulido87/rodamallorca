@@ -12,6 +12,7 @@ import {
   Box,
   ButtonBase,
   Chip,
+  CircularProgress,
   IconButton,
   InputAdornment,
   InputBase,
@@ -21,9 +22,10 @@ import {
   Typography,
 } from '@mui/material'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { detectIntent, parseQuery } from '../search'
+import { aiSearch } from '@/features/catalog/services/catalog-service'
 import type { ParsedQuery, SearchIntent } from '../search'
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
@@ -172,6 +174,8 @@ const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 
   const inputRef = useRef<HTMLInputElement>(null)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [showPlaceholderAnim, setShowPlaceholderAnim] = useState(true)
+  const [searching, setSearching] = useState(false)
+  const [aiMessage, setAiMessage] = useState<string | null>(null)
 
   // Rota los ejemplos de placeholder cada 3.5 s mientras el input está vacío
   useEffect(() => {
@@ -190,16 +194,57 @@ const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 
   const parsed = value.trim() ? parseQuery(value) : null
   const intentMeta = intent ? INTENT_META[intent] : null
 
-  const handleSubmit = () => {
-    const q = value.trim()
-    if (!q) return
-    const destination = detectIntent(q)
-    const params = new URLSearchParams({ q })
-    if (destination === 'talleres') navigate(`/talleres?${params}`)
-    else if (destination === 'alquiler') navigate(`/rentals?${params}`)
-    else if (destination === 'rutas') navigate('/rutas')
-    else navigate(`/productos?${params}`)
+  // Mapea intent del backend al frontend route
+  const INTENT_ROUTES: Record<string, string> = {
+    workshops: '/talleres',
+    products: '/productos',
+    services: '/talleres',
+    rentals: '/rentals',
+    routes: '/rutas',
   }
+
+  const handleSubmit = useCallback(async () => {
+    const q = value.trim()
+    if (!q || searching) return
+
+    setSearching(true)
+    setAiMessage(null)
+
+    try {
+      // Llamar al endpoint de IA para interpretar la búsqueda
+      const result = await aiSearch(q)
+
+      // Mostrar mensaje de IA brevemente
+      if (result.aiMessage) {
+        setAiMessage(result.aiMessage)
+      }
+
+      // Navegar a la página correcta según la intención detectada por IA
+      const route = INTENT_ROUTES[result.intent] ?? '/talleres'
+      const params = new URLSearchParams({ q })
+      if (result.filters.city) params.set('city', result.filters.city)
+
+      // Pequeña pausa para que el usuario vea el mensaje de IA
+      setTimeout(() => {
+        if (result.intent === 'routes') {
+          navigate('/rutas')
+        } else {
+          navigate(`${route}?${params}`)
+        }
+        setSearching(false)
+        setAiMessage(null)
+      }, result.aiMessage ? 600 : 0)
+    } catch {
+      // Fallback: navegación clásica sin IA
+      const destination = detectIntent(q)
+      const params = new URLSearchParams({ q })
+      if (destination === 'talleres') navigate(`/talleres?${params}`)
+      else if (destination === 'alquiler') navigate(`/rentals?${params}`)
+      else if (destination === 'rutas') navigate('/rutas')
+      else navigate(`/productos?${params}`)
+      setSearching(false)
+    }
+  }, [value, searching, navigate])
 
   return (
     <Box sx={{ width: '100%', maxWidth: 680 }}>
@@ -289,7 +334,7 @@ const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 
         {/* Botón enviar */}
         <ButtonBase
           onClick={handleSubmit}
-          disabled={!value.trim()}
+          disabled={!value.trim() || searching}
           sx={{
             backgroundColor: value.trim()
               ? (intentMeta?.color ?? '#3949ab')
@@ -312,9 +357,13 @@ const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 
             },
           }}
         >
-          <Search sx={{ fontSize: 18 }} />
+          {searching ? (
+            <CircularProgress size={18} sx={{ color: 'white' }} />
+          ) : (
+            <Search sx={{ fontSize: 18 }} />
+          )}
           <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-            Buscar
+            {searching ? 'Analizando...' : 'Buscar'}
           </Box>
         </ButtonBase>
       </Box>
@@ -344,6 +393,34 @@ const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 
               />
               <ParsedQueryChips parsed={parsed} dark />
             </Stack>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Mensaje de IA */}
+      <AnimatePresence>
+        {aiMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Typography
+              variant="caption"
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                mt: 1,
+                color: alpha('#ffffff', 0.8),
+                fontSize: '0.78rem',
+                pl: 0.5,
+              }}
+            >
+              <AutoAwesome sx={{ fontSize: 14, color: alpha('#ffffff', 0.6) }} />
+              {aiMessage}
+            </Typography>
           </motion.div>
         )}
       </AnimatePresence>

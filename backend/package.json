@@ -21,6 +21,9 @@
     "seed": "pnpm prisma db seed",
     "seed:product-images": "npx tsx src/scripts/seed-product-images.ts",
     "seed:product-images:dry": "npx tsx src/scripts/seed-product-images.ts --dry-run",
+    "scrape:workshops": "npx tsx src/scripts/scrape-mallorca-workshops.ts",
+    "scrape:workshops:save": "npx tsx src/scripts/scrape-mallorca-workshops.ts --save",
+    "scrape:workshops:dry": "npx tsx src/scripts/scrape-mallorca-workshops.ts --dry-run",
     "postinstall": "prisma generate || echo 'Warning: Prisma client generation failed'"
   },
   "keywords": [],
@@ -30,7 +33,9 @@
   "dependencies": {
     "@prisma/client": "^6.19.1",
     "@react-pdf/renderer": "^4.3.2",
+    "axios": "^1.13.6",
     "bcrypt": "^6.0.0",
+    "cheerio": "^1.2.0",
     "cloudinary": "^1.41.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
