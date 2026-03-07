@@ -50,7 +50,7 @@ interface BikeImageProps {
  * - Si hay src válido: intenta cargar con optimización Cloudinary
  * - Si falla o está vacío: muestra placeholder con gradiente + ícono del tipo
  */
-export function BikeImage({ src, preset = 'catalog', bikeType, alt, height = 200, sx, className }: BikeImageProps) {
+export function BikeImage({ src, preset = 'catalog', bikeType, alt, height = 200, sx, className }: Readonly<BikeImageProps>) {
   const [errored, setErrored] = useState(false)
 
   const optimized = src ? getOptimizedImageUrl(src, preset) : null
@@ -78,7 +78,7 @@ interface PlaceholderProps {
   sx?: SxProps<Theme>
 }
 
-export function BikeImagePlaceholder({ bikeType, height = 200, sx }: PlaceholderProps) {
+export function BikeImagePlaceholder({ bikeType, height = 200, sx }: Readonly<PlaceholderProps>) {
   const config = (bikeType && TYPE_CONFIG[bikeType]) ?? DEFAULT_CONFIG
   const { gradient, Icon, label } = config
 
