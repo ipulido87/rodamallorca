@@ -43,6 +43,7 @@ import rentalRoutes from './modules/rentals/interfaces/http/rental.routes'
 import reviewRoutes from './modules/reviews/interfaces/http/review.routes'
 import sitemapRoutes from './routes/sitemap.routes'
 import adminNotificationsRoutes from './modules/notifications/interfaces/http/admin-notifications.routes'
+import assistantRoutes from './modules/assistant/interfaces/http/assistant.routes'
 
 const app = express()
 const PORT = config.port
@@ -107,6 +108,7 @@ app.use('/api/rentals', rentalRoutes) // Rutas de alquiler de bicicletas
 app.use('/api', reviewRoutes) // Rutas de reviews
 app.use('/', sitemapRoutes) // Sitemap dinámico
 app.use('/api/admin', adminNotificationsRoutes) // Rutas de administración
+app.use('/api/assistant', assistantRoutes) // Asistente de negocio (fase 1)
 
 // Servir archivos estáticos
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')))

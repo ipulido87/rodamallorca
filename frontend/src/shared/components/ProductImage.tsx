@@ -22,7 +22,7 @@ interface ProductImageProps {
  * Imagen de producto con placeholder genérico de marketplace.
  * Para imágenes de galería de productos de segunda mano.
  */
-export function ProductImage({ src, preset = 'catalog', alt, height = 400, sx, isBike = false }: ProductImageProps) {
+export function ProductImage({ src, preset = 'catalog', alt, height = 400, sx, isBike = false }: Readonly<ProductImageProps>) {
   const [errored, setErrored] = useState(false)
 
   const optimized = src ? getOptimizedImageUrl(src, preset) : null
