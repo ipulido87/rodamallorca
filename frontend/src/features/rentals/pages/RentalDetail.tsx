@@ -1,15 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Seo } from '../../../shared/components/Seo'
-import { getOptimizedImageUrl } from '../../../shared/utils/cloudinary'
-import { getPlaceholderUrl } from '../../../shared/utils/placeholder'
 import { BikeImage } from '../../../shared/components/BikeImage'
 import {
   Box,
   Container,
   Typography,
   Card,
-  CardContent,
   Button,
   Chip,
   Paper,
@@ -28,7 +25,6 @@ import {
   CheckCircle,
   Security,
   Lightbulb,
-  CalendarMonth,
   Info,
   CheckCircleOutline,
   Phone,

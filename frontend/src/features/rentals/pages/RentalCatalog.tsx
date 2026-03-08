@@ -1,14 +1,11 @@
 import { useState, useEffect } from 'react'
 import { Seo } from '../../../shared/components/Seo'
-import { getOptimizedImageUrl } from '../../../shared/utils/cloudinary'
-import { onImageError, getPlaceholderUrl } from '../../../shared/utils/placeholder'
 import { BikeImage } from '../../../shared/components/BikeImage'
 import {
   Box,
   Container,
   Typography,
   Card,
-  CardMedia,
   CardContent,
   CardActions,
   Button,
@@ -27,7 +24,6 @@ import {
   DirectionsBike,
   LocationOn,
   CalendarMonth,
-  AttachMoney,
   CheckCircle,
   Security,
   Lightbulb,
@@ -47,7 +43,6 @@ export const RentalCatalog = () => {
   const [filters, setFilters] = useState<RentalFilters>({})
   const [cities, setCities] = useState<string[]>([])
   const [bikeTypes, setBikeTypes] = useState<string[]>([])
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 })
 
   // Cargar opciones de filtros
   useEffect(() => {
@@ -55,7 +50,6 @@ export const RentalCatalog = () => {
       .then((response) => {
         setCities(response.filters.cities.map((c) => c.city))
         setBikeTypes(response.filters.bikeTypes.map((t) => t.type))
-        setPriceRange(response.filters.priceRange)
       })
       .catch((err) => console.error('Error cargando filtros:', err))
   }, [])
@@ -77,7 +71,7 @@ export const RentalCatalog = () => {
       })
   }, [filters])
 
-  const handleFilterChange = (key: keyof RentalFilters, value: string | number | boolean | undefined) => {
+  const handleFilterChange = (key: keyof RentalFilters, value: RentalFilters[keyof RentalFilters]) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
   }
 

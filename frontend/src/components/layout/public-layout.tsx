@@ -2,6 +2,7 @@ import { Box, Toolbar } from '@mui/material'
 import { AnimatedBackground } from '../../shared/components/AnimatedBackground'
 import { PublicFooter } from './public-footer'
 import { PublicHeader } from './public-header'
+import { BusinessAssistantWidget } from '../../shared/components/BusinessAssistantWidget'
 
 interface PublicLayoutProps {
   children: React.ReactNode
@@ -53,6 +54,8 @@ export const PublicLayout: React.FC<PublicLayoutProps> = ({
       >
         {children}
       </Box>
+
+      <BusinessAssistantWidget />
 
       {/* Footer opcional */}
       {showFooter && <PublicFooter />}
