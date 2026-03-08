@@ -1,7 +1,8 @@
 interface RawImage {
   id: string
   url: string
-  productId: string
+  productId?: string
+  position?: number
 }
 
 interface ProductImage {

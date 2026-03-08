@@ -123,8 +123,8 @@ export const Settings = () => {
 
     // Navegar por el path hasta el penúltimo elemento
     for (let i = 0; i < path.length - 1; i++) {
-      obj[path[i]] = { ...obj[path[i]] }
-      obj = obj[path[i]]
+      obj[path[i]] = { ...(obj[path[i]] as Record<string, unknown>) }
+      obj = obj[path[i]] as Record<string, unknown>
     }
 
     // Actualizar el valor final

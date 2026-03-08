@@ -146,7 +146,8 @@ export const CreateProduct = () => {
     }
 
     try {
-      const productData: Record<string, string | number | boolean | ProcessedImage[] | undefined> = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic rental fields added conditionally
+      const productData: any = {
         title: formData.title.trim(),
         price: formData.price * 100, // convertir a céntimos
         condition: formData.condition,
