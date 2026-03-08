@@ -63,6 +63,14 @@ const INTENT_META: Record<SearchIntent, { label: string; icon: React.ReactNode; 
   rutas: { label: 'Ver Rutas', icon: <Map sx={{ fontSize: 18 }} />, color: '#e53935' },
 }
 
+const INTENT_ROUTES: Record<string, string> = {
+  workshops: '/talleres',
+  products: '/productos',
+  services: '/talleres',
+  rentals: '/rentals',
+  routes: '/rutas',
+}
+
 // ─── Chips de filtros detectados (compartido entre variantes) ──────────────────
 
 const ParsedQueryChips = ({
@@ -194,15 +202,6 @@ const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 
   const parsed = value.trim() ? parseQuery(value) : null
   const intentMeta = intent ? INTENT_META[intent] : null
 
-  // Mapea intent del backend al frontend route
-  const INTENT_ROUTES: Record<string, string> = {
-    workshops: '/talleres',
-    products: '/productos',
-    services: '/talleres',
-    rentals: '/rentals',
-    routes: '/rutas',
-  }
-
   const handleSubmit = useCallback(async () => {
     const q = value.trim()
     if (!q || searching) return
@@ -221,15 +220,32 @@ const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 
 
       // Navegar a la página correcta según la intención detectada por IA
       const route = INTENT_ROUTES[result.intent] ?? '/talleres'
-      const params = new URLSearchParams({ q })
+      const params = new URLSearchParams()
+
+      // Importante: usar q limpio de IA para no sobre-filtrar con frases largas
+      if (result.filters.q?.trim()) {
+        params.set('q', result.filters.q.trim())
+      }
       if (result.filters.city) params.set('city', result.filters.city)
+      if (result.filters.category) params.set('category', result.filters.category)
+      if (typeof result.filters.minPrice === 'number') {
+        params.set('minPrice', String(result.filters.minPrice))
+      }
+      if (typeof result.filters.maxPrice === 'number') {
+        params.set('maxPrice', String(result.filters.maxPrice))
+      }
+
+      // Fallback defensivo si IA no devuelve filtros útiles
+      if (!params.toString()) {
+        params.set('q', q)
+      }
 
       // Pequeña pausa para que el usuario vea el mensaje de IA
       setTimeout(() => {
         if (result.intent === 'routes') {
           navigate('/rutas')
         } else {
-          navigate(`${route}?${params}`)
+          navigate(params.toString() ? `${route}?${params}` : route)
         }
         setSearching(false)
         setAiMessage(null)

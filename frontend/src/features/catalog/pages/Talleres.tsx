@@ -36,7 +36,7 @@ export const Talleres = () => {
 
   // Vista: grid o mapa (persistida en la URL para que sea compartible)
   const [view, setView] = useState<CatalogView>(
-    (searchParams.get('view') as CatalogView) ?? 'grid'
+    searchParams.get('view') === 'map' ? 'map' : 'grid'
   )
 
   const [workshopFilters, setWorkshopFilters] = useState<FilterValues>({})
@@ -61,7 +61,7 @@ export const Talleres = () => {
 
     if (parsedQuery.city && !workshopFilters.city) {
       return base.filter(
-        (w) => w.city?.toLowerCase() === parsedQuery.city!.toLowerCase()
+        (w) => w.city?.toLowerCase() === parsedQuery.city.toLowerCase()
       )
     }
     return base
