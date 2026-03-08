@@ -1,7 +1,6 @@
 import {
   AutoAwesome,
   Close,
-  OpenInNew,
   Send,
   SupportAgent,
 } from '@mui/icons-material'
@@ -17,72 +16,14 @@ import {
   Typography,
 } from '@mui/material'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { assistantChat, type AssistantChatResponse, type AssistantIntent } from '../services/assistant-service'
+import { assistantChat } from '../services/assistant-service'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
   text: string
-  payload?: Pick<AssistantChatResponse, 'intent' | 'context'>
-}
-
-const INTENT_ROUTE: Record<AssistantIntent, string | null> = {
-  workshops: '/talleres',
-  products: '/productos',
-  rentals: '/rentals',
-  services: '/talleres',
-  support: null,
-  general: null,
-}
-
-function buildRouteFromPayload(payload?: ChatMessage['payload']): string | null {
-  if (!payload) return null
-  const route = INTENT_ROUTE[payload.intent]
-  if (!route) return null
-
-  if (payload.intent === 'workshops' && payload.context?.workshops?.[0]?.city) {
-    return `${route}?city=${encodeURIComponent(payload.context.workshops[0].city)}`
-  }
-
-  return route
-}
-
-function ContextPreview({ payload }: { payload?: ChatMessage['payload'] }) {
-  if (!payload?.context) return null
-
-  const items: string[] = []
-
-  payload.context.workshops?.forEach((workshop) => {
-    items.push(`🛠️ ${workshop.name}${workshop.city ? ` · ${workshop.city}` : ''}`)
-  })
-
-  payload.context.products?.forEach((product) => {
-    items.push(`🧩 ${product.title} · ${product.price}€`)
-  })
-
-  payload.context.rentals?.forEach((rental) => {
-    items.push(`🚴 ${rental.title} · ${rental.price}€/día`)
-  })
-
-  payload.context.services?.forEach((service) => {
-    items.push(`🔧 ${service.name} · ${service.workshopName}`)
-  })
-
-  if (items.length === 0) return null
-
-  return (
-    <Stack spacing={0.5} sx={{ mt: 1 }}>
-      {items.slice(0, 4).map((item) => (
-        <Typography key={item} variant="caption" sx={{ opacity: 0.9 }}>
-          {item}
-        </Typography>
-      ))}
-    </Stack>
-  )
 }
 
 export function BusinessAssistantWidget() {
-  const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -111,24 +52,14 @@ export function BusinessAssistantWidget() {
       const response = await assistantChat(message, conversationId)
       setConversationId(response.conversationId)
       setSuggestions(response.suggestions)
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          text: response.reply,
-          payload: {
-            intent: response.intent,
-            context: response.context,
-          },
-        },
-      ])
+      setMessages((prev) => [...prev, { role: 'assistant', text: response.reply }])
 
       if (response.escalated) {
         setMessages((prev) => [
           ...prev,
           {
             role: 'assistant',
-            text: 'Si quieres, dime qué error te salió y te ayudo a dejar el reporte listo para soporte.',
+            text: 'Si quieres, puedo seguir recogiendo detalles para que tengas todo listo antes de contactar con soporte.',
           },
         ])
       }
@@ -200,38 +131,22 @@ export function BusinessAssistantWidget() {
           </Box>
 
           <Stack spacing={1} sx={{ p: 1.5, flex: 1, overflowY: 'auto', bgcolor: '#f8fafc' }}>
-            {messages.map((message, idx) => {
-              const route = buildRouteFromPayload(message.payload)
-
-              return (
-                <Box
-                  key={`${message.role}-${idx}`}
-                  sx={{
-                    alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
-                    maxWidth: '90%',
-                    bgcolor: message.role === 'user' ? 'primary.main' : 'white',
-                    color: message.role === 'user' ? 'white' : 'text.primary',
-                    px: 1.5,
-                    py: 1,
-                    borderRadius: 2,
-                    border: message.role === 'assistant' ? '1px solid #e2e8f0' : 'none',
-                  }}
-                >
-                  <Typography variant="body2">{message.text}</Typography>
-                  <ContextPreview payload={message.payload} />
-
-                  {route && (
-                    <Chip
-                      size="small"
-                      icon={<OpenInNew />}
-                      label="Ver resultados"
-                      onClick={() => navigate(route)}
-                      sx={{ mt: 1 }}
-                    />
-                  )}
-                </Box>
-              )
-            })}
+            {messages.map((message, idx) => (
+              <Box
+                key={`${message.role}-${idx}`}
+                sx={{
+                  alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
+                  maxWidth: '85%',
+                  bgcolor: message.role === 'user' ? 'primary.main' : 'white',
+                  color: message.role === 'user' ? 'white' : 'text.primary',
+                  px: 1.5,
+                  py: 1,
+                  borderRadius: 2,
+                }}
+              >
+                <Typography variant="body2">{message.text}</Typography>
+              </Box>
+            ))}
             {loading && (
               <Box sx={{ alignSelf: 'flex-start', px: 1 }}>
                 <CircularProgress size={18} />
@@ -246,9 +161,7 @@ export function BusinessAssistantWidget() {
                   key={suggestion}
                   label={suggestion}
                   size="small"
-                  onClick={() => {
-                    void sendMessage(suggestion)
-                  }}
+                  onClick={() => sendMessage(suggestion)}
                 />
               ))}
             </Stack>
