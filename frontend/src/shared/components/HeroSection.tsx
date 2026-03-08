@@ -1,9 +1,10 @@
 import { Box, Button, Chip, Container, Stack, useTheme, alpha } from '@mui/material'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, Build, KeyboardArrowDown } from '@mui/icons-material'
 import { SmartSearchBar } from './SmartSearchBar'
+import { MascotCat, useCatTextInteraction } from './MascotCat'
 
 // Wrap MUI components for Framer Motion
 const MotionBox = motion.create(Box)
@@ -171,7 +172,18 @@ export function HeroSection() {
   const theme = useTheme()
   const navigate = useNavigate()
   const heroRef = useRef<HTMLDivElement>(null)
+  const titleRef = useRef<HTMLDivElement>(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [titleWidth, setTitleWidth] = useState(600)
+  const { setCatZone, rodaAnimation, mallorcaAnimation, textTransition } = useCatTextInteraction()
+
+  // Medir el ancho del título para la animación del gato
+  const titleRefCallback = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      titleRef.current = node
+      setTitleWidth(node.offsetWidth)
+    }
+  }, [])
 
   // Parallax scroll effect - image zooms and fades as you scroll
   const { scrollYProgress } = useScroll({
@@ -280,9 +292,10 @@ export function HeroSection() {
                 />
               </motion.div>
 
-              {/* Title with word-by-word reveal */}
+              {/* Title with word-by-word reveal + cat mascot */}
               <motion.div variants={itemVariants}>
                 <Box
+                  ref={titleRefCallback}
                   component="h1"
                   sx={{
                     fontWeight: 800,
@@ -290,12 +303,13 @@ export function HeroSection() {
                     lineHeight: 1.05,
                     m: 0,
                     letterSpacing: '-0.02em',
+                    position: 'relative',
                   }}
                 >
                   <motion.span
                     initial={{ opacity: 0, x: -30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
+                    animate={{ opacity: 1, x: 0, ...rodaAnimation }}
+                    transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut', ...textTransition }}
                     style={{
                       display: 'inline-block',
                       background: `linear-gradient(135deg, #ffffff 0%, ${alpha('#ffffff', 0.85)} 100%)`,
@@ -308,8 +322,8 @@ export function HeroSection() {
                   </motion.span>
                   <motion.span
                     initial={{ opacity: 0, x: -30 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.8, delay: 0.7, ease: 'easeOut' }}
+                    animate={{ opacity: 1, x: 0, ...mallorcaAnimation }}
+                    transition={{ duration: 0.8, delay: 0.7, ease: 'easeOut', ...textTransition }}
                     style={{
                       display: 'inline-block',
                       background: `linear-gradient(135deg, ${theme.palette.warning.light} 0%, ${theme.palette.warning.main} 100%)`,
@@ -320,6 +334,12 @@ export function HeroSection() {
                   >
                     Mallorca
                   </motion.span>
+
+                  {/* Gato mascota caminando */}
+                  <MascotCat
+                    containerWidth={titleWidth}
+                    onZoneChange={setCatZone}
+                  />
                 </Box>
               </motion.div>
 
