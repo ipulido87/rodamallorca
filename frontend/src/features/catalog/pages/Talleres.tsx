@@ -5,8 +5,10 @@ import {
   Pagination,
   Typography,
 } from '@mui/material'
+import { AutoAwesome } from '@mui/icons-material'
+import { Chip } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import { Seo } from '../../../shared/components/Seo'
 import { FilterBar } from '../../../shared/components/FilterBar'
 import { WorkshopSkeletonGrid } from '../../../shared/components/WorkshopSkeleton'
@@ -30,9 +32,18 @@ const WORKSHOP_SEARCH_KEYS = [
   { name: 'description' as const, weight: 0.1 },
 ]
 
+interface AiLocationState {
+  aiResults?: Workshop[]
+  aiMessage?: string
+  aiTotal?: number
+  aiQuery?: string
+}
+
 export const Talleres = () => {
   const { user } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
+  const location = useLocation()
+  const aiState = (location.state as AiLocationState) ?? {}
 
   // Vista: grid o mapa (persistida en la URL para que sea compartible)
   const [view, setView] = useState<CatalogView>(
@@ -42,6 +53,11 @@ export const Talleres = () => {
   const [workshopFilters, setWorkshopFilters] = useState<FilterValues>({})
   const [favoriteWorkshopIds, setFavoriteWorkshopIds] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
+  // AI results from hero search (populated via router state)
+  const [aiWorkshops, setAiWorkshops] = useState<Workshop[] | null>(
+    aiState.aiResults && aiState.aiResults.length > 0 ? aiState.aiResults : null
+  )
+  const [aiMessage, setAiMessage] = useState<string | null>(aiState.aiMessage ?? null)
 
   const {
     workshops,
@@ -57,6 +73,11 @@ export const Talleres = () => {
 
   // Aplicar filtro de ciudad extraído del NLP si no hay filtro manual
   const filteredWorkshops = useMemo(() => {
+    // Si hay resultados de IA y no hay filtros manuales activos, usarlos directamente
+    if (aiWorkshops && !isFiltered && !workshopFilters.city) {
+      return aiWorkshops
+    }
+
     const base = isFiltered ? smartResults : workshops
 
     if (parsedQuery.city && !workshopFilters.city) {
@@ -65,7 +86,7 @@ export const Talleres = () => {
       )
     }
     return base
-  }, [smartResults, workshops, isFiltered, parsedQuery.city, workshopFilters.city])
+  }, [aiWorkshops, smartResults, workshops, isFiltered, parsedQuery.city, workshopFilters.city])
 
   const handleViewChange = (next: CatalogView) => {
     setView(next)
@@ -76,7 +97,7 @@ export const Talleres = () => {
 
   // Carga inicial + aplicar query proveniente de la landing page (?q=...)
   useEffect(() => {
-    loadWorkshops('', {}, 1)
+    loadWorkshops('', {}, 1, view === 'map' ? 50 : 12)
     const urlQ = searchParams.get('q')
     if (urlQ) {
       setQuery(urlQ)
@@ -103,7 +124,7 @@ export const Talleres = () => {
   // Al cambiar a mapa, cargar todos sin paginación (tamaño grande)
   useEffect(() => {
     if (view === 'map') {
-      loadWorkshops('', workshopFilters, 1)
+      loadWorkshops('', workshopFilters, 1, 50)
     }
   }, [view]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -126,6 +147,8 @@ export const Talleres = () => {
     setWorkshopFilters({})
     setQuery('')
     setCurrentPage(1)
+    setAiWorkshops(null)
+    setAiMessage(null)
   }
 
   const handleToggleFavorite = async (workshopId: string) => {
@@ -282,6 +305,20 @@ export const Talleres = () => {
         onChange={handleWorkshopFilterChange}
         onClear={clearFilters}
       />
+
+      {/* Banner de resultado de IA */}
+      {aiMessage && (
+        <Box sx={{ mb: 2 }}>
+          <Chip
+            icon={<AutoAwesome sx={{ fontSize: '16px !important' }} />}
+            label={aiMessage}
+            color="primary"
+            variant="outlined"
+            onDelete={() => { setAiMessage(null); setAiWorkshops(null) }}
+            sx={{ height: 'auto', py: 0.5, '& .MuiChip-label': { whiteSpace: 'normal' } }}
+          />
+        </Box>
+      )}
 
       {/* Contenido: grid o mapa */}
       {renderContent()}

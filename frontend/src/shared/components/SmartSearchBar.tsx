@@ -245,7 +245,18 @@ const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 
         if (result.intent === 'routes') {
           navigate('/rutas')
         } else {
-          navigate(params.toString() ? `${route}?${params}` : route)
+          navigate(
+            params.toString() ? `${route}?${params}` : route,
+            {
+              state: {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI results shape depends on intent
+                aiResults: result.results as any[],
+                aiMessage: result.aiMessage,
+                aiTotal: result.total,
+                aiQuery: q,
+              },
+            }
+          )
         }
         setSearching(false)
         setAiMessage(null)
