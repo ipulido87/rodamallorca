@@ -165,7 +165,8 @@ export class OrderRepositoryPrisma implements OrderRepository {
     await this.prisma.order.delete({ where: { id } })
   }
 
-  private mapToOrder(order: any): Order {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma query result mapping
+  private mapToOrder(order: Record<string, any>): Order {
     return {
       id: order.id,
       userId: order.userId,
@@ -178,7 +179,7 @@ export class OrderRepositoryPrisma implements OrderRepository {
       updatedAt: order.updatedAt,
       items:
         'items' in order && order.items
-          ? order.items.map((item: any) => ({
+          ? order.items.map((item: Record<string, any>) => ({
               id: item.id,
               orderId: item.orderId,
               productId: item.productId,

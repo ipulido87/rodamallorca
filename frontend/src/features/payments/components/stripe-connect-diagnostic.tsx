@@ -21,7 +21,8 @@ import {
   Link,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
-import { API } from '@/shared/api'
+import { API, getErrorMessage } from '@/shared/api'
+import { isAxiosError } from 'axios'
 import {
   getStripeAccountStatus,
   initiateStripeConnect,
@@ -79,8 +80,8 @@ export const StripeConnectDiagnostic = ({ workshopId }: { workshopId: string }) 
       } else {
         setResult('❌ No hay cuenta de Stripe conectada')
       }
-    } catch (err: any) {
-      setError('Error al diagnosticar: ' + (err.message || 'Error desconocido'))
+    } catch (err: unknown) {
+      setError('Error al diagnosticar: ' + getErrorMessage(err, 'Error desconocido'))
     } finally {
       setLoading(false)
     }
@@ -112,13 +113,19 @@ export const StripeConnectDiagnostic = ({ workshopId }: { workshopId: string }) 
           setError((prev) => `${prev}\n\n💡 ${response.data.suggestion}`)
         }
       }
-    } catch (err: any) {
-      const errorMsg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        err.message ||
-        'Error desconocido'
-      const suggestion = err.response?.data?.suggestion
+    } catch (err: unknown) {
+      let errorMsg = 'Error desconocido'
+      let suggestion: string | undefined
+      if (isAxiosError(err)) {
+        const data = err.response?.data as Record<string, unknown> | undefined
+        errorMsg = (typeof data?.error === 'string' ? data.error : undefined) ||
+          (typeof data?.message === 'string' ? data.message : undefined) ||
+          err.message ||
+          'Error desconocido'
+        suggestion = typeof data?.suggestion === 'string' ? data.suggestion : undefined
+      } else if (err instanceof Error) {
+        errorMsg = err.message
+      }
 
       setError(errorMsg)
       if (suggestion) {
@@ -137,8 +144,8 @@ export const StripeConnectDiagnostic = ({ workshopId }: { workshopId: string }) 
       const response = await initiateStripeConnect(workshopId)
       // Redirigir al onboarding de Stripe
       window.location.href = response.onboardingUrl
-    } catch (err: any) {
-      setError('Error al iniciar conexión: ' + (err.message || 'Error desconocido'))
+    } catch (err: unknown) {
+      setError('Error al iniciar conexión: ' + getErrorMessage(err, 'Error desconocido'))
       setLoading(false)
     }
   }

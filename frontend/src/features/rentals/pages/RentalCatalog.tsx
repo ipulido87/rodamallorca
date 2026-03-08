@@ -77,7 +77,7 @@ export const RentalCatalog = () => {
       })
   }, [filters])
 
-  const handleFilterChange = (key: keyof RentalFilters, value: any) => {
+  const handleFilterChange = (key: keyof RentalFilters, value: string | number | boolean | undefined) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
   }
 

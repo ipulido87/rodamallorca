@@ -86,9 +86,13 @@ export interface AiSearchResponse {
   total: number
 }
 
-export const aiSearch = async (query: string): Promise<AiSearchResponse> => {
+export const aiSearch = async (
+  query: string,
+  signal?: AbortSignal
+): Promise<AiSearchResponse> => {
   const { data } = await API.get<AiSearchResponse>(
-    `/catalog/ai-search?q=${encodeURIComponent(query)}`
+    `/catalog/ai-search?q=${encodeURIComponent(query)}`,
+    { signal }
   )
   return data
 }

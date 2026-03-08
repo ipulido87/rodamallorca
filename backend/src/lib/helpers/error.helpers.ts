@@ -36,7 +36,7 @@ export class UnauthenticatedError extends AppError {
 }
 
 export class ValidationError extends AppError {
-  constructor(message: string, public errors?: any) {
+  constructor(message: string, public errors?: unknown) {
     super(message, 400, 'VALIDATION_ERROR')
     this.name = 'ValidationError'
   }

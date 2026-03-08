@@ -295,7 +295,7 @@ export const EditProduct = () => {
       setError(null)
       setValidationErrors({})
 
-      const updateData: any = {
+      const updateData: Record<string, string | number | boolean | null | undefined> = {
         title: result.data.title.trim(),
         description: result.data.description?.trim() || null,
         categoryId: result.data.categoryId || null,

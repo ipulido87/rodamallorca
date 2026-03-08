@@ -24,7 +24,7 @@ import {
 import { useState } from 'react'
 import useSWR from 'swr'
 import { useAuth } from '../features/auth/hooks/useAuth'
-import { API } from '@/shared/api'
+import { API, getErrorMessage } from '@/shared/api'
 import { useSnackbar } from '../shared/hooks/use-snackbar'
 
 // Tipos
@@ -108,18 +108,18 @@ export const Settings = () => {
       mutate(updated, false)
       setLocalSettings(null)
       showSuccess('Configuración guardada correctamente')
-    } catch (error: any) {
-      showError(error.response?.data?.message || 'Error al guardar configuración')
+    } catch (error: unknown) {
+      showError(getErrorMessage(error, 'Error al guardar configuración'))
     } finally {
       setSaving(false)
     }
   }
 
-  const updateSettings = (path: string[], value: any) => {
+  const updateSettings = (path: string[], value: unknown) => {
     if (!currentSettings) return
 
     const newSettings = { ...currentSettings }
-    let obj: any = newSettings
+    let obj: Record<string, unknown> = newSettings as Record<string, unknown>
 
     // Navegar por el path hasta el penúltimo elemento
     for (let i = 0; i < path.length - 1; i++) {

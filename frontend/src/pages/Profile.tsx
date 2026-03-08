@@ -35,7 +35,7 @@ import {
 import { useState } from 'react'
 import useSWR from 'swr'
 import { useAuth } from '../features/auth/hooks/useAuth'
-import { API } from '@/shared/api'
+import { API, getErrorMessage } from '@/shared/api'
 import { useSnackbar } from '../shared/hooks/use-snackbar'
 import type { User } from '../features/auth/providers/auth-providers'
 
@@ -119,8 +119,8 @@ export const Profile = () => {
 
       setEditMode(false)
       showSuccess('Perfil actualizado correctamente')
-    } catch (error: any) {
-      showError(error.response?.data?.message || 'Error al actualizar perfil')
+    } catch (error: unknown) {
+      showError(getErrorMessage(error, 'Error al actualizar perfil'))
     } finally {
       setSaving(false)
     }
@@ -149,8 +149,8 @@ export const Profile = () => {
       })
 
       showSuccess('Contraseña cambiada correctamente')
-    } catch (error: any) {
-      showError(error.response?.data?.message || 'Error al cambiar contraseña')
+    } catch (error: unknown) {
+      showError(getErrorMessage(error, 'Error al cambiar contraseña'))
     } finally {
       setSaving(false)
     }
@@ -414,7 +414,7 @@ export const Profile = () => {
                       <Chip
                         icon={<Person />}
                         label={getRoleLabel(user.role)}
-                        color={getRoleColor(user.role) as any}
+                        color={getRoleColor(user.role) as 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'}
                         size="small"
                       />
                     </Box>

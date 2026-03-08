@@ -22,6 +22,7 @@ import { useAuth } from '../../auth/hooks/useAuth'
 import { useCart } from '../hooks/useCart'
 import { redirectToProductCheckout } from '../services/payment-service'
 import { notify } from '../../../shared/services/notification-service'
+import { getErrorMessage } from '@/shared/api'
 
 export const Checkout = () => {
   const navigate = useNavigate()
@@ -71,9 +72,9 @@ export const Checkout = () => {
       await redirectToProductCheckout(cart.workshopId, items)
 
       // La redirección limpiará el carrito cuando vuelva del éxito
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error iniciando checkout:', err)
-      const apiMessage = err.response?.data?.message || err.message || ''
+      const apiMessage = getErrorMessage(err, '')
       const isStripeConnectError =
         apiMessage.includes('Stripe Connect') ||
         apiMessage.includes('no puede recibir pagos') ||

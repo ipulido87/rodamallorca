@@ -39,7 +39,7 @@ export async function handleStripeWebhook(payload: Buffer, signature: string, de
     console.log('✅ [Webhook] Firma verificada correctamente')
   } catch (err) {
     console.error('❌ [Webhook] Error verificando firma:', err)
-    throw new Error(`Webhook signature verification failed: ${err.message}`)
+    throw new Error(`Webhook signature verification failed: ${err instanceof Error ? err.message : String(err)}`)
   }
 
   console.log(`📨 [Webhook] Evento recibido: ${event.type}`)
@@ -118,15 +118,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription, deps
     return
   }
 
-  // 🔍 DEBUG: Ver estructura completa del objeto subscription
-  console.log('🔍 [DEBUG] Subscription object keys:', Object.keys(subscription))
-  console.log('🔍 [DEBUG] subscription.current_period_start:', (subscription as any).current_period_start)
-  console.log('🔍 [DEBUG] subscription.current_period_end:', (subscription as any).current_period_end)
-  console.log('🔍 [DEBUG] subscription.trial_start:', (subscription as any).trial_start)
-  console.log('🔍 [DEBUG] subscription.trial_end:', (subscription as any).trial_end)
-  console.log('🔍 [DEBUG] Full subscription object:', JSON.stringify(subscription, null, 2))
-
-  // ⭐ Extraer datos de trial si existen
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Stripe subscription fields need dynamic access
   const sub = subscription as any
   const trialStart = sub.trial_start
     ? new Date(sub.trial_start * 1000)
@@ -217,6 +209,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription, deps
   console.log(`🔄 [Webhook] Suscripción actualizada: ${subscription.id}`)
 
   const { subscriptionRepo } = deps
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Stripe subscription fields need dynamic access
   const sub = subscription as any
   const trialStart = sub.trial_start
     ? new Date(sub.trial_start * 1000)
@@ -287,6 +280,7 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription, deps: Depen
       return
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Stripe subscription fields need dynamic access
     const sub = subscription as any
     const trialEnd = sub.trial_end
       ? new Date(sub.trial_end * 1000)
@@ -328,6 +322,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice, deps: Depe
   console.log(`💰 [Webhook] Pago exitoso: ${invoice.id}`)
 
   const { subscriptionRepo } = deps
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Stripe invoice fields need dynamic access
   const invoiceSubscription = (invoice as any).subscription
   if (!invoiceSubscription) return
 
@@ -385,6 +380,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice, deps: Depende
   console.error(`❌ [Webhook] Pago fallido: ${invoice.id}`)
 
   const { subscriptionRepo } = deps
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Stripe invoice fields need dynamic access
   const invoiceSubscription = (invoice as any).subscription
   if (!invoiceSubscription) return
 
@@ -449,6 +445,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, deps: D
       const items = JSON.parse(itemsJson)
 
       // ✅ Determinar el tipo de orden basado en los items
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- JSON parsed items
       const hasRentals = items.some((item: any) => item.isRental === true)
       const orderType = hasRentals ? 'RENTAL' : 'PRODUCT_ORDER'
 
@@ -463,6 +460,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, deps: D
         paymentStatus: 'PAID',
         stripeSessionId: session.id,
         stripePaymentIntentId: session.payment_intent as string,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- JSON parsed items
         items: items.map((item: any) => ({
           productId: item.productId,
           quantity: item.quantity,
@@ -527,6 +525,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, deps: D
 /**
  * Mapea el status de Stripe a nuestro enum
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Maps Stripe status to app enum
 function mapStripeStatus(status: Stripe.Subscription.Status): any {
   const statusMap: Record<string, string> = {
     trialing: 'TRIALING',

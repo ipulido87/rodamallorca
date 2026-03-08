@@ -1,36 +1,53 @@
 /**
- * Stub type definitions for @prisma/client when the client cannot be generated
- * This allows tests to compile in environments with network restrictions
+ * Stub type definitions for @prisma/client when the client cannot be generated.
+ * This allows tests to compile in environments with network restrictions.
  */
 declare module '@prisma/client' {
   export class PrismaClient {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub requires loose types
     constructor(options?: any)
     $connect(): Promise<void>
     $disconnect(): Promise<void>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub requires loose types
     $on(eventType: any, callback: any): void
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub requires loose types
     $transaction<R>(fn: (prisma: any) => Promise<R>, options?: any): Promise<R>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub requires loose types
     $executeRaw(query: any, ...values: any[]): Promise<number>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub requires loose types
     $queryRaw(query: any, ...values: any[]): Promise<any>
 
-    // Add any other Prisma client methods you need for your tests
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub requires dynamic model access
     [key: string]: any
   }
 
   export namespace Prisma {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub types
     export type OrderGetPayload<T> = any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub types
     export type ProductGetPayload<T> = any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub types
     export type WorkshopGetPayload<T> = any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub types
     export type UserGetPayload<T> = any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub types
     export type SubscriptionGetPayload<T> = any
 
-    // Input types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub types
     export type ProductWhereInput = any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub types
     export type OrderWhereInput = any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub types
     export type WorkshopWhereInput = any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub types
     export type UserWhereInput = any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub types
     export type ServiceWhereInput = any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub types
     export type ReviewWhereInput = any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub types
     export type InvoiceWhereInput = any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma stub types
     export type CustomerWhereInput = any
   }
 

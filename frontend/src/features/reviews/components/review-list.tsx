@@ -36,7 +36,7 @@ export const ReviewList = ({ workshopId, refreshTrigger }: ReviewListProps) => {
       setLoading(true)
       const data = await getWorkshopReviews(workshopId)
       setReviews(data)
-    } catch (err: any) {
+    } catch {
       setError('Error al cargar las reviews')
     } finally {
       setLoading(false)
@@ -64,7 +64,7 @@ export const ReviewList = ({ workshopId, refreshTrigger }: ReviewListProps) => {
       await deleteReview(selectedReview.id)
       setReviews(reviews.filter((r) => r.id !== selectedReview.id))
       handleCloseMenu()
-    } catch (err: any) {
+    } catch {
       setError('Error al eliminar la review')
       handleCloseMenu()
     }

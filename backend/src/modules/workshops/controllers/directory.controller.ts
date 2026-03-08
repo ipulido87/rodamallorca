@@ -1,6 +1,12 @@
-import { Request, Response, NextFunction } from 'express'
+import type { Request, Response, NextFunction } from 'express'
 import prisma from '../../../lib/prisma'
-import crypto from 'crypto'
+
+interface WorkshopWhereFilter {
+  isListed: boolean
+  city?: string
+  country?: string
+  isVerified?: boolean
+}
 
 /**
  * GET /api/directory/workshops
@@ -10,12 +16,12 @@ export const getDirectoryWorkshops = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { city, country, verified } = req.query
 
-    const where: any = {
-      isListed: true, // Solo talleres listados públicamente
+    const where: WorkshopWhereFilter = {
+      isListed: true,
     }
 
     if (city) where.city = city as string
@@ -38,12 +44,12 @@ export const getDirectoryWorkshops = async (
         longitude: true,
         averageRating: true,
         reviewCount: true,
-        isVerified: true, // Importante: distinguir verificados de no verificados
+        isVerified: true,
         createdAt: true,
       },
       orderBy: [
-        { isVerified: 'desc' }, // Verificados primero
-        { averageRating: 'desc' }, // Luego por rating
+        { isVerified: 'desc' },
+        { averageRating: 'desc' },
         { name: 'asc' },
       ],
     })
@@ -55,8 +61,7 @@ export const getDirectoryWorkshops = async (
       verified: workshops.filter((w) => w.isVerified).length,
       directory: workshops.filter((w) => !w.isVerified).length,
     })
-  } catch (error: any) {
-    console.error('❌ Error obteniendo directorio:', error)
+  } catch (error) {
     next(error)
   }
 }
@@ -69,55 +74,45 @@ export const claimWorkshop = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { claimToken } = req.params
     const userId = req.user?.id
 
     if (!userId) {
-      return res.status(401).json({ error: 'No autenticado' })
+      res.status(401).json({ error: 'No autenticado' })
+      return
     }
 
-    console.log(`🔐 [Claim] Usuario ${userId} intentando reclamar con token ${claimToken}`)
-
-    // Buscar el workshop con este claim token
     const workshop = await prisma.workshop.findUnique({
       where: { claimToken },
       include: { owner: true },
     })
 
     if (!workshop) {
-      return res.status(404).json({
+      res.status(404).json({
         error: 'Token de reclamación inválido',
         message: 'No se encontró ningún negocio con este token',
       })
+      return
     }
 
-    // Verificar si ya fue reclamado
     if (workshop.claimedAt) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Negocio ya reclamado',
         message: `Este negocio fue reclamado el ${workshop.claimedAt.toLocaleDateString()}`,
       })
+      return
     }
 
-    console.log(`✅ [Claim] Workshop encontrado: ${workshop.name}`)
-
-    // Transferir ownership al usuario que reclama
     const updated = await prisma.workshop.update({
       where: { id: workshop.id },
       data: {
         ownerId: userId,
         claimedAt: new Date(),
-        isVerified: false, // Aún no verificado (necesita pagar suscripción)
-        // NO eliminamos el claimToken por si hay problemas y necesitamos revertir
+        isVerified: false,
       },
     })
-
-    console.log(`🎉 [Claim] Negocio reclamado exitosamente por usuario ${userId}`)
-
-    // TODO: Enviar email de bienvenida al nuevo owner
-    // TODO: Redirigir a onboarding/configuración
 
     res.json({
       success: true,
@@ -133,8 +128,7 @@ export const claimWorkshop = async (
         'Activa tu suscripción para ser verificado',
       ],
     })
-  } catch (error: any) {
-    console.error('❌ Error reclamando negocio:', error)
+  } catch (error) {
     next(error)
   }
 }
@@ -143,7 +137,11 @@ export const claimWorkshop = async (
  * GET /api/directory/cities
  * Lista de ciudades con talleres (para filtros)
  */
-export const getCities = async (req: Request, res: Response, next: NextFunction) => {
+export const getCities = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const cities = await prisma.workshop.groupBy({
       by: ['city', 'country'],
@@ -167,8 +165,7 @@ export const getCities = async (req: Request, res: Response, next: NextFunction)
         count: c._count,
       })),
     })
-  } catch (error: any) {
-    console.error('❌ Error obteniendo ciudades:', error)
+  } catch (error) {
     next(error)
   }
 }

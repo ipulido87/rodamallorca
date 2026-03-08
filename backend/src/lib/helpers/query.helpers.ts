@@ -71,7 +71,7 @@ export function getSearchFilters(req: Request) {
 /**
  * Convierte query param a número o undefined
  */
-export function parseNumberQuery(value: any): number | undefined {
+export function parseNumberQuery(value: unknown): number | undefined {
   if (value === undefined || value === null || value === '') {
     return undefined
   }
@@ -82,7 +82,7 @@ export function parseNumberQuery(value: any): number | undefined {
 /**
  * Convierte query param a booleano
  */
-export function parseBooleanQuery(value: any): boolean {
+export function parseBooleanQuery(value: unknown): boolean {
   if (typeof value === 'boolean') return value
   if (typeof value === 'string') {
     return value.toLowerCase() === 'true' || value === '1'

@@ -1,4 +1,5 @@
 import prisma from '../../../../../lib/prisma'
+import type { Prisma } from '@prisma/client'
 import type { RentalRepository } from '../../../domain/repositories/rental-repository'
 import type {
   RentalBike,
@@ -8,7 +9,7 @@ import type {
 
 export class RentalRepositoryPrisma implements RentalRepository {
   async findRentalBikes(filters: RentalFilters): Promise<RentalBike[]> {
-    const where: any = {
+    const where: Prisma.ProductWhereInput = {
       isRental: true,
       status: 'PUBLISHED',
       availableQuantity: { gt: 0 },
@@ -189,7 +190,8 @@ export class RentalRepositoryPrisma implements RentalRepository {
     return orders
   }
 
-  private mapToRentalBike(bike: any): RentalBike {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma query result mapping
+  private mapToRentalBike(bike: Record<string, any>): RentalBike {
     return {
       id: bike.id,
       workshopId: bike.workshopId,
@@ -205,13 +207,13 @@ export class RentalRepositoryPrisma implements RentalRepository {
       maxRentalDays: bike.maxRentalDays,
       availableQuantity: bike.availableQuantity ?? 0,
       status: bike.status,
-      images: bike.images?.map((img: any) => ({
+      images: (bike.images ?? []).map((img: Record<string, any>) => ({
         id: img.id,
         original: img.original,
         medium: img.medium,
         thumbnail: img.thumbnail,
         position: img.position,
-      })) ?? [],
+      })),
       workshop: {
         id: bike.workshop.id,
         name: bike.workshop.name,

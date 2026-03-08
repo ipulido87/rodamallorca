@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { redirectToProductCheckout } from '../services/payment-service'
 import { notify } from '../../../shared/services/notification-service'
+import { getErrorMessage } from '@/shared/api'
 
 interface RentalData {
   bikeId: string
@@ -110,12 +111,10 @@ export const RentalCheckout = () => {
 
       // Limpiar localStorage después de redirigir
       localStorage.removeItem('rentalCheckoutData')
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error iniciando checkout de alquiler:', err)
       setError(
-        err.response?.data?.message ||
-          err.message ||
-          'Error al iniciar el pago. Por favor intenta de nuevo.'
+        getErrorMessage(err, 'Error al iniciar el pago. Por favor intenta de nuevo.')
       )
       setLoading(false)
     }

@@ -33,6 +33,7 @@ import {
   updateCustomer,
 } from '../services/customer-service'
 import type { Customer, CustomerType } from '../types/customer'
+import { getErrorMessage } from '@/shared/api'
 
 export const CustomerForm = () => {
   const { id } = useParams<{ id: string }>()
@@ -119,11 +120,10 @@ export const CustomerForm = () => {
       }
 
       navigate('/customers')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving customer:', error)
       showError(
-        error.response?.data?.message ||
-          `Error al ${isEditMode ? 'actualizar' : 'crear'} el cliente`
+        getErrorMessage(error, `Error al ${isEditMode ? 'actualizar' : 'crear'} el cliente`)
       )
     } finally {
       setLoading(false)
