@@ -27,6 +27,7 @@ import {
   getStripeDashboardLink,
   type StripeConnectStatus,
 } from '../../../services/stripe-connect.service'
+import { getErrorMessage } from '@/shared/api'
 
 interface StripeConnectCardProps {
   workshopId: string
@@ -50,9 +51,9 @@ export const StripeConnectCard = ({ workshopId }: StripeConnectCardProps) => {
       setLoadingStatus(true)
       const accountStatus = await getStripeAccountStatus(workshopId)
       setStatus(accountStatus)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error cargando estado de Stripe:', err)
-      setError(err.message || 'Error cargando estado')
+      setError(getErrorMessage(err, 'Error cargando estado'))
     } finally {
       setLoadingStatus(false)
     }
@@ -67,9 +68,9 @@ export const StripeConnectCard = ({ workshopId }: StripeConnectCardProps) => {
 
       // Redirigir al onboarding de Stripe
       window.location.href = response.onboardingUrl
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error iniciando Stripe Connect:', err)
-      setError(err.message || 'Error al conectar con Stripe')
+      setError(getErrorMessage(err, 'Error al conectar con Stripe'))
       setLoading(false)
     }
   }
@@ -79,9 +80,9 @@ export const StripeConnectCard = ({ workshopId }: StripeConnectCardProps) => {
       setLoading(true)
       const response = await getStripeDashboardLink(workshopId)
       window.open(response.url, '_blank')
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error abriendo dashboard:', err)
-      setError(err.message || 'Error al abrir dashboard')
+      setError(getErrorMessage(err, 'Error al abrir dashboard'))
     } finally {
       setLoading(false)
     }

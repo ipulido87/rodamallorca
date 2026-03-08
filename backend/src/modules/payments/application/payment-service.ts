@@ -43,18 +43,7 @@ export async function createProductCheckoutSession(
   const { userId, userEmail, workshopId, items, successUrl, cancelUrl } = input
   const { workshopRepo, productRepo, paymentGateway } = deps
 
-  console.log(`💳 [Payment] Creando checkout para ${items.length} productos`)
-
-  // ⭐ Obtener workshop y verificar Stripe Connect
   const workshop = await workshopRepo.findByIdWithStripe(workshopId)
-
-  console.log(`🔍 [Payment] Workshop encontrado:`, {
-    id: workshop?.id,
-    name: workshop?.name,
-    hasStripeAccount: !!workshop?.stripeConnectedAccountId,
-    stripeAccountId: workshop?.stripeConnectedAccountId,
-    onboardingComplete: workshop?.stripeOnboardingComplete,
-  })
 
   if (!workshop) {
     throw new Error('Taller no encontrado')
@@ -64,9 +53,6 @@ export async function createProductCheckoutSession(
     throw new Error('El taller no tiene configurado Stripe Connect. No puede recibir pagos.')
   }
 
-  console.log(`✅ [Payment] Workshop tiene Stripe Connect: ${workshop.stripeConnectedAccountId}`)
-
-  // ⭐ Validar que la cuenta de Stripe Connect existe y es válida
   try {
     const account = await paymentGateway.getConnectedAccount(workshop.stripeConnectedAccountId)
 
@@ -75,19 +61,11 @@ export async function createProductCheckoutSession(
 
     // Si el onboarding está completo en Stripe pero no en la BD, actualizar
     if (onboardingComplete && !workshop.stripeOnboardingComplete) {
-      console.log(`✅ [Payment] Onboarding completo en Stripe, actualizando BD...`)
       await workshopRepo.updateStripeAccount(workshopId, workshop.stripeConnectedAccountId, true)
     }
 
     // Si el onboarding NO está completo, bloquear el pago
     if (!onboardingComplete) {
-      console.error(`❌ [Payment] Onboarding incompleto:`, {
-        details_submitted: account.detailsSubmitted,
-        charges_enabled: account.chargesEnabled,
-        payouts_enabled: account.payoutsEnabled,
-      })
-
-      // NO limpiar la cuenta, solo marcar onboarding como incompleto
       await workshopRepo.updateStripeAccount(workshopId, workshop.stripeConnectedAccountId, false)
 
       throw new Error(
@@ -96,23 +74,19 @@ export async function createProductCheckoutSession(
       )
     }
 
-    console.log(`✅ [Payment] Cuenta de Stripe validada correctamente`)
-  } catch (error: any) {
-    // Detectar errores de cuenta inválida o sin acceso
+  } catch (error: unknown) {
+    const errObj = error instanceof Error ? error : null
+    const errCode = errObj && 'code' in errObj ? (errObj as Record<string, unknown>).code : undefined
+    const errType = errObj && 'type' in errObj ? (errObj as Record<string, unknown>).type : undefined
+    const errMsg = errObj?.message ?? ''
+
     const isInvalidAccount =
-      error.code === 'resource_missing' ||
-      error.type === 'StripeInvalidRequestError' ||
-      error.message?.includes('does not have access to account') ||
-      error.message?.includes('Application access may have been revoked')
+      errCode === 'resource_missing' ||
+      errType === 'StripeInvalidRequestError' ||
+      errMsg.includes('does not have access to account') ||
+      errMsg.includes('Application access may have been revoked')
 
     if (isInvalidAccount) {
-      console.error(`❌ [Payment] Cuenta de Stripe Connect inválida o sin acceso:`, {
-        accountId: workshop.stripeConnectedAccountId,
-        errorCode: error.code,
-        errorMessage: error.message,
-      })
-
-      // Limpiar cuenta inválida automáticamente
       await workshopRepo.updateStripeAccount(workshopId, null, false)
 
       throw new Error(
@@ -121,7 +95,6 @@ export async function createProductCheckoutSession(
       )
     }
 
-    // Re-throw si es otro tipo de error
     throw error
   }
 
@@ -133,14 +106,8 @@ export async function createProductCheckoutSession(
     throw new Error('Algunos productos no existen')
   }
 
-  // Calcular total del pedido
   const totalAmount = items.reduce((sum, item) => sum + item.priceAtOrder * item.quantity, 0)
-  console.log(`💰 [Payment] Total del pedido: ${totalAmount / 100}€`)
-
-  // Calcular comisión de RodaMallorca (10%)
   const applicationFee = calculateApplicationFee(totalAmount)
-  console.log(`💵 [Payment] Comisión RodaMallorca (10%): ${applicationFee / 100}€`)
-  console.log(`💸 [Payment] Taller recibirá: ${(totalAmount - applicationFee) / 100}€`)
 
   // Crear line items para gateway
   const lineItems = items.map((item) => {
@@ -201,24 +168,21 @@ export async function createProductCheckoutSession(
       },
     })
 
-    console.log(`✅ [Payment] Sesión de checkout creada con Stripe Connect: ${session.id}`)
-    console.log(`   - Cuenta destino: ${workshop.stripeConnectedAccountId}`)
-    console.log(`   - Comisión: ${applicationFee / 100}€`)
-
     return {
       sessionId: session.id,
       url: session.url,
     }
-  } catch (error: any) {
-    // Manejar error específico de cuenta destino inválida
-    if (
-      error.message?.includes('No such destination') ||
-      error.message?.includes('account that is not connected') ||
-      error.code === 'account_invalid'
-    ) {
-      console.error(`❌ [Payment] Cuenta de Stripe Connect inválida, limpiando de la BD...`)
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : ''
+    const errCode = error instanceof Error && 'code' in error
+      ? (error as Record<string, unknown>).code
+      : undefined
 
-      // Limpiar cuenta inválida automáticamente
+    if (
+      errMsg.includes('No such destination') ||
+      errMsg.includes('account that is not connected') ||
+      errCode === 'account_invalid'
+    ) {
       await workshopRepo.updateStripeAccount(workshopId, null, false)
 
       throw new Error(
@@ -227,7 +191,6 @@ export async function createProductCheckoutSession(
       )
     }
 
-    // Re-throw otros errores
     throw error
   }
 }

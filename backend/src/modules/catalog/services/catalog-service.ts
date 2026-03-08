@@ -38,13 +38,10 @@ export async function searchCatalog(
     productWhere.categoryId = categoryId
   }
   if (minPrice !== undefined || maxPrice !== undefined) {
-    productWhere.price = {}
-    if (minPrice !== undefined) {
-      productWhere.price.gte = minPrice
-    }
-    if (maxPrice !== undefined) {
-      productWhere.price.lte = maxPrice
-    }
+    const priceFilter: Record<string, number> = {}
+    if (minPrice !== undefined) priceFilter.gte = minPrice
+    if (maxPrice !== undefined) priceFilter.lte = maxPrice
+    productWhere.price = priceFilter
   }
   if (city) {
     productWhere.workshop = {

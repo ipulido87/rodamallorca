@@ -119,7 +119,7 @@ export const WorkshopDetail = () => {
   const { data: productsData, isLoading: productsLoading } = useSWR(
     id && tabValue === 1 ? `/workshops/${id}/products` : null,
     async () => {
-      const response = await searchProducts({ workshopId: id!, size: 20 } as any)
+      const response = await searchProducts({ workshopId: id!, size: 20 })
       return response.items
     },
     {
@@ -132,7 +132,7 @@ export const WorkshopDetail = () => {
   const { data: servicesData, isLoading: servicesLoading } = useSWR(
     id && tabValue === 2 ? `/workshops/${id}/services` : null,
     async () => {
-      const response = await searchServices({ workshopId: id!, size: 20 } as any)
+      const response = await searchServices({ workshopId: id!, size: 20 })
       return response.items
     },
     {

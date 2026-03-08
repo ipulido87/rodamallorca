@@ -40,6 +40,7 @@ import {
   OrderStatus,
   updateOrderStatus,
 } from '../services/order-service'
+import { isAxiosError } from 'axios'
 
 export const WorkshopOrders = () => {
   const { workshopId } = useParams<{ workshopId: string }>()
@@ -101,11 +102,10 @@ export const WorkshopOrders = () => {
 
       let errorMessage = 'Error al actualizar el estado del pedido'
 
-      if (err && typeof err === 'object' && 'response' in err) {
-        const response = (err as any).response
-
-        // El backend ahora devuelve JSON con { error, message }
-        const backendMessage = response?.data?.message || response?.data?.error
+      if (isAxiosError(err)) {
+        const data = err.response?.data as Record<string, unknown> | undefined
+        const backendMessage = (typeof data?.message === 'string' ? data.message : undefined) ||
+          (typeof data?.error === 'string' ? data.error : undefined)
 
         if (backendMessage) {
           // Mejorar mensajes específicos

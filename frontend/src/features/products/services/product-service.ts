@@ -12,7 +12,7 @@ export interface CreateProductData {
 }
 
 export interface Product {
-  images: any
+  images: Array<{ id: string; url: string; position: number }>
   id: string
   workshopId: string
   title: string

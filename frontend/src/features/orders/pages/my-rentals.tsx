@@ -27,7 +27,9 @@ import {
   getOrderStatusColor,
   getOrderStatusLabel,
   type Order,
+  type OrderStatus,
 } from '../services/order-service'
+import { isAxiosError } from 'axios'
 
 export const MyRentals = () => {
   const navigate = useNavigate()
@@ -74,7 +76,7 @@ export const MyRentals = () => {
       mutate(
         allOrders.map((o) =>
           o.id === cancelDialog.order?.id
-            ? { ...o, status: 'CANCELLED' as any }
+            ? { ...o, status: 'CANCELLED' as OrderStatus }
             : o
         ),
         false
@@ -87,9 +89,10 @@ export const MyRentals = () => {
 
       let errorMessage = 'Error al cancelar el alquiler'
 
-      if (err && typeof err === 'object' && 'response' in err) {
-        const response = (err as any).response
-        const backendMessage = response?.data?.message || response?.data?.error
+      if (isAxiosError(err)) {
+        const data = err.response?.data as Record<string, unknown> | undefined
+        const backendMessage = (typeof data?.message === 'string' ? data.message : undefined) ||
+          (typeof data?.error === 'string' ? data.error : undefined)
 
         if (backendMessage) {
           if (backendMessage.includes('completado') || backendMessage.includes('cancelado')) {

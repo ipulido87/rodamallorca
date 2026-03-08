@@ -14,6 +14,7 @@ import {
 } from '@mui/material'
 import { Refresh, Warning } from '@mui/icons-material'
 import { refreshOnboardingLink } from '../../../services/stripe-connect.service'
+import { getErrorMessage } from '@/shared/api'
 
 export const StripeConnectRefresh = () => {
   const { id: workshopId } = useParams<{ id: string }>()
@@ -32,9 +33,9 @@ export const StripeConnectRefresh = () => {
 
       // Redirigir al nuevo link de onboarding
       window.location.href = response.onboardingUrl
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error regenerando link:', err)
-      setError(err.message || 'Error al regenerar el link')
+      setError(getErrorMessage(err, 'Error al regenerar el link'))
       setLoading(false)
     }
   }

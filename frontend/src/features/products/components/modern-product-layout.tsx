@@ -512,7 +512,7 @@ const ServiceCard = ({ service }: { service: CardService }) => {
             <Chip
               label={getVehicleTypeLabel(service.vehicleType)}
               size="small"
-              color={getVehicleTypeColor(service.vehicleType) as any}
+              color={getVehicleTypeColor(service.vehicleType) as 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'}
               variant="outlined"
             />
           </Box>

@@ -12,6 +12,7 @@ import {
 import { Star } from '@mui/icons-material'
 import { createReview } from '../services/review-service'
 import type { CreateReviewInput } from '../types/review-types'
+import { getErrorMessage } from '@/shared/api'
 
 interface ReviewFormProps {
   workshopId: string
@@ -55,13 +56,8 @@ export const ReviewForm = ({ workshopId, onReviewCreated }: ReviewFormProps) => 
 
       // Limpiar mensaje de éxito después de 3 segundos
       setTimeout(() => setSuccess(false), 3000)
-    } catch (err: any) {
-      const errorMsg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        err.message ||
-        'Error al enviar la review'
-      setError(errorMsg)
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Error al enviar la review'))
     } finally {
       setLoading(false)
     }

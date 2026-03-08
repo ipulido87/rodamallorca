@@ -13,9 +13,11 @@ import type {
 } from '../../../domain/entities/billing'
 
 // Helper para convertir Decimal a number
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma Decimal mapping
 function toDomainInvoice(prismaInvoice: any): Invoice {
   return {
     ...prismaInvoice,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma Decimal mapping
     items: prismaInvoice.items?.map((item: any) => ({
       ...item,
       quantity: item.quantity?.toNumber ? item.quantity.toNumber() : item.quantity,

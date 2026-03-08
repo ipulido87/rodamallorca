@@ -35,6 +35,7 @@ import { useNavigate } from 'react-router-dom'
 import useSWR from 'swr'
 import { getCustomers, deleteCustomer } from '../services/customer-service'
 import type { Customer } from '../types/customer'
+import { getErrorMessage } from '@/shared/api'
 import { confirmDialog } from '../../../shared/services/confirm-service'
 import { notify } from '../../../shared/services/notification-service'
 
@@ -64,9 +65,9 @@ export const Customers = () => {
       mutate()
       // 🔥 Notificación bonita en vez de alert()
       notify.success('Cliente eliminado correctamente')
-    } catch (err: any) {
+    } catch (err: unknown) {
       // 🔥 Notificación de error bonita
-      notify.error(err.message || 'Error al eliminar cliente')
+      notify.error(getErrorMessage(err, 'Error al eliminar cliente'))
     }
   }
 
@@ -156,7 +157,7 @@ export const Customers = () => {
                       <Chip
                         icon={customer.type === 'INDIVIDUAL' ? <Person /> : <Business />}
                         label={getCustomerTypeLabel(customer.type)}
-                        color={getCustomerTypeColor(customer.type) as any}
+                        color={getCustomerTypeColor(customer.type) as 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'}
                         size="small"
                         sx={{ mb: 1 }}
                       />
@@ -253,7 +254,7 @@ export const Customers = () => {
                           )
                         }
                         label={getCustomerTypeLabel(customer.type)}
-                        color={getCustomerTypeColor(customer.type) as any}
+                        color={getCustomerTypeColor(customer.type) as 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'}
                         size="small"
                       />
                     </TableCell>

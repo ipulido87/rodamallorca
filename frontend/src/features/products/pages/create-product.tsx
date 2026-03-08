@@ -146,7 +146,7 @@ export const CreateProduct = () => {
     }
 
     try {
-      const productData: any = {
+      const productData: Record<string, string | number | boolean | ProcessedImage[] | undefined> = {
         title: formData.title.trim(),
         price: formData.price * 100, // convertir a céntimos
         condition: formData.condition,

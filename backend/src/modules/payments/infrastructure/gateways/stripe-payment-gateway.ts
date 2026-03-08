@@ -27,6 +27,7 @@ export class StripePaymentGateway implements PaymentGateway {
       quantity: item.quantity,
     }))
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Stripe session params with dynamic fields
     const sessionParams: any = {
       mode: params.mode,
       payment_method_types: params.paymentMethodTypes,

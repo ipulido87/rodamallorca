@@ -33,20 +33,19 @@ export function useAiSearch(): UseAiSearchResult {
     const q = query.trim()
     if (!q) return
 
-    // Cancel previous request
     abortRef.current?.abort()
-    abortRef.current = new AbortController()
+    const controller = new AbortController()
+    abortRef.current = controller
 
     setLoading(true)
     setError(null)
 
     try {
-      const data = await aiSearch(q)
+      const data = await aiSearch(q, controller.signal)
       setResult(data)
-    } catch (err) {
-      if ((err as Error).name !== 'AbortError') {
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name !== 'AbortError' && err.name !== 'CanceledError') {
         setError('Error al buscar. Intenta de nuevo.')
-        console.error('AI search error:', err)
       }
     } finally {
       setLoading(false)
