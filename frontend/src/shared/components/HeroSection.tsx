@@ -11,84 +11,7 @@ const MotionBox = motion.create(Box)
 const MotionChip = motion.create(Chip)
 const MotionButton = motion.create(Button)
 
-// Speed lines that fly across the hero
-function SpeedLines() {
-  const lines = Array.from({ length: 8 }).map((_, i) => ({
-    id: i,
-    top: `${10 + (i * 12) % 80}%`,
-    width: 80 + (i % 3) * 60,
-    delay: i * 0.4,
-    duration: 2 + (i % 3),
-  }))
-
-  return (
-    <>
-      {lines.map((line) => (
-        <MotionBox
-          key={line.id}
-          initial={{ x: '100vw', opacity: 0 }}
-          animate={{ x: '-200px', opacity: [0, 0.4, 0] }}
-          transition={{
-            duration: line.duration,
-            delay: line.delay,
-            repeat: Infinity,
-            repeatDelay: 3 + line.delay,
-            ease: 'linear',
-          }}
-          sx={{
-            position: 'absolute',
-            top: line.top,
-            height: '1px',
-            width: line.width,
-            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)',
-            pointerEvents: 'none',
-          }}
-        />
-      ))}
-    </>
-  )
-}
-
-// Floating energy particles
-function EnergyParticles() {
-  const particles = Array.from({ length: 20 }).map((_, i) => ({
-    id: i,
-    x: `${(i * 5.3) % 100}%`,
-    size: 2 + (i % 3),
-    delay: (i * 0.6) % 8,
-    duration: 10 + (i % 8),
-  }))
-
-  return (
-    <>
-      {particles.map((p) => (
-        <MotionBox
-          key={p.id}
-          initial={{ y: '100vh', opacity: 0 }}
-          animate={{ y: '-10vh', opacity: [0, 0.7, 0] }}
-          transition={{
-            duration: p.duration,
-            delay: p.delay,
-            repeat: Infinity,
-            ease: 'linear',
-          }}
-          sx={{
-            position: 'absolute',
-            left: p.x,
-            width: p.size,
-            height: p.size,
-            borderRadius: '50%',
-            background: 'rgba(255, 255, 255, 0.8)',
-            boxShadow: '0 0 6px rgba(255,255,255,0.4)',
-            pointerEvents: 'none',
-          }}
-        />
-      ))}
-    </>
-  )
-}
-
-// Scroll indicator bouncing at bottom
+// Scroll indicator at bottom
 function ScrollIndicator() {
   return (
     <MotionBox
@@ -121,12 +44,9 @@ function ScrollIndicator() {
       >
         Descubre más
       </Box>
-      <MotionBox
-        animate={{ y: [0, 8, 0] }}
-        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-      >
+      <Box sx={{ animation: 'scroll-bounce 1.5s ease-in-out infinite', '@keyframes scroll-bounce': { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(8px)' } } }}>
         <KeyboardArrowDown sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 28 }} />
-      </MotionBox>
+      </Box>
     </MotionBox>
   )
 }
@@ -250,12 +170,6 @@ export function HeroSection() {
           pointerEvents: 'none',
         }}
       />
-
-      {/* Speed lines */}
-      <SpeedLines />
-
-      {/* Floating particles */}
-      <EnergyParticles />
 
       {/* Main content with parallax */}
       <MotionBox
