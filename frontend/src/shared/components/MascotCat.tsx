@@ -12,7 +12,11 @@ function CatOnBikeSvg({ flipped = false }: { flipped?: boolean }) {
       viewBox="0 0 200 140"
       width="100%"
       height="100%"
-      style={{ transform: flipped ? 'scaleX(-1)' : undefined }}
+      style={{
+        transform: flipped ? 'scaleX(-1) translateZ(0)' : 'translateZ(0)',
+        willChange: 'transform',
+        backfaceVisibility: 'hidden',
+      }}
     >
       {/* ══════════ BICICLETA ══════════ */}
 
@@ -22,7 +26,7 @@ function CatOnBikeSvg({ flipped = false }: { flipped?: boolean }) {
       {/* Radios traseros */}
       <motion.g
         animate={{ rotate: [0, 360] }}
-        transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
         style={{ transformOrigin: '50px 110px' }}
       >
         <line x1="50" y1="88" x2="50" y2="132" stroke="#aaa" strokeWidth="0.8" />
@@ -39,7 +43,7 @@ function CatOnBikeSvg({ flipped = false }: { flipped?: boolean }) {
       {/* Radios delanteros */}
       <motion.g
         animate={{ rotate: [0, 360] }}
-        transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
         style={{ transformOrigin: '150px 110px' }}
       >
         <line x1="150" y1="88" x2="150" y2="132" stroke="#aaa" strokeWidth="0.8" />
@@ -76,7 +80,7 @@ function CatOnBikeSvg({ flipped = false }: { flipped?: boolean }) {
       {/* Bielas y pedales girando */}
       <motion.g
         animate={{ rotate: [0, 360] }}
-        transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
         style={{ transformOrigin: '100px 108px' }}
       >
         {/* Biela derecha */}
@@ -110,7 +114,7 @@ function CatOnBikeSvg({ flipped = false }: { flipped?: boolean }) {
       {/* Pata trasera (sobre el pedal izquierdo, se mueve con la biela) */}
       <motion.g
         animate={{ rotate: [0, 360] }}
-        transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
         style={{ transformOrigin: '100px 108px' }}
       >
         <path
@@ -278,6 +282,8 @@ export function MascotCat({ onZoneChange, containerWidth = 600 }: MascotCatProps
         cursor: 'pointer',
         filter: `drop-shadow(0 4px 16px ${alpha('#000', 0.5)})`,
         pointerEvents: 'auto',
+        willChange: 'transform',
+        backfaceVisibility: 'hidden',
       }}
       onClick={handleClick}
     >
@@ -291,7 +297,7 @@ export function MascotCat({ onZoneChange, containerWidth = 600 }: MascotCatProps
         transition={
           isRinging
             ? { duration: 0.6, ease: 'easeOut' }
-            : { duration: 0.5, repeat: Infinity, ease: 'easeInOut' }
+            : { duration: 1, repeat: Infinity, ease: 'easeInOut' }
         }
       >
         <CatOnBikeSvg flipped={direction === 'left'} />
