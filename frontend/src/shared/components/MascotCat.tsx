@@ -1,118 +1,196 @@
 import { Box, alpha } from '@mui/material'
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
+import { motion, useMotionValue, animate } from 'framer-motion'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 const MotionBox = motion.create(Box)
 
-// ─── SVG del gato mascota (estilo cartoon, gato negro con ojos verdes grandes) ──
+// ─── SVG: gato negro montado en bicicleta ────────────────────────────────────
 
-function CatSvg({ flipped = false }: { flipped?: boolean }) {
+function CatOnBikeSvg({ flipped = false }: { flipped?: boolean }) {
   return (
     <svg
-      viewBox="0 0 120 100"
+      viewBox="0 0 200 140"
       width="100%"
       height="100%"
       style={{ transform: flipped ? 'scaleX(-1)' : undefined }}
     >
-      {/* Cola */}
+      {/* ══════════ BICICLETA ══════════ */}
+
+      {/* Rueda trasera */}
+      <circle cx="50" cy="110" r="24" fill="none" stroke="#ccc" strokeWidth="3" />
+      <circle cx="50" cy="110" r="22" fill="none" stroke="#999" strokeWidth="1" />
+      {/* Radios traseros */}
+      <motion.g
+        animate={{ rotate: [0, 360] }}
+        transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+        style={{ transformOrigin: '50px 110px' }}
+      >
+        <line x1="50" y1="88" x2="50" y2="132" stroke="#aaa" strokeWidth="0.8" />
+        <line x1="28" y1="110" x2="72" y2="110" stroke="#aaa" strokeWidth="0.8" />
+        <line x1="33" y1="94" x2="67" y2="126" stroke="#aaa" strokeWidth="0.8" />
+        <line x1="67" y1="94" x2="33" y2="126" stroke="#aaa" strokeWidth="0.8" />
+      </motion.g>
+      {/* Buje trasero */}
+      <circle cx="50" cy="110" r="3" fill="#666" />
+
+      {/* Rueda delantera */}
+      <circle cx="150" cy="110" r="24" fill="none" stroke="#ccc" strokeWidth="3" />
+      <circle cx="150" cy="110" r="22" fill="none" stroke="#999" strokeWidth="1" />
+      {/* Radios delanteros */}
+      <motion.g
+        animate={{ rotate: [0, 360] }}
+        transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+        style={{ transformOrigin: '150px 110px' }}
+      >
+        <line x1="150" y1="88" x2="150" y2="132" stroke="#aaa" strokeWidth="0.8" />
+        <line x1="128" y1="110" x2="172" y2="110" stroke="#aaa" strokeWidth="0.8" />
+        <line x1="133" y1="94" x2="167" y2="126" stroke="#aaa" strokeWidth="0.8" />
+        <line x1="167" y1="94" x2="133" y2="126" stroke="#aaa" strokeWidth="0.8" />
+      </motion.g>
+      {/* Buje delantero */}
+      <circle cx="150" cy="110" r="3" fill="#666" />
+
+      {/* Cuadro de la bici */}
+      {/* Tubo superior (sillín → dirección) */}
+      <line x1="72" y1="82" x2="138" y2="78" stroke="#e65100" strokeWidth="3.5" strokeLinecap="round" />
+      {/* Tubo diagonal (dirección → pedalier) */}
+      <line x1="138" y1="78" x2="100" y2="108" stroke="#e65100" strokeWidth="3.5" strokeLinecap="round" />
+      {/* Tubo del sillín (sillín → pedalier) */}
+      <line x1="72" y1="82" x2="100" y2="108" stroke="#e65100" strokeWidth="3.5" strokeLinecap="round" />
+      {/* Vainas (pedalier → rueda trasera) */}
+      <line x1="100" y1="108" x2="50" y2="110" stroke="#e65100" strokeWidth="2.5" strokeLinecap="round" />
+      {/* Tirantes (sillín → rueda trasera) */}
+      <line x1="72" y1="82" x2="50" y2="110" stroke="#e65100" strokeWidth="2.5" strokeLinecap="round" />
+      {/* Horquilla delantera */}
+      <line x1="138" y1="78" x2="150" y2="110" stroke="#e65100" strokeWidth="3" strokeLinecap="round" />
+      {/* Manillar */}
+      <line x1="133" y1="72" x2="145" y2="72" stroke="#555" strokeWidth="3" strokeLinecap="round" />
+      <line x1="138" y1="78" x2="139" y2="72" stroke="#555" strokeWidth="2.5" strokeLinecap="round" />
+      {/* Tija del sillín */}
+      <line x1="72" y1="82" x2="68" y2="72" stroke="#555" strokeWidth="2.5" strokeLinecap="round" />
+      {/* Sillín */}
+      <ellipse cx="68" cy="71" rx="10" ry="3" fill="#333" />
+
+      {/* Pedalier */}
+      <circle cx="100" cy="108" r="5" fill="#666" stroke="#555" strokeWidth="1" />
+      {/* Bielas y pedales girando */}
+      <motion.g
+        animate={{ rotate: [0, 360] }}
+        transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+        style={{ transformOrigin: '100px 108px' }}
+      >
+        {/* Biela derecha */}
+        <line x1="100" y1="108" x2="100" y2="122" stroke="#555" strokeWidth="2.5" strokeLinecap="round" />
+        <ellipse cx="100" cy="123" rx="4" ry="1.5" fill="#444" />
+        {/* Biela izquierda */}
+        <line x1="100" y1="108" x2="100" y2="94" stroke="#555" strokeWidth="2.5" strokeLinecap="round" />
+        <ellipse cx="100" cy="93" rx="4" ry="1.5" fill="#444" />
+      </motion.g>
+
+      {/* ══════════ GATO ══════════ */}
+
+      {/* Cola (sale por detrás del gato sentado) */}
       <motion.path
-        d="M 95 55 Q 115 30, 110 15 Q 108 10, 105 18 Q 100 35, 88 50"
+        d="M 52 52 Q 30 25, 25 10 Q 23 4, 28 12 Q 35 28, 55 48"
         fill="none"
         stroke="#1a1a2e"
         strokeWidth="5"
         strokeLinecap="round"
         animate={{ d: [
-          'M 95 55 Q 115 30, 110 15 Q 108 10, 105 18 Q 100 35, 88 50',
-          'M 95 55 Q 120 35, 115 20 Q 113 12, 108 22 Q 102 38, 88 50',
-          'M 95 55 Q 115 30, 110 15 Q 108 10, 105 18 Q 100 35, 88 50',
+          'M 52 52 Q 30 25, 25 10 Q 23 4, 28 12 Q 35 28, 55 48',
+          'M 52 52 Q 25 30, 18 18 Q 15 10, 22 16 Q 32 30, 55 48',
+          'M 52 52 Q 30 25, 25 10 Q 23 4, 28 12 Q 35 28, 55 48',
         ]}}
-        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
       />
 
-      {/* Cuerpo */}
-      <ellipse cx="65" cy="62" rx="30" ry="22" fill="#1a1a2e" />
+      {/* Cuerpo del gato (sentado en el sillín) */}
+      <ellipse cx="75" cy="55" rx="22" ry="18" fill="#1a1a2e" />
 
-      {/* Patas traseras */}
-      <motion.rect
-        x="80" y="78" width="7" height="18" rx="3"
-        fill="#1a1a2e"
-        animate={{ rotate: [-8, 8, -8] }}
-        transition={{ duration: 0.35, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ transformOrigin: '83px 78px' }}
-      />
-      <motion.rect
-        x="70" y="78" width="7" height="18" rx="3"
-        fill="#22223b"
-        animate={{ rotate: [8, -8, 8] }}
-        transition={{ duration: 0.35, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ transformOrigin: '73px 78px' }}
-      />
+      {/* Pata trasera (sobre el pedal izquierdo, se mueve con la biela) */}
+      <motion.g
+        animate={{ rotate: [0, 360] }}
+        transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+        style={{ transformOrigin: '100px 108px' }}
+      >
+        <path
+          d="M 100 94 Q 88 80, 78 68"
+          fill="none" stroke="#1a1a2e" strokeWidth="6" strokeLinecap="round"
+        />
+        <ellipse cx="100" cy="93" rx="5" ry="3" fill="#1a1a2e" />
+      </motion.g>
 
-      {/* Patas delanteras */}
-      <motion.rect
-        x="45" y="78" width="7" height="18" rx="3"
-        fill="#1a1a2e"
-        animate={{ rotate: [8, -8, 8] }}
-        transition={{ duration: 0.35, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ transformOrigin: '48px 78px' }}
+      {/* Pata delantera (agarra el manillar) */}
+      <path
+        d="M 90 50 Q 110 55, 130 68 Q 135 70, 135 72"
+        fill="none" stroke="#1a1a2e" strokeWidth="5" strokeLinecap="round"
       />
-      <motion.rect
-        x="55" y="78" width="7" height="18" rx="3"
-        fill="#22223b"
-        animate={{ rotate: [-8, 8, -8] }}
-        transition={{ duration: 0.35, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ transformOrigin: '58px 78px' }}
-      />
+      <circle cx="135" cy="72" r="4" fill="#1a1a2e" />
 
       {/* Cabeza */}
-      <circle cx="40" cy="45" r="22" fill="#1a1a2e" />
+      <circle cx="95" cy="32" r="20" fill="#1a1a2e" />
 
       {/* Orejas */}
-      <polygon points="22,30 28,8 38,28" fill="#1a1a2e" />
-      <polygon points="25,28 29,14 36,27" fill="#2d2d44" />
-      <polygon points="42,28 52,8 58,30" fill="#1a1a2e" />
-      <polygon points="44,27 51,14 55,28" fill="#2d2d44" />
+      <polygon points="79,20 83,0 92,17" fill="#1a1a2e" />
+      <polygon points="81,18 84,6 90,16" fill="#2d2d44" />
+      <polygon points="98,17 108,0 112,20" fill="#1a1a2e" />
+      <polygon points="100,16 107,6 110,18" fill="#2d2d44" />
 
-      {/* Ojos grandes (estilo cartoon) */}
-      <ellipse cx="33" cy="43" rx="8" ry="9" fill="#c8e6c9" />
-      <ellipse cx="50" cy="43" rx="8" ry="9" fill="#c8e6c9" />
+      {/* Ojos grandes */}
+      <ellipse cx="88" cy="30" rx="7" ry="8" fill="#c8e6c9" />
+      <ellipse cx="104" cy="30" rx="7" ry="8" fill="#c8e6c9" />
       {/* Pupilas */}
       <motion.ellipse
-        cx="34" cy="43" rx="4" ry="6"
+        cx="89" cy="30" rx="3.5" ry="5.5"
         fill="#1b5e20"
-        animate={{ cx: [34, 35, 34, 33, 34] }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        animate={{ cx: [89, 90, 89, 88, 89] }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
       />
       <motion.ellipse
-        cx="51" cy="43" rx="4" ry="6"
+        cx="105" cy="30" rx="3.5" ry="5.5"
         fill="#1b5e20"
-        animate={{ cx: [51, 52, 51, 50, 51] }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        animate={{ cx: [105, 106, 105, 104, 105] }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
       />
       {/* Brillo en ojos */}
-      <circle cx="31" cy="40" r="2.5" fill="white" opacity="0.9" />
-      <circle cx="48" cy="40" r="2.5" fill="white" opacity="0.9" />
-      <circle cx="36" cy="45" r="1.2" fill="white" opacity="0.5" />
-      <circle cx="53" cy="45" r="1.2" fill="white" opacity="0.5" />
+      <circle cx="86" cy="27" r="2.2" fill="white" opacity="0.9" />
+      <circle cx="102" cy="27" r="2.2" fill="white" opacity="0.9" />
+      <circle cx="91" cy="32" r="1" fill="white" opacity="0.5" />
+      <circle cx="107" cy="32" r="1" fill="white" opacity="0.5" />
 
       {/* Nariz */}
-      <ellipse cx="41" cy="51" rx="3" ry="2" fill="#e91e63" />
+      <ellipse cx="96" cy="37" rx="2.5" ry="1.8" fill="#e91e63" />
 
       {/* Boca */}
-      <path d="M 38 53 Q 41 56, 41 53" fill="none" stroke="#555" strokeWidth="0.8" />
-      <path d="M 41 53 Q 41 56, 44 53" fill="none" stroke="#555" strokeWidth="0.8" />
+      <path d="M 93.5 39 Q 96 41.5, 96 39" fill="none" stroke="#555" strokeWidth="0.7" />
+      <path d="M 96 39 Q 96 41.5, 98.5 39" fill="none" stroke="#555" strokeWidth="0.7" />
 
       {/* Bigotes */}
       <motion.g
         animate={{ rotate: [-2, 2, -2] }}
         transition={{ duration: 2, repeat: Infinity }}
-        style={{ transformOrigin: '41px 51px' }}
+        style={{ transformOrigin: '96px 37px' }}
       >
-        <line x1="15" y1="46" x2="30" y2="48" stroke="#888" strokeWidth="0.8" />
-        <line x1="15" y1="52" x2="30" y2="51" stroke="#888" strokeWidth="0.8" />
-        <line x1="52" y1="48" x2="67" y2="46" stroke="#888" strokeWidth="0.8" />
-        <line x1="52" y1="51" x2="67" y2="52" stroke="#888" strokeWidth="0.8" />
+        <line x1="72" y1="33" x2="84" y2="35" stroke="#888" strokeWidth="0.7" />
+        <line x1="72" y1="38" x2="84" y2="37" stroke="#888" strokeWidth="0.7" />
+        <line x1="108" y1="35" x2="120" y2="33" stroke="#888" strokeWidth="0.7" />
+        <line x1="108" y1="37" x2="120" y2="38" stroke="#888" strokeWidth="0.7" />
       </motion.g>
+
+      {/* Sonrisa determinada - está pedaleando! */}
+      <motion.path
+        d="M 92 40 Q 96 43, 100 40"
+        fill="none"
+        stroke="#555"
+        strokeWidth="0.8"
+        strokeLinecap="round"
+        animate={{ d: [
+          'M 92 40 Q 96 43, 100 40',
+          'M 92 40 Q 96 44, 100 40',
+          'M 92 40 Q 96 43, 100 40',
+        ]}}
+        transition={{ duration: 1.5, repeat: Infinity }}
+      />
     </svg>
   )
 }
@@ -122,18 +200,17 @@ function CatSvg({ flipped = false }: { flipped?: boolean }) {
 interface MascotCatProps {
   /** Callback cuando el gato pasa por encima de una zona del texto */
   onZoneChange?: (zone: 'none' | 'roda' | 'mallorca') => void
-  /** Ref al contenedor del título para calcular posición */
+  /** Ancho del contenedor del título para calcular posición */
   containerWidth?: number
 }
 
 export function MascotCat({ onZoneChange, containerWidth = 600 }: MascotCatProps) {
-  const [isJumping, setIsJumping] = useState(false)
+  const [isRinging, setIsRinging] = useState(false)
   const [direction, setDirection] = useState<'right' | 'left'>('right')
   const catX = useMotionValue(0)
   const lastZone = useRef<string>('none')
 
-  // Tamaño del gato según el viewport
-  const catSize = { width: 70, height: 58 }
+  const catSize = { width: 110, height: 80 }
 
   // Calcular la zona según la posición X
   const updateZone = useCallback((x: number) => {
@@ -141,8 +218,8 @@ export function MascotCat({ onZoneChange, containerWidth = 600 }: MascotCatProps
     const progress = (x + catSize.width) / totalTravel
 
     let zone: 'none' | 'roda' | 'mallorca' = 'none'
-    if (progress > 0.08 && progress < 0.3) zone = 'roda'
-    else if (progress > 0.35 && progress < 0.75) zone = 'mallorca'
+    if (progress > 0.05 && progress < 0.28) zone = 'roda'
+    else if (progress > 0.32 && progress < 0.78) zone = 'mallorca'
 
     if (zone !== lastZone.current) {
       lastZone.current = zone
@@ -150,48 +227,43 @@ export function MascotCat({ onZoneChange, containerWidth = 600 }: MascotCatProps
     }
   }, [containerWidth, catSize.width, onZoneChange])
 
-  // Animar el gato caminando de lado a lado
+  // Animar el gato pedaleando de lado a lado
   useEffect(() => {
     const startX = -catSize.width
     const endX = containerWidth + catSize.width
 
     const runCycle = () => {
-      // Ir a la derecha
       setDirection('right')
-      const controlsRight = animate(catX, endX, {
-        duration: 8,
+      animate(catX, endX, {
+        duration: 6,
         ease: 'linear',
         onUpdate: updateZone,
         onComplete: () => {
-          // Pausa y luego ir a la izquierda
           setTimeout(() => {
             setDirection('left')
-            const controlsLeft = animate(catX, startX, {
-              duration: 8,
+            animate(catX, startX, {
+              duration: 6,
               ease: 'linear',
               onUpdate: updateZone,
               onComplete: () => {
-                // Pausa y repetir
-                setTimeout(runCycle, 4000)
+                setTimeout(runCycle, 5000)
               },
             })
-            return () => controlsLeft.stop()
           }, 3000)
         },
       })
-      return () => controlsRight.stop()
     }
 
-    // Iniciar después de las animaciones del título
     catX.set(-catSize.width)
     const timeout = setTimeout(runCycle, 4000)
     return () => clearTimeout(timeout)
   }, [containerWidth]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Click = ring ring! (timbre de bici)
   const handleClick = () => {
-    if (isJumping) return
-    setIsJumping(true)
-    setTimeout(() => setIsJumping(false), 600)
+    if (isRinging) return
+    setIsRinging(true)
+    setTimeout(() => setIsRinging(false), 800)
   }
 
   return (
@@ -199,31 +271,55 @@ export function MascotCat({ onZoneChange, containerWidth = 600 }: MascotCatProps
       style={{ x: catX }}
       sx={{
         position: 'absolute',
-        bottom: { xs: -8, md: -12 },
+        bottom: { xs: -22, md: -28 },
         width: catSize.width,
         height: catSize.height,
         zIndex: 10,
         cursor: 'pointer',
-        filter: `drop-shadow(0 4px 12px ${alpha('#000', 0.4)})`,
+        filter: `drop-shadow(0 4px 16px ${alpha('#000', 0.5)})`,
         pointerEvents: 'auto',
       }}
       onClick={handleClick}
     >
-      {/* Bounce al caminar */}
+      {/* Bounce suave al pedalear + ring al hacer click */}
       <motion.div
         animate={
-          isJumping
-            ? { y: [0, -30, 0], rotate: [0, -15, 0] }
-            : { y: [0, -3, 0] }
+          isRinging
+            ? { y: [0, -2, 0], rotate: [0, -4, 4, -3, 3, 0] }
+            : { y: [0, -2, 0] }
         }
         transition={
-          isJumping
-            ? { duration: 0.5, ease: 'easeOut' }
-            : { duration: 0.35, repeat: Infinity, ease: 'easeInOut' }
+          isRinging
+            ? { duration: 0.6, ease: 'easeOut' }
+            : { duration: 0.5, repeat: Infinity, ease: 'easeInOut' }
         }
       >
-        <CatSvg flipped={direction === 'left'} />
+        <CatOnBikeSvg flipped={direction === 'left'} />
       </motion.div>
+
+      {/* Ring ring! texto al hacer click */}
+      {isRinging && (
+        <motion.div
+          initial={{ opacity: 0, y: 5, scale: 0.8 }}
+          animate={{ opacity: 1, y: -10, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+          style={{
+            position: 'absolute',
+            top: -8,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            whiteSpace: 'nowrap',
+            fontSize: '11px',
+            fontWeight: 700,
+            color: '#ffd54f',
+            textShadow: '0 1px 4px rgba(0,0,0,0.6)',
+            pointerEvents: 'none',
+          }}
+        >
+          ring ring!
+        </motion.div>
+      )}
     </MotionBox>
   )
 }
