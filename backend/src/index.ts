@@ -1,3 +1,4 @@
+import compression from 'compression'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import dotenv from 'dotenv'
@@ -54,6 +55,7 @@ if (config.nodeEnv !== 'production') {
   console.log('📚 Swagger disponible en /api/docs')
 }
 
+app.use(compression())
 app.use(morgan('dev'))
 
 // IMPORTANTE: Webhook de Stripe debe ir ANTES de express.json()
