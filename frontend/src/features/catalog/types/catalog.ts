@@ -7,6 +7,11 @@ export interface Workshop {
   city?: string
   country?: string
   phone?: string
+  logoOriginal?: string
+  logoMedium?: string
+  logoThumbnail?: string
+  averageRating?: number
+  reviewCount?: number
   createdAt: string
   updatedAt: string
 }
@@ -18,7 +23,7 @@ export interface Category {
 
 export interface ProductImage {
   id: string
-  productId: string
+  productId?: string
   original: string
   medium: string
   thumbnail: string
@@ -132,9 +137,11 @@ export type ServiceStatus = 'ACTIVE' | 'INACTIVE'
 export interface ServiceCategory {
   id: string
   name: string
-  description?: string
-  icon?: string
+  description?: string | null
+  icon?: string | null
   position: number
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface Service {
@@ -142,24 +149,24 @@ export interface Service {
   workshopId: string
   serviceCategoryId: string
   name: string
-  description?: string
+  description?: string | null
   price: number
   currency: string
-  duration?: number
+  duration?: number | null
   vehicleType: VehicleType
   status: ServiceStatus
   createdAt: string
   updatedAt: string
-  workshop: {
+  workshop?: {
     id: string
     name: string
-    city?: string
-    country?: string
+    city?: string | null
+    country?: string | null
   }
-  serviceCategory: {
+  serviceCategory?: {
     id: string
     name: string
-    icon?: string
+    icon?: string | null
   }
 }
 
