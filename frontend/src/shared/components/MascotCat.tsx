@@ -40,6 +40,13 @@ const spinKeyframes = `
   0%, 100% { transform: translateY(0px); }
   50%      { transform: translateY(-2px); }
 }
+@keyframes pedal-leg {
+  0%   { d: path("M 78 68 Q 85 85, 100 94"); }
+  25%  { d: path("M 78 68 Q 88 78, 100 108"); }
+  50%  { d: path("M 78 68 Q 92 90, 100 122"); }
+  75%  { d: path("M 78 68 Q 88 78, 100 108"); }
+  100% { d: path("M 78 68 Q 85 85, 100 94"); }
+}
 `
 
 // ─── SVG: gato negro montado en bicicleta ────────────────────────────────────
@@ -128,14 +135,12 @@ function CatOnBikeSvg({ flipped = false }: { flipped?: boolean }) {
       {/* Cuerpo del gato */}
       <ellipse cx="75" cy="55" rx="22" ry="18" fill="#1a1a2e" />
 
-      {/* Pata trasera (gira con pedales) */}
-      <g style={{ transformOrigin: '100px 108px', animation: 'spin-pedal 2s linear infinite' }}>
-        <path
-          d="M 100 94 Q 88 80, 78 68"
-          fill="none" stroke="#1a1a2e" strokeWidth="6" strokeLinecap="round"
-        />
-        <ellipse cx="100" cy="93" rx="5" ry="3" fill="#1a1a2e" />
-      </g>
+      {/* Pata trasera (sigue el pedaleo sin girar 360°) */}
+      <path
+        d="M 78 68 Q 85 85, 100 94"
+        fill="none" stroke="#1a1a2e" strokeWidth="6" strokeLinecap="round"
+        style={{ animation: 'pedal-leg 2s linear infinite' }}
+      />
 
       {/* Pata delantera (agarra el manillar) */}
       <path
