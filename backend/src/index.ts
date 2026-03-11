@@ -25,6 +25,8 @@ registerDependencies()
 // Configuración de Swagger
 import { setupSwagger } from './config/swagger'
 
+import { apiLimiter, authLimiter } from './lib/rate-limit'
+import { getCacheStats } from './lib/cache'
 import authRoutes from './modules/auth/interfaces/http/auth.routes'
 import catalogRoutes from './modules/catalog/interfaces/http/catalog.routes'
 import mediaRoutes from './modules/media/interfaces/http/media.routes'
@@ -91,6 +93,10 @@ app.use(
   })
 )
 
+// Rate limiting
+app.use('/api/', apiLimiter)
+app.use('/api/auth', authLimiter)
+
 // Rutas
 app.use('/api/auth', authRoutes)
 app.use('/api/catalog', catalogRoutes)
@@ -144,6 +150,7 @@ app.get('/api/status', async (_req, res) => {
     status.status = 'degraded'
   }
 
+  status.cache = getCacheStats()
   status.responseTime = `${Date.now() - startTime}ms`
 
   const httpStatus = status.status === 'ok' ? 200 : 503

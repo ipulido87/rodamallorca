@@ -7,6 +7,8 @@ import {
   getCategoriesController,
 } from '../controllers/catalog.controller'
 import { aiSearchController } from '../controllers/ai-search.controller'
+import { cacheMiddleware } from '../../../../lib/cache'
+import { aiSearchLimiter } from '../../../../lib/rate-limit'
 
 const r = Router()
 
@@ -35,7 +37,7 @@ const r = Router()
  *                     type: string
  *                     enum: [PRODUCT, SERVICE]
  */
-r.get('/categories', getCategoriesController)
+r.get('/categories', cacheMiddleware(300), getCategoriesController) // 5 min cache
 
 /**
  * @swagger
@@ -82,7 +84,7 @@ r.get('/categories', getCategoriesController)
  *                 meta:
  *                   $ref: '#/components/schemas/PaginationMeta'
  */
-r.get('/workshops', searchWorkshopsController)
+r.get('/workshops', cacheMiddleware(60), searchWorkshopsController) // 1 min cache
 
 /**
  * @swagger
@@ -128,7 +130,7 @@ r.get('/workshops', searchWorkshopsController)
  *               items:
  *                 $ref: '#/components/schemas/Product'
  */
-r.get('/products', searchProductsController)
+r.get('/products', cacheMiddleware(60), searchProductsController) // 1 min cache
 
 /**
  * @swagger
@@ -154,7 +156,7 @@ r.get('/products', searchProductsController)
  *       404:
  *         $ref: '#/components/responses/NotFoundError'
  */
-r.get('/products/:id', getProductByIdController)
+r.get('/products/:id', cacheMiddleware(60), getProductByIdController) // 1 min cache
 
 /**
  * @swagger
@@ -189,7 +191,7 @@ r.get('/products/:id', getProductByIdController)
  *               items:
  *                 $ref: '#/components/schemas/Service'
  */
-r.get('/services', searchServicesController)
+r.get('/services', cacheMiddleware(60), searchServicesController) // 1 min cache
 
 /**
  * @swagger
@@ -225,6 +227,6 @@ r.get('/services', searchServicesController)
  *                 total:
  *                   type: integer
  */
-r.get('/ai-search', aiSearchController)
+r.get('/ai-search', aiSearchLimiter, aiSearchController) // rate limited (already has its own cache)
 
 export default r
