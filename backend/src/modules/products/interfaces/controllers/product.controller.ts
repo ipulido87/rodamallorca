@@ -1,6 +1,7 @@
 // modules/products/interfaces/controllers/product.controller.ts
 
 import { NextFunction, Request, Response } from 'express'
+import { invalidateCache } from '../../../../lib/cache'
 import prisma from '../../../../lib/prisma'
 import { createProductDraft } from '../../application/create-product'
 import { ProductRepositoryPrisma } from '../../infrastructure/persistence/prisma/product-repository-prisma'
@@ -136,6 +137,7 @@ export const createProduct = async (
       },
     })
 
+    invalidateCache('/api/catalog/products')
     res.status(201).json(productWithImages)
   } catch (e) {
     next(e)
@@ -250,6 +252,7 @@ export const updateProduct = async (
       },
     })
 
+    invalidateCache('/api/catalog/products')
     res.json(updatedProduct)
   } catch (e) {
     next(e)
@@ -271,6 +274,7 @@ export const publishProduct = async (
     }
 
     await repo.publish(id as string, workshop.id)
+    invalidateCache('/api/catalog/products')
     res.json({ message: 'Product published successfully' })
   } catch (e) {
     next(e)
@@ -309,6 +313,7 @@ export const deleteProduct = async (
 
     await prisma.product.delete({ where: { id } })
 
+    invalidateCache('/api/catalog/products')
     res.json({ message: 'Product deleted successfully' })
   } catch (e) {
     next(e)

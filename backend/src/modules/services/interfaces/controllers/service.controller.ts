@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
+import { invalidateCache } from '../../../../lib/cache'
 import prisma from '../../../../lib/prisma'
 import { serviceRepositoryPrisma } from '../../infrastructure/persistence/prisma/service-repository-prisma'
 import { createService } from '../../application/create-service'
@@ -41,6 +42,7 @@ export const createServiceController = async (
       authenticatedUserId: req.user.id,
     })
 
+    invalidateCache('/api/catalog/services')
     res.status(201).json(service)
   } catch (e) {
     next(e)
@@ -153,6 +155,7 @@ export const updateServiceController = async (
       authenticatedUserId: req.user.id,
     })
 
+    invalidateCache('/api/catalog/services')
     res.json(service)
   } catch (e) {
     next(e)
@@ -181,6 +184,7 @@ export const deleteServiceController = async (
       authenticatedUserId: req.user.id,
     })
 
+    invalidateCache('/api/catalog/services')
     res.status(204).send()
   } catch (e) {
     next(e)
