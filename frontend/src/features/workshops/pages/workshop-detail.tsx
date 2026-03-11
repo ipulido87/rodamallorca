@@ -43,6 +43,7 @@ import {
   searchServices,
 } from '../../catalog/services/catalog-service'
 import type { Product, Service } from '../../catalog/types/catalog'
+import type { CardService } from '../../products/types/products-types'
 import { ModernProductLayout, ModernServiceLayout } from '../../products/components/modern-product-layout'
 import { adaptProductImages } from '../../../utils/adapt-product-Images'
 import { ReviewForm } from '../../reviews/components/review-form'
@@ -142,7 +143,20 @@ export const WorkshopDetail = () => {
   )
 
   const products = productsData || []
-  const services = servicesData || []
+  const services: CardService[] = (servicesData || []).map((s: Service) => ({
+    id: s.id,
+    name: s.name,
+    description: s.description ?? undefined,
+    price: s.price,
+    duration: s.duration ?? undefined,
+    vehicleType: s.vehicleType,
+    workshop: s.workshop
+      ? { id: s.workshop.id, name: s.workshop.name, city: s.workshop.city ?? undefined }
+      : { id: id!, name: workshop?.name ?? '', city: workshop?.city ?? undefined },
+    serviceCategory: s.serviceCategory
+      ? { id: s.serviceCategory.id, name: s.serviceCategory.name, icon: s.serviceCategory.icon ?? undefined }
+      : { id: s.serviceCategoryId, name: '' },
+  }))
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue)
