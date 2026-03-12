@@ -6,6 +6,7 @@ import { HelmetProvider } from 'react-helmet-async'
 import App from './App'
 import { initPosthog } from './shared/analytics'
 import { theme } from './shared/theme'
+import './i18n/i18n'
 
 initPosthog()
 

@@ -175,6 +175,28 @@ export const searchServicesController = async (
 }
 
 /**
+ * GET /api/catalog/stats
+ * Public platform stats (real counts from DB)
+ */
+export const getPlatformStatsController = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const [workshops, products, services] = await Promise.all([
+      prisma.workshop.count(),
+      prisma.product.count({ where: { status: 'PUBLISHED' } }),
+      prisma.service.count({ where: { status: 'ACTIVE' } }),
+    ])
+
+    res.json({ workshops, products, services })
+  } catch (e) {
+    next(e)
+  }
+}
+
+/**
  * GET /api/catalog/categories
  * Obtener todas las categorías de productos (público)
  */

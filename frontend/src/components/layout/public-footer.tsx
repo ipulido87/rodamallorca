@@ -1,21 +1,23 @@
-import { DirectionsBike, Email, LocationOn, Phone } from '@mui/icons-material'
+import { DirectionsBike, Email, LocationOn, ChatBubbleOutline } from '@mui/icons-material'
 import { Box, Container, Divider, Link, Stack, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { Link as RouterLink } from 'react-router-dom'
 
-const footerLinks = [
-  { label: 'Sobre Nosotros', to: '/sobre-nosotros' },
-  { label: 'Cómo Funciona', to: '/como-funciona' },
-  { label: 'Rutas Recomendadas', to: '/rutas-recomendadas' },
-  { label: 'Centro de Ayuda', to: '/centro-de-ayuda' },
-]
-
-const legalLinks = [
-  { label: 'Términos de Servicio', to: '/terminos-de-servicio' },
-  { label: 'Política de Privacidad', to: '/politica-de-privacidad' },
-]
-
 export const PublicFooter = () => {
+  const { t } = useTranslation()
   const currentYear = new Date().getFullYear()
+
+  const footerLinks = [
+    { label: t('footer.aboutUs'), to: '/sobre-nosotros' },
+    { label: t('footer.howItWorks'), to: '/como-funciona' },
+    { label: t('footer.recommendedRoutes'), to: '/rutas-recomendadas' },
+    { label: t('footer.helpCenter'), to: '/centro-de-ayuda' },
+  ]
+
+  const legalLinks = [
+    { label: t('footer.termsOfService'), to: '/terminos-de-servicio' },
+    { label: t('footer.privacyPolicy'), to: '/politica-de-privacidad' },
+  ]
 
   return (
     <Box
@@ -53,16 +55,14 @@ export const PublicFooter = () => {
               variant="body2"
               sx={{ color: 'rgba(255,255,255,0.8)', maxWidth: 300 }}
             >
-              Tu marketplace de bicicletas en Mallorca. Conectamos ciclistas con
-              talleres locales para crear la mejor experiencia de ciclismo en la
-              isla.
+              {t('footer.description')}
             </Typography>
           </Box>
 
           {/* Links rápidos */}
           <Box sx={{ flex: 1 }}>
             <Typography variant="h6" gutterBottom fontWeight="bold">
-              Enlaces Rápidos
+              {t('footer.quickLinks')}
             </Typography>
             <Stack spacing={1}>
               {footerLinks.map((link) => (
@@ -85,7 +85,7 @@ export const PublicFooter = () => {
           {/* Contacto */}
           <Box sx={{ flex: 1 }}>
             <Typography variant="h6" gutterBottom fontWeight="bold">
-              Contacto
+              {t('footer.contact')}
             </Typography>
             <Stack spacing={1.5}>
               <Stack direction="row" alignItems="center" spacing={1}>
@@ -94,7 +94,7 @@ export const PublicFooter = () => {
                   variant="body2"
                   sx={{ color: 'rgba(255,255,255,0.8)' }}
                 >
-                  Palma de Mallorca, España
+                  {t('footer.location')}
                 </Typography>
               </Stack>
               <Stack direction="row" alignItems="center" spacing={1}>
@@ -107,12 +107,12 @@ export const PublicFooter = () => {
                 </Typography>
               </Stack>
               <Stack direction="row" alignItems="center" spacing={1}>
-                <Phone sx={{ fontSize: 18, color: 'primary.light' }} />
+                <ChatBubbleOutline sx={{ fontSize: 18, color: 'primary.light' }} />
                 <Typography
                   variant="body2"
                   sx={{ color: 'rgba(255,255,255,0.8)' }}
                 >
-                  +34 971 000 000
+                  {t('footer.contactViaEmail')}
                 </Typography>
               </Stack>
             </Stack>
@@ -128,7 +128,7 @@ export const PublicFooter = () => {
           spacing={2}
         >
           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.6)' }}>
-            © {currentYear} RodaMallorca. Todos los derechos reservados.
+            © {currentYear} RodaMallorca. {t('footer.rights')}
           </Typography>
 
           <Stack direction="row" spacing={3}>

@@ -5,8 +5,6 @@ import {
   Analytics,
   Business,
   Inventory,
-  Message,
-  Visibility,
 } from '@mui/icons-material'
 import {
   Avatar,
@@ -28,6 +26,7 @@ import { getWorkshopStats } from '../../billing/services/stats-service'
 import { StatsCards } from '../../billing/components/stats-cards'
 import { SalesChart } from '../../billing/components/sales-chart'
 import { StripeConnectCard } from '../../payments/components/stripe-connect-card'
+import API from '../../../shared/api/api-client'
 
 interface MetricCardProps {
   title: string
@@ -159,25 +158,19 @@ export const Dashboard = () => {
     }
   )
 
-  // Datos mock para actividad reciente
+  // Fetch real product data for the selected workshop
+  const { data: myProducts } = useSWR(
+    selectedWorkshop ? `/owner/products/mine?workshopId=${selectedWorkshop.id}` : null,
+    () => selectedWorkshop ? API.get('/owner/products/mine').then(r => r.data) : null,
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  )
+
   const metrics = {
     totalWorkshops: workshops?.length || 0,
-    totalProducts: 3,
-    publishedProducts: 1,
-    draftProducts: 2,
-    weeklyViews: 47,
-    pendingMessages: 2,
+    totalProducts: myProducts?.length || 0,
+    publishedProducts: myProducts?.filter((p: { status: string }) => p.status === 'PUBLISHED').length || 0,
+    draftProducts: myProducts?.filter((p: { status: string }) => p.status === 'DRAFT').length || 0,
   }
-
-  const recentActivity = [
-    {
-      action: 'Producto publicado',
-      item: 'Shimano XT Derailleur',
-      time: '2 horas',
-    },
-    { action: 'Nueva consulta', item: 'Frenos Shimano Deore', time: '5 horas' },
-    { action: 'Taller actualizado', item: 'Ciclos Palma', time: '1 día' },
-  ]
 
   if (workshopsLoading) {
     return (
@@ -256,24 +249,6 @@ export const Dashboard = () => {
           subtitle={`${metrics.publishedProducts} publicados, ${metrics.draftProducts} borradores`}
           icon={<Inventory />}
           color="success"
-          trend={{ value: '+2 esta semana', isPositive: true }}
-        />
-
-        <MetricCard
-          title="Visitas"
-          value={metrics.weeklyViews}
-          subtitle="Esta semana"
-          icon={<Visibility />}
-          color="info"
-          trend={{ value: '+23%', isPositive: true }}
-        />
-
-        <MetricCard
-          title="Consultas"
-          value={metrics.pendingMessages}
-          subtitle="Pendientes de responder"
-          icon={<Message />}
-          color="warning"
         />
       </Stack>
 
@@ -336,99 +311,63 @@ export const Dashboard = () => {
           </Card>
         </Box>
 
-        {/* Recent Activity */}
+        {/* Recent Activity placeholder */}
         <Box sx={{ flex: 1 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Typography variant="h6" fontWeight="600" gutterBottom>
                 Actividad Reciente
               </Typography>
-              <Stack spacing={2}>
-                {recentActivity.map((activity, index) => (
-                  <Box key={index}>
-                    <Stack direction="row" alignItems="center" spacing={2}>
-                      <Avatar
-                        sx={{ width: 32, height: 32, bgcolor: 'primary.light' }}
-                      >
-                        {activity.action.includes('Producto') ? (
-                          <Inventory fontSize="small" />
-                        ) : activity.action.includes('consulta') ? (
-                          <Message fontSize="small" />
-                        ) : (
-                          <Business fontSize="small" />
-                        )}
-                      </Avatar>
-                      <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="body2" fontWeight="500">
-                          {activity.action}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {activity.item}
-                        </Typography>
-                      </Box>
-                      <Typography variant="caption" color="text.secondary">
-                        {activity.time}
-                      </Typography>
-                    </Stack>
-                    {index < recentActivity.length - 1 && (
-                      <Box
-                        sx={{ height: 1, bgcolor: 'divider', mx: 2, my: 1 }}
-                      />
-                    )}
-                  </Box>
-                ))}
-              </Stack>
+              <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
+                La actividad de tu taller aparecerá aquí
+              </Typography>
             </CardContent>
           </Card>
         </Box>
       </Stack>
 
       {/* Status Section */}
-      <Card sx={{ mt: 3 }}>
-        <CardContent>
-          <Typography variant="h6" fontWeight="600" gutterBottom>
-            Estado del Taller
-          </Typography>
-          <Stack spacing={2}>
-            <Box>
-              <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Typography variant="body2" color="text.secondary">
-                  Perfil completado
-                </Typography>
-                <Typography variant="body2" fontWeight="600">
-                  85%
-                </Typography>
+      {selectedWorkshop && (() => {
+        const fields = [
+          selectedWorkshop.name,
+          selectedWorkshop.description,
+          selectedWorkshop.address,
+          selectedWorkshop.city,
+          selectedWorkshop.phone,
+          selectedWorkshop.logoOriginal,
+        ]
+        const filled = fields.filter(Boolean).length
+        const pct = Math.round((filled / fields.length) * 100)
+        return (
+          <Card sx={{ mt: 3 }}>
+            <CardContent>
+              <Typography variant="h6" fontWeight="600" gutterBottom>
+                Estado del Taller
+              </Typography>
+              <Stack spacing={2}>
+                <Box>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Typography variant="body2" color="text.secondary">
+                      Perfil completado
+                    </Typography>
+                    <Typography variant="body2" fontWeight="600">
+                      {pct}%
+                    </Typography>
+                  </Stack>
+                  <Box sx={{ width: '100%', bgcolor: 'grey.200', borderRadius: 1, mt: 1 }}>
+                    <Box sx={{ width: `${pct}%`, bgcolor: pct === 100 ? 'success.main' : 'warning.main', height: 8, borderRadius: 1 }} />
+                  </Box>
+                </Box>
+                {pct < 100 && (
+                  <Typography variant="caption" color="text.secondary">
+                    Completa tu perfil para aparecer mejor posicionado en las búsquedas
+                  </Typography>
+                )}
               </Stack>
-              <Box
-                sx={{
-                  width: '100%',
-                  bgcolor: 'grey.200',
-                  borderRadius: 1,
-                  mt: 1,
-                }}
-              >
-                <Box
-                  sx={{
-                    width: '85%',
-                    bgcolor: 'success.main',
-                    height: 8,
-                    borderRadius: 1,
-                  }}
-                />
-              </Box>
-            </Box>
-
-            <Typography variant="caption" color="text.secondary">
-              Completa tu perfil para aparecer mejor posicionado en las
-              búsquedas
-            </Typography>
-          </Stack>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        )
+      })()}
     </Container>
   )
 }
