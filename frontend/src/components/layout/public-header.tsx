@@ -9,7 +9,6 @@ import {
   Settings,
   Handyman,
   ShoppingBag,
-  Menu as MenuIcon,
 } from '@mui/icons-material'
 import {
   AppBar,
@@ -35,7 +34,9 @@ import {
 } from '@mui/material'
 import { useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../features/auth/hooks/useAuth'
+import { LanguageSelector } from '../../shared/components/LanguageSelector'
 
 interface HideOnScrollProps {
   children: React.ReactElement
@@ -56,6 +57,7 @@ export const PublicHeader = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, isAuthenticated, logout } = useAuth()
+  const { t } = useTranslation()
 
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const anchorRef = useRef<HTMLButtonElement>(null)
@@ -145,11 +147,9 @@ export const PublicHeader = () => {
           </Stack>
 
           <Stack direction="row" spacing={{ xs: 0.5, sm: 1.5, md: 2 }} alignItems="center">
-            {/* Navegación principal */}
-
-            {/* MÓVIL: Solo iconos */}
+            {/* Mobile: icon only */}
             <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 0.5 }}>
-              <Tooltip title="Talleres">
+              <Tooltip title={t('nav.workshops')}>
                 <IconButton
                   onClick={() => navigate('/talleres')}
                   sx={{
@@ -164,7 +164,7 @@ export const PublicHeader = () => {
                 </IconButton>
               </Tooltip>
 
-              <Tooltip title="Bicis & Recambios">
+              <Tooltip title={t('nav.bikesAndParts')}>
                 <IconButton
                   onClick={() => navigate('/productos')}
                   sx={{
@@ -179,7 +179,7 @@ export const PublicHeader = () => {
                 </IconButton>
               </Tooltip>
 
-              <Tooltip title="Alquiler">
+              <Tooltip title={t('nav.rentals')}>
                 <IconButton
                   onClick={() => navigate('/alquileres')}
                   sx={{
@@ -193,7 +193,7 @@ export const PublicHeader = () => {
               </Tooltip>
             </Box>
 
-            {/* DESKTOP: Botones con texto */}
+            {/* Desktop: buttons with text */}
             <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
               <Button
                 variant="text"
@@ -207,7 +207,7 @@ export const PublicHeader = () => {
                   '&:hover': { bgcolor: alpha('#ffffff', 0.1), color: '#ffffff' },
                 }}
               >
-                Talleres
+                {t('nav.workshops')}
               </Button>
 
               <Button
@@ -222,7 +222,7 @@ export const PublicHeader = () => {
                   '&:hover': { bgcolor: alpha('#ffffff', 0.1), color: '#ffffff' },
                 }}
               >
-                Bicis & Recambios
+                {t('nav.bikesAndParts')}
               </Button>
 
               <Button
@@ -243,13 +243,15 @@ export const PublicHeader = () => {
                   },
                 }}
               >
-                Alquiler
+                {t('nav.rentals')}
               </Button>
             </Box>
 
+            {/* Language selector */}
+            <LanguageSelector />
+
             {isAuthenticated ? (
               <>
-
                 <Box>
                   <Button
                     ref={anchorRef}
@@ -318,13 +320,13 @@ export const PublicHeader = () => {
                             fontSize: 15,
                           }}
                         >
-                          {user?.name || 'Usuario'}
+                          {user?.name || t('nav.user')}
                         </Typography>
                         <Chip
                           label={
                             user?.role === 'WORKSHOP_OWNER'
-                              ? 'Propietario'
-                              : 'Cliente'
+                              ? t('nav.owner')
+                              : t('nav.customer')
                           }
                           size="small"
                           variant="filled"
@@ -390,7 +392,7 @@ export const PublicHeader = () => {
                                   <Person sx={{ color: 'secondary.main' }} />
                                 </ListItemIcon>
                                 <Typography variant="body2" fontWeight={500}>
-                                  Mi Perfil
+                                  {t('nav.myProfile')}
                                 </Typography>
                               </MenuItem>
 
@@ -410,7 +412,7 @@ export const PublicHeader = () => {
                                   <Settings sx={{ color: 'secondary.main' }} />
                                 </ListItemIcon>
                                 <Typography variant="body2" fontWeight={500}>
-                                  Configuración
+                                  {t('nav.settings')}
                                 </Typography>
                               </MenuItem>
 
@@ -431,7 +433,7 @@ export const PublicHeader = () => {
                                   <Logout sx={{ color: 'error.main' }} />
                                 </ListItemIcon>
                                 <Typography variant="body2" fontWeight={500}>
-                                  Cerrar Sesión
+                                  {t('nav.logout')}
                                 </Typography>
                               </MenuItem>
                             </MenuList>
@@ -462,7 +464,7 @@ export const PublicHeader = () => {
                       },
                     }}
                   >
-                    Iniciar Sesión
+                    {t('nav.login')}
                   </Button>
                 )}
 
@@ -483,7 +485,7 @@ export const PublicHeader = () => {
                       },
                     }}
                   >
-                    {isLoginPage ? 'Cuenta' : 'Registro'}
+                    {isLoginPage ? t('nav.account') : t('nav.register')}
                   </Button>
                 )}
               </>

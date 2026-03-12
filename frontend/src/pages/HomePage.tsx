@@ -17,12 +17,14 @@ import {
   DirectionsBike,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../features/auth/hooks/useAuth'
 import { MediterraneanBackground } from '../shared/components/MediterraneanBackground'
 
 export const Home = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const isWorkshopOwner = user?.role === 'WORKSHOP_OWNER'
 
@@ -30,29 +32,29 @@ export const Home = () => {
   const customerActions = [
     {
       icon: <DirectionsBike sx={{ fontSize: 48 }} />,
-      title: 'Explorar Bicicletas',
-      description: 'Encuentra la bicicleta perfecta para alquilar',
+      title: t('home.exploreBikes'),
+      description: t('home.exploreBikesDesc'),
       action: () => navigate('/alquileres'),
       gradient: 'linear-gradient(135deg, #0288d1 0%, #26c6da 100%)',
     },
     {
       icon: <TwoWheeler sx={{ fontSize: 48 }} />,
-      title: 'Mis Alquileres',
-      description: 'Ver y gestionar tus alquileres de bicicletas',
+      title: t('home.myRentals'),
+      description: t('home.myRentalsDesc'),
       action: () => navigate('/customer-rentals'),
       gradient: 'linear-gradient(135deg, #7b1fa2 0%, #ba68c8 100%)',
     },
     {
       icon: <Receipt sx={{ fontSize: 48 }} />,
-      title: 'Mis Pedidos',
-      description: 'Historial de compras y reparaciones',
+      title: t('home.myOrders'),
+      description: t('home.myOrdersDesc'),
       action: () => navigate('/my-orders'),
       gradient: 'linear-gradient(135deg, #00796b 0%, #4db6ac 100%)',
     },
     {
       icon: <ShoppingBag sx={{ fontSize: 48 }} />,
-      title: 'Productos',
-      description: 'Compra recambios y accesorios',
+      title: t('home.products'),
+      description: t('home.productsDesc'),
       action: () => navigate('/productos'),
       gradient: 'linear-gradient(135deg, #f57c00 0%, #ffb74d 100%)',
     },
@@ -62,29 +64,29 @@ export const Home = () => {
   const ownerActions = [
     {
       icon: <DashboardIcon sx={{ fontSize: 48 }} />,
-      title: 'Dashboard',
-      description: 'Resumen de tu negocio',
+      title: t('home.dashboard'),
+      description: t('home.dashboardDesc'),
       action: () => navigate('/dashboard'),
       gradient: 'linear-gradient(135deg, #1565c0 0%, #42a5f5 100%)',
     },
     {
       icon: <Storefront sx={{ fontSize: 48 }} />,
-      title: 'Mis Talleres',
-      description: 'Gestiona tus talleres',
+      title: t('home.myWorkshops'),
+      description: t('home.myWorkshopsDesc'),
       action: () => navigate('/my-workshops'),
       gradient: 'linear-gradient(135deg, #6a1b9a 0%, #ab47bc 100%)',
     },
     {
       icon: <DirectionsBike sx={{ fontSize: 48 }} />,
-      title: 'Mis Productos',
-      description: 'Administra tu inventario',
+      title: t('home.myProducts'),
+      description: t('home.myProductsDesc'),
       action: () => navigate('/my-products'),
       gradient: 'linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)',
     },
     {
       icon: <TwoWheeler sx={{ fontSize: 48 }} />,
-      title: 'Bicicletas de Alquiler',
-      description: 'Gestiona bicicletas para alquilar',
+      title: t('home.rentalBikes'),
+      description: t('home.rentalBikesDesc'),
       action: () => navigate('/my-rentals'),
       gradient: 'linear-gradient(135deg, #d84315 0%, #ff8a65 100%)',
     },
@@ -119,7 +121,7 @@ export const Home = () => {
                 textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
               }}
             >
-              Hola, {user?.name || user?.email?.split('@')[0] || 'Usuario'}
+              {t('home.hello', { name: user?.name || user?.email?.split('@')[0] || 'Usuario' })}
             </Typography>
             <Typography
               variant="h6"
@@ -129,8 +131,8 @@ export const Home = () => {
               }}
             >
               {isWorkshopOwner
-                ? 'Gestiona tu negocio desde aquí'
-                : 'Descubre la Ruta 312 y explora Mallorca en bicicleta'}
+                ? t('home.manageBusinessFromHere')
+                : t('home.discoverRoute312')}
             </Typography>
           </Box>
 
@@ -215,7 +217,7 @@ export const Home = () => {
                         },
                       }}
                     >
-                      Explorar
+                      {t('common.explore')}
                     </Button>
                   </Stack>
                 </CardContent>
@@ -254,15 +256,15 @@ export const Home = () => {
                     variant="overline"
                     sx={{ color: alpha('#ffffff', 0.7), letterSpacing: 2 }}
                   >
-                    Descubre Mallorca
+                    {t('home.discoverMallorca')}
                   </Typography>
                   <Typography variant="h4" fontWeight="bold" gutterBottom>
-                    {isWorkshopOwner ? '¿Necesitas ayuda con tu taller?' : 'La Ruta 312'}
+                    {isWorkshopOwner ? t('home.needHelpWorkshop') : t('home.route312')}
                   </Typography>
                   <Typography variant="body1" sx={{ mb: 3, color: alpha('#ffffff', 0.9) }}>
                     {isWorkshopOwner
-                      ? 'Estamos aquí para ayudarte a crecer tu negocio y conectar con ciclistas de todo el mundo.'
-                      : '312 km de carreteras épicas por la Serra de Tramuntana. La misma ruta que usan los profesionales del Tour de Francia para entrenar.'}
+                      ? t('home.needHelpWorkshopDesc')
+                      : t('home.route312Desc')}
                   </Typography>
                   <Button
                     variant="contained"
@@ -275,7 +277,7 @@ export const Home = () => {
                       },
                     }}
                   >
-                    {isWorkshopOwner ? 'Contactar Soporte' : 'Explorar Rutas'}
+                    {isWorkshopOwner ? t('home.contactSupport') : t('home.exploreRoutes')}
                   </Button>
                 </Box>
                 <Box
