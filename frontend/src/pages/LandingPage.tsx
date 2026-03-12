@@ -676,7 +676,7 @@ export const LandingPage = () => {
                   fontWeight: 300,
                 }}
               >
-                Más de 1000 ciclistas ya confían en nosotros
+                Únete a la comunidad ciclista de Mallorca
               </Typography>
 
               <MotionButton
