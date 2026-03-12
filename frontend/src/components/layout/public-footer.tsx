@@ -1,4 +1,4 @@
-import { DirectionsBike, Email, LocationOn, Phone } from '@mui/icons-material'
+import { DirectionsBike, Email, LocationOn, ChatBubbleOutline } from '@mui/icons-material'
 import { Box, Container, Divider, Link, Stack, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { Link as RouterLink } from 'react-router-dom'
@@ -107,12 +107,12 @@ export const PublicFooter = () => {
                 </Typography>
               </Stack>
               <Stack direction="row" alignItems="center" spacing={1}>
-                <Phone sx={{ fontSize: 18, color: 'primary.light' }} />
+                <ChatBubbleOutline sx={{ fontSize: 18, color: 'primary.light' }} />
                 <Typography
                   variant="body2"
                   sx={{ color: 'rgba(255,255,255,0.8)' }}
                 >
-                  +34 971 000 000
+                  {t('footer.contactViaEmail')}
                 </Typography>
               </Stack>
             </Stack>

@@ -5,6 +5,7 @@ import {
   searchWorkshopsController,
   searchServicesController,
   getCategoriesController,
+  getPlatformStatsController,
 } from '../controllers/catalog.controller'
 import { aiSearchController } from '../controllers/ai-search.controller'
 import { cacheMiddleware } from '../../../../lib/cache'
@@ -38,6 +39,7 @@ const r = Router()
  *                     enum: [PRODUCT, SERVICE]
  */
 r.get('/categories', cacheMiddleware(300), getCategoriesController) // 5 min cache
+r.get('/stats', cacheMiddleware(300), getPlatformStatsController) // 5 min cache
 
 /**
  * @swagger

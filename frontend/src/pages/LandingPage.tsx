@@ -22,6 +22,8 @@ import {
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import useSWR from 'swr'
+import API from '../shared/api/api-client'
 import { HeroSection } from '../shared/components/HeroSection'
 import { RoutesSection } from '../shared/components/RoutesSection'
 import { ScrollReveal, staggerItemVariants } from '../shared/components/ScrollReveal'
@@ -95,6 +97,9 @@ export const LandingPage = () => {
   const theme = useTheme()
 
   const [statsRef, statsInView] = useInView(0.3)
+  const { data: platformStats } = useSWR('/catalog/stats', () =>
+    API.get<{ workshops: number; products: number; services: number }>('/catalog/stats').then(r => r.data)
+  )
 
   const mainFeatures = [
     {
@@ -155,7 +160,7 @@ export const LandingPage = () => {
                   color: 'white',
                 }}
               >
-                Números que hablan por nosotros
+                Nuestra plataforma en cifras
               </Typography>
             </ScrollReveal>
 
@@ -175,27 +180,21 @@ export const LandingPage = () => {
               >
                 {[
                   {
-                    number: 350,
-                    suffix: '+',
-                    label: 'Bicicletas Disponibles',
+                    number: platformStats?.products ?? 0,
+                    suffix: '',
+                    label: 'Productos Publicados',
                     color: theme.palette.primary.main,
                   },
                   {
-                    number: 60,
-                    suffix: '+',
-                    label: 'Talleres Verificados',
+                    number: platformStats?.workshops ?? 0,
+                    suffix: '',
+                    label: 'Talleres Registrados',
                     color: theme.palette.secondary.main,
                   },
                   {
-                    number: 98,
-                    suffix: '%',
-                    label: 'Satisfacción Cliente',
-                    color: theme.palette.success.main,
-                  },
-                  {
-                    number: 1200,
-                    suffix: '+',
-                    label: 'Ventas Realizadas',
+                    number: platformStats?.services ?? 0,
+                    suffix: '',
+                    label: 'Servicios Disponibles',
                     color: theme.palette.info.main,
                   },
                 ].map((stat, index) => (
