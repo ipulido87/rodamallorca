@@ -22,6 +22,7 @@ import {
 import { motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import useSWR from 'swr'
 import API from '../shared/api/api-client'
 import { HeroSection } from '../shared/components/HeroSection'
@@ -95,6 +96,7 @@ const AnimatedCounter = ({
 export const LandingPage = () => {
   const navigate = useNavigate()
   const theme = useTheme()
+  const { t } = useTranslation()
 
   const [statsRef, statsInView] = useInView(0.3)
   const { data: platformStats } = useSWR('/catalog/stats', () =>
@@ -104,22 +106,22 @@ export const LandingPage = () => {
   const mainFeatures = [
     {
       icon: <Search sx={{ fontSize: 40 }} />,
-      title: 'Búsqueda Avanzada',
-      description: 'Filtros inteligentes para encontrar tu bicicleta ideal',
+      title: t('landing.advancedSearch'),
+      description: t('landing.advancedSearchDesc'),
       gradient: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
       action: '/productos',
     },
     {
       icon: <Build sx={{ fontSize: 40 }} />,
-      title: 'Talleres Verificados',
-      description: 'Red de profesionales certificados en toda Mallorca',
+      title: t('landing.verifiedWorkshopsFeature'),
+      description: t('landing.verifiedWorkshopsDesc'),
       gradient: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
       action: '/talleres',
     },
     {
       icon: <Security sx={{ fontSize: 40 }} />,
-      title: 'Compra Segura',
-      description: 'Transacciones protegidas con garantía total',
+      title: t('landing.securePurchase'),
+      description: t('landing.securePurchaseDesc'),
       gradient: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
       action: '/como-funciona',
     },
@@ -160,7 +162,7 @@ export const LandingPage = () => {
                   color: 'white',
                 }}
               >
-                Nuestra plataforma en cifras
+                {t('landing.statsTitle')}
               </Typography>
             </ScrollReveal>
 
@@ -182,19 +184,19 @@ export const LandingPage = () => {
                   {
                     number: platformStats?.products ?? 0,
                     suffix: '',
-                    label: 'Productos Publicados',
+                    label: t('landing.publishedProducts'),
                     color: theme.palette.primary.main,
                   },
                   {
                     number: platformStats?.workshops ?? 0,
                     suffix: '',
-                    label: 'Talleres Registrados',
+                    label: t('landing.registeredWorkshops'),
                     color: theme.palette.secondary.main,
                   },
                   {
                     number: platformStats?.services ?? 0,
                     suffix: '',
-                    label: 'Servicios Disponibles',
+                    label: t('landing.availableServices'),
                     color: theme.palette.info.main,
                   },
                 ].map((stat, index) => (
@@ -250,7 +252,7 @@ export const LandingPage = () => {
                   color: 'white',
                 }}
               >
-                Todo lo que necesitas en un solo lugar
+                {t('landing.featuresTitle')}
               </Typography>
             </ScrollReveal>
 
@@ -266,7 +268,7 @@ export const LandingPage = () => {
                   mx: 'auto',
                 }}
               >
-                Conectamos ciclistas con los mejores talleres y productos de Mallorca
+                {t('landing.featuresSubtitle')}
               </Typography>
             </ScrollReveal>
 
@@ -351,7 +353,7 @@ export const LandingPage = () => {
                       <Box sx={{ flex: 1 }}>
                         <Chip
                           icon={<PedalBike />}
-                          label="NUEVO"
+                          label={t('landing.newLabel')}
                           sx={{
                             backgroundColor: alpha(theme.palette.common.white, 0.25),
                             color: theme.palette.common.white,
@@ -367,7 +369,7 @@ export const LandingPage = () => {
                             fontSize: { xs: '2rem', md: '3rem' },
                           }}
                         >
-                          Alquiler de Bicicletas
+                          {t('landing.bikeRental')}
                         </Typography>
                         <Typography
                           variant="h6"
@@ -378,15 +380,15 @@ export const LandingPage = () => {
                             lineHeight: 1.6,
                           }}
                         >
-                          Descubre Mallorca en bicicleta. Alquila las mejores bicis de talleres verificados con precios desde 15€/día.
+                          {t('landing.bikeRentalDesc')}
                         </Typography>
 
                         <Stack spacing={2} sx={{ mb: 4 }}>
                           {[
-                            'Carretera, Montaña, Eléctricas y más',
-                            'Seguro y casco incluidos',
-                            'Recogida en tu ubicación',
-                            'Cancelación flexible',
+                            t('landing.rentalFeature1'),
+                            t('landing.rentalFeature2'),
+                            t('landing.rentalFeature3'),
+                            t('landing.rentalFeature4'),
                           ].map((item, index) => (
                             <Box
                               key={index}
@@ -422,7 +424,7 @@ export const LandingPage = () => {
                             },
                           }}
                         >
-                          Ver Bicicletas Disponibles
+                          {t('landing.viewAvailableBikes')}
                         </MotionButton>
                       </Box>
 
@@ -469,7 +471,7 @@ export const LandingPage = () => {
             <ScrollReveal>
               <Stack spacing={2} alignItems="center" sx={{ mb: 8, textAlign: 'center' }}>
                 <Chip
-                  label="PRECIO ESPECIAL DE LANZAMIENTO"
+                  label={t('landing.launchPrice')}
                   sx={{
                     fontSize: '0.9rem',
                     fontWeight: 700,
@@ -489,7 +491,7 @@ export const LandingPage = () => {
                     color: 'white',
                   }}
                 >
-                  Plan Perfecto para tu Taller
+                  {t('landing.perfectPlan')}
                 </Typography>
                 <Typography
                   variant="h6"
@@ -499,7 +501,7 @@ export const LandingPage = () => {
                     maxWidth: 600,
                   }}
                 >
-                  Gestiona tu negocio, vende más y conecta con miles de ciclistas en Mallorca
+                  {t('landing.perfectPlanDesc')}
                 </Typography>
               </Stack>
             </ScrollReveal>
@@ -525,10 +527,10 @@ export const LandingPage = () => {
                     }}
                   >
                     <Typography variant="h5" fontWeight="700" gutterBottom>
-                      Taller Pro
+                      {t('landing.workshopPro')}
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Todo lo que necesitas para crecer
+                      {t('landing.everythingToGrow')}
                     </Typography>
                   </Box>
 
@@ -560,10 +562,10 @@ export const LandingPage = () => {
                         color="text.secondary"
                         sx={{ fontWeight: 500 }}
                       >
-                        IVA incluido · Sin compromiso · Cancela cuando quieras
+                        {t('landing.vatIncluded')}
                       </Typography>
                       <Chip
-                        label="7 DÍAS DE PRUEBA GRATIS"
+                        label={t('landing.freeTrialDays')}
                         color="success"
                         sx={{
                           mt: 1,
@@ -576,14 +578,14 @@ export const LandingPage = () => {
 
                     <Stack spacing={2} sx={{ mb: 4 }}>
                       {[
-                        'Dashboard completo de ventas',
-                        'Gestión ilimitada de productos',
-                        'Sistema de pedidos integrado',
-                        'Facturación automática con PDF',
-                        'Catálogo visible para miles de usuarios',
-                        'Estadísticas de rendimiento',
-                        'Notificaciones en tiempo real',
-                        'Soporte técnico prioritario',
+                        t('landing.feature1'),
+                        t('landing.feature2'),
+                        t('landing.feature3'),
+                        t('landing.feature4'),
+                        t('landing.feature5'),
+                        t('landing.feature6'),
+                        t('landing.feature7'),
+                        t('landing.feature8'),
                       ].map((feature, index) => (
                         <Box
                           key={index}
@@ -622,7 +624,7 @@ export const LandingPage = () => {
                         },
                       }}
                     >
-                      Empezar Prueba Gratis - 7 Días
+                      {t('landing.startFreeTrial')}
                     </MotionButton>
 
                     <Typography
@@ -630,7 +632,7 @@ export const LandingPage = () => {
                       color="text.secondary"
                       sx={{ display: 'block', textAlign: 'center', mt: 2 }}
                     >
-                      7 días gratis, luego 18.30€/mes · Tarjeta requerida, sin cargos durante el trial
+                      {t('landing.trialNote')}
                     </Typography>
                   </CardContent>
                 </MotionCard>
@@ -665,7 +667,7 @@ export const LandingPage = () => {
                   fontSize: { xs: '2rem', md: '3rem' },
                 }}
               >
-                Únete a la revolución ciclista
+                {t('landing.joinRevolution')}
               </Typography>
 
               <Typography
@@ -676,7 +678,7 @@ export const LandingPage = () => {
                   fontWeight: 300,
                 }}
               >
-                Únete a la comunidad ciclista de Mallorca
+                {t('landing.trustUs')}
               </Typography>
 
               <MotionButton
@@ -699,7 +701,7 @@ export const LandingPage = () => {
                   },
                 }}
               >
-                Comenzar Ahora
+                {t('landing.startNow')}
               </MotionButton>
             </ScrollReveal>
           </Container>

@@ -18,6 +18,7 @@ import {
   Typography,
 } from '@mui/material'
 import { memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import useSWR from 'swr'
 import { useAuth } from '../../auth/hooks/useAuth'
@@ -134,6 +135,7 @@ QuickAction.displayName = 'QuickAction'
 export const Dashboard = () => {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   // Fetch user's workshops
   const { data: workshops, isLoading: workshopsLoading } = useSWR(
@@ -177,7 +179,7 @@ export const Dashboard = () => {
       <Container maxWidth="xl" sx={{ py: 4, textAlign: 'center' }}>
         <CircularProgress size={60} />
         <Typography variant="h6" sx={{ mt: 2 }}>
-          Cargando dashboard...
+          {t('dashboard.loadingDashboard')}
         </Typography>
       </Container>
     )

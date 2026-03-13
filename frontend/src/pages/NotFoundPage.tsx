@@ -1,9 +1,11 @@
 import { Box, Button, Container, Stack, Typography } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Seo } from '../shared/components/Seo'
 
 export const NotFoundPage = () => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   return (
     <>
@@ -27,20 +29,20 @@ export const NotFoundPage = () => {
             404
           </Typography>
           <Typography variant="h4" fontWeight={700} gutterBottom>
-            Página no encontrada
+            {t('notFound.title')}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 5 }}>
-            La página que buscas no existe o ha sido movida.
+            {t('notFound.description')}
           </Typography>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
             <Button variant="contained" size="large" onClick={() => navigate('/')}>
-              Ir al inicio
+              {t('common.goHome')}
             </Button>
             <Button variant="outlined" size="large" onClick={() => navigate('/productos')}>
-              Ver productos
+              {t('notFound.viewProducts')}
             </Button>
             <Button variant="outlined" size="large" onClick={() => navigate('/talleres')}>
-              Ver talleres
+              {t('notFound.viewWorkshops')}
             </Button>
           </Stack>
         </Box>
