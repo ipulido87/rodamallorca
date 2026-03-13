@@ -25,6 +25,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import useSWR from 'swr'
 import {
@@ -37,6 +38,7 @@ import {
 } from '../services/order-service'
 
 export const OrderDetail = () => {
+  const { t } = useTranslation()
   const { orderId } = useParams<{ orderId: string }>()
   const navigate = useNavigate()
   const [error, setError] = useState('')
@@ -69,7 +71,7 @@ export const OrderDetail = () => {
       mutate(updatedOrder, false)
       setCancelDialog(false)
     } catch {
-      setError('Error al cancelar el pedido')
+      setError(t('orders.errorCancellingOrder'))
     } finally {
       setCancelLoading(false)
     }
@@ -97,9 +99,9 @@ export const OrderDetail = () => {
 
   const getOrderTypeLabel = (type?: string) => {
     const labels: Record<string, string> = {
-      PRODUCT_ORDER: 'Producto',
-      SERVICE_REPAIR: 'Reparación',
-      RENTAL: 'Alquiler',
+      PRODUCT_ORDER: t('orders.typeProduct'),
+      SERVICE_REPAIR: t('orders.typeRepair'),
+      RENTAL: t('orders.typeRental'),
     }
     return labels[type || 'PRODUCT_ORDER']
   }
@@ -119,7 +121,7 @@ export const OrderDetail = () => {
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <CircularProgress size={60} />
           <Typography variant="h6" sx={{ mt: 2 }}>
-            Cargando pedido...
+            {t('orders.loadingOrder')}
           </Typography>
         </Box>
       </Container>
@@ -130,13 +132,13 @@ export const OrderDetail = () => {
     return (
       <Container maxWidth="lg">
         <Box sx={{ py: 4 }}>
-          <Alert severity="error">Pedido no encontrado</Alert>
+          <Alert severity="error">{t('orders.orderNotFound')}</Alert>
           <Button
             startIcon={<ArrowBack />}
             onClick={() => navigate('/orders')}
             sx={{ mt: 2 }}
           >
-            Volver a Mis Pedidos
+            {t('orders.backToMyOrders')}
           </Button>
         </Box>
       </Container>
@@ -153,7 +155,7 @@ export const OrderDetail = () => {
             onClick={() => navigate('/orders')}
             sx={{ mb: 2 }}
           >
-            Volver a Mis Pedidos
+            {t('orders.backToMyOrders')}
           </Button>
 
           <Box
@@ -167,7 +169,7 @@ export const OrderDetail = () => {
               <Stack direction="row" spacing={1} alignItems="center" mb={1}>
                 {order.type === 'RENTAL' && <TwoWheeler color="primary" />}
                 <Typography variant="h4" fontWeight="bold">
-                  Pedido #{order.id.slice(0, 8)}
+                  {t('orders.orderNumber', { id: order.id.slice(0, 8) })}
                 </Typography>
                 <Chip
                   label={getOrderTypeLabel(order.type)}
@@ -205,14 +207,14 @@ export const OrderDetail = () => {
         <Card sx={{ mb: 3 }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              Información del Pedido
+              {t('orders.orderInfo')}
             </Typography>
             <Divider sx={{ mb: 2 }} />
 
             <Stack spacing={2}>
               <Box>
                 <Typography variant="body2" color="text.secondary">
-                  Taller
+                  {t('orders.workshop')}
                 </Typography>
                 <Stack direction="row" spacing={1} alignItems="center">
                   <Store fontSize="small" />
@@ -225,7 +227,7 @@ export const OrderDetail = () => {
               {order.notes && (
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    Notas
+                    {t('orders.notes')}
                   </Typography>
                   <Typography variant="body1">{order.notes}</Typography>
                 </Box>
@@ -233,7 +235,7 @@ export const OrderDetail = () => {
 
               <Box>
                 <Typography variant="body2" color="text.secondary">
-                  Estado
+                  {t('orders.status')}
                 </Typography>
                 <Typography variant="body1">
                   {getOrderStatusLabel(order.status)}
@@ -250,7 +252,7 @@ export const OrderDetail = () => {
               <Stack direction="row" spacing={1} alignItems="center" mb={2}>
                 <CalendarMonth />
                 <Typography variant="h6">
-                  Información de Alquiler
+                  {t('orders.rentalInfo')}
                 </Typography>
               </Stack>
               <Divider sx={{ mb: 2, borderColor: 'primary.dark' }} />
@@ -258,7 +260,7 @@ export const OrderDetail = () => {
               <Stack spacing={2}>
                 <Box>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    Fecha de Inicio
+                    {t('orders.startDate')}
                   </Typography>
                   <Typography variant="body1" fontWeight={600}>
                     {order.items[0].rentalStartDate && formatDate(order.items[0].rentalStartDate)}
@@ -267,7 +269,7 @@ export const OrderDetail = () => {
 
                 <Box>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    Fecha de Devolución
+                    {t('orders.returnDate')}
                   </Typography>
                   <Typography variant="body1" fontWeight={600}>
                     {order.items[0].rentalEndDate && formatDate(order.items[0].rentalEndDate)}
@@ -276,17 +278,17 @@ export const OrderDetail = () => {
 
                 <Box>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    Duración
+                    {t('orders.duration')}
                   </Typography>
                   <Typography variant="body1" fontWeight={600}>
-                    {order.items[0].rentalDays} {order.items[0].rentalDays === 1 ? 'día' : 'días'}
+                    {t('orders.daysCount', { count: order.items[0].rentalDays })}
                   </Typography>
                 </Box>
 
                 {order.items[0].depositPaid && order.items[0].depositPaid > 0 && (
                   <Box>
                     <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Depósito (reembolsable)
+                      {t('orders.depositRefundable')}
                     </Typography>
                     <Typography variant="body1" fontWeight={600}>
                       {formatPrice(order.items[0].depositPaid)}
@@ -302,7 +304,7 @@ export const OrderDetail = () => {
         <Card sx={{ mb: 3 }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              Productos
+              {t('orders.products')}
             </Typography>
             <Divider sx={{ mb: 2 }} />
 
@@ -310,10 +312,10 @@ export const OrderDetail = () => {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell>Producto</TableCell>
-                    <TableCell align="right">Cantidad</TableCell>
-                    <TableCell align="right">Precio Unitario</TableCell>
-                    <TableCell align="right">Subtotal</TableCell>
+                    <TableCell>{t('orders.product')}</TableCell>
+                    <TableCell align="right">{t('orders.quantity')}</TableCell>
+                    <TableCell align="right">{t('orders.unitPrice')}</TableCell>
+                    <TableCell align="right">{t('orders.subtotal')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -321,7 +323,7 @@ export const OrderDetail = () => {
                     <TableRow key={item.id}>
                       <TableCell>
                         {item.description ||
-                          `Producto ${item.productId?.slice(0, 8)}`}
+                          t('orders.productId', { id: item.productId?.slice(0, 8) })}
                       </TableCell>
                       <TableCell align="right">{item.quantity}</TableCell>
                       <TableCell align="right">
@@ -334,7 +336,7 @@ export const OrderDetail = () => {
                   ))}
                   <TableRow>
                     <TableCell colSpan={3}>
-                      <Typography variant="h6">Total</Typography>
+                      <Typography variant="h6">{t('orders.total')}</Typography>
                     </TableCell>
                     <TableCell align="right">
                       <Typography
@@ -358,7 +360,7 @@ export const OrderDetail = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Acciones
+                  {t('orders.actions')}
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 <Button

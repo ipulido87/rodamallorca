@@ -23,6 +23,7 @@ import {
 } from '@mui/material'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { detectIntent, parseQuery } from '../search'
 import { aiSearch } from '@/features/catalog/services/catalog-service'
@@ -80,16 +81,17 @@ const ParsedQueryChips = ({
   parsed: ParsedQuery
   dark?: boolean
 }) => {
+  const { t } = useTranslation()
   const chips: Array<{ label: string; color?: 'primary' | 'secondary' | 'success' | 'warning' }> = []
 
   if (parsed.city) chips.push({ label: `📍 ${parsed.city}`, color: 'primary' })
-  if (parsed.condition === 'used') chips.push({ label: '♻️ Segunda mano', color: 'secondary' })
-  if (parsed.condition === 'new') chips.push({ label: '✨ Nuevo', color: 'success' })
-  if (parsed.sort === 'price_asc') chips.push({ label: '💰 Más barato', color: 'warning' })
-  if (parsed.sort === 'price_desc') chips.push({ label: '💎 Premium', color: 'warning' })
-  if (parsed.sort === 'rating_desc') chips.push({ label: '⭐ Mejor valorado', color: 'success' })
-  if (parsed.maxPrice) chips.push({ label: `Hasta ${parsed.maxPrice}€`, color: 'secondary' })
-  if (parsed.minPrice) chips.push({ label: `Desde ${parsed.minPrice}€`, color: 'secondary' })
+  if (parsed.condition === 'used') chips.push({ label: `♻️ ${t('search.secondHand')}`, color: 'secondary' })
+  if (parsed.condition === 'new') chips.push({ label: `✨ ${t('search.brandNew')}`, color: 'success' })
+  if (parsed.sort === 'price_asc') chips.push({ label: `💰 ${t('search.cheapest')}`, color: 'warning' })
+  if (parsed.sort === 'price_desc') chips.push({ label: `💎 ${t('search.premium')}`, color: 'warning' })
+  if (parsed.sort === 'rating_desc') chips.push({ label: `⭐ ${t('search.bestRated')}`, color: 'success' })
+  if (parsed.maxPrice) chips.push({ label: `${t('search.upTo')} ${parsed.maxPrice}€`, color: 'secondary' })
+  if (parsed.minPrice) chips.push({ label: `${t('search.from')} ${parsed.minPrice}€`, color: 'secondary' })
 
   if (chips.length === 0) return null
 
@@ -97,7 +99,7 @@ const ParsedQueryChips = ({
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
       {!dark && (
         <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center', mr: 0.5 }}>
-          Detectado:
+          {t('search.detected')}
         </Typography>
       )}
       {chips.map((chip) =>
@@ -137,6 +139,7 @@ const CatalogSearchBar = ({
   parsedQuery,
   showHints,
 }: Omit<SmartSearchBarProps, 'variant'>) => {
+  const { t } = useTranslation()
   const hasValue = value.trim().length > 0
 
   return (
@@ -146,18 +149,18 @@ const CatalogSearchBar = ({
         variant="outlined"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder ?? 'Busca en lenguaje natural: "freno usado barato en Palma"...'}
+        placeholder={placeholder ?? t('search.heroPlaceholder')}
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
-              <Tooltip title="Búsqueda inteligente: entiende lenguaje natural">
+              <Tooltip title={t('search.smartSearchInfo')}>
                 <AutoAwesome sx={{ color: 'primary.main', fontSize: 20 }} />
               </Tooltip>
             </InputAdornment>
           ),
           endAdornment: hasValue ? (
             <InputAdornment position="end">
-              <IconButton size="small" onClick={() => onChange('')} aria-label="Limpiar búsqueda">
+              <IconButton size="small" onClick={() => onChange('')} aria-label={t('search.clearSearch')}>
                 <Clear fontSize="small" />
               </IconButton>
             </InputAdornment>
@@ -179,11 +182,30 @@ const CatalogSearchBar = ({
 
 const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 'onChange'>) => {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [showPlaceholderAnim, setShowPlaceholderAnim] = useState(true)
   const [searching, setSearching] = useState(false)
   const [aiMessage, setAiMessage] = useState<string | null>(null)
+
+  const heroExamples = [
+    t('search.placeholder1'),
+    t('search.placeholder2'),
+    t('search.placeholder3'),
+    t('search.placeholder4'),
+    t('search.placeholder5'),
+    t('search.placeholder6'),
+    t('search.placeholder7'),
+    t('search.placeholder8'),
+  ]
+
+  const intentLabels: Record<SearchIntent, { label: string; icon: React.ReactNode; color: string }> = {
+    talleres: { label: t('search.searchWorkshops'), icon: <Build sx={{ fontSize: 18 }} />, color: '#5c6bc0' },
+    productos: { label: t('search.searchProducts'), icon: <Store sx={{ fontSize: 18 }} />, color: '#26a69a' },
+    alquiler: { label: t('search.searchRentals'), icon: <PedalBike sx={{ fontSize: 18 }} />, color: '#4caf50' },
+    rutas: { label: t('search.viewRoutes'), icon: <Map sx={{ fontSize: 18 }} />, color: '#e53935' },
+  }
 
   // Rota los ejemplos de placeholder cada 3.5 s mientras el input está vacío
   useEffect(() => {
@@ -191,7 +213,7 @@ const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 
     const interval = setInterval(() => {
       setShowPlaceholderAnim(false)
       setTimeout(() => {
-        setPlaceholderIndex((i) => (i + 1) % HERO_EXAMPLES.length)
+        setPlaceholderIndex((i) => (i + 1) % heroExamples.length)
         setShowPlaceholderAnim(true)
       }, 300)
     }, 3500)
@@ -200,7 +222,7 @@ const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 
 
   const intent = value.trim() ? detectIntent(value) : null
   const parsed = value.trim() ? parseQuery(value) : null
-  const intentMeta = intent ? INTENT_META[intent] : null
+  const intentMeta = intent ? intentLabels[intent] : null
 
   const handleSubmit = useCallback(async () => {
     const q = value.trim()
@@ -316,7 +338,7 @@ const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 
               fontSize: { xs: '0.95rem', sm: '1.05rem' },
               '& input': { padding: 0, '&::placeholder': { color: 'transparent' } },
             }}
-            inputProps={{ 'aria-label': 'Buscador inteligente RodaMallorca' }}
+            inputProps={{ 'aria-label': t('search.inlinePlaceholder') }}
           />
 
           {!value && (
@@ -350,7 +372,7 @@ const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 
                       width: '100%',
                     }}
                   >
-                    {HERO_EXAMPLES[placeholderIndex]}
+                    {heroExamples[placeholderIndex]}
                   </motion.span>
                 )}
               </AnimatePresence>
@@ -390,7 +412,7 @@ const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 
             <Search sx={{ fontSize: 18 }} />
           )}
           <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-            {searching ? 'Analizando...' : 'Buscar'}
+            {searching ? t('search.analyzing') : t('search.searchButton')}
           </Box>
         </ButtonBase>
       </Box>
@@ -457,7 +479,7 @@ const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 
           variant="caption"
           sx={{ display: 'block', mt: 1, color: alpha('#ffffff', 0.4), fontSize: '0.72rem', pl: 0.5 }}
         >
-          Escribe en lenguaje natural · Pulsa Enter para buscar
+          {t('search.inlineHint')}
         </Typography>
       )}
     </Box>

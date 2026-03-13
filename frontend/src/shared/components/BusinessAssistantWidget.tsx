@@ -16,6 +16,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { assistantChat } from '../services/assistant-service'
 
 interface ChatMessage {
@@ -24,19 +25,20 @@ interface ChatMessage {
 }
 
 export function BusinessAssistantWidget() {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [conversationId, setConversationId] = useState<string | undefined>(undefined)
   const [suggestions, setSuggestions] = useState<string[]>([
-    'Necesito un taller en Palma',
-    'Quiero alquilar una bici',
-    'Tengo un problema con una reserva',
+    t('assistant.suggestion1'),
+    t('assistant.suggestion2'),
+    t('assistant.suggestion3'),
   ])
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      text: '¡Hola! Soy el asistente de RodaMallorca. Puedo ayudarte con talleres, productos, alquileres, servicios o escalar incidencias a soporte.',
+      text: t('assistant.greeting'),
     },
   ])
 
@@ -59,7 +61,7 @@ export function BusinessAssistantWidget() {
           ...prev,
           {
             role: 'assistant',
-            text: 'Si quieres, puedo seguir recogiendo detalles para que tengas todo listo antes de contactar con soporte.',
+            text: t('assistant.escalatedMessage'),
           },
         ])
       }
@@ -68,7 +70,7 @@ export function BusinessAssistantWidget() {
         ...prev,
         {
           role: 'assistant',
-          text: 'Ahora mismo no puedo responder. Prueba de nuevo en unos segundos.',
+          text: t('assistant.errorMessage'),
         },
       ])
     } finally {
@@ -88,7 +90,7 @@ export function BusinessAssistantWidget() {
           zIndex: 1400,
           boxShadow: 6,
         }}
-        aria-label="Abrir asistente"
+        aria-label={t('assistant.openAssistant')}
       >
         {open ? <Close /> : <SupportAgent />}
       </Fab>
@@ -123,7 +125,7 @@ export function BusinessAssistantWidget() {
           >
             <Stack direction="row" spacing={1} alignItems="center">
               <AutoAwesome fontSize="small" />
-              <Typography fontWeight={700}>Asistente RodaMallorca</Typography>
+              <Typography fontWeight={700}>{t('assistant.title')}</Typography>
             </Stack>
             <IconButton size="small" onClick={() => setOpen(false)} sx={{ color: 'inherit' }}>
               <Close fontSize="small" />
@@ -177,7 +179,7 @@ export function BusinessAssistantWidget() {
                   void sendMessage(input)
                 }
               }}
-              placeholder="Escribe tu consulta..."
+              placeholder={t('assistant.inputPlaceholder')}
               fullWidth
               size="small"
             />

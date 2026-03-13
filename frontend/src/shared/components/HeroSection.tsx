@@ -1,6 +1,7 @@
 import { Box, Button, Chip, Container, Stack, useTheme, alpha } from '@mui/material'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useCallback, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Search, Build, KeyboardArrowDown } from '@mui/icons-material'
 import { SmartSearchBar } from './SmartSearchBar'
@@ -13,6 +14,7 @@ const MotionButton = motion.create(Button)
 
 // Scroll indicator at bottom
 function ScrollIndicator() {
+  const { t } = useTranslation()
   return (
     <MotionBox
       initial={{ opacity: 0 }}
@@ -42,7 +44,7 @@ function ScrollIndicator() {
           textTransform: 'uppercase',
         }}
       >
-        Descubre más
+        {t('hero.discoverMore')}
       </Box>
       <Box sx={{ animation: 'scroll-bounce 1.5s ease-in-out infinite', '@keyframes scroll-bounce': { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(8px)' } } }}>
         <KeyboardArrowDown sx={{ color: 'rgba(255,255,255,0.6)', fontSize: 28 }} />
@@ -89,6 +91,7 @@ const buttonVariants = {
 }
 
 export function HeroSection() {
+  const { t } = useTranslation()
   const theme = useTheme()
   const navigate = useNavigate()
   const heroRef = useRef<HTMLDivElement>(null)
@@ -190,7 +193,7 @@ export function HeroSection() {
               {/* Badge */}
               <motion.div variants={itemVariants}>
                 <MotionChip
-                  label="Plataforma #1 en Mallorca"
+                  label={t('hero.badge')}
                   whileHover={{ scale: 1.05 }}
                   sx={{
                     backgroundColor: alpha(theme.palette.common.white, 0.15),
@@ -270,7 +273,7 @@ export function HeroSection() {
                     maxWidth: 600,
                   }}
                 >
-                  El marketplace más completo de bicicletas y servicios ciclistas en Mallorca
+                  {t('hero.subtitle')}
                 </Box>
               </motion.div>
 
@@ -307,7 +310,7 @@ export function HeroSection() {
                       },
                     }}
                   >
-                    Explorar Catálogo
+                    {t('hero.exploreCatalog')}
                   </MotionButton>
 
                   <MotionButton
@@ -338,7 +341,7 @@ export function HeroSection() {
                       },
                     }}
                   >
-                    Únete como Taller
+                    {t('hero.joinAsWorkshop')}
                   </MotionButton>
                 </Stack>
               </motion.div>

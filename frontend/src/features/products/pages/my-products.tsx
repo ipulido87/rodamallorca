@@ -24,6 +24,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import useSWR, { mutate } from 'swr'
 import { adaptProductImages } from '../../../utils/adapt-product-Images'
@@ -51,6 +52,7 @@ const fetcher = async (url: string) => {
 }
 
 export const MyProducts = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   // ✅ SWR para caché automático y revalidación
@@ -94,7 +96,7 @@ export const MyProducts = () => {
     })
   }, [products, searchQuery, statusFilter])
 
-  const error = swrError ? 'Error al cargar los productos' : localError
+  const error = swrError ? t('products.errorLoadingProducts') : localError
 
   // ✅ publicar / ocultar con mutate de SWR
   const handleStatusChange = async (product: Product) => {
@@ -114,7 +116,7 @@ export const MyProducts = () => {
       await mutate(PRODUCTS_KEY)
       handleCloseMenu()
     } catch (error) {
-      setLocalError('Error al cambiar el estado del producto')
+      setLocalError(t('products.errorChangingStatus'))
       console.error('Status change error:', error)
     }
   }
@@ -130,7 +132,7 @@ export const MyProducts = () => {
       await mutate(PRODUCTS_KEY)
       setDeleteDialog({ open: false, product: null })
     } catch (error) {
-      setLocalError('Error al eliminar el producto')
+      setLocalError(t('products.errorDeletingProduct'))
       console.error('Delete error:', error)
     }
   }
@@ -185,10 +187,10 @@ export const MyProducts = () => {
       >
         <Box>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Mis Productos
+            {t('home.myProducts')}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Gestiona tu catálogo de productos
+            {t('products.manageCatalog')}
           </Typography>
         </Box>
         <Button
@@ -197,7 +199,7 @@ export const MyProducts = () => {
           onClick={() => navigate('/create-product')}
           sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
-          Nuevo Producto
+          {t('products.newProduct')}
         </Button>
       </Stack>
 
@@ -210,7 +212,7 @@ export const MyProducts = () => {
       {/* Filtros - Responsive */}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 4 }}>
         <TextField
-          placeholder="Buscar productos..."
+          placeholder={t('products.searchProducts')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           InputProps={{
@@ -234,10 +236,10 @@ export const MyProducts = () => {
             sx={{ flex: { xs: 1, sm: 'none' } }}
           >
             <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-              Todos ({products.length})
+              {t('products.allWithCount', { count: products.length })}
             </Box>
             <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
-              Todos
+              {t('products.all')}
             </Box>
           </Button>
           <Button
@@ -248,10 +250,10 @@ export const MyProducts = () => {
             sx={{ flex: { xs: 1, sm: 'none' } }}
           >
             <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-              Publicados ({products.filter((p) => p.status === 'PUBLISHED').length})
+              {t('products.publishedWithCount', { count: products.filter((p) => p.status === 'PUBLISHED').length })}
             </Box>
             <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
-              Pub.
+              {t('products.publishedShort')}
             </Box>
           </Button>
           <Button
@@ -262,10 +264,10 @@ export const MyProducts = () => {
             sx={{ flex: { xs: 1, sm: 'none' } }}
           >
             <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-              Borradores ({products.filter((p) => p.status === 'DRAFT').length})
+              {t('products.draftsWithCount', { count: products.filter((p) => p.status === 'DRAFT').length })}
             </Box>
             <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
-              Borr.
+              {t('products.draftsShort')}
             </Box>
           </Button>
         </Stack>
@@ -277,8 +279,8 @@ export const MyProducts = () => {
         loading={false}
         emptyMessage={
           searchQuery
-            ? 'No se encontraron productos'
-            : 'No tienes productos aún'
+            ? t('products.noProductsFound')
+            : t('products.noProductsYet')
         }
         onOpenMenu={handleOpenMenuFromCard}
       />
@@ -292,7 +294,7 @@ export const MyProducts = () => {
         {selectedProduct && [
           <MenuItem key="edit" onClick={() => handleEdit(selectedProduct)}>
             <Edit sx={{ mr: 2 }} />
-            Editar
+            {t('products.edit')}
           </MenuItem>,
           <MenuItem
             key="status"
@@ -303,7 +305,7 @@ export const MyProducts = () => {
             ) : (
               <Visibility sx={{ mr: 2 }} />
             )}
-            {selectedProduct.status === 'PUBLISHED' ? 'Ocultar' : 'Publicar'}
+            {selectedProduct.status === 'PUBLISHED' ? t('products.hide') : t('products.publish')}
           </MenuItem>,
           <MenuItem
             key="delete"
@@ -314,7 +316,7 @@ export const MyProducts = () => {
             sx={{ color: 'error.main' }}
           >
             <Delete sx={{ mr: 2 }} />
-            Eliminar
+            {t('common.delete')}
           </MenuItem>,
         ]}
       </Menu>
@@ -324,21 +326,20 @@ export const MyProducts = () => {
         open={deleteDialog.open}
         onClose={() => setDeleteDialog({ open: false, product: null })}
       >
-        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogTitle>{t('confirm.deleteTitle')}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            ¿Estás seguro de que quieres eliminar "{deleteDialog.product?.title}
-            "? Esta acción no se puede deshacer.
+            {t('products.confirmDeleteMessage', { title: deleteDialog.product?.title })}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button
             onClick={() => setDeleteDialog({ open: false, product: null })}
           >
-            Cancelar
+            {t('common.cancel')}
           </Button>
           <Button onClick={handleDelete} color="error" variant="contained">
-            Eliminar
+            {t('common.delete')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -11,6 +11,7 @@ import {
 } from '@mui/material'
 import { AxiosError } from 'axios'
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   getMyWorkshopById,
@@ -22,6 +23,7 @@ import { WorkshopLogoUpload } from '../components/workshop-logo-upload'
 import type { ProcessedImage } from '../../media/services/media-service'
 
 export const EditWorkshop = () => {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
@@ -44,7 +46,7 @@ export const EditWorkshop = () => {
   // Cargar datos del workshop al montar el componente
   useEffect(() => {
     if (!id) {
-      setError('ID de taller no válido')
+      setError(t('workshops.invalidWorkshopId'))
       setInitialLoading(false)
       return
     }
@@ -77,14 +79,14 @@ export const EditWorkshop = () => {
       } catch (err) {
         if (err instanceof AxiosError) {
           if (err.response?.status === 404) {
-            setError('Taller no encontrado')
+            setError(t('workshops.workshopNotFound'))
           } else if (err.response?.status === 403) {
-            setError('No tienes permisos para editar este taller')
+            setError(t('workshops.noEditPermission'))
           } else {
-            setError('Error al cargar el taller')
+            setError(t('workshops.errorLoadingWorkshop'))
           }
         } else {
-          setError('Error al cargar el taller')
+          setError(t('workshops.errorLoadingWorkshop'))
         }
       } finally {
         setInitialLoading(false)
@@ -123,21 +125,21 @@ export const EditWorkshop = () => {
         logoThumbnail: logoData?.thumbnail || undefined,
       })
 
-      setSuccess('Taller actualizado correctamente')
+      setSuccess(t('workshops.workshopUpdated'))
       setTimeout(() => navigate('/my-workshops'), 1500)
     } catch (err) {
       if (err instanceof AxiosError) {
         if (err.response?.status === 404) {
-          setError('Taller no encontrado')
+          setError(t('workshops.workshopNotFound'))
         } else if (err.response?.status === 403) {
-          setError('No tienes permisos para editar este taller')
+          setError(t('workshops.noEditPermission'))
         } else {
           setError(
-            err.response?.data?.message || 'Error al actualizar el taller'
+            err.response?.data?.message || t('workshops.errorUpdatingWorkshop')
           )
         }
       } else {
-        setError('Error al actualizar el taller')
+        setError(t('workshops.errorUpdatingWorkshop'))
       }
     } finally {
       setLoading(false)
@@ -151,7 +153,7 @@ export const EditWorkshop = () => {
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <CircularProgress size={60} />
           <Typography variant="h6" sx={{ mt: 2 }}>
-            Cargando información del taller...
+            {t('workshops.loadingWorkshopInfo')}
           </Typography>
         </Box>
       </Container>
@@ -167,7 +169,7 @@ export const EditWorkshop = () => {
             {error}
           </Alert>
           <Button variant="contained" onClick={() => navigate('/my-workshops')}>
-            Volver a Mis Talleres
+            {t('workshops.backToMyWorkshops')}
           </Button>
         </Box>
       </Container>
@@ -186,16 +188,16 @@ export const EditWorkshop = () => {
           }}
         >
           <Typography variant="h4" gutterBottom>
-            Editar Taller
+            {t('workshops.editWorkshop')}
           </Typography>
           <Button variant="outlined" onClick={() => navigate('/my-workshops')}>
-            Volver
+            {t('common.back')}
           </Button>
         </Box>
 
         {workshop && (
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Editando: <strong>{workshop.name}</strong>
+            {t('workshops.editing')}: <strong>{workshop.name}</strong>
           </Typography>
         )}
 
@@ -222,7 +224,7 @@ export const EditWorkshop = () => {
           <Divider sx={{ my: 3 }} />
 
           <TextField
-            label="Nombre del Taller"
+            label={t('workshops.workshopName')}
             name="name"
             value={formData.name}
             onChange={handleChange}
@@ -233,7 +235,7 @@ export const EditWorkshop = () => {
           />
 
           <TextField
-            label="Descripción"
+            label={t('workshops.description')}
             name="description"
             value={formData.description}
             onChange={handleChange}
@@ -245,7 +247,7 @@ export const EditWorkshop = () => {
           />
 
           <TextField
-            label="Dirección"
+            label={t('workshops.address')}
             name="address"
             value={formData.address}
             onChange={handleChange}
@@ -255,7 +257,7 @@ export const EditWorkshop = () => {
           />
 
           <TextField
-            label="Ciudad"
+            label={t('workshops.city')}
             name="city"
             value={formData.city}
             onChange={handleChange}
@@ -265,7 +267,7 @@ export const EditWorkshop = () => {
           />
 
           <TextField
-            label="Código de País (ES, FR, etc.)"
+            label={t('workshops.countryCode')}
             name="country"
             value={formData.country}
             onChange={handleChange}
@@ -276,7 +278,7 @@ export const EditWorkshop = () => {
           />
 
           <TextField
-            label="Teléfono"
+            label={t('workshops.phone')}
             name="phone"
             value={formData.phone}
             onChange={handleChange}
@@ -292,7 +294,7 @@ export const EditWorkshop = () => {
               variant="contained"
               disabled={loading || !formData.name.trim()}
             >
-              {loading ? 'Actualizando...' : 'Actualizar Taller'}
+              {loading ? t('workshops.updating') : t('workshops.updateWorkshop')}
             </Button>
 
             <Button
@@ -300,7 +302,7 @@ export const EditWorkshop = () => {
               onClick={() => navigate('/my-workshops')}
               disabled={loading}
             >
-              Cancelar
+              {t('common.cancel')}
             </Button>
           </Box>
         </Box>

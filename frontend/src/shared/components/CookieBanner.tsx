@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Box,
   Button,
@@ -13,6 +14,7 @@ const COOKIE_CONSENT_KEY = 'rodamallorca_cookie_consent'
 
 export const CookieBanner = () => {
   const [visible, setVisible] = useState(false)
+  const { t } = useTranslation()
 
   useEffect(() => {
     const consent = localStorage.getItem(COOKIE_CONSENT_KEY)
@@ -62,11 +64,9 @@ export const CookieBanner = () => {
           <Cookie sx={{ color: 'primary.main', fontSize: 28, flexShrink: 0 }} />
 
           <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
-            Utilizamos cookies propias y de terceros para mejorar tu experiencia, analizar el tráfico
-            y ofrecerte contenido personalizado. Al hacer clic en «Aceptar», consientes su uso.
-            Puedes obtener más información en nuestra{' '}
+            {t('cookies.message')}{' '}
             <Link component={RouterLink} to="/politica-de-privacidad" color="primary">
-              Política de Privacidad
+              {t('cookies.privacyPolicy')}
             </Link>
             .
           </Typography>
@@ -78,7 +78,7 @@ export const CookieBanner = () => {
               onClick={handleReject}
               sx={{ whiteSpace: 'nowrap' }}
             >
-              Solo necesarias
+              {t('cookies.essentialOnly')}
             </Button>
             <Button
               variant="contained"
@@ -86,7 +86,7 @@ export const CookieBanner = () => {
               onClick={handleAccept}
               sx={{ whiteSpace: 'nowrap' }}
             >
-              Aceptar todas
+              {t('cookies.acceptAll')}
             </Button>
           </Box>
         </Box>

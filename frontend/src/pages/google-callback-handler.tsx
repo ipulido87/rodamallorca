@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Box, CircularProgress, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { API } from '@/shared/api'
 import { useAuth } from '../features/auth/hooks/useAuth'
 import type { User } from '../features/auth/providers/auth-providers'
@@ -9,6 +10,7 @@ export const GoogleCallbackHandler = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { persistToken, setUser } = useAuth()
+  const { t } = useTranslation()
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -91,10 +93,10 @@ export const GoogleCallbackHandler = () => {
     >
       <CircularProgress size={60} />
       <Typography variant="h6" color="text.secondary">
-        Completando inicio de sesión...
+        {t('callbacks.completingLogin')}
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-        Verificando talleres...
+        {t('callbacks.verifyingWorkshops')}
       </Typography>
     </Box>
   )

@@ -13,6 +13,7 @@ import {
   useTheme,
 } from '@mui/material'
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { MapContainer, TileLayer, Polyline, Marker, useMap } from 'react-leaflet'
 import { ScrollReveal } from './ScrollReveal'
 import { ROUTES, DIFFICULTY_COLOR } from '../constants/cycling-routes'
@@ -54,6 +55,7 @@ const makeIcon = (color: string, label: 'A' | 'B') =>
 
 export function RoutesSection() {
   const theme = useTheme()
+  const { t } = useTranslation()
   const [selected, setSelected] = useState<CyclingRoute>(ROUTES[0])
 
   const start = selected.coords[0]
@@ -73,7 +75,7 @@ export function RoutesSection() {
           <Stack spacing={1.5} alignItems="center" sx={{ mb: 6, textAlign: 'center' }}>
             <Chip
               icon={<DirectionsBike />}
-              label="RUTAS EN MALLORCA"
+              label={t('routes.sectionBadge')}
               sx={{
                 backgroundColor: alpha(theme.palette.primary.main, 0.2),
                 color: theme.palette.primary.light,
@@ -86,13 +88,13 @@ export function RoutesSection() {
               variant="h3"
               sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '2rem', md: '2.8rem' } }}
             >
-              Rutas para todos los niveles
+              {t('routes.sectionTitle')}
             </Typography>
             <Typography
               variant="h6"
               sx={{ color: alpha('#ffffff', 0.6), fontWeight: 300, maxWidth: 560 }}
             >
-              Explora las mejores rutas de la isla antes de reservar tu bici
+              {t('routes.sectionSubtitle')}
             </Typography>
           </Stack>
         </ScrollReveal>
@@ -257,7 +259,7 @@ export function RoutesSection() {
                     },
                   }}
                 >
-                  Ver en Komoot
+                  {t('routes.viewOnKomoot')}
                 </Button>
               </Stack>
             </Box>
@@ -268,7 +270,7 @@ export function RoutesSection() {
         <ScrollReveal delay={0.2}>
           <Box sx={{ textAlign: 'center', mt: 5 }}>
             <Typography variant="body2" sx={{ color: alpha('#ffffff', 0.4), mb: 2 }}>
-              ¿Ya tienes la ruta? Alquila la bici perfecta para hacerla
+              {t('routes.ctaText')}
             </Typography>
             <Button
               href="/rentals"
@@ -287,7 +289,7 @@ export function RoutesSection() {
                 },
               }}
             >
-              Ver bicicletas disponibles
+              {t('routes.ctaButton')}
             </Button>
           </Box>
         </ScrollReveal>
