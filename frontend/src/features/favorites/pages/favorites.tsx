@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   CardContent,
@@ -16,6 +17,7 @@ import { getUserFavorites, toggleFavorite, type FavoriteWorkshop } from '../serv
 import { useSnackbar } from '../../../shared/hooks/use-snackbar'
 
 export const Favorites = () => {
+  const { t } = useTranslation()
   const [favorites, setFavorites] = useState<FavoriteWorkshop[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -29,8 +31,8 @@ export const Favorites = () => {
       const data = await getUserFavorites()
       setFavorites(data)
     } catch (err) {
-      setError('Error al cargar favoritos')
-      showError('Error al cargar favoritos')
+      setError(t('favorites.loadError'))
+      showError(t('favorites.loadError'))
     } finally {
       setLoading(false)
     }
@@ -43,10 +45,10 @@ export const Favorites = () => {
   const handleToggleFavorite = async (workshopId: string) => {
     try {
       await toggleFavorite(workshopId)
-      showSuccess('Eliminado de favoritos')
+      showSuccess(t('favorites.removedFromFavorites'))
       loadFavorites()
     } catch (err) {
-      showError('Error al actualizar favorito')
+      showError(t('favorites.updateError'))
     }
   }
 
@@ -68,12 +70,12 @@ export const Favorites = () => {
     <Container maxWidth="lg">
       <Stack spacing={3} sx={{ py: 4 }}>
         <Typography variant="h4" fontWeight="bold">
-          Mis Talleres Favoritos
+          {t('favorites.title')}
         </Typography>
 
         {favorites.length === 0 ? (
           <Alert severity="info">
-            No tienes talleres favoritos. Explora el catálogo y marca tus talleres favoritos.
+            {t('favorites.noFavorites')}
           </Alert>
         ) : (
           <Grid container spacing={3}>
@@ -87,7 +89,7 @@ export const Favorites = () => {
                         onClick={() => handleNavigateToWorkshop(favorite.workshopId)}
                       >
                         <Typography variant="h6" fontWeight="bold" gutterBottom>
-                          {favorite.workshop?.name || 'Taller'}
+                          {favorite.workshop?.name || t('favorites.workshop')}
                         </Typography>
 
                         {favorite.workshop?.city && (

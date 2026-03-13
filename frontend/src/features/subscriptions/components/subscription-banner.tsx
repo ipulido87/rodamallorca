@@ -1,5 +1,6 @@
 import { Alert, Button, Box, Typography, Chip } from '@mui/material'
 import { Warning, CreditCard, CheckCircle } from '@mui/icons-material'
+import { useTranslation } from 'react-i18next'
 import { redirectToCheckout, redirectToBillingPortal } from '../services/subscription-service'
 import { SubscriptionStatus } from '../services/subscription-service'
 
@@ -9,6 +10,7 @@ interface SubscriptionBannerProps {
 }
 
 export const SubscriptionBanner = ({ workshopId, subscriptionStatus }: SubscriptionBannerProps) => {
+  const { t } = useTranslation()
   const { hasSubscription, status, isActive, subscription } = subscriptionStatus
 
   // No mostrar nada si tiene suscripción activa y no está por cancelarse
@@ -36,18 +38,17 @@ export const SubscriptionBanner = ({ workshopId, subscriptionStatus }: Subscript
         icon={<CheckCircle />}
         action={
           <Button color="inherit" size="small" onClick={handleSubscribe}>
-            Suscribirme Ahora
+            {t('subscription.subscribeNow')}
           </Button>
         }
         sx={{ mb: 3 }}
       >
         <Box>
           <Typography variant="subtitle1" fontWeight="600">
-            🎁 Prueba Gratis Activa
+            🎁 {t('subscription.freeTrialActive')}
           </Typography>
           <Typography variant="body2">
-            Te quedan {daysLeft} {daysLeft === 1 ? 'día' : 'días'} de prueba gratuita. Suscríbete
-            antes de que termine para seguir disfrutando de todas las funcionalidades.
+            {t('subscription.daysRemaining', { count: daysLeft })}
           </Typography>
         </Box>
       </Alert>
@@ -62,18 +63,17 @@ export const SubscriptionBanner = ({ workshopId, subscriptionStatus }: Subscript
         icon={<Warning />}
         action={
           <Button color="inherit" size="small" variant="outlined" onClick={handleSubscribe}>
-            Suscribirme
+            {t('subscription.subscribe')}
           </Button>
         }
         sx={{ mb: 3 }}
       >
         <Box>
           <Typography variant="subtitle1" fontWeight="600">
-            ⚠️ Prueba Gratuita Finalizada
+            ⚠️ {t('subscription.freeTrialEnded')}
           </Typography>
           <Typography variant="body2">
-            Tu período de prueba ha terminado. Suscríbete por solo 18.30€/mes para continuar
-            usando RodaMallorca.
+            {t('subscription.freeTrialEndedDesc')}
           </Typography>
         </Box>
       </Alert>
@@ -88,18 +88,17 @@ export const SubscriptionBanner = ({ workshopId, subscriptionStatus }: Subscript
         icon={<CreditCard />}
         action={
           <Button color="inherit" size="small" variant="outlined" onClick={handleManage}>
-            Actualizar Pago
+            {t('subscription.updatePayment')}
           </Button>
         }
         sx={{ mb: 3 }}
       >
         <Box>
           <Typography variant="subtitle1" fontWeight="600">
-            ❌ Pago Pendiente
+            ❌ {t('subscription.paymentPending')}
           </Typography>
           <Typography variant="body2">
-            Hubo un problema con tu último pago. Actualiza tu método de pago para evitar la
-            suspensión de tu cuenta.
+            {t('subscription.paymentPendingDesc')}
           </Typography>
         </Box>
       </Alert>
@@ -116,18 +115,17 @@ export const SubscriptionBanner = ({ workshopId, subscriptionStatus }: Subscript
         icon={<Warning />}
         action={
           <Button color="inherit" size="small" onClick={handleManage}>
-            Reactivar
+            {t('subscription.reactivate')}
           </Button>
         }
         sx={{ mb: 3 }}
       >
         <Box>
           <Typography variant="subtitle1" fontWeight="600">
-            📅 Suscripción Cancelada
+            📅 {t('subscription.subscriptionCanceled')}
           </Typography>
           <Typography variant="body2">
-            Tu suscripción finalizará el {endDate}. Después de esa fecha, perderás acceso a las
-            funcionalidades premium.
+            {t('subscription.subscriptionCanceledEndDate', { date: endDate })}
           </Typography>
         </Box>
       </Alert>
@@ -142,18 +140,17 @@ export const SubscriptionBanner = ({ workshopId, subscriptionStatus }: Subscript
         icon={<Warning />}
         action={
           <Button color="inherit" size="small" variant="outlined" onClick={handleSubscribe}>
-            Reactivar
+            {t('subscription.reactivate')}
           </Button>
         }
         sx={{ mb: 3 }}
       >
         <Box>
           <Typography variant="subtitle1" fontWeight="600">
-            🚫 Suscripción Cancelada
+            🚫 {t('subscription.subscriptionCanceled')}
           </Typography>
           <Typography variant="body2">
-            Tu suscripción ha sido cancelada. Reactiva tu cuenta para volver a disfrutar de todas
-            las funcionalidades.
+            {t('subscription.subscriptionCanceledDesc')}
           </Typography>
         </Box>
       </Alert>

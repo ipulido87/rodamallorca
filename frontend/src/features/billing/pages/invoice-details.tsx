@@ -19,6 +19,7 @@ import {
   CircularProgress,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { pdf } from '@react-pdf/renderer'
 import { useSnackbar } from '../../../shared/hooks/use-snackbar'
@@ -29,6 +30,7 @@ import type { Invoice } from '../services/billing-service'
 export const InvoiceDetails = () => {
   const { workshopId, invoiceId } = useParams<{ workshopId: string; invoiceId: string }>()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { showError, showSuccess } = useSnackbar()
 
   const [invoice, setInvoice] = useState<Invoice | null>(null)
@@ -47,7 +49,7 @@ export const InvoiceDetails = () => {
       const data = await getInvoiceById(invoiceId!)
       setInvoice(data)
     } catch (error) {
-      showError('Error al cargar la factura')
+      showError(t('billing.errorLoadingInvoice'))
       console.error(error)
     } finally {
       setLoading(false)
@@ -80,9 +82,9 @@ export const InvoiceDetails = () => {
       link.click()
 
       URL.revokeObjectURL(url)
-      showSuccess('✓ PDF descargado correctamente')
+      showSuccess(t('billing.pdfDownloaded'))
     } catch (error) {
-      showError('Error al generar el PDF')
+      showError(t('billing.errorGeneratingPdf'))
       console.error(error)
     } finally {
       setDownloading(false)
@@ -107,20 +109,20 @@ export const InvoiceDetails = () => {
 
       const url = URL.createObjectURL(blob)
       window.open(url, '_blank')
-      showSuccess('✓ Abriendo vista de impresión')
+      showSuccess(t('billing.openingPrintView'))
     } catch (error) {
-      showError('Error al preparar impresión')
+      showError(t('billing.errorPreparingPrint'))
       console.error(error)
     }
   }
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
-      DRAFT: 'Borrador',
-      SENT: 'Enviada',
-      PAID: 'Pagada',
-      OVERDUE: 'Vencida',
-      CANCELLED: 'Cancelada',
+      DRAFT: t('billing.statusDraft'),
+      SENT: t('billing.statusSent'),
+      PAID: t('billing.statusPaid'),
+      OVERDUE: t('billing.statusOverdue'),
+      CANCELLED: t('billing.statusCancelled'),
     }
     return labels[status] || status
   }
@@ -130,7 +132,7 @@ export const InvoiceDetails = () => {
       <Container maxWidth="lg">
         <Box sx={{ py: 8, textAlign: 'center' }}>
           <CircularProgress />
-          <Typography sx={{ mt: 2 }}>Cargando factura...</Typography>
+          <Typography sx={{ mt: 2 }}>{t('billing.loadingInvoice')}</Typography>
         </Box>
       </Container>
     )
@@ -140,13 +142,13 @@ export const InvoiceDetails = () => {
     return (
       <Container maxWidth="lg">
         <Box sx={{ py: 4 }}>
-          <Typography variant="h5">Factura no encontrada</Typography>
+          <Typography variant="h5">{t('billing.invoiceNotFound')}</Typography>
           <Button
             startIcon={<ArrowBack />}
             onClick={() => navigate(`/billing/${workshopId}`)}
             sx={{ mt: 2 }}
           >
-            Volver a Facturas
+            {t('billing.backToInvoices')}
           </Button>
         </Box>
       </Container>
@@ -163,7 +165,7 @@ export const InvoiceDetails = () => {
             onClick={() => navigate(`/billing/${workshopId}`)}
             sx={{ mb: 2 }}
           >
-            Volver a Facturas
+            {t('billing.backToInvoices')}
           </Button>
 
           <Box
@@ -193,7 +195,7 @@ export const InvoiceDetails = () => {
                 onClick={handlePrint}
                 disabled={downloading}
               >
-                Imprimir
+                {t('billing.print')}
               </Button>
               <Button
                 variant="contained"
@@ -201,7 +203,7 @@ export const InvoiceDetails = () => {
                 onClick={handleDownloadPDF}
                 disabled={downloading}
               >
-                {downloading ? 'Generando...' : 'Descargar PDF'}
+                {downloading ? t('billing.generating') : t('billing.downloadPdf')}
               </Button>
             </Stack>
           </Box>
@@ -211,14 +213,14 @@ export const InvoiceDetails = () => {
         <Card sx={{ mb: 3 }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              Información de la Factura
+              {t('billing.invoiceInformation')}
             </Typography>
             <Divider sx={{ mb: 2 }} />
 
             <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
               <Box>
                 <Typography variant="body2" color="text.secondary">
-                  Fecha de Emisión
+                  {t('billing.issueDate')}
                 </Typography>
                 <Typography variant="body1" fontWeight="medium">
                   {new Date(invoice.issueDate).toLocaleDateString('es-ES')}
@@ -228,7 +230,7 @@ export const InvoiceDetails = () => {
               {invoice.dueDate && (
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    Fecha de Vencimiento
+                    {t('billing.dueDateLabel')}
                   </Typography>
                   <Typography variant="body1" fontWeight="medium">
                     {new Date(invoice.dueDate).toLocaleDateString('es-ES')}
@@ -239,7 +241,7 @@ export const InvoiceDetails = () => {
               {invoice.paymentMethod && (
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    Método de Pago
+                    {t('billing.paymentMethod')}
                   </Typography>
                   <Typography variant="body1" fontWeight="medium">
                     {invoice.paymentMethod}
@@ -249,7 +251,7 @@ export const InvoiceDetails = () => {
 
               <Box>
                 <Typography variant="body2" color="text.secondary">
-                  Serie
+                  {t('billing.series')}
                 </Typography>
                 <Typography variant="body1" fontWeight="medium">
                   {invoice.series?.name || 'N/A'}
@@ -264,7 +266,7 @@ export const InvoiceDetails = () => {
           <Card sx={{ mb: 3 }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Datos del Cliente
+                {t('billing.customerData')}
               </Typography>
               <Divider sx={{ mb: 2 }} />
 
@@ -273,7 +275,7 @@ export const InvoiceDetails = () => {
               </Typography>
               {invoice.customer.taxId && (
                 <Typography variant="body2" color="text.secondary">
-                  NIF/CIF: {invoice.customer.taxId}
+                  {t('billing.taxId')}: {invoice.customer.taxId}
                 </Typography>
               )}
               {invoice.customer.address && (
@@ -289,12 +291,12 @@ export const InvoiceDetails = () => {
               )}
               {invoice.customer.email && (
                 <Typography variant="body2" color="text.secondary">
-                  Email: {invoice.customer.email}
+                  {t('billing.email')}: {invoice.customer.email}
                 </Typography>
               )}
               {invoice.customer.phone && (
                 <Typography variant="body2" color="text.secondary">
-                  Tel: {invoice.customer.phone}
+                  {t('billing.phone')}: {invoice.customer.phone}
                 </Typography>
               )}
             </CardContent>
@@ -305,7 +307,7 @@ export const InvoiceDetails = () => {
         <Card sx={{ mb: 3 }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              Líneas de Factura
+              {t('billing.invoiceLines')}
             </Typography>
             <Divider sx={{ mb: 2 }} />
 
@@ -313,12 +315,12 @@ export const InvoiceDetails = () => {
               <Table>
                 <TableHead>
                   <TableRow sx={{ bgcolor: 'grey.100' }}>
-                    <TableCell>Descripción</TableCell>
-                    <TableCell align="right">Cantidad</TableCell>
-                    <TableCell align="right">Precio Unitario</TableCell>
-                    <TableCell align="right">Descuento</TableCell>
-                    <TableCell align="right">IVA %</TableCell>
-                    <TableCell align="right">Total</TableCell>
+                    <TableCell>{t('billing.description')}</TableCell>
+                    <TableCell align="right">{t('billing.quantity')}</TableCell>
+                    <TableCell align="right">{t('billing.unitPrice')}</TableCell>
+                    <TableCell align="right">{t('billing.discount')}</TableCell>
+                    <TableCell align="right">{t('billing.taxPercent')}</TableCell>
+                    <TableCell align="right">{t('billing.total')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -355,7 +357,7 @@ export const InvoiceDetails = () => {
                   }}
                 >
                   <Typography variant="body2" color="text.secondary">
-                    Subtotal:
+                    {t('billing.subtotal')}:
                   </Typography>
                   <Typography variant="body1">{formatPrice(invoice.subtotal)}</Typography>
                 </Box>
@@ -367,7 +369,7 @@ export const InvoiceDetails = () => {
                   }}
                 >
                   <Typography variant="body2" color="text.secondary">
-                    IVA:
+                    {t('billing.tax')}:
                   </Typography>
                   <Typography variant="body1">{formatPrice(invoice.taxAmount)}</Typography>
                 </Box>
@@ -384,7 +386,7 @@ export const InvoiceDetails = () => {
                   }}
                 >
                   <Typography variant="h6" fontWeight="bold">
-                    TOTAL:
+                    {t('billing.total')}:
                   </Typography>
                   <Typography variant="h6" fontWeight="bold">
                     {formatPrice(invoice.total)}
@@ -400,7 +402,7 @@ export const InvoiceDetails = () => {
           <Card sx={{ mt: 3 }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Notas
+                {t('billing.notes')}
               </Typography>
               <Divider sx={{ mb: 2 }} />
               <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>

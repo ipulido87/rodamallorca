@@ -24,6 +24,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import useSWR, { mutate } from 'swr'
 import { adaptProductImages } from '../../../utils/adapt-product-Images'
@@ -52,6 +53,7 @@ const fetcher = async (url: string) => {
 }
 
 export const MyRentals = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   // ✅ SWR para caché automático y revalidación
@@ -95,7 +97,7 @@ export const MyRentals = () => {
     })
   }, [rentals, searchQuery, statusFilter])
 
-  const error = swrError ? 'Error al cargar los alquileres' : localError
+  const error = swrError ? t('myRentals.loadError') : localError
 
   // ✅ publicar / ocultar con mutate de SWR
   const handleStatusChange = async (rental: Product) => {
@@ -115,7 +117,7 @@ export const MyRentals = () => {
       await mutate(RENTALS_KEY)
       handleCloseMenu()
     } catch (error) {
-      setLocalError('Error al cambiar el estado del alquiler')
+      setLocalError(t('myRentals.statusChangeError'))
       console.error('Status change error:', error)
     }
   }
@@ -131,7 +133,7 @@ export const MyRentals = () => {
       await mutate(RENTALS_KEY)
       setDeleteDialog({ open: false, rental: null })
     } catch (error) {
-      setLocalError('Error al eliminar el alquiler')
+      setLocalError(t('myRentals.deleteError'))
       console.error('Delete error:', error)
     }
   }
@@ -191,10 +193,10 @@ export const MyRentals = () => {
       >
         <Box>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Mis Alquileres
+            {t('myRentals.title')}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Gestiona tus bicicletas de alquiler
+            {t('myRentals.manageBikes')}
           </Typography>
         </Box>
         <Button
@@ -203,7 +205,7 @@ export const MyRentals = () => {
           onClick={handleCreateRental}
           sx={{ width: { xs: '100%', sm: 'auto' } }}
         >
-          Nueva Bicicleta
+          {t('myRentals.newBike')}
         </Button>
       </Stack>
 
@@ -216,7 +218,7 @@ export const MyRentals = () => {
       {/* Filtros - Responsive */}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 4 }}>
         <TextField
-          placeholder="Buscar bicicletas de alquiler..."
+          placeholder={t('myRentals.searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           InputProps={{
@@ -240,10 +242,10 @@ export const MyRentals = () => {
             sx={{ flex: { xs: 1, sm: 'none' } }}
           >
             <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-              Todos ({rentals.length})
+              {t('myRentals.all')} ({rentals.length})
             </Box>
             <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
-              Todos
+              {t('myRentals.all')}
             </Box>
           </Button>
           <Button
@@ -254,10 +256,10 @@ export const MyRentals = () => {
             sx={{ flex: { xs: 1, sm: 'none' } }}
           >
             <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-              Publicados ({rentals.filter((r) => r.status === 'PUBLISHED').length})
+              {t('myRentals.published')} ({rentals.filter((r) => r.status === 'PUBLISHED').length})
             </Box>
             <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
-              Pub.
+              {t('myRentals.publishedShort')}
             </Box>
           </Button>
           <Button
@@ -268,10 +270,10 @@ export const MyRentals = () => {
             sx={{ flex: { xs: 1, sm: 'none' } }}
           >
             <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
-              Borradores ({rentals.filter((r) => r.status === 'DRAFT').length})
+              {t('myRentals.drafts')} ({rentals.filter((r) => r.status === 'DRAFT').length})
             </Box>
             <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>
-              Borr.
+              {t('myRentals.draftsShort')}
             </Box>
           </Button>
         </Stack>
@@ -283,8 +285,8 @@ export const MyRentals = () => {
         loading={false}
         emptyMessage={
           searchQuery
-            ? 'No se encontraron bicicletas de alquiler'
-            : 'No tienes bicicletas de alquiler aún'
+            ? t('myRentals.noSearchResults')
+            : t('myRentals.noBikesYet')
         }
         onOpenMenu={handleOpenMenuFromCard}
       />
@@ -298,7 +300,7 @@ export const MyRentals = () => {
         {selectedRental && [
           <MenuItem key="edit" onClick={() => handleEdit(selectedRental)}>
             <Edit sx={{ mr: 2 }} />
-            Editar
+            {t('myRentals.edit')}
           </MenuItem>,
           <MenuItem
             key="status"
@@ -309,7 +311,7 @@ export const MyRentals = () => {
             ) : (
               <Visibility sx={{ mr: 2 }} />
             )}
-            {selectedRental.status === 'PUBLISHED' ? 'Ocultar' : 'Publicar'}
+            {selectedRental.status === 'PUBLISHED' ? t('myRentals.hide') : t('myRentals.publish')}
           </MenuItem>,
           <MenuItem
             key="delete"
@@ -320,7 +322,7 @@ export const MyRentals = () => {
             sx={{ color: 'error.main' }}
           >
             <Delete sx={{ mr: 2 }} />
-            Eliminar
+            {t('common.delete')}
           </MenuItem>,
         ]}
       </Menu>
@@ -330,21 +332,20 @@ export const MyRentals = () => {
         open={deleteDialog.open}
         onClose={() => setDeleteDialog({ open: false, rental: null })}
       >
-        <DialogTitle>Confirmar eliminación</DialogTitle>
+        <DialogTitle>{t('confirm.deleteTitle')}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            ¿Estás seguro de que quieres eliminar "{deleteDialog.rental?.title}
-            "? Esta acción no se puede deshacer.
+            {t('myRentals.confirmDelete', { title: deleteDialog.rental?.title })}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button
             onClick={() => setDeleteDialog({ open: false, rental: null })}
           >
-            Cancelar
+            {t('common.cancel')}
           </Button>
           <Button onClick={handleDelete} color="error" variant="contained">
-            Eliminar
+            {t('common.delete')}
           </Button>
         </DialogActions>
       </Dialog>

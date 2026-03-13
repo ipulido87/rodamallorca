@@ -28,11 +28,13 @@ import {
 } from '@mui/material'
 
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import useSWR from 'swr'
 import { getCustomerById } from '../services/customer-service'
 import type { Customer } from '../types/customer'
 
 export const CustomerDetail = () => {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const theme = useTheme()
@@ -49,7 +51,7 @@ export const CustomerDetail = () => {
   )
 
   const getCustomerTypeLabel = (type: string) => {
-    return type === 'INDIVIDUAL' ? 'Particular' : 'Empresa'
+    return type === 'INDIVIDUAL' ? t('customers.individual') : t('customers.company')
   }
 
   const getCustomerTypeIcon = (type: string) => {
@@ -62,7 +64,7 @@ export const CustomerDetail = () => {
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <CircularProgress size={60} />
           <Typography variant="h6" sx={{ mt: 2 }}>
-            Cargando información del cliente...
+            {t('customers.loadingCustomer')}
           </Typography>
         </Box>
       </Container>
@@ -74,14 +76,14 @@ export const CustomerDetail = () => {
       <Container maxWidth="lg">
         <Box sx={{ py: 4 }}>
           <Alert severity="error" sx={{ mb: 3 }}>
-            {error?.message || 'Cliente no encontrado'}
+            {error?.message || t('customers.customerNotFound')}
           </Alert>
           <Button
             variant="contained"
             onClick={() => navigate('/customers')}
             startIcon={<ArrowBack />}
           >
-            Volver a Clientes
+            {t('customers.backToCustomers')}
           </Button>
         </Box>
       </Container>
@@ -119,7 +121,7 @@ export const CustomerDetail = () => {
                 {customer.name}
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Cliente {getCustomerTypeLabel(customer.type)}
+                {t('customers.customerType', { type: getCustomerTypeLabel(customer.type) })}
               </Typography>
             </Box>
           </Box>
@@ -129,7 +131,7 @@ export const CustomerDetail = () => {
             onClick={() => navigate(`/customers/${customer.id}/edit`)}
             fullWidth={isMobile}
           >
-            Editar
+            {t('customers.edit')}
           </Button>
         </Box>
 
@@ -150,7 +152,7 @@ export const CustomerDetail = () => {
                       color="text.secondary"
                       gutterBottom
                     >
-                      Tipo de Cliente
+                      {t('customers.customerTypeLabel')}
                     </Typography>
                     <Chip
                       icon={getCustomerTypeIcon(customer.type)}
@@ -170,7 +172,7 @@ export const CustomerDetail = () => {
                           color="text.secondary"
                           gutterBottom
                         >
-                          NIF/CIF
+                          {t('customers.taxId')}
                         </Typography>
                         <Typography variant="h6">{customer.taxId}</Typography>
                       </Box>
