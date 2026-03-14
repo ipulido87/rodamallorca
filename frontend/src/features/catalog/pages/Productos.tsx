@@ -117,14 +117,14 @@ export const Productos = () => {
     if (productsError)
       return (
         <Alert severity="error" sx={{ mt: 2 }}>
-          Error al cargar recambios: {productsError}
+          {t('catalog.products.loadError')}{productsError}
         </Alert>
       )
 
     if (filteredProducts.length === 0)
       return (
         <Alert severity="info" sx={{ mt: 2 }}>
-          No se encontraron recambios con estos filtros.
+          {t('catalog.products.noResultsFilter')}
         </Alert>
       )
 
@@ -135,7 +135,7 @@ export const Productos = () => {
         <ModernProductLayout
           products={adapted}
           loading={false}
-          emptyMessage="No se encontraron recambios"
+          emptyMessage={t('catalog.products.noResults')}
           onFavoriteToggle={() => {}}
           favoriteIds={[]}
         />
@@ -185,10 +185,10 @@ export const Productos = () => {
           gutterBottom
           sx={{ fontWeight: 700, color: 'text.primary' }}
         >
-          Recambios y Componentes
+          {t('catalog.products.directoryTitle')}
         </Typography>
         <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-          Encuentra piezas, componentes y accesorios para tu bicicleta
+          {t('catalog.products.directorySubtitle')}
         </Typography>
       </Box>
 

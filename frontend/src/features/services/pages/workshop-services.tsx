@@ -32,6 +32,7 @@ import {
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useSnackbar } from '../../../shared/hooks/use-snackbar'
 import { confirmDialog } from '../../../shared/services/confirm-service'
 import {
@@ -418,18 +419,18 @@ export const WorkshopServices = () => {
                     })
                   }
                 >
-                  <MenuItem value="ALL">Todos los vehículos</MenuItem>
-                  <MenuItem value="BICYCLE">Bicicleta</MenuItem>
-                  <MenuItem value="E_BIKE">Bicicleta Eléctrica</MenuItem>
-                  <MenuItem value="E_SCOOTER">Patinete Eléctrico</MenuItem>
+                  <MenuItem value="ALL">{t('common.allVehicles')}</MenuItem>
+                  <MenuItem value="BICYCLE">{t('common.bicycle')}</MenuItem>
+                  <MenuItem value="E_BIKE">{t('common.eBike')}</MenuItem>
+                  <MenuItem value="E_SCOOTER">{t('common.eScooter')}</MenuItem>
                 </Select>
               </FormControl>
 
               <FormControl fullWidth>
-                <InputLabel>Estado</InputLabel>
+                <InputLabel>{t('common.status')}</InputLabel>
                 <Select
                   value={formData.status}
-                  label="Estado"
+                  label={t('common.status')}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -437,16 +438,16 @@ export const WorkshopServices = () => {
                     })
                   }
                 >
-                  <MenuItem value="ACTIVE">Activo</MenuItem>
-                  <MenuItem value="INACTIVE">Inactivo</MenuItem>
+                  <MenuItem value="ACTIVE">{t('services.active')}</MenuItem>
+                  <MenuItem value="INACTIVE">{t('services.inactive')}</MenuItem>
                 </Select>
               </FormControl>
             </Stack>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDialog}>Cancelar</Button>
+            <Button onClick={handleCloseDialog}>{t('common.cancel')}</Button>
             <Button onClick={handleSubmit} variant="contained">
-              {editingService ? 'Guardar Cambios' : 'Crear Servicio'}
+              {editingService ? t('common.saveChanges') : t('services.createService')}
             </Button>
           </DialogActions>
         </Dialog>
