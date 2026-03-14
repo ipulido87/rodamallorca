@@ -8,6 +8,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useDebounce } from '../../../shared/hooks/use-debounce'
 import { FilterBar } from '../../../shared/components/FilterBar'
 import { productFilterConfig } from '../../../shared/constants/product-filters'
@@ -32,6 +33,7 @@ const adaptCatalogProductForLayout = (product: Product) => ({
 })
 
 export const Productos = () => {
+  const { t } = useTranslation()
   // Estado local
   const [searchQuery, setSearchQuery] = useState('')
   const [productFilters, setProductFilters] = useState<FilterValues>({})
@@ -72,13 +74,13 @@ export const Productos = () => {
     if (productsError)
       return (
         <Alert severity="error" sx={{ mt: 2 }}>
-          Error al cargar recambios: {productsError}
+          {t('catalog.products.loadError')}{productsError}
         </Alert>
       )
     if (products.length === 0)
       return (
         <Alert severity="info" sx={{ mt: 2 }}>
-          No se encontraron recambios con estos filtros.
+          {t('catalog.products.noResultsFilter')}
         </Alert>
       )
 
@@ -88,7 +90,7 @@ export const Productos = () => {
         <ModernProductLayout
           products={adaptedProducts}
           loading={false}
-          emptyMessage="No se encontraron recambios"
+          emptyMessage={t('catalog.products.noResults')}
           onFavoriteToggle={() => {}}
           favoriteIds={[]}
         />
@@ -96,7 +98,7 @@ export const Productos = () => {
         {productsPagination.total > 0 && (
           <Box textAlign="center" sx={{ mt: 4 }}>
             <Typography variant="body2" color="text.secondary">
-              Mostrando {products.length} de {productsPagination.total} recambios
+              {t('common.showing')} {products.length} {t('common.of')} {productsPagination.total} {t('catalog.products.count')}
             </Typography>
           </Box>
         )}
@@ -120,10 +122,10 @@ export const Productos = () => {
             WebkitTextFillColor: 'transparent',
           }}
         >
-          Recambios y Componentes
+          {t('catalog.products.directoryTitle')}
         </Typography>
         <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-          Encuentra piezas, componentes y accesorios para tu bicicleta
+          {t('catalog.products.directorySubtitle')}
         </Typography>
       </Box>
 
@@ -132,7 +134,7 @@ export const Productos = () => {
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Buscar recambios, marcas, componentes..."
+          placeholder={t('catalog.products.searchPlaceholder')}
           value={searchQuery}
           onChange={handleSearchChange}
           InputProps={{
@@ -144,7 +146,7 @@ export const Productos = () => {
           onClick={() => loadProducts(debouncedQuery, productFilters)}
           sx={{ minWidth: 120 }}
         >
-          Buscar
+          {t('common.search')}
         </Button>
       </Box>
 
