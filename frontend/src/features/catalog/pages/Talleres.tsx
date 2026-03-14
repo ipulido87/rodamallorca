@@ -8,6 +8,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useDebounce } from '../../../shared/hooks/use-debounce'
 import { FilterBar } from '../../../shared/components/FilterBar'
 import {
@@ -22,6 +23,7 @@ import { useCatalogSearch } from '../hooks/use-catalog-search'
 import type { FilterValues } from '../types/catalog'
 
 export const Talleres = () => {
+  const { t } = useTranslation()
   const { user } = useAuth()
 
   // Estado local
@@ -93,13 +95,13 @@ export const Talleres = () => {
     if (workshopsError)
       return (
         <Alert severity="error" sx={{ mt: 2 }}>
-          Error al cargar talleres: {workshopsError}
+          {t('catalog.workshops.loadError')}{workshopsError}
         </Alert>
       )
     if (workshops.length === 0)
       return (
         <Alert severity="info" sx={{ mt: 2 }}>
-          No se encontraron talleres con estos filtros.
+          {t('catalog.workshops.noResultsFilter')}
         </Alert>
       )
 
@@ -108,7 +110,7 @@ export const Talleres = () => {
         <ModernWorkshopLayout
           workshops={workshops}
           loading={false}
-          emptyMessage="No se encontraron talleres"
+          emptyMessage={t('catalog.workshops.noResults')}
           onFavoriteToggle={handleToggleFavorite}
           favoriteIds={favoriteWorkshopIds}
         />
@@ -116,7 +118,7 @@ export const Talleres = () => {
         {workshopsPagination.total > 0 && (
           <Box textAlign="center" sx={{ mt: 4 }}>
             <Typography variant="body2" color="text.secondary">
-              Mostrando {workshops.length} de {workshopsPagination.total} talleres
+              {t('common.showing')} {workshops.length} {t('common.of')} {workshopsPagination.total} {t('catalog.workshops.count')}
             </Typography>
           </Box>
         )}
@@ -140,10 +142,10 @@ export const Talleres = () => {
             WebkitTextFillColor: 'transparent',
           }}
         >
-          Directorio de Talleres
+          {t('catalog.workshops.directoryTitle')}
         </Typography>
         <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-          Encuentra talleres de confianza en Mallorca
+          {t('catalog.workshops.directorySubtitle')}
         </Typography>
       </Box>
 
@@ -152,7 +154,7 @@ export const Talleres = () => {
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Buscar talleres por nombre o ciudad..."
+          placeholder={t('catalog.workshops.searchPlaceholder')}
           value={searchQuery}
           onChange={handleSearchChange}
           InputProps={{
@@ -164,7 +166,7 @@ export const Talleres = () => {
           onClick={() => loadWorkshops(debouncedQuery, workshopFilters)}
           sx={{ minWidth: 120 }}
         >
-          Buscar
+          {t('common.search')}
         </Button>
       </Box>
 

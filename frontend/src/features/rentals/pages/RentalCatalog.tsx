@@ -31,9 +31,11 @@ import {
   Search,
 } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { getRentalBikes, getRentalFiltersOptions, type RentalBike, type RentalFilters } from '../../../services/rental.service'
 
 export const RentalCatalog = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [bikes, setBikes] = useState<RentalBike[]>([])
   const [loading, setLoading] = useState(true)
@@ -68,7 +70,7 @@ export const RentalCatalog = () => {
       })
       .catch((err) => {
         console.error('Error cargando bicis:', err)
-        setError('Error cargando bicicletas. Intenta de nuevo.')
+        setError(t('rentals.loadError'))
         setLoading(false)
       })
   }, [filters])
@@ -83,12 +85,12 @@ export const RentalCatalog = () => {
 
   const getBikeTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      road: 'Carretera',
-      mountain: 'Montaña',
-      hybrid: 'Híbrida',
-      ebike: 'Eléctrica',
-      gravel: 'Gravel',
-      city: 'Ciudad',
+      road: t('rentals.road'),
+      mountain: t('rentals.mountain'),
+      hybrid: t('rentals.hybrid'),
+      ebike: t('rentals.electric'),
+      gravel: t('rentals.gravel'),
+      city: t('rentals.cityType'),
     }
     return labels[type] || type
   }
@@ -99,10 +101,10 @@ export const RentalCatalog = () => {
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
-            🚴 Alquiler de Bicicletas en Mallorca
+            🚴 {t('rentals.title')}
           </Typography>
           <Typography variant="h6" color="text.secondary">
-            Encuentra la bici perfecta para tu aventura
+            {t('rentals.findPerfectBike')}
           </Typography>
         </Box>
 
@@ -111,18 +113,18 @@ export const RentalCatalog = () => {
           <Box sx={{ width: { xs: '100%', md: '25%' }, flexShrink: 0 }}>
             <Paper sx={{ p: 3, position: 'sticky', top: 20 }}>
               <Typography variant="h6" gutterBottom>
-                Filtros
+                {t('common.filter')}
               </Typography>
 
               {/* Ciudad */}
               <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>Ciudad</InputLabel>
+                <InputLabel>{t('rentals.city')}</InputLabel>
                 <Select
                   value={filters.city || ''}
-                  label="Ciudad"
+                  label={t('rentals.city')}
                   onChange={(e) => handleFilterChange('city', e.target.value || undefined)}
                 >
-                  <MenuItem value="">Todas</MenuItem>
+                  <MenuItem value="">{t('common.allCities')}</MenuItem>
                   {cities.map((city) => (
                     <MenuItem key={city} value={city}>
                       {city}
@@ -133,13 +135,13 @@ export const RentalCatalog = () => {
 
               {/* Tipo de bici */}
               <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>Tipo de Bici</InputLabel>
+                <InputLabel>{t('rentals.bikeType')}</InputLabel>
                 <Select
                   value={filters.bikeType || ''}
-                  label="Tipo de Bici"
+                  label={t('rentals.bikeType')}
                   onChange={(e) => handleFilterChange('bikeType', e.target.value || undefined)}
                 >
-                  <MenuItem value="">Todas</MenuItem>
+                  <MenuItem value="">{t('common.allCities')}</MenuItem>
                   {bikeTypes.map((type) => (
                     <MenuItem key={type} value={type}>
                       {getBikeTypeLabel(type)}
@@ -151,7 +153,7 @@ export const RentalCatalog = () => {
               {/* Fechas */}
               <TextField
                 fullWidth
-                label="Fecha de Inicio"
+                label={t('common.startDate')}
                 type="date"
                 value={filters.startDate || ''}
                 onChange={(e) => handleFilterChange('startDate', e.target.value || undefined)}
@@ -160,7 +162,7 @@ export const RentalCatalog = () => {
               />
               <TextField
                 fullWidth
-                label="Fecha de Fin"
+                label={t('common.endDate')}
                 type="date"
                 value={filters.endDate || ''}
                 onChange={(e) => handleFilterChange('endDate', e.target.value || undefined)}
@@ -176,7 +178,7 @@ export const RentalCatalog = () => {
                     onChange={(e) => handleFilterChange('includesHelmet', e.target.checked || undefined)}
                   />
                 }
-                label="Incluye casco"
+                label={t('rentals.includesHelmet')}
               />
               <FormControlLabel
                 control={
@@ -185,11 +187,11 @@ export const RentalCatalog = () => {
                     onChange={(e) => handleFilterChange('includesLock', e.target.checked || undefined)}
                   />
                 }
-                label="Incluye candado"
+                label={t('rentals.includesLock')}
               />
 
               <Button fullWidth variant="outlined" onClick={clearFilters} sx={{ mt: 2 }}>
-                Limpiar Filtros
+                {t('rentals.clearFilters')}
               </Button>
             </Paper>
           </Box>
@@ -224,13 +226,13 @@ export const RentalCatalog = () => {
                 />
                 <Typography variant="h4" gutterBottom fontWeight="600" color="text.primary">
                   {Object.keys(filters).length > 0
-                    ? 'No hay bicicletas con estos filtros'
-                    : 'Próximamente disponible'}
+                    ? t('rentals.noResults')
+                    : t('rentals.comingSoon')}
                 </Typography>
                 <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 500, mx: 'auto' }}>
                   {Object.keys(filters).length > 0
-                    ? 'Intenta ajustar los filtros o explora todas las opciones disponibles'
-                    : 'Estamos trabajando con talleres locales para traerte las mejores bicicletas de alquiler en Mallorca'}
+                    ? t('rentals.adjustFilters')
+                    : t('rentals.workingOnIt')}
                 </Typography>
 
                 {Object.keys(filters).length > 0 ? (
@@ -240,7 +242,7 @@ export const RentalCatalog = () => {
                     sx={{ mt: 2 }}
                     startIcon={<Search />}
                   >
-                    Ver Todas las Bicicletas
+                    {t('rentals.viewAll')}
                   </Button>
                 ) : (
                   <Button
@@ -248,14 +250,14 @@ export const RentalCatalog = () => {
                     onClick={() => navigate('/catalog')}
                     sx={{ mt: 2 }}
                   >
-                    Explorar Tienda
+                    {t('rentals.exploreShop')}
                   </Button>
                 )}
               </Paper>
             ) : (
               <>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  {bikes.length} bicicleta{bikes.length !== 1 ? 's' : ''} disponible{bikes.length !== 1 ? 's' : ''}
+                  {bikes.length} {bikes.length !== 1 ? t('rentals.bikes') : t('rentals.bike')} {bikes.length !== 1 ? t('common.availablePlural') : t('common.available')}
                 </Typography>
 
                 <Box
@@ -298,7 +300,7 @@ export const RentalCatalog = () => {
                             {bike.workshop.isVerified && (
                               <Chip
                                 icon={<CheckCircle />}
-                                label="Verificado"
+                                label={t('common.verified')}
                                 size="small"
                                 color="success"
                               />
@@ -330,20 +332,20 @@ export const RentalCatalog = () => {
                           {(bike.bikeSize || bike.bikeBrand) && (
                             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
                               {bike.bikeBrand && `${bike.bikeBrand} `}
-                              {bike.bikeSize && `• Talla ${bike.bikeSize}`}
+                              {bike.bikeSize && `• ${t('rentals.size')} ${bike.bikeSize}`}
                             </Typography>
                           )}
 
                           {/* Accesorios */}
                           <Box sx={{ display: 'flex', gap: 0.5, mb: 2 }}>
                             {bike.includesHelmet && (
-                              <Chip icon={<Security />} label="Casco" size="small" />
+                              <Chip icon={<Security />} label={t('rentals.helmet')} size="small" />
                             )}
                             {bike.includesLock && (
-                              <Chip icon={<Security />} label="Candado" size="small" />
+                              <Chip icon={<Security />} label={t('rentals.lock')} size="small" />
                             )}
                             {bike.includesLights && (
-                              <Chip icon={<Lightbulb />} label="Luces" size="small" />
+                              <Chip icon={<Lightbulb />} label={t('rentals.lights')} size="small" />
                             )}
                           </Box>
 
@@ -353,19 +355,19 @@ export const RentalCatalog = () => {
                               {(bike.rentalPricePerDay / 100).toFixed(0)}€
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              / día
+                              {t('common.perDay')}
                             </Typography>
                           </Box>
 
                           {bike.rentalPricePerWeek && (
                             <Typography variant="body2" color="text.secondary">
-                              {(bike.rentalPricePerWeek / 100).toFixed(0)}€/semana
+                              {(bike.rentalPricePerWeek / 100).toFixed(0)}€{t('common.perWeek')}
                             </Typography>
                           )}
 
                           {/* Stock */}
                           <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                            {bike.availableQuantity} disponible{bike.availableQuantity !== 1 ? 's' : ''}
+                            {bike.availableQuantity} {bike.availableQuantity !== 1 ? t('common.availablePlural') : t('common.available')}
                           </Typography>
                         </CardContent>
 
@@ -376,7 +378,7 @@ export const RentalCatalog = () => {
                             startIcon={<CalendarMonth />}
                             onClick={() => navigate(`/alquileres/${bike.id}`)}
                           >
-                            Ver Disponibilidad
+                            {t('rentals.viewAvailability')}
                           </Button>
                         </CardActions>
                       </Card>

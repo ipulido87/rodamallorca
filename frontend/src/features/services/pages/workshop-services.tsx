@@ -31,6 +31,7 @@ import {
 } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useSnackbar } from '../../../shared/hooks/use-snackbar'
 import { confirmDialog } from '../../../shared/services/confirm-service'
 import {
@@ -49,6 +50,7 @@ import {
 } from '../services/service-service'
 
 export const WorkshopServices = () => {
+  const { t } = useTranslation()
   const { workshopId } = useParams<{ workshopId: string }>()
   const { showSuccess, showError } = useSnackbar()
 
@@ -89,7 +91,7 @@ export const WorkshopServices = () => {
         // No mostrar error si es solo problema de servicios
       }
     } catch (error) {
-      showError('Error al cargar las categorías')
+      showError(t('services.loadCategoriesError'))
       console.error('Error loading categories:', error)
     } finally {
       setLoading(false)
@@ -137,7 +139,7 @@ export const WorkshopServices = () => {
     if (!workshopId) return
 
     if (!formData.name || !formData.serviceCategoryId || !formData.price) {
-      showError('Por favor completa todos los campos requeridos')
+      showError(t('services.fillRequiredFields'))
       return
     }
 
@@ -156,7 +158,7 @@ export const WorkshopServices = () => {
           status: formData.status,
           serviceCategoryId: formData.serviceCategoryId,
         })
-        showSuccess('✓ Servicio actualizado correctamente')
+        showSuccess(t('services.serviceUpdated'))
       } else {
         // Crear nuevo
         await createService({
@@ -169,7 +171,7 @@ export const WorkshopServices = () => {
           vehicleType: formData.vehicleType,
           status: formData.status,
         })
-        showSuccess('✓ Servicio creado correctamente')
+        showSuccess(t('services.serviceCreated'))
       }
 
       handleCloseDialog()
@@ -177,8 +179,8 @@ export const WorkshopServices = () => {
     } catch (error) {
       showError(
         editingService
-          ? 'Error al actualizar el servicio'
-          : 'Error al crear el servicio'
+          ? t('services.updateError')
+          : t('services.createError')
       )
       console.error('Error saving service:', error)
     }
@@ -190,10 +192,10 @@ export const WorkshopServices = () => {
 
     try {
       await deleteService(serviceId)
-      showSuccess('✓ Servicio eliminado correctamente')
+      showSuccess(t('services.serviceDeleted'))
       void loadData()
     } catch (error) {
-      showError('Error al eliminar el servicio')
+      showError(t('services.deleteError'))
       console.error('Error deleting service:', error)
     }
   }
@@ -217,7 +219,7 @@ export const WorkshopServices = () => {
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <CircularProgress size={60} />
           <Typography variant="h6" sx={{ mt: 2 }}>
-            Cargando servicios...
+            {t('services.loadingServices')}
           </Typography>
         </Box>
       </Container>
@@ -231,10 +233,10 @@ export const WorkshopServices = () => {
         <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Box>
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              Servicios del Taller
+              {t('services.workshopServices')}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Gestiona los servicios que ofrece tu taller
+              {t('services.manageServices')}
             </Typography>
           </Box>
           <Button
@@ -242,7 +244,7 @@ export const WorkshopServices = () => {
             startIcon={<Add />}
             onClick={() => handleOpenDialog()}
           >
-            Nuevo Servicio
+            {t('services.newService')}
           </Button>
         </Box>
 
@@ -251,17 +253,17 @@ export const WorkshopServices = () => {
           <Box textAlign="center" py={10}>
             <Build sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
             <Typography variant="h5" color="text.secondary" gutterBottom>
-              No hay servicios todavía
+              {t('services.noServicesYet')}
             </Typography>
             <Typography variant="body1" color="text.secondary" mb={3}>
-              Crea tu primer servicio para que los clientes puedan solicitarlo
+              {t('services.createFirstService')}
             </Typography>
             <Button
               variant="contained"
               startIcon={<Add />}
               onClick={() => handleOpenDialog()}
             >
-              Crear Servicio
+              {t('services.createService')}
             </Button>
           </Box>
         ) : (
@@ -301,7 +303,7 @@ export const WorkshopServices = () => {
                           />
                         )}
                         <Chip
-                          label={service.status === 'ACTIVE' ? 'Activo' : 'Inactivo'}
+                          label={service.status === 'ACTIVE' ? t('services.active') : t('services.inactive')}
                           size="small"
                           color={service.status === 'ACTIVE' ? 'success' : 'default'}
                         />
@@ -336,15 +338,15 @@ export const WorkshopServices = () => {
         {/* Dialog para crear/editar servicio */}
         <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
           <DialogTitle>
-            {editingService ? 'Editar Servicio' : 'Nuevo Servicio'}
+            {editingService ? t('services.editService') : t('services.newService')}
           </DialogTitle>
           <DialogContent>
             <Stack spacing={3} sx={{ mt: 2 }}>
               <FormControl fullWidth required>
-                <InputLabel>Categoría</InputLabel>
+                <InputLabel>{t('services.category')}</InputLabel>
                 <Select
                   value={formData.serviceCategoryId}
-                  label="Categoría"
+                  label={t('services.category')}
                   onChange={(e) =>
                     setFormData({ ...formData, serviceCategoryId: e.target.value })
                   }
@@ -360,22 +362,22 @@ export const WorkshopServices = () => {
               <TextField
                 fullWidth
                 required
-                label="Nombre del servicio"
+                label={t('services.serviceName')}
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="ej: Cambio de cubiertas"
+                placeholder={t('services.serviceNamePlaceholder')}
               />
 
               <TextField
                 fullWidth
                 multiline
                 rows={3}
-                label="Descripción"
+                label={t('services.description')}
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                placeholder="Describe el servicio en detalle..."
+                placeholder={t('services.descriptionPlaceholder')}
               />
 
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
@@ -383,7 +385,7 @@ export const WorkshopServices = () => {
                   fullWidth
                   required
                   type="number"
-                  label="Precio"
+                  label={t('services.price')}
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                   InputProps={{
@@ -395,7 +397,7 @@ export const WorkshopServices = () => {
                 <TextField
                   fullWidth
                   type="number"
-                  label="Duración (minutos)"
+                  label={t('services.durationMinutes')}
                   value={formData.duration}
                   onChange={(e) =>
                     setFormData({ ...formData, duration: e.target.value })
@@ -405,10 +407,10 @@ export const WorkshopServices = () => {
               </Box>
 
               <FormControl fullWidth>
-                <InputLabel>Tipo de vehículo</InputLabel>
+                <InputLabel>{t('services.vehicleType')}</InputLabel>
                 <Select
                   value={formData.vehicleType}
-                  label="Tipo de vehículo"
+                  label={t('services.vehicleType')}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -416,18 +418,18 @@ export const WorkshopServices = () => {
                     })
                   }
                 >
-                  <MenuItem value="ALL">Todos los vehículos</MenuItem>
-                  <MenuItem value="BICYCLE">Bicicleta</MenuItem>
-                  <MenuItem value="E_BIKE">Bicicleta Eléctrica</MenuItem>
-                  <MenuItem value="E_SCOOTER">Patinete Eléctrico</MenuItem>
+                  <MenuItem value="ALL">{t('common.allVehicles')}</MenuItem>
+                  <MenuItem value="BICYCLE">{t('common.bicycle')}</MenuItem>
+                  <MenuItem value="E_BIKE">{t('common.eBike')}</MenuItem>
+                  <MenuItem value="E_SCOOTER">{t('common.eScooter')}</MenuItem>
                 </Select>
               </FormControl>
 
               <FormControl fullWidth>
-                <InputLabel>Estado</InputLabel>
+                <InputLabel>{t('common.status')}</InputLabel>
                 <Select
                   value={formData.status}
-                  label="Estado"
+                  label={t('common.status')}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
@@ -435,16 +437,16 @@ export const WorkshopServices = () => {
                     })
                   }
                 >
-                  <MenuItem value="ACTIVE">Activo</MenuItem>
-                  <MenuItem value="INACTIVE">Inactivo</MenuItem>
+                  <MenuItem value="ACTIVE">{t('services.active')}</MenuItem>
+                  <MenuItem value="INACTIVE">{t('services.inactive')}</MenuItem>
                 </Select>
               </FormControl>
             </Stack>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDialog}>Cancelar</Button>
+            <Button onClick={handleCloseDialog}>{t('common.cancel')}</Button>
             <Button onClick={handleSubmit} variant="contained">
-              {editingService ? 'Guardar Cambios' : 'Crear Servicio'}
+              {editingService ? t('common.saveChanges') : t('services.createService')}
             </Button>
           </DialogActions>
         </Dialog>
