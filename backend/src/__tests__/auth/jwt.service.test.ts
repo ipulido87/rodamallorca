@@ -47,16 +47,15 @@ describe('JWT Service', () => {
       expect(decoded).toBeNull();
     });
 
-    it('should return null for expired token', () => {
+    it('should return null for expired token', async () => {
       // Create a token with immediate expiration
       const jwt = require('jsonwebtoken');
       const expiredToken = jwt.sign(mockPayload, process.env.JWT_SECRET!, { expiresIn: '0s' });
 
       // Wait a bit to ensure expiration
-      setTimeout(() => {
-        const decoded = verifyJwt(expiredToken);
-        expect(decoded).toBeNull();
-      }, 100);
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const decoded = verifyJwt(expiredToken);
+      expect(decoded).toBeNull();
     });
 
     it('should return null for tampered token', () => {

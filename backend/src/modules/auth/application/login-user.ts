@@ -1,12 +1,25 @@
 import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
-import { config } from '../../../config/config'
-import prisma from '../../../lib/prisma'
 import { sanitizeUser } from '../../../utils/sanitize-user'
+import type { UserRepository } from '../domain/repositories/user-repository'
+import type { TokenService } from '../domain/services/token-service'
+import prisma from '../../../lib/prisma'
 
-export const loginUser = async (email: string, password: string) => {
+interface LoginUserDeps {
+  userRepo: UserRepository
+  tokenService: TokenService
+}
+
+export const loginUser = async (
+  email: string,
+  password: string,
+  deps: LoginUserDeps
+) => {
+  const { userRepo, tokenService } = deps
+
   console.log('🔍 [LOGIN_USER] Intentando login con:', email)
 
+  // Necesitamos obtener el user completo con password para validar
+  // UserRepository solo devuelve UserDTO sin password, así que usamos Prisma directamente aquí
   const user = await prisma.user.findUnique({
     where: { email: email.toLowerCase() },
   })
@@ -40,12 +53,12 @@ export const loginUser = async (email: string, password: string) => {
 
   console.log('✅ [LOGIN_USER] Password válido para:', user.email)
 
-  // Generar token JWT
-  const token = jwt.sign(
-    { id: user.id, email: user.email, role: user.role },
-    process.env.JWT_SECRET || 'fallback-secret',
-    { expiresIn: '24h' }
-  )
+  // Generar token JWT usando TokenService
+  const token = tokenService.sign({
+    id: user.id,
+    email: user.email,
+    role: user.role || undefined,
+  })
 
   console.log('✅ [LOGIN_USER] Token generado para:', user.email)
 

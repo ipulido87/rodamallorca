@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import { z } from 'zod'
+import { invalidateCache } from '../../../../lib/cache'
 import prisma from '../../../../lib/prisma'
 import { serviceRepositoryPrisma } from '../../infrastructure/persistence/prisma/service-repository-prisma'
 import { createService } from '../../application/create-service'
@@ -19,40 +19,6 @@ const workshopRepo = {
   },
 }
 
-// Esquemas de validación
-const createServiceSchema = z.object({
-  workshopId: z.string().uuid(),
-  serviceCategoryId: z.string().uuid(),
-  name: z.string().min(3, 'El nombre debe tener al menos 3 caracteres'),
-  description: z.string().optional(),
-  price: z.number().int().min(0, 'El precio debe ser mayor o igual a 0'),
-  currency: z.string().default('EUR'),
-  duration: z.number().int().min(1).optional(), // en minutos
-  vehicleType: z
-    .enum(['BICYCLE', 'E_BIKE', 'E_SCOOTER', 'ALL'])
-    .default('ALL'),
-  status: z.enum(['ACTIVE', 'INACTIVE']).default('ACTIVE'),
-})
-
-const updateServiceSchema = z.object({
-  name: z.string().min(3).optional(),
-  description: z.string().optional(),
-  price: z.number().int().min(0).optional(),
-  currency: z.string().optional(),
-  duration: z.number().int().min(1).optional(),
-  vehicleType: z.enum(['BICYCLE', 'E_BIKE', 'E_SCOOTER', 'ALL']).optional(),
-  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
-  serviceCategoryId: z.string().uuid().optional(),
-})
-
-const searchServicesSchema = z.object({
-  workshopId: z.string().uuid().optional(),
-  serviceCategoryId: z.string().uuid().optional(),
-  vehicleType: z.enum(['BICYCLE', 'E_BIKE', 'E_SCOOTER', 'ALL']).optional(),
-  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
-  city: z.string().optional(),
-})
-
 /**
  * POST /api/owner/services
  * Crear un nuevo servicio
@@ -67,7 +33,8 @@ export const createServiceController = async (
       return res.status(401).json({ error: 'Usuario no autenticado' })
     }
 
-    const body = createServiceSchema.parse(req.body)
+    // Validación ya realizada por middleware validateBody
+    const body = req.body
 
     const service = await createService(body, {
       repo,
@@ -75,6 +42,7 @@ export const createServiceController = async (
       authenticatedUserId: req.user.id,
     })
 
+    invalidateCache('/api/catalog/services')
     res.status(201).json(service)
   } catch (e) {
     next(e)
@@ -98,7 +66,7 @@ export const listWorkshopServicesController = async (
     const { workshopId } = req.params
 
     // Verificar que el usuario es dueño del taller
-    const workshop = await workshopRepo.findById(workshopId)
+    const workshop = await workshopRepo.findById(workshopId as string)
 
     if (!workshop) {
       return res.status(404).json({ error: 'Taller no encontrado' })
@@ -110,7 +78,7 @@ export const listWorkshopServicesController = async (
         .json({ error: 'No tienes permisos para ver estos servicios' })
     }
 
-    const services = await listWorkshopServices(workshopId, { repo })
+    const services = await listWorkshopServices(workshopId as string, { repo })
 
     res.json(services)
   } catch (e) {
@@ -128,7 +96,8 @@ export const searchServicesController = async (
   next: NextFunction
 ) => {
   try {
-    const filters = searchServicesSchema.parse(req.query)
+    // Query params opcionales - no requieren validación estricta
+    const filters = req.query
 
     const services = await listServices(filters, { repo })
 
@@ -150,7 +119,7 @@ export const getServiceByIdController = async (
   try {
     const { id } = req.params
 
-    const service = await repo.findById(id)
+    const service = await repo.findById(id as string)
 
     if (!service) {
       return res.status(404).json({ error: 'Servicio no encontrado' })
@@ -177,14 +146,16 @@ export const updateServiceController = async (
     }
 
     const { id } = req.params
-    const body = updateServiceSchema.parse(req.body)
+    // Validación ya realizada por middleware validateBody
+    const body = req.body
 
-    const service = await updateService(id, body, {
+    const service = await updateService(id as string, body, {
       repo,
       workshopRepo,
       authenticatedUserId: req.user.id,
     })
 
+    invalidateCache('/api/catalog/services')
     res.json(service)
   } catch (e) {
     next(e)
@@ -207,12 +178,13 @@ export const deleteServiceController = async (
 
     const { id } = req.params
 
-    await deleteService(id, {
+    await deleteService(id as string, {
       repo,
       workshopRepo,
       authenticatedUserId: req.user.id,
     })
 
+    invalidateCache('/api/catalog/services')
     res.status(204).send()
   } catch (e) {
     next(e)

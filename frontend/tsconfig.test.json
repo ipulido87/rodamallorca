@@ -1,9 +1,17 @@
 {
   "extends": "./tsconfig.app.json",
   "compilerOptions": {
-    "types": ["vitest/globals", "@testing-library/jest-dom", "node"],
+    "types": [
+      "vitest/globals",
+      "@testing-library/jest-dom",
+      "node"
+    ],
     "noEmit": true,
     "allowImportingTsExtensions": false
   },
-  "include": ["src/__tests__/**/*.ts", "src/__tests__/**/*.tsx"]
+  "include": [
+    "src/__tests__/**/*.ts",
+    "src/__tests__/**/*.tsx",
+    "src/vite-env.d.ts"
+  ]
 }

@@ -96,7 +96,14 @@ export const getProductByIdController = async (
       where: { id },
       include: {
         workshop: {
-          select: { id: true, name: true, city: true, country: true },
+          select: {
+            id: true,
+            name: true,
+            city: true,
+            country: true,
+            phone: true,
+            stripeOnboardingComplete: true,
+          },
         },
         category: {
           select: { id: true, name: true },
@@ -109,7 +116,14 @@ export const getProductByIdController = async (
       return res.status(404).json({ message: 'Product not found' })
     }
 
-    res.json(product)
+    const { stripeOnboardingComplete, ...workshopPublic } = product.workshop
+    res.json({
+      ...product,
+      workshop: {
+        ...workshopPublic,
+        canAcceptPayments: stripeOnboardingComplete,
+      },
+    })
   } catch (e) {
     next(e)
   }
@@ -155,6 +169,52 @@ export const searchServicesController = async (
     ])
 
     res.json({ items, total, page: Number(page), size: take })
+  } catch (e) {
+    next(e)
+  }
+}
+
+/**
+ * GET /api/catalog/stats
+ * Public platform stats (real counts from DB)
+ */
+export const getPlatformStatsController = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const [workshops, products, services] = await Promise.all([
+      prisma.workshop.count(),
+      prisma.product.count({ where: { status: 'PUBLISHED' } }),
+      prisma.service.count({ where: { status: 'ACTIVE' } }),
+    ])
+
+    res.json({ workshops, products, services })
+  } catch (e) {
+    next(e)
+  }
+}
+
+/**
+ * GET /api/catalog/categories
+ * Obtener todas las categorías de productos (público)
+ */
+export const getCategoriesController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const categories = await prisma.category.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: { name: 'asc' },
+    })
+
+    res.json(categories)
   } catch (e) {
     next(e)
   }

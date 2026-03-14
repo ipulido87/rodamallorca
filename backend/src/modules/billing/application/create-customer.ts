@@ -1,5 +1,6 @@
 import type { BillingRepository } from '../domain/repositories/billing-repository'
 import type { Customer, CreateCustomerInput } from '../domain/entities/billing'
+import { verifyWorkshopOwnership } from '../../../lib/authorization'
 
 interface CreateCustomerDeps {
   repo: BillingRepository
@@ -16,16 +17,8 @@ export async function createCustomer(
 ): Promise<Customer> {
   const { repo, workshopRepo, authenticatedUserId } = deps
 
-  // Verificar que el taller existe y que el usuario es el dueño
-  const workshop = await workshopRepo.findById(data.workshopId)
-
-  if (!workshop) {
-    throw new Error('Taller no encontrado')
-  }
-
-  if (workshop.ownerId !== authenticatedUserId) {
-    throw new Error('No tienes permisos para crear clientes en este taller')
-  }
+  // Verificar que el taller existe y que el usuario es el dueño usando helper compartido
+  await verifyWorkshopOwnership(data.workshopId, authenticatedUserId, workshopRepo)
 
   const customer = await repo.createCustomer(data)
   return customer

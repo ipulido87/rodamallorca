@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import { useSnackbar } from './use-snackbar'
-import { API } from '../../features/auth/services/auth-service'
+import { API } from '@/shared/api'
 
 interface Order {
   id: string

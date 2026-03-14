@@ -5,7 +5,6 @@ import {
   ShoppingCartOutlined,
 } from '@mui/icons-material'
 import {
-  Box,
   Button,
   Card,
   CardContent,
@@ -64,14 +63,14 @@ export const Cart = () => {
   if (!user) {
     return (
       <Container maxWidth="lg">
-        <Box sx={{ py: 4, textAlign: 'center' }}>
-          <Typography variant="h6" gutterBottom>
+        <Stack alignItems="center" spacing={2} sx={{ py: 4 }}>
+          <Typography variant="h6">
             Please log in to view your cart
           </Typography>
           <Button variant="contained" onClick={() => navigate('/login')}>
             Log In
           </Button>
-        </Box>
+        </Stack>
       </Container>
     )
   }
@@ -79,35 +78,31 @@ export const Cart = () => {
   if (cart.items.length === 0) {
     return (
       <Container maxWidth="lg">
-        <Box sx={{ py: 4, textAlign: 'center' }}>
+        <Stack alignItems="center" spacing={2} sx={{ py: 4 }}>
           <ShoppingCartOutlined sx={{ fontSize: 80, color: 'text.secondary' }} />
-          <Typography variant="h4" gutterBottom sx={{ mt: 2 }}>
+          <Typography variant="h4">
             Your cart is empty
           </Typography>
-          <Typography variant="body1" color="text.secondary" gutterBottom>
+          <Typography variant="body1" color="text.secondary">
             Start adding products to your cart!
           </Typography>
-          <Button
-            variant="contained"
-            onClick={() => navigate('/catalog')}
-            sx={{ mt: 2 }}
-          >
+          <Button variant="contained" onClick={() => navigate('/catalog')}>
             Browse Catalog
           </Button>
-        </Box>
+        </Stack>
       </Container>
     )
   }
 
   return (
     <Container maxWidth="lg">
-      <Box sx={{ py: 4 }}>
-        <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
+      <Stack spacing={3} sx={{ py: 4 }}>
+        <Typography variant="h4">
           Shopping Cart ({getItemCount()} items)
         </Typography>
 
         {/* Workshop Info */}
-        <Card sx={{ mb: 3 }}>
+        <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
               Workshop: {cart.items[0].workshopName}
@@ -120,12 +115,12 @@ export const Cart = () => {
 
         {/* Cart Items - Mobile: Cards, Desktop: Table */}
         {isMobile ? (
-          <Stack spacing={2} sx={{ mb: 3 }}>
+          <Stack spacing={2}>
             {cart.items.map((item) => (
               <Card key={item.productId}>
                 <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                    <Box sx={{ flex: 1 }}>
+                  <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
+                    <Stack flex={1}>
                       <Typography variant="h6" fontWeight={500} gutterBottom>
                         {item.name}
                       </Typography>
@@ -137,7 +132,7 @@ export const Cart = () => {
                       <Typography variant="h6" color="primary" fontWeight={700}>
                         {formatPrice(item.price)}
                       </Typography>
-                    </Box>
+                    </Stack>
                     <IconButton
                       color="error"
                       onClick={() => removeFromCart(item.productId)}
@@ -145,10 +140,10 @@ export const Cart = () => {
                     >
                       <Delete />
                     </IconButton>
-                  </Box>
+                  </Stack>
                   <Divider sx={{ my: 2 }} />
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Stack direction="row" alignItems="center" spacing={1}>
                       <IconButton
                         size="small"
                         onClick={() => updateQuantity(item.productId, item.quantity - 1)}
@@ -156,7 +151,7 @@ export const Cart = () => {
                       >
                         <Remove />
                       </IconButton>
-                      <Typography variant="h6" sx={{ minWidth: '40px', textAlign: 'center' }}>
+                      <Typography variant="h6" sx={{ minWidth: 40, textAlign: 'center' }}>
                         {item.quantity}
                       </Typography>
                       <IconButton
@@ -165,20 +160,20 @@ export const Cart = () => {
                       >
                         <Add />
                       </IconButton>
-                    </Box>
-                    <Box sx={{ textAlign: 'right' }}>
+                    </Stack>
+                    <Stack alignItems="flex-end">
                       <Typography variant="caption" color="text.secondary">Subtotal</Typography>
                       <Typography variant="h6" fontWeight={700}>
                         {formatPrice(item.price * item.quantity)}
                       </Typography>
-                    </Box>
-                  </Box>
+                    </Stack>
+                  </Stack>
                 </CardContent>
               </Card>
             ))}
           </Stack>
         ) : (
-          <TableContainer component={Paper} sx={{ mb: 3 }}>
+          <TableContainer component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>
@@ -193,60 +188,47 @@ export const Cart = () => {
                 {cart.items.map((item) => (
                   <TableRow key={item.productId}>
                     <TableCell>
-                      <Box>
-                        <Typography variant="body1" fontWeight={500}>
-                          {item.name}
+                      <Typography variant="body1" fontWeight={500}>
+                        {item.name}
+                      </Typography>
+                      {item.description && (
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{
+                            display: 'block',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            maxWidth: 300,
+                          }}
+                        >
+                          {item.description}
                         </Typography>
-                        {item.description && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{
-                              display: 'block',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                              maxWidth: '300px',
-                            }}
-                          >
-                            {item.description}
-                          </Typography>
-                        )}
-                      </Box>
+                      )}
                     </TableCell>
                     <TableCell align="center">
                       {formatPrice(item.price)}
                     </TableCell>
                     <TableCell align="center">
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: 1,
-                        }}
-                      >
+                      <Stack direction="row" alignItems="center" justifyContent="center" spacing={1}>
                         <IconButton
                           size="small"
-                          onClick={() =>
-                            updateQuantity(item.productId, item.quantity - 1)
-                          }
+                          onClick={() => updateQuantity(item.productId, item.quantity - 1)}
                           disabled={item.quantity <= 1}
                         >
                           <Remove fontSize="small" />
                         </IconButton>
-                        <Typography variant="body1" sx={{ minWidth: '30px', textAlign: 'center' }}>
+                        <Typography variant="body1" sx={{ minWidth: 30, textAlign: 'center' }}>
                           {item.quantity}
                         </Typography>
                         <IconButton
                           size="small"
-                          onClick={() =>
-                            updateQuantity(item.productId, item.quantity + 1)
-                          }
+                          onClick={() => updateQuantity(item.productId, item.quantity + 1)}
                         >
                           <Add fontSize="small" />
                         </IconButton>
-                      </Box>
+                      </Stack>
                     </TableCell>
                     <TableCell align="right">
                       <Typography variant="body1" fontWeight={500}>
@@ -269,8 +251,12 @@ export const Cart = () => {
         )}
 
         {/* Cart Summary */}
-        <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', gap: 3 }}>
-          <Stack direction={isMobile ? 'column' : 'row'} spacing={2} sx={{ width: isMobile ? '100%' : 'auto' }}>
+        <Stack
+          direction={isMobile ? 'column' : 'row'}
+          justifyContent="space-between"
+          spacing={3}
+        >
+          <Stack direction={isMobile ? 'column' : 'row'} spacing={2}>
             <Button variant="outlined" onClick={() => navigate('/catalog')} fullWidth={isMobile}>
               Continue Shopping
             </Button>
@@ -290,41 +276,21 @@ export const Cart = () => {
                 Order Summary
               </Typography>
               <Divider sx={{ my: 2 }} />
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  mb: 1,
-                }}
-              >
+              <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
                 <Typography variant="body1">Subtotal:</Typography>
-                <Typography variant="body1">
-                  {formatPrice(getTotalAmount())}
-                </Typography>
-              </Box>
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  mb: 2,
-                }}
-              >
+                <Typography variant="body1">{formatPrice(getTotalAmount())}</Typography>
+              </Stack>
+              <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
                 <Typography variant="body1">Items:</Typography>
                 <Typography variant="body1">{getItemCount()}</Typography>
-              </Box>
+              </Stack>
               <Divider sx={{ my: 2 }} />
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  mb: 3,
-                }}
-              >
+              <Stack direction="row" justifyContent="space-between" sx={{ mb: 3 }}>
                 <Typography variant="h6">Total:</Typography>
                 <Typography variant="h6" color="primary" fontWeight={700}>
                   {formatPrice(getTotalAmount())}
                 </Typography>
-              </Box>
+              </Stack>
               <Button
                 variant="contained"
                 fullWidth
@@ -335,8 +301,8 @@ export const Cart = () => {
               </Button>
             </CardContent>
           </Card>
-        </Box>
-      </Box>
+        </Stack>
+      </Stack>
     </Container>
   )
 }

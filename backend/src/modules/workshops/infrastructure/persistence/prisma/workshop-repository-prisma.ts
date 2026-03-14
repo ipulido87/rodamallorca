@@ -1,10 +1,11 @@
-import { PrismaClient } from '@prisma/client'
+import prisma from '../../../../../lib/prisma'
 import {
   WorkshopDTO,
   WorkshopRepository,
 } from '../../../domain/repositories/workshop-repository'
+import { ImageProcessor } from '../../../../media/application/image-processor'
 
-const prisma = new PrismaClient()
+const imageProcessor = new ImageProcessor()
 
 export class WorkshopRepositoryPrisma implements WorkshopRepository {
   async create(input: Omit<WorkshopDTO, 'id'>): Promise<WorkshopDTO> {
@@ -42,6 +43,38 @@ export class WorkshopRepositoryPrisma implements WorkshopRepository {
 
   async delete(id: string): Promise<boolean> {
     try {
+      // Fetch all images before cascade delete to clean up Cloudinary
+      const workshop = await prisma.workshop.findUnique({
+        where: { id },
+        select: {
+          logoOriginal: true,
+          logoMedium: true,
+          products: {
+            select: {
+              images: { select: { original: true } },
+            },
+          },
+        },
+      })
+
+      if (workshop) {
+        const cloudinaryUrls: string[] = []
+
+        if (workshop.logoOriginal) cloudinaryUrls.push(workshop.logoOriginal)
+
+        for (const product of workshop.products) {
+          for (const img of product.images) {
+            cloudinaryUrls.push(img.original)
+          }
+        }
+
+        if (cloudinaryUrls.length > 0) {
+          await Promise.all(
+            cloudinaryUrls.map((url) => imageProcessor.deleteImage(url))
+          )
+        }
+      }
+
       await prisma.workshop.delete({ where: { id } })
       return true
     } catch {
@@ -54,5 +87,54 @@ export class WorkshopRepositoryPrisma implements WorkshopRepository {
       orderBy: { createdAt: 'desc' },
     })
     return workshops
+  }
+
+  async updateStats(
+    workshopId: string,
+    stats: { averageRating: number; reviewCount: number }
+  ): Promise<void> {
+    await prisma.workshop.update({
+      where: { id: workshopId },
+      data: {
+        averageRating: stats.averageRating,
+        reviewCount: stats.reviewCount,
+      },
+    })
+  }
+
+  async updateStripeAccount(
+    workshopId: string,
+    accountId: string | null,
+    onboardingComplete: boolean
+  ): Promise<void> {
+    await prisma.workshop.update({
+      where: { id: workshopId },
+      data: {
+        stripeConnectedAccountId: accountId,
+        stripeOnboardingComplete: onboardingComplete,
+      },
+    })
+  }
+
+  async findByIdWithStripe(id: string): Promise<WorkshopDTO | null> {
+    const w = await prisma.workshop.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        ownerId: true,
+        name: true,
+        description: true,
+        address: true,
+        city: true,
+        country: true,
+        phone: true,
+        logoOriginal: true,
+        logoMedium: true,
+        logoThumbnail: true,
+        stripeConnectedAccountId: true,
+        stripeOnboardingComplete: true,
+      },
+    })
+    return w ? { ...w } : null
   }
 }

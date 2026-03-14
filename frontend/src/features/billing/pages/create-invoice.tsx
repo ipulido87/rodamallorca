@@ -16,6 +16,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useState, useEffect } from 'react'
+import useSWR from 'swr'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useSnackbar } from '../../../shared/hooks/use-snackbar'
 import {
@@ -34,8 +35,15 @@ export const CreateInvoice = () => {
   const navigate = useNavigate()
   const { showSuccess, showError } = useSnackbar()
 
-  const [customers, setCustomers] = useState<Customer[]>([])
-  const [series, setSeries] = useState<InvoiceSeries[]>([])
+  const { data: customers = [] } = useSWR<Customer[]>(
+    workshopId ? `/billing/customers/${workshopId}` : null,
+    () => getCustomersByWorkshop(workshopId!),
+  )
+  const { data: series = [] } = useSWR<InvoiceSeries[]>(
+    workshopId ? `/billing/series/${workshopId}` : null,
+    () => getInvoiceSeriesByWorkshop(workshopId!),
+  )
+
   const [loading, setLoading] = useState(false)
   const [ocrDialogOpen, setOcrDialogOpen] = useState(false)
 
@@ -56,30 +64,13 @@ export const CreateInvoice = () => {
     },
   ])
 
+  // Seleccionar serie por defecto cuando llegan los datos
   useEffect(() => {
-    if (!workshopId) return
-
-    const loadData = async () => {
-      try {
-        const [customersData, seriesData] = await Promise.all([
-          getCustomersByWorkshop(workshopId),
-          getInvoiceSeriesByWorkshop(workshopId),
-        ])
-        setCustomers(customersData)
-        setSeries(seriesData)
-
-        // Seleccionar serie por defecto
-        const defaultSeries = seriesData.find((s) => s.isDefault)
-        if (defaultSeries) {
-          setFormData((prev) => ({ ...prev, seriesId: defaultSeries.id }))
-        }
-      } catch (error) {
-        showError('Error al cargar datos')
-      }
+    const defaultSeries = series.find((s) => s.isDefault)
+    if (defaultSeries && !formData.seriesId) {
+      setFormData((prev) => ({ ...prev, seriesId: defaultSeries.id }))
     }
-
-    void loadData()
-  }, [workshopId, showError])
+  }, [series, formData.seriesId])
 
   const addItem = () => {
     setItems([
@@ -98,7 +89,7 @@ export const CreateInvoice = () => {
     setItems(items.filter((_, i) => i !== index))
   }
 
-  const updateItem = (index: number, field: keyof InvoiceItem, value: any) => {
+  const updateItem = (index: number, field: keyof InvoiceItem, value: string | number) => {
     const newItems = [...items]
     newItems[index] = { ...newItems[index], [field]: value }
     setItems(newItems)

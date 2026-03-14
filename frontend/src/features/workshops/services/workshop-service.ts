@@ -1,4 +1,7 @@
-import { API } from '../../../features/auth/services/auth-service'
+import { API } from '@/shared/api'
+import type { Workshop } from '../../catalog/types/catalog'
+
+export type { Workshop }
 
 export interface CreateWorkshopData {
   name: string
@@ -10,24 +13,6 @@ export interface CreateWorkshopData {
   logoOriginal?: string
   logoMedium?: string
   logoThumbnail?: string
-}
-
-export interface Workshop {
-  id: string
-  ownerId: string
-  name: string
-  description?: string
-  address?: string
-  city?: string
-  country?: string
-  phone?: string
-  logoOriginal?: string
-  logoMedium?: string
-  logoThumbnail?: string
-  averageRating?: number
-  reviewCount?: number
-  createdAt: string
-  updatedAt: string
 }
 
 export const createWorkshop = async (

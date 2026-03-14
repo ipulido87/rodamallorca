@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express'
+import type { Request, Response, NextFunction } from 'express'
 import {
   createConnectedAccount,
   createAccountLink,
@@ -14,28 +14,22 @@ export const initiateStripeConnect = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { id: workshopId } = req.params
     const userId = req.user?.id
 
-    // Verificar que el usuario es el owner del workshop
-    // (esto se podría hacer con middleware, pero lo pongo aquí para claridad)
     if (!userId) {
-      return res.status(401).json({ error: 'No autenticado' })
+      res.status(401).json({ error: 'No autenticado' })
+      return
     }
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
     const returnUrl = `${frontendUrl}/workshops/${workshopId}/stripe/success`
     const refreshUrl = `${frontendUrl}/workshops/${workshopId}/stripe/refresh`
 
-    console.log(`🚀 [Controller] Iniciando Stripe Connect para workshop ${workshopId}`)
-
-    // Crear o recuperar cuenta conectada
-    const account = await createConnectedAccount(workshopId, req.user.email)
-
-    // Crear link de onboarding
-    const accountLink = await createAccountLink(workshopId, returnUrl, refreshUrl)
+    const account = await createConnectedAccount(workshopId as string, req.user.email)
+    const accountLink = await createAccountLink(workshopId as string, returnUrl, refreshUrl)
 
     res.json({
       success: true,
@@ -43,8 +37,7 @@ export const initiateStripeConnect = async (
       onboardingUrl: accountLink.url,
       expiresAt: accountLink.expiresAt,
     })
-  } catch (error: any) {
-    console.error('❌ [Controller] Error iniciando Stripe Connect:', error)
+  } catch (error) {
     next(error)
   }
 }
@@ -57,30 +50,28 @@ export const refreshOnboardingLink = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { id: workshopId } = req.params
     const userId = req.user?.id
 
     if (!userId) {
-      return res.status(401).json({ error: 'No autenticado' })
+      res.status(401).json({ error: 'No autenticado' })
+      return
     }
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
     const returnUrl = `${frontendUrl}/workshops/${workshopId}/stripe/success`
     const refreshUrl = `${frontendUrl}/workshops/${workshopId}/stripe/refresh`
 
-    console.log(`🔄 [Controller] Regenerando link de onboarding para workshop ${workshopId}`)
-
-    const accountLink = await createAccountLink(workshopId, returnUrl, refreshUrl)
+    const accountLink = await createAccountLink(workshopId as string, returnUrl, refreshUrl)
 
     res.json({
       success: true,
       onboardingUrl: accountLink.url,
       expiresAt: accountLink.expiresAt,
     })
-  } catch (error: any) {
-    console.error('❌ [Controller] Error regenerando link:', error)
+  } catch (error) {
     next(error)
   }
 }
@@ -93,20 +84,17 @@ export const getStripeAccountStatus = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { id: workshopId } = req.params
 
-    console.log(`📊 [Controller] Obteniendo estado Stripe para workshop ${workshopId}`)
-
-    const status = await getAccountStatus(workshopId)
+    const status = await getAccountStatus(workshopId as string)
 
     res.json({
       success: true,
       ...status,
     })
-  } catch (error: any) {
-    console.error('❌ [Controller] Error obteniendo estado:', error)
+  } catch (error) {
     next(error)
   }
 }
@@ -119,25 +107,23 @@ export const getStripeDashboardLink = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const { id: workshopId } = req.params
     const userId = req.user?.id
 
     if (!userId) {
-      return res.status(401).json({ error: 'No autenticado' })
+      res.status(401).json({ error: 'No autenticado' })
+      return
     }
 
-    console.log(`🔐 [Controller] Generando dashboard link para workshop ${workshopId}`)
-
-    const dashboardLink = await createDashboardLink(workshopId)
+    const dashboardLink = await createDashboardLink(workshopId as string)
 
     res.json({
       success: true,
       url: dashboardLink.url,
     })
-  } catch (error: any) {
-    console.error('❌ [Controller] Error generando dashboard link:', error)
+  } catch (error) {
     next(error)
   }
 }

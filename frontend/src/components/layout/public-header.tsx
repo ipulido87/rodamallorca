@@ -9,7 +9,6 @@ import {
   Settings,
   Handyman,
   ShoppingBag,
-  Menu as MenuIcon,
 } from '@mui/icons-material'
 import {
   AppBar,
@@ -31,10 +30,13 @@ import {
   useScrollTrigger,
   IconButton,
   Tooltip,
+  alpha,
 } from '@mui/material'
 import { useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../features/auth/hooks/useAuth'
+import { LanguageSelector } from '../../shared/components/LanguageSelector'
 
 interface HideOnScrollProps {
   children: React.ReactElement
@@ -55,6 +57,7 @@ export const PublicHeader = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, isAuthenticated, logout } = useAuth()
+  const { t } = useTranslation()
 
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const anchorRef = useRef<HTMLButtonElement>(null)
@@ -98,10 +101,10 @@ export const PublicHeader = () => {
         position="fixed"
         elevation={0}
         sx={{
-          bgcolor: 'rgba(255, 255, 255, 0.95)',
+          bgcolor: 'rgba(10, 15, 30, 0.6)',
           backdropFilter: 'blur(20px)',
           borderBottom: '1px solid',
-          borderColor: 'divider',
+          borderColor: alpha('#ffffff', 0.1),
         }}
       >
         <Toolbar sx={{ justifyContent: 'space-between', py: 1.5 }}>
@@ -120,9 +123,9 @@ export const PublicHeader = () => {
           >
             <DirectionsBike
               sx={{
-                color: 'primary.main',
+                color: '#ffffff',
                 fontSize: { xs: 32, sm: 36 },
-                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
               }}
             />
             <Typography
@@ -131,7 +134,7 @@ export const PublicHeader = () => {
               sx={{
                 fontWeight: 700,
                 display: { xs: 'none', md: 'block' },
-                background: 'linear-gradient(45deg, #3949ab, #5c6bc0)',
+                background: 'linear-gradient(45deg, #ffffff, rgba(255,255,255,0.85))',
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
@@ -144,39 +147,39 @@ export const PublicHeader = () => {
           </Stack>
 
           <Stack direction="row" spacing={{ xs: 0.5, sm: 1.5, md: 2 }} alignItems="center">
-            {/* Navegación principal */}
-
-            {/* MÓVIL: Solo iconos */}
+            {/* Mobile: icon only */}
             <Box sx={{ display: { xs: 'flex', md: 'none' }, gap: 0.5 }}>
-              <Tooltip title="Talleres">
+              <Tooltip title={t('nav.workshops')}>
                 <IconButton
                   onClick={() => navigate('/talleres')}
                   sx={{
-                    bgcolor: 'background.paper',
+                    bgcolor: alpha('#ffffff', 0.1),
                     border: '1px solid',
-                    borderColor: 'divider',
-                    '&:hover': { bgcolor: 'action.hover' },
+                    borderColor: alpha('#ffffff', 0.15),
+                    color: '#ffffff',
+                    '&:hover': { bgcolor: alpha('#ffffff', 0.2) },
                   }}
                 >
                   <Handyman sx={{ fontSize: 20 }} />
                 </IconButton>
               </Tooltip>
 
-              <Tooltip title="Recambios">
+              <Tooltip title={t('nav.bikesAndParts')}>
                 <IconButton
                   onClick={() => navigate('/productos')}
                   sx={{
-                    bgcolor: 'background.paper',
+                    bgcolor: alpha('#ffffff', 0.1),
                     border: '1px solid',
-                    borderColor: 'divider',
-                    '&:hover': { bgcolor: 'action.hover' },
+                    borderColor: alpha('#ffffff', 0.15),
+                    color: '#ffffff',
+                    '&:hover': { bgcolor: alpha('#ffffff', 0.2) },
                   }}
                 >
                   <ShoppingBag sx={{ fontSize: 20 }} />
                 </IconButton>
               </Tooltip>
 
-              <Tooltip title="Alquiler">
+              <Tooltip title={t('nav.rentals')}>
                 <IconButton
                   onClick={() => navigate('/alquileres')}
                   sx={{
@@ -190,21 +193,21 @@ export const PublicHeader = () => {
               </Tooltip>
             </Box>
 
-            {/* DESKTOP: Botones con texto */}
+            {/* Desktop: buttons with text */}
             <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
               <Button
                 variant="text"
                 onClick={() => navigate('/talleres')}
                 startIcon={<Handyman />}
                 sx={{
-                  color: 'text.primary',
+                  color: alpha('#ffffff', 0.85),
                   px: 2,
                   py: 1,
                   fontWeight: 500,
-                  '&:hover': { bgcolor: 'action.hover' },
+                  '&:hover': { bgcolor: alpha('#ffffff', 0.1), color: '#ffffff' },
                 }}
               >
-                Talleres
+                {t('nav.workshops')}
               </Button>
 
               <Button
@@ -212,14 +215,14 @@ export const PublicHeader = () => {
                 onClick={() => navigate('/productos')}
                 startIcon={<ShoppingBag />}
                 sx={{
-                  color: 'text.primary',
+                  color: alpha('#ffffff', 0.85),
                   px: 2,
                   py: 1,
                   fontWeight: 500,
-                  '&:hover': { bgcolor: 'action.hover' },
+                  '&:hover': { bgcolor: alpha('#ffffff', 0.1), color: '#ffffff' },
                 }}
               >
-                Recambios
+                {t('nav.bikesAndParts')}
               </Button>
 
               <Button
@@ -240,13 +243,15 @@ export const PublicHeader = () => {
                   },
                 }}
               >
-                Alquiler
+                {t('nav.rentals')}
               </Button>
             </Box>
 
+            {/* Language selector */}
+            <LanguageSelector />
+
             {isAuthenticated ? (
               <>
-
                 <Box>
                   <Button
                     ref={anchorRef}
@@ -254,6 +259,7 @@ export const PublicHeader = () => {
                     endIcon={
                       <ExpandMore
                         sx={{
+                          color: alpha('#ffffff', 0.7),
                           transform: dropdownOpen
                             ? 'rotate(180deg)'
                             : 'rotate(0deg)',
@@ -266,14 +272,14 @@ export const PublicHeader = () => {
                       p: 1,
                       pr: 1.5,
                       bgcolor: dropdownOpen
-                        ? 'background.paper'
+                        ? alpha('#ffffff', 0.1)
                         : 'transparent',
                       boxShadow: dropdownOpen
-                        ? '0 4px 20px rgba(0,0,0,0.08)'
+                        ? '0 4px 20px rgba(0,0,0,0.2)'
                         : 'none',
                       '&:hover': {
-                        bgcolor: 'background.paper',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                        bgcolor: alpha('#ffffff', 0.1),
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
                       },
                     }}
                   >
@@ -292,7 +298,7 @@ export const PublicHeader = () => {
                             user?.role === 'WORKSHOP_OWNER'
                               ? '0 4px 16px rgba(255, 183, 77, 0.3)'
                               : '0 4px 16px rgba(57, 73, 171, 0.3)',
-                          border: '3px solid white',
+                          border: `3px solid ${alpha('#ffffff', 0.3)}`,
                         }}
                       >
                         {user?.name?.[0]?.toUpperCase() || 'U'}
@@ -307,20 +313,20 @@ export const PublicHeader = () => {
                       >
                         <Typography
                           variant="body1"
-                          color="text.primary"
                           sx={{
+                            color: '#ffffff',
                             lineHeight: 1.2,
                             fontWeight: 600,
                             fontSize: 15,
                           }}
                         >
-                          {user?.name || 'Usuario'}
+                          {user?.name || t('nav.user')}
                         </Typography>
                         <Chip
                           label={
                             user?.role === 'WORKSHOP_OWNER'
-                              ? 'Propietario'
-                              : 'Cliente'
+                              ? t('nav.owner')
+                              : t('nav.customer')
                           }
                           size="small"
                           variant="filled"
@@ -386,7 +392,7 @@ export const PublicHeader = () => {
                                   <Person sx={{ color: 'secondary.main' }} />
                                 </ListItemIcon>
                                 <Typography variant="body2" fontWeight={500}>
-                                  Mi Perfil
+                                  {t('nav.myProfile')}
                                 </Typography>
                               </MenuItem>
 
@@ -406,7 +412,7 @@ export const PublicHeader = () => {
                                   <Settings sx={{ color: 'secondary.main' }} />
                                 </ListItemIcon>
                                 <Typography variant="body2" fontWeight={500}>
-                                  Configuración
+                                  {t('nav.settings')}
                                 </Typography>
                               </MenuItem>
 
@@ -427,7 +433,7 @@ export const PublicHeader = () => {
                                   <Logout sx={{ color: 'error.main' }} />
                                 </ListItemIcon>
                                 <Typography variant="body2" fontWeight={500}>
-                                  Cerrar Sesión
+                                  {t('nav.logout')}
                                 </Typography>
                               </MenuItem>
                             </MenuList>
@@ -446,19 +452,19 @@ export const PublicHeader = () => {
                     onClick={() => navigate('/login')}
                     sx={{
                       display: { xs: 'none', md: 'inline-flex' },
-                      borderColor: 'primary.main',
-                      color: 'primary.main',
+                      borderColor: alpha('#ffffff', 0.5),
+                      color: '#ffffff',
                       px: 3,
                       py: 1,
                       fontWeight: 500,
                       '&:hover': {
-                        borderColor: 'primary.dark',
-                        bgcolor: 'primary.light',
-                        color: 'white',
+                        borderColor: '#ffffff',
+                        bgcolor: alpha('#ffffff', 0.1),
+                        color: '#ffffff',
                       },
                     }}
                   >
-                    Iniciar Sesión
+                    {t('nav.login')}
                   </Button>
                 )}
 
@@ -467,19 +473,19 @@ export const PublicHeader = () => {
                     variant="contained"
                     onClick={() => navigate('/register')}
                     sx={{
-                      bgcolor: 'primary.main',
-                      color: 'white',
+                      bgcolor: '#ffffff',
+                      color: '#0d1b2a',
                       px: { xs: 2, md: 3 },
                       py: { xs: 0.75, md: 1 },
                       fontSize: { xs: '0.875rem', md: '1rem' },
                       fontWeight: 600,
                       whiteSpace: 'nowrap',
                       '&:hover': {
-                        bgcolor: 'primary.dark',
+                        bgcolor: alpha('#ffffff', 0.9),
                       },
                     }}
                   >
-                    {isLoginPage ? 'Cuenta' : 'Registro'}
+                    {isLoginPage ? t('nav.account') : t('nav.register')}
                   </Button>
                 )}
               </>

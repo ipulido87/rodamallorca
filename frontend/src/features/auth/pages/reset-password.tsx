@@ -14,8 +14,10 @@ import {
 import { AxiosError } from 'axios'
 import { useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
-import { API } from '../services/auth-service'
+import { API } from '@/shared/api'
+import { Seo } from '@/shared/components/Seo'
 
 // Schema de validación con Zod
 const resetPasswordSchema = z
@@ -35,6 +37,7 @@ const resetPasswordSchema = z
   })
 
 export const ResetPassword = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
@@ -59,10 +62,10 @@ export const ResetPassword = () => {
             gutterBottom
             color="error"
           >
-            Token Inválido
+            {t('auth.invalidToken')}
           </Typography>
           <Alert severity="error" sx={{ mt: 2 }}>
-            El enlace es inválido o ha expirado.
+            {t('auth.invalidTokenDesc')}
           </Alert>
           <Button
             fullWidth
@@ -70,7 +73,7 @@ export const ResetPassword = () => {
             sx={{ mt: 3 }}
             onClick={() => navigate('/forgot-password')}
           >
-            Solicitar nuevo enlace
+            {t('auth.requestNewLink')}
           </Button>
         </Paper>
       </Container>
@@ -108,7 +111,7 @@ export const ResetPassword = () => {
       })
       setSuccess(true)
     } catch (err) {
-      let message = 'Error al restablecer la contraseña'
+      let message = t('auth.resetError')
 
       if (err instanceof AxiosError) {
         // Errores de Zod del backend
@@ -136,10 +139,10 @@ export const ResetPassword = () => {
       <Container maxWidth="xs">
         <Paper elevation={3} sx={{ p: 4, mt: 10 }}>
           <Typography variant="h5" textAlign="center" gutterBottom>
-            ✅ Contraseña Actualizada
+            ✅ {t('auth.passwordUpdated')}
           </Typography>
           <Alert severity="success" sx={{ mt: 2 }}>
-            Tu contraseña ha sido actualizada correctamente.
+            {t('auth.passwordUpdatedDesc')}
           </Alert>
           <Button
             fullWidth
@@ -147,7 +150,7 @@ export const ResetPassword = () => {
             sx={{ mt: 3 }}
             onClick={() => navigate('/login')}
           >
-            Ir al Login
+            {t('auth.goToLogin')}
           </Button>
         </Paper>
       </Container>
@@ -155,10 +158,16 @@ export const ResetPassword = () => {
   }
 
   return (
-    <Container maxWidth="xs">
+    <>
+      <Seo
+        title="Nueva Contraseña | RodaMallorca"
+        description="Establece una nueva contraseña para tu cuenta de RodaMallorca."
+        robots="noindex,nofollow"
+      />
+      <Container maxWidth="xs">
       <Paper elevation={3} sx={{ p: 4, mt: 10 }}>
         <Typography variant="h5" textAlign="center" gutterBottom>
-          Nueva Contraseña
+          {t('auth.resetPasswordTitle')}
         </Typography>
         <Typography
           variant="body2"
@@ -166,13 +175,13 @@ export const ResetPassword = () => {
           textAlign="center"
           sx={{ mb: 3 }}
         >
-          Ingresa tu nueva contraseña
+          {t('auth.resetPasswordDesc')}
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
             fullWidth
-            label="Nueva Contraseña"
+            label={t('auth.newPasswordLabel')}
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => {
@@ -203,7 +212,7 @@ export const ResetPassword = () => {
 
           <TextField
             fullWidth
-            label="Confirmar Contraseña"
+            label={t('auth.confirmPasswordLabel')}
             type={showPassword ? 'text' : 'password'}
             value={confirmPassword}
             onChange={(e) => {
@@ -227,7 +236,7 @@ export const ResetPassword = () => {
             color="text.secondary"
             sx={{ mt: 1, display: 'block' }}
           >
-            Mínimo 8 caracteres, incluye mayúsculas, minúsculas y números
+            {t('auth.passwordRequirements')}
           </Typography>
 
           {error && (
@@ -244,7 +253,7 @@ export const ResetPassword = () => {
             sx={{ mt: 3 }}
             disabled={loading}
           >
-            {loading ? 'Actualizando...' : 'Actualizar Contraseña'}
+            {loading ? t('auth.updating') : t('auth.updatePassword')}
           </Button>
 
           <Button
@@ -254,10 +263,11 @@ export const ResetPassword = () => {
             onClick={() => navigate('/login')}
             disabled={loading}
           >
-            Volver al login
+            {t('auth.backToLogin')}
           </Button>
         </Box>
       </Paper>
     </Container>
+    </>
   )
 }

@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { redirectToProductCheckout } from '../services/payment-service'
 import { notify } from '../../../shared/services/notification-service'
+import { getErrorMessage } from '@/shared/api'
 
 interface RentalData {
   bikeId: string
@@ -54,7 +55,10 @@ export const RentalCheckout = () => {
     }
   }, [navigate])
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number | undefined) => {
+    if (price === undefined || price === null || isNaN(price)) {
+      return '0.00€'
+    }
     return `${(price / 100).toFixed(2)}€`
   }
 
@@ -99,17 +103,18 @@ export const RentalCheckout = () => {
         },
       ]
 
+      // Marcar tipo de checkout para la página de éxito
+      localStorage.setItem('lastCheckoutType', 'rental')
+
       // Redirigir a Stripe Checkout
       await redirectToProductCheckout(rentalData.workshopId, items)
 
       // Limpiar localStorage después de redirigir
       localStorage.removeItem('rentalCheckoutData')
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error iniciando checkout de alquiler:', err)
       setError(
-        err.response?.data?.message ||
-          err.message ||
-          'Error al iniciar el pago. Por favor intenta de nuevo.'
+        getErrorMessage(err, 'Error al iniciar el pago. Por favor intenta de nuevo.')
       )
       setLoading(false)
     }
@@ -291,25 +296,29 @@ export const RentalCheckout = () => {
                   </Typography>
                 </Box>
 
-                <Divider sx={{ my: 2 }} />
+                {rentalData.deposit && rentalData.deposit > 0 && (
+                  <>
+                    <Divider sx={{ my: 2 }} />
 
-                {/* Deposit */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    mb: 1,
-                  }}
-                >
-                  <Typography variant="body1" fontWeight={600}>
-                    Depósito (reembolsable):
-                  </Typography>
-                  <Typography variant="body1" fontWeight={600}>
-                    {formatPrice(rentalData.deposit)}
-                  </Typography>
-                </Box>
+                    {/* Deposit */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        mb: 1,
+                      }}
+                    >
+                      <Typography variant="body1" fontWeight={600}>
+                        Depósito (reembolsable):
+                      </Typography>
+                      <Typography variant="body1" fontWeight={600}>
+                        {formatPrice(rentalData.deposit)}
+                      </Typography>
+                    </Box>
 
-                <Divider sx={{ my: 2 }} />
+                    <Divider sx={{ my: 2 }} />
+                  </>
+                )}
 
                 {/* Total */}
                 <Box
@@ -321,18 +330,20 @@ export const RentalCheckout = () => {
                 >
                   <Typography variant="h6">Total a pagar:</Typography>
                   <Typography variant="h6" color="primary" fontWeight={700}>
-                    {formatPrice(rentalData.totalPrice + rentalData.deposit)}
+                    {formatPrice(rentalData.totalPrice + (rentalData.deposit || 0))}
                   </Typography>
                 </Box>
 
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ display: 'block', mb: 3 }}
-                >
-                  El depósito de {formatPrice(rentalData.deposit)} se devolverá
-                  cuando devuelvas la bicicleta en buen estado.
-                </Typography>
+                {rentalData.deposit && rentalData.deposit > 0 && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mb: 3 }}
+                  >
+                    El depósito de {formatPrice(rentalData.deposit)} se devolverá
+                    cuando devuelvas la bicicleta en buen estado.
+                  </Typography>
+                )}
 
                 {error && (
                   <Box

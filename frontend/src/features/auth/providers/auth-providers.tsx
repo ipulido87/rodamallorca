@@ -11,6 +11,9 @@ export type User = {
   role?: 'USER' | 'WORKSHOP_OWNER' | 'ADMIN'
   createdAt?: string
   updatedAt?: string
+  // Subscription fields (for WORKSHOP_OWNER)
+  hasActiveSubscription?: boolean
+  workshopsCount?: number
 }
 
 export type AuthContextType = {

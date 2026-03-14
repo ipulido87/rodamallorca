@@ -3,7 +3,9 @@ import {
   Alert,
   Box,
   Button,
+  CircularProgress,
   Container,
+  Pagination,
   Tab,
   Tabs,
   TextField,
@@ -73,7 +75,10 @@ export const Catalog = () => {
   const [productFilters, setProductFilters] = useState<FilterValues>({})
   const [workshopFilters, setWorkshopFilters] = useState<FilterValues>({})
   const [serviceFilters, setServiceFilters] = useState<FilterValues>({})
+  const [workshopsPage, setWorkshopsPage] = useState(1)
+  const [productsPage, setProductsPage] = useState(1)
   const [favoriteWorkshopIds, setFavoriteWorkshopIds] = useState<string[]>([])
+
 
   // Hook personalizado
   const {
@@ -114,18 +119,28 @@ export const Catalog = () => {
         searchButtonText: 'Buscar',
       }
 
-  // Cargar datos cuando cambien filtros o query con debounce
+  // Reset de páginas cuando cambia búsqueda/filtros/tab
   useEffect(() => {
     if (tabValue === 0) {
-      loadWorkshops(debouncedQuery, workshopFilters)
+      setWorkshopsPage(1)
     }
-  }, [debouncedQuery, workshopFilters, tabValue, loadWorkshops])
+    if (tabValue === 1) {
+      setProductsPage(1)
+    }
+  }, [debouncedQuery, workshopFilters, productFilters, tabValue])
+
+  // Cargar talleres paginados
+  useEffect(() => {
+    if (tabValue === 0) {
+      loadWorkshops(debouncedQuery, workshopFilters, workshopsPage)
+    }
+  }, [debouncedQuery, workshopFilters, tabValue, workshopsPage, loadWorkshops])
 
   useEffect(() => {
     if (tabValue === 1) {
-      loadProducts(debouncedQuery, productFilters)
+      loadProducts(debouncedQuery, productFilters, productsPage)
     }
-  }, [debouncedQuery, productFilters, tabValue, loadProducts])
+  }, [debouncedQuery, productFilters, tabValue, productsPage, loadProducts])
 
   // useEffect(() => {
   //   if (tabValue === 2 && !isWorkshopOwner) {
@@ -135,10 +150,10 @@ export const Catalog = () => {
 
   // Carga inicial
   useEffect(() => {
-    loadWorkshops()
-    loadProducts()
+    loadWorkshops(undefined, undefined, 1)
     // loadServices() // Comentado - no se usa en el catálogo ahora
-  }, [loadProducts, loadWorkshops])
+  }, [loadWorkshops])
+
 
   // Cargar favoritos del usuario
   useEffect(() => {
@@ -172,8 +187,11 @@ export const Catalog = () => {
     setServiceFilters((prev) => ({ ...prev, [key]: value }))
   }
 
-  const clearProductFilters = () => setProductFilters({})
-  const clearWorkshopFilters = () => setWorkshopFilters({})
+  const clearProductFilters = () => { setProductFilters({}); setProductsPage(1) }
+  const clearWorkshopFilters = () => {
+    setWorkshopFilters({})
+    setWorkshopsPage(1)
+  }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const clearServiceFilters = () => setServiceFilters({})
 
@@ -216,10 +234,19 @@ export const Catalog = () => {
           />
 
           {workshopsPagination.total > 0 && (
-            <Box textAlign="center" sx={{ mt: 4 }}>
+            <Box sx={{ mt: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
               <Typography variant="body2" color="text.secondary">
-                Mostrando {workshops.length} de {workshopsPagination.total} talleres
+                Mostrando {(workshopsPagination.page - 1) * workshopsPagination.size + 1}
+                -{Math.min(workshopsPagination.page * workshopsPagination.size, workshopsPagination.total)}
+                {' '}de {workshopsPagination.total} talleres
               </Typography>
+
+              <Pagination
+                color="primary"
+                count={Math.ceil(workshopsPagination.total / workshopsPagination.size)}
+                page={workshopsPagination.page}
+                onChange={(_, page) => setWorkshopsPage(page)}
+              />
             </Box>
           )}
         </>
@@ -235,7 +262,7 @@ export const Catalog = () => {
         </Alert>
       )}
 
-      {productsLoading ? (
+      {productsLoading && products.length === 0 ? (
         <ProductSkeletonGrid count={8} />
       ) : (
         <>
@@ -249,10 +276,20 @@ export const Catalog = () => {
           />
 
           {productsPagination.total > 0 && (
-            <Box textAlign="center" sx={{ mt: 4 }}>
-              <Typography variant="body2" color="text.secondary">
-                Mostrando {products.length} de {productsPagination.total} productos
-              </Typography>
+            <Typography variant="body2" color="text.secondary" textAlign="center" sx={{ mt: 3, mb: 1 }}>
+              Mostrando {products.length} de {productsPagination.total} recambios
+            </Typography>
+          )}
+
+          {productsPagination.hasMore && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1, mb: 3 }}>
+              {productsLoading ? (
+                <CircularProgress size={32} />
+              ) : (
+                <Button variant="outlined" onClick={() => setProductsPage(prev => prev + 1)}>
+                  Cargar más
+                </Button>
+              )}
             </Box>
           )}
         </>
@@ -340,6 +377,15 @@ export const Catalog = () => {
           size="large"
           sx={{ minWidth: 120 }}
           disabled={productsLoading || workshopsLoading}
+          onClick={() => {
+            if (tabValue === 0) {
+              setWorkshopsPage(1)
+              loadWorkshops(debouncedQuery, workshopFilters, 1)
+            }
+            if (tabValue === 1) {
+              loadProducts(debouncedQuery, productFilters, 1)
+            }
+          }}
         >
           {config.searchButtonText}
         </Button>

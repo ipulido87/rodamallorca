@@ -6,6 +6,7 @@ import {
   TrendingUp,
   Email,
 } from '@mui/icons-material'
+import { Seo } from '../../../shared/components/Seo'
 import {
   Box,
   Button,
@@ -23,6 +24,7 @@ import {
   useTheme,
 } from '@mui/material'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../auth/hooks/useAuth'
 import useSWR from 'swr'
 import { getMyWorkshops } from '../../workshops/services/workshop-service'
@@ -30,6 +32,7 @@ import { redirectToCheckout } from '../services/subscription-service'
 import { useState, useEffect } from 'react'
 
 export const PricingPage = () => {
+  const { t } = useTranslation()
   const theme = useTheme()
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -75,43 +78,63 @@ export const PricingPage = () => {
   const features = [
     {
       icon: <Inventory />,
-      text: 'Publicar productos ilimitados',
+      text: t('pricing.feature1'),
       highlighted: true,
     },
     {
       icon: <DirectionsBike />,
-      text: 'Gestión completa de servicios',
+      text: t('pricing.feature2'),
       highlighted: true,
     },
     {
       icon: <Receipt />,
-      text: 'Facturación electrónica automática',
+      text: t('pricing.feature3'),
       highlighted: false,
     },
     {
       icon: <TrendingUp />,
-      text: 'Estadísticas de ventas en tiempo real',
+      text: t('pricing.feature4'),
       highlighted: false,
     },
     {
       icon: <Email />,
-      text: 'Notificaciones automáticas por email',
+      text: t('pricing.feature5'),
       highlighted: false,
     },
     {
       icon: <Check />,
-      text: 'Soporte técnico prioritario',
+      text: t('pricing.feature6'),
       highlighted: false,
     },
   ]
 
   return (
     <Container maxWidth="lg">
+      <Seo
+        title={t('pricing.seoTitle')}
+        description={t('pricing.seoDescription')}
+        keywords={t('pricing.seoKeywords')}
+        canonicalPath="/pricing"
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: t('pricing.seoProductName'),
+          description: t('pricing.seoProductDescription'),
+          offers: {
+            '@type': 'Offer',
+            price: '18.30',
+            priceCurrency: 'EUR',
+            priceValidUntil: '2026-12-31',
+            availability: 'https://schema.org/InStock',
+            url: 'https://rodamallorca.es/pricing',
+          },
+        }}
+      />
       <Box sx={{ py: 8 }}>
         {/* Header */}
         <Stack spacing={2} alignItems="center" sx={{ mb: 8 }}>
           <Chip
-            label="💎 PRECIO ESPECIAL DE LANZAMIENTO"
+            label={`💎 ${t('pricing.launchPrice')}`}
             color="primary"
             sx={{ fontWeight: 600 }}
           />
@@ -126,11 +149,11 @@ export const PricingPage = () => {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            Plan Perfecto para tu Taller
+            {t('pricing.perfectPlan')}
           </Typography>
 
           <Typography variant="h5" textAlign="center" color="text.secondary">
-            Todo lo que necesitas para gestionar tu negocio de bicicletas
+            {t('pricing.perfectPlanDesc')}
           </Typography>
         </Stack>
 
@@ -164,27 +187,27 @@ export const PricingPage = () => {
                 boxShadow: 3,
               }}
             >
-              🎁 7 DÍAS GRATIS
+              🎁 {t('pricing.freeTrialBadge')}
             </Box>
 
             <CardContent sx={{ p: 4, pt: 5 }}>
               {/* Precio */}
               <Stack alignItems="center" spacing={1} sx={{ mb: 4 }}>
                 <Typography variant="h6" color="text.secondary">
-                  Taller Pro
+                  {t('pricing.workshopPro')}
                 </Typography>
 
                 <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
                   <Typography variant="h2" fontWeight="bold" color="primary">
-                    14.50€
+                    18.30€
                   </Typography>
                   <Typography variant="h5" color="text.secondary">
-                    /mes
+                    {t('common.perMonth')}
                   </Typography>
                 </Box>
 
                 <Typography variant="body2" color="text.secondary">
-                  IVA incluido · Sin compromiso · Cancela cuando quieras
+                  {t('pricing.vatIncluded')}
                 </Typography>
               </Stack>
 
@@ -242,7 +265,7 @@ export const PricingPage = () => {
                   transition: 'all 0.3s ease',
                 }}
               >
-                {loading ? 'Redirigiendo...' : 'Empezar Prueba Gratis - 7 Días'}
+                {loading ? t('pricing.redirecting') : t('pricing.startFreeTrial')}
               </Button>
 
               <Typography
@@ -252,9 +275,9 @@ export const PricingPage = () => {
                 color="text.secondary"
                 sx={{ mt: 2 }}
               >
-                ✓ 7 días gratis, luego 14.90€/mes
+                ✓ {t('pricing.trialNote1')}
                 <br />
-                ✓ Tarjeta requerida, sin cargos durante el trial
+                ✓ {t('pricing.trialNote2')}
               </Typography>
             </CardContent>
           </Card>
@@ -263,7 +286,7 @@ export const PricingPage = () => {
         {/* Trust Section */}
         <Stack spacing={3} alignItems="center" sx={{ mt: 8 }}>
           <Typography variant="h5" fontWeight="600">
-            ¿Por qué RodaMallorca?
+            {t('pricing.whyUs')}
           </Typography>
 
           <Stack
@@ -272,10 +295,10 @@ export const PricingPage = () => {
             justifyContent="center"
           >
             {[
-              { emoji: '🚀', title: 'Fácil de usar', desc: 'Configura tu taller en minutos' },
-              { emoji: '🔒', title: 'Seguro', desc: 'Tus datos protegidos con SSL' },
-              { emoji: '💰', title: 'Sin sorpresas', desc: 'Precio fijo mensual' },
-              { emoji: '🎯', title: 'Cancela cuando quieras', desc: 'Sin penalizaciones' },
+              { emoji: '🚀', title: t('pricing.easyToUse'), desc: t('pricing.easyToUseDesc') },
+              { emoji: '🔒', title: t('pricing.secure'), desc: t('pricing.secureDesc') },
+              { emoji: '💰', title: t('pricing.noSurprises'), desc: t('pricing.noSurprisesDesc') },
+              { emoji: '🎯', title: t('pricing.cancelAnytime'), desc: t('pricing.cancelAnytimeDesc') },
             ].map((item, index) => (
               <Card
                 key={index}

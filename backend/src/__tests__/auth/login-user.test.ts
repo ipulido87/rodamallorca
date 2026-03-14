@@ -1,8 +1,9 @@
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import { loginUser } from '../../modules/auth/application/login-user';
 import prisma from '../../lib/prisma';
 import { sanitizeUser } from '../../utils/sanitize-user';
+import type { UserRepository } from '../../modules/auth/domain/repositories/user-repository';
+import type { TokenService } from '../../modules/auth/domain/services/token-service';
 
 jest.mock('../../lib/prisma', () => ({
   __esModule: true,
@@ -14,7 +15,6 @@ jest.mock('../../lib/prisma', () => ({
 }));
 
 jest.mock('bcrypt');
-jest.mock('jsonwebtoken');
 jest.mock('../../utils/sanitize-user');
 
 describe('Login User Use Case', () => {
@@ -29,9 +29,26 @@ describe('Login User Use Case', () => {
     updatedAt: new Date(),
   };
 
+  let mockUserRepo: jest.Mocked<UserRepository>;
+  let mockTokenService: jest.Mocked<TokenService>;
+
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env.JWT_SECRET = 'test-secret';
+
+    // Mock UserRepository (aunque no se usa directamente en loginUser, está en deps)
+    mockUserRepo = {
+      findByEmail: jest.fn(),
+      findById: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    } as any;
+
+    // Mock TokenService
+    mockTokenService = {
+      sign: jest.fn(),
+      verify: jest.fn(),
+    } as any;
   });
 
   describe('loginUser', () => {
@@ -45,20 +62,23 @@ describe('Login User Use Case', () => {
 
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      (jwt.sign as jest.Mock).mockReturnValue(mockToken);
+      mockTokenService.sign.mockReturnValue(mockToken);
       (sanitizeUser as jest.Mock).mockReturnValue(mockSanitizedUser);
 
-      const result = await loginUser('test@example.com', 'password123');
+      const result = await loginUser('test@example.com', 'password123', {
+        userRepo: mockUserRepo,
+        tokenService: mockTokenService,
+      });
 
       expect(prisma.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'test@example.com' },
       });
       expect(bcrypt.compare).toHaveBeenCalledWith('password123', 'hashed_password');
-      expect(jwt.sign).toHaveBeenCalledWith(
-        { id: mockUser.id, email: mockUser.email, role: mockUser.role },
-        'test-secret',
-        { expiresIn: '24h' }
-      );
+      expect(mockTokenService.sign).toHaveBeenCalledWith({
+        id: mockUser.id,
+        email: mockUser.email,
+        role: mockUser.role,
+      });
       expect(sanitizeUser).toHaveBeenCalledWith(mockUser);
       expect(result).toEqual({
         token: mockToken,
@@ -69,10 +89,13 @@ describe('Login User Use Case', () => {
     it('should normalize email to lowercase', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      (jwt.sign as jest.Mock).mockReturnValue('token');
+      mockTokenService.sign.mockReturnValue('token');
       (sanitizeUser as jest.Mock).mockReturnValue({});
 
-      await loginUser('TEST@EXAMPLE.COM', 'password123');
+      await loginUser('TEST@EXAMPLE.COM', 'password123', {
+        userRepo: mockUserRepo,
+        tokenService: mockTokenService,
+      });
 
       expect(prisma.user.findUnique).toHaveBeenCalledWith({
         where: { email: 'test@example.com' },
@@ -82,68 +105,48 @@ describe('Login User Use Case', () => {
     it('should throw error if user not found', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
-      await expect(loginUser('notfound@example.com', 'password123')).rejects.toThrow(
-        'Invalid credentials'
-      );
+      await expect(
+        loginUser('notfound@example.com', 'password123', {
+          userRepo: mockUserRepo,
+          tokenService: mockTokenService,
+        })
+      ).rejects.toThrow('Invalid credentials');
     });
 
     it('should throw error if user not verified', async () => {
       const unverifiedUser = { ...mockUser, verified: false };
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(unverifiedUser);
 
-      await expect(loginUser('test@example.com', 'password123')).rejects.toThrow(
-        'User not verified'
-      );
+      await expect(
+        loginUser('test@example.com', 'password123', {
+          userRepo: mockUserRepo,
+          tokenService: mockTokenService,
+        })
+      ).rejects.toThrow('User not verified');
     });
 
     it('should throw error if user has no password (OAuth user)', async () => {
       const oauthUser = { ...mockUser, password: null };
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(oauthUser);
 
-      await expect(loginUser('test@example.com', 'password123')).rejects.toThrow(
-        'Invalid credentials'
-      );
+      await expect(
+        loginUser('test@example.com', 'password123', {
+          userRepo: mockUserRepo,
+          tokenService: mockTokenService,
+        })
+      ).rejects.toThrow('Invalid credentials');
     });
 
     it('should throw error if password is invalid', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
-      await expect(loginUser('test@example.com', 'wrongpassword')).rejects.toThrow(
-        'Invalid credentials'
-      );
-    });
-
-    it('should use fallback secret if JWT_SECRET not set', async () => {
-      delete process.env.JWT_SECRET;
-
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      (jwt.sign as jest.Mock).mockReturnValue('token');
-      (sanitizeUser as jest.Mock).mockReturnValue({});
-
-      await loginUser('test@example.com', 'password123');
-
-      expect(jwt.sign).toHaveBeenCalledWith(
-        expect.any(Object),
-        'fallback-secret',
-        expect.any(Object)
-      );
-    });
-
-    it('should create token with 24h expiration', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      (jwt.sign as jest.Mock).mockReturnValue('token');
-      (sanitizeUser as jest.Mock).mockReturnValue({});
-
-      await loginUser('test@example.com', 'password123');
-
-      expect(jwt.sign).toHaveBeenCalledWith(
-        expect.any(Object),
-        expect.any(String),
-        { expiresIn: '24h' }
-      );
+      await expect(
+        loginUser('test@example.com', 'wrongpassword', {
+          userRepo: mockUserRepo,
+          tokenService: mockTokenService,
+        })
+      ).rejects.toThrow('Invalid credentials');
     });
   });
 });

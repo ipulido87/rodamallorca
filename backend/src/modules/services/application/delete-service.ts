@@ -1,4 +1,5 @@
 import type { ServiceRepository } from '../domain/repositories/service-repository'
+import { verifyWorkshopOwnership, verifyEntityExists } from '../../../lib/authorization'
 
 interface DeleteServiceDeps {
   repo: ServiceRepository
@@ -19,23 +20,12 @@ export async function deleteService(
 ): Promise<void> {
   const { repo, workshopRepo, authenticatedUserId } = deps
 
-  // Obtener el servicio actual
+  // Obtener el servicio actual usando helper compartido
   const service = await repo.findById(serviceId)
+  verifyEntityExists(service, 'Servicio')
 
-  if (!service) {
-    throw new Error('Servicio no encontrado')
-  }
-
-  // Verificar que el taller existe y que el usuario es el dueño
-  const workshop = await workshopRepo.findById(service.workshopId)
-
-  if (!workshop) {
-    throw new Error('Taller no encontrado')
-  }
-
-  if (workshop.ownerId !== authenticatedUserId) {
-    throw new Error('No tienes permisos para eliminar este servicio')
-  }
+  // Verificar que el taller existe y que el usuario es el dueño usando helper compartido
+  await verifyWorkshopOwnership(service.workshopId, authenticatedUserId, workshopRepo)
 
   // Eliminar el servicio
   await repo.delete(serviceId)

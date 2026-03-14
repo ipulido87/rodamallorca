@@ -11,7 +11,8 @@ describe('Create Product Use Case', () => {
       update: jest.fn(),
       findById: jest.fn(),
       search: jest.fn(),
-    };
+      findByIds: jest.fn(),
+    } as any;
   });
 
   const validInput = {

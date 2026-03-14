@@ -1,5 +1,6 @@
 import type { ServiceRepository } from '../domain/repositories/service-repository'
 import type { Service, CreateServiceInput } from '../domain/entities/service'
+import { verifyWorkshopOwnership, verifyEntityExists } from '../../../lib/authorization'
 
 interface CreateServiceDeps {
   repo: ServiceRepository
@@ -20,23 +21,12 @@ export async function createService(
 ): Promise<Service> {
   const { repo, workshopRepo, authenticatedUserId } = deps
 
-  // Verificar que el taller existe y que el usuario es el dueño
-  const workshop = await workshopRepo.findById(data.workshopId)
+  // Verificar que el taller existe y que el usuario es el dueño usando helper compartido
+  await verifyWorkshopOwnership(data.workshopId, authenticatedUserId, workshopRepo)
 
-  if (!workshop) {
-    throw new Error('Taller no encontrado')
-  }
-
-  if (workshop.ownerId !== authenticatedUserId) {
-    throw new Error('No tienes permisos para crear servicios en este taller')
-  }
-
-  // Verificar que la categoría de servicio existe
+  // Verificar que la categoría de servicio existe usando helper compartido
   const category = await repo.findCategoryById(data.serviceCategoryId)
-
-  if (!category) {
-    throw new Error('Categoría de servicio no encontrada')
-  }
+  verifyEntityExists(category, 'Categoría de servicio')
 
   // Crear el servicio
   const service = await repo.create(data)

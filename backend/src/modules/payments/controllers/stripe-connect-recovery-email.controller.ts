@@ -1,8 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
-import { PrismaClient } from '@prisma/client'
+import prisma from '../../../lib/prisma'
 import { stripe } from '../../subscriptions/infrastructure/stripe.config'
-
-const prisma = new PrismaClient()
 
 /**
  * POST /api/workshops/:id/stripe/recover-by-email
@@ -77,7 +75,7 @@ export const recoverStripeAccountByEmail = async (
     console.log(`💾 [Recovery Email] Actualizando metadata en Stripe...`)
     await stripe.accounts.update(account.id, {
       metadata: {
-        workshopId: workshopId,
+        workshopId: workshopId as string,
         workshopName: workshop.name,
       },
     })

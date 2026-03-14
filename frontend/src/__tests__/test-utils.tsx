@@ -2,7 +2,7 @@ import type { ReactElement } from 'react'
 import { render } from '@testing-library/react'
 import type { RenderOptions } from '@testing-library/react'
 import { BrowserRouter } from 'react-router-dom'
-import { AuthProvider } from '../providers/auth-provider'
+import { AuthProvider } from '../features/auth'
 import { CartProvider } from '../features/cart/contexts/CartContext'
 
 interface AllTheProvidersProps {

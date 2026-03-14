@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react'
+import { Seo } from '../../../shared/components/Seo'
+import { BikeImage } from '../../../shared/components/BikeImage'
 import {
   Box,
   Container,
   Typography,
   Card,
-  CardMedia,
   CardContent,
   CardActions,
   Button,
   Chip,
   Paper,
-  TextField,
   FormControl,
   InputLabel,
   Select,
@@ -24,7 +24,6 @@ import {
   DirectionsBike,
   LocationOn,
   CalendarMonth,
-  AttachMoney,
   CheckCircle,
   Security,
   Lightbulb,
@@ -33,6 +32,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { getRentalBikes, getRentalFiltersOptions, type RentalBike, type RentalFilters } from '../../../services/rental.service'
+import { RentalDateRangePicker } from '../components/RentalDateRangePicker'
 
 export const RentalCatalog = () => {
   const { t } = useTranslation()
@@ -45,7 +45,6 @@ export const RentalCatalog = () => {
   const [filters, setFilters] = useState<RentalFilters>({})
   const [cities, setCities] = useState<string[]>([])
   const [bikeTypes, setBikeTypes] = useState<string[]>([])
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 })
 
   // Cargar opciones de filtros
   useEffect(() => {
@@ -53,7 +52,6 @@ export const RentalCatalog = () => {
       .then((response) => {
         setCities(response.filters.cities.map((c) => c.city))
         setBikeTypes(response.filters.bikeTypes.map((t) => t.type))
-        setPriceRange(response.filters.priceRange)
       })
       .catch((err) => console.error('Error cargando filtros:', err))
   }, [])
@@ -75,7 +73,7 @@ export const RentalCatalog = () => {
       })
   }, [filters])
 
-  const handleFilterChange = (key: keyof RentalFilters, value: any) => {
+  const handleFilterChange = (key: keyof RentalFilters, value: RentalFilters[keyof RentalFilters]) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
   }
 
@@ -97,11 +95,90 @@ export const RentalCatalog = () => {
 
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', py: 4 }}>
+      <Seo
+        title="Alquiler de Bicicletas en Mallorca | RodaMallorca"
+        description="Alquila bicicletas de carretera, montaña, eléctricas y gravel en Mallorca. Talleres verificados con bicicletas de calidad. Reserva online y recoge en el taller."
+        canonicalPath="/alquileres"
+        keywords="alquiler bicicletas Mallorca, alquilar bici Palma, alquiler bicicleta eléctrica Mallorca, bicicleta alquiler Mallorca precio"
+        structuredData={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://rodamallorca.es/' },
+              { '@type': 'ListItem', position: 2, name: 'Alquiler de Bicicletas', item: 'https://rodamallorca.es/alquileres' },
+            ],
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Service',
+            name: 'Alquiler de Bicicletas en Mallorca',
+            description: 'Alquila bicicletas de carretera, montaña, eléctricas y gravel en Mallorca con talleres verificados.',
+            url: 'https://rodamallorca.es/alquileres',
+            areaServed: {
+              '@type': 'Place',
+              name: 'Mallorca, Islas Baleares, España',
+            },
+            provider: {
+              '@type': 'Organization',
+              name: 'RodaMallorca',
+              url: 'https://rodamallorca.es',
+            },
+            serviceType: 'Alquiler de bicicletas',
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: [
+              {
+                '@type': 'Question',
+                name: '¿Cuánto cuesta alquilar una bicicleta en Mallorca?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'El precio varía según el tipo de bicicleta y el taller. En RodaMallorca encontrarás bicicletas de carretera, montaña, eléctricas y gravel desde diferentes tarifas diarias y semanales. Compara precios y reserva online.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: '¿Qué tipos de bicicletas se pueden alquilar en Mallorca?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'En RodaMallorca puedes alquilar bicicletas de carretera, montaña, híbridas, eléctricas (e-bike), gravel y de ciudad. Todos los talleres están verificados y ofrecen bicicletas en perfecto estado.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: '¿Se puede alquilar una bicicleta eléctrica en Mallorca?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Sí, en RodaMallorca ofrecemos alquiler de bicicletas eléctricas (e-bike) en Mallorca a través de talleres verificados. Perfectas para explorar la isla sin esfuerzo.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: '¿Incluye el alquiler casco y candado?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Depende del taller. En el catálogo puedes filtrar por bicicletas que incluyen casco, candado o luces. Muchos talleres ofrecen estos accesorios incluidos en el precio.',
+                },
+              },
+              {
+                '@type': 'Question',
+                name: '¿Cómo funciona la reserva de bicicletas en RodaMallorca?',
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: 'Selecciona la bicicleta, elige las fechas, comprueba la disponibilidad y reserva online. Recibirás confirmación y recoges la bicicleta directamente en el taller en Mallorca.',
+                },
+              },
+            ],
+          },
+        ]}
+      />
       <Container maxWidth="xl">
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
-            🚴 {t('rentals.title')}
+            Alquiler de Bicicletas en Mallorca
           </Typography>
           <Typography variant="h6" color="text.secondary">
             {t('rentals.findPerfectBike')}
@@ -151,23 +228,18 @@ export const RentalCatalog = () => {
               </FormControl>
 
               {/* Fechas */}
-              <TextField
-                fullWidth
-                label={t('common.startDate')}
-                type="date"
-                value={filters.startDate || ''}
-                onChange={(e) => handleFilterChange('startDate', e.target.value || undefined)}
-                InputLabelProps={{ shrink: true }}
-                sx={{ mb: 2 }}
-              />
-              <TextField
-                fullWidth
-                label={t('common.endDate')}
-                type="date"
-                value={filters.endDate || ''}
-                onChange={(e) => handleFilterChange('endDate', e.target.value || undefined)}
-                InputLabelProps={{ shrink: true }}
-                sx={{ mb: 2 }}
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                Fechas
+              </Typography>
+              <RentalDateRangePicker
+                startDate={filters.startDate || ''}
+                endDate={filters.endDate || ''}
+                onDatesChange={(start, end) => {
+                  setFilters((prev) => ({ ...prev, startDate: start || undefined, endDate: end || undefined }))
+                }}
+                blockedRanges={[]}
+                minDays={1}
+                maxDays={365}
               />
 
               {/* Accesorios */}
@@ -272,26 +344,26 @@ export const RentalCatalog = () => {
                   }}
                 >
                   {bikes.map((bike) => (
-                    <Box key={bike.id}>
-                      <Card
-                        sx={{
-                          height: '100%',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          transition: 'transform 0.2s, box-shadow 0.2s',
-                          '&:hover': {
-                            transform: 'translateY(-4px)',
-                            boxShadow: 4,
-                          },
-                        }}
-                      >
+                    <Card
+                      key={bike.id}
+                      sx={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                          boxShadow: 4,
+                        },
+                      }}
+                    >
                         {/* Imagen */}
-                        <CardMedia
-                          component="img"
-                          height="200"
-                          image={bike.images[0]?.medium || '/placeholder-bike.jpg'}
+                        <BikeImage
+                          src={bike.images[0]?.medium}
+                          preset="thumbnail"
+                          bikeType={bike.bikeType}
                           alt={bike.title}
-                          sx={{ objectFit: 'cover' }}
+                          height={200}
                         />
 
                         <CardContent sx={{ flexGrow: 1 }}>
@@ -381,8 +453,7 @@ export const RentalCatalog = () => {
                             {t('rentals.viewAvailability')}
                           </Button>
                         </CardActions>
-                      </Card>
-                    </Box>
+                    </Card>
                   ))}
                 </Box>
               </>

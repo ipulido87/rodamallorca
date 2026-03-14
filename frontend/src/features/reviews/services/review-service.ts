@@ -1,4 +1,4 @@
-import { API } from '../../auth/services/auth-service'
+import { API } from '@/shared/api'
 import type { Review, CreateReviewInput, UpdateReviewInput } from '../types/review-types'
 
 export const createReview = async (data: CreateReviewInput): Promise<Review> => {

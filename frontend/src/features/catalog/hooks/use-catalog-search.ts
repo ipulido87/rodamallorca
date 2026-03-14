@@ -42,7 +42,8 @@ interface UseCatalogSearchResult {
   loadWorkshops: (
     query?: string,
     filters?: FilterValues,
-    page?: number
+    page?: number,
+    size?: number
   ) => Promise<void>
 
   // Services
@@ -99,7 +100,7 @@ export const useCatalogSearch = (): UseCatalogSearchResult => {
       try {
         const params: ProductSearchParams = {
           page,
-          size: 12,
+          size: 50,
         }
 
         if (query) params.q = query
@@ -118,7 +119,7 @@ export const useCatalogSearch = (): UseCatalogSearchResult => {
 
         const response = await searchProducts(params)
 
-        setProducts(response.items)
+        setProducts(prev => page === 1 ? response.items : [...prev, ...response.items])
         setProductsPagination({
           total: response.total,
           page: response.page,
@@ -136,14 +137,14 @@ export const useCatalogSearch = (): UseCatalogSearchResult => {
   )
 
   const loadWorkshops = useCallback(
-    async (query?: string, filters?: FilterValues, page: number = 1) => {
+    async (query?: string, filters?: FilterValues, page: number = 1, size: number = 12) => {
       setWorkshopsLoading(true)
       setWorkshopsError(null)
 
       try {
         const params: WorkshopSearchParams = {
           page,
-          size: 12,
+          size,
         }
 
         if (query) params.q = query

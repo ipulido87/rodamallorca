@@ -8,10 +8,13 @@ import {
   Typography,
 } from '@mui/material'
 import { useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { API } from '../services/auth-service'
+import { API } from '@/shared/api'
+import { Seo } from '@/shared/components/Seo'
 
 export const ForgotPassword = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
@@ -27,7 +30,7 @@ export const ForgotPassword = () => {
       await API.post('/auth/forgot-password', { email })
       setSuccess(true)
     } catch (err) {
-      setError('Error al enviar el email. Inténtalo de nuevo.')
+      setError(t('auth.sendError'))
       console.error(err)
     } finally {
       setLoading(false)
@@ -39,11 +42,10 @@ export const ForgotPassword = () => {
       <Container maxWidth="xs">
         <Paper elevation={3} sx={{ p: 4, mt: 10 }}>
           <Typography variant="h5" textAlign="center" gutterBottom>
-            ✉️ Email Enviado
+            ✉️ {t('auth.emailSent')}
           </Typography>
           <Alert severity="success" sx={{ mt: 2 }}>
-            Si el email está registrado, recibirás un enlace para restablecer tu
-            contraseña.
+            {t('auth.emailSentDesc')}
           </Alert>
           <Button
             fullWidth
@@ -51,7 +53,7 @@ export const ForgotPassword = () => {
             sx={{ mt: 3 }}
             onClick={() => navigate('/login')}
           >
-            Volver al login
+            {t('auth.backToLogin')}
           </Button>
         </Paper>
       </Container>
@@ -59,10 +61,16 @@ export const ForgotPassword = () => {
   }
 
   return (
-    <Container maxWidth="xs">
+    <>
+      <Seo
+        title="Restablecer Contraseña | RodaMallorca"
+        description="Recupera el acceso a tu cuenta de RodaMallorca."
+        robots="noindex,nofollow"
+      />
+      <Container maxWidth="xs">
       <Paper elevation={3} sx={{ p: 4, mt: 10 }}>
         <Typography variant="h5" textAlign="center" gutterBottom>
-          Restablecer Contraseña
+          {t('auth.forgotPasswordTitle')}
         </Typography>
         <Typography
           variant="body2"
@@ -70,8 +78,7 @@ export const ForgotPassword = () => {
           textAlign="center"
           sx={{ mb: 3 }}
         >
-          Ingresa tu email y te enviaremos un enlace para restablecer tu
-          contraseña
+          {t('auth.forgotPasswordDesc')}
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit}>
@@ -102,7 +109,7 @@ export const ForgotPassword = () => {
             sx={{ mt: 3 }}
             disabled={loading}
           >
-            {loading ? 'Enviando...' : 'Enviar Enlace'}
+            {loading ? t('auth.sending') : t('auth.sendLink')}
           </Button>
 
           <Button
@@ -112,10 +119,11 @@ export const ForgotPassword = () => {
             onClick={() => navigate('/login')}
             disabled={loading}
           >
-            Volver al login
+            {t('auth.backToLogin')}
           </Button>
         </Box>
       </Paper>
     </Container>
+    </>
   )
 }

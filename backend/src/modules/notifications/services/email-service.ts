@@ -999,3 +999,643 @@ export const sendPaymentSuccessEmail = async (data: PaymentSuccessEmailData): Pr
     console.error('❌ [EMAIL] Error enviando email de pago:', error?.message || error)
   }
 }
+
+interface OrderCancelledEmailData {
+  workshopName: string
+  workshopOwnerEmail: string
+  customerName: string
+  customerEmail: string
+  orderNumber: string
+  cancellationReason?: string
+  orderUrl: string
+}
+
+/**
+ * Envía emails cuando un pedido es cancelado
+ * Notifica tanto al taller como al cliente
+ */
+export const sendOrderCancelledEmail = async (data: OrderCancelledEmailData): Promise<void> => {
+  try {
+    if (!resend) {
+      console.warn('⚠️  [EMAIL] Resend no configurado. Email de cancelación no enviado.')
+      console.log(`📧 [EMAIL] Se hubiera enviado email de cancelación a ${data.customerEmail} y ${data.workshopOwnerEmail}`)
+      return
+    }
+
+    const emailFrom = EMAIL_FROM || 'RodaMallorca <noreply@rodamallorca.es>'
+
+    // Email al cliente
+    await resend.emails.send({
+      from: emailFrom,
+      to: data.customerEmail,
+      subject: `❌ Pedido Cancelado #${data.orderNumber}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Pedido Cancelado</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .container {
+              background-color: #f9f9f9;
+              border-radius: 8px;
+              padding: 30px;
+              border: 1px solid #e0e0e0;
+            }
+            .header {
+              background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+              color: white;
+              padding: 20px;
+              border-radius: 8px 8px 0 0;
+              text-align: center;
+              margin: -30px -30px 20px -30px;
+            }
+            h1 {
+              margin: 0;
+              font-size: 24px;
+            }
+            .order-info {
+              background: white;
+              padding: 20px;
+              border-radius: 8px;
+              margin: 20px 0;
+              border-left: 4px solid #d32f2f;
+            }
+            .info-row {
+              display: flex;
+              justify-content: space-between;
+              margin: 10px 0;
+              padding: 8px 0;
+              border-bottom: 1px solid #f0f0f0;
+            }
+            .info-label {
+              font-weight: bold;
+              color: #666;
+            }
+            .info-value {
+              color: #333;
+            }
+            .button {
+              display: inline-block;
+              padding: 12px 24px;
+              background-color: #1976d2;
+              color: white;
+              text-decoration: none;
+              border-radius: 6px;
+              font-weight: bold;
+              text-align: center;
+              margin: 20px auto;
+              display: block;
+              width: fit-content;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 30px;
+              padding-top: 20px;
+              border-top: 1px solid #e0e0e0;
+              color: #666;
+              font-size: 14px;
+            }
+            .emoji {
+              font-size: 32px;
+              text-align: center;
+              margin: 10px 0;
+            }
+            .alert-box {
+              background: #fff3cd;
+              border: 1px solid #ffc107;
+              border-radius: 8px;
+              padding: 15px;
+              margin: 20px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="emoji">❌</div>
+              <h1>Pedido Cancelado</h1>
+            </div>
+
+            <p>Hola <strong>${data.customerName}</strong>,</p>
+            <p>Te informamos que tu pedido ha sido cancelado.</p>
+
+            <div class="order-info">
+              <div class="info-row">
+                <span class="info-label">Número de Pedido:</span>
+                <span class="info-value">#${data.orderNumber}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Taller:</span>
+                <span class="info-value">${data.workshopName}</span>
+              </div>
+            </div>
+
+            ${data.cancellationReason ? `
+              <div class="alert-box">
+                <strong>📝 Motivo de cancelación:</strong><br>
+                ${data.cancellationReason}
+              </div>
+            ` : ''}
+
+            <p style="margin-top: 20px; color: #666;">
+              Si tienes alguna pregunta sobre esta cancelación, no dudes en contactar con el taller.
+            </p>
+
+            <a href="${data.orderUrl}" class="button">
+              Ver Detalles
+            </a>
+
+            <div class="footer">
+              <p>Este email fue enviado automáticamente por el sistema de notificaciones.</p>
+              <p>© ${new Date().getFullYear()} RodaMallorca. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    })
+
+    // Email al taller
+    await resend.emails.send({
+      from: emailFrom,
+      to: data.workshopOwnerEmail,
+      subject: `❌ Pedido Cancelado #${data.orderNumber} - ${data.workshopName}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Pedido Cancelado</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .container {
+              background-color: #f9f9f9;
+              border-radius: 8px;
+              padding: 30px;
+              border: 1px solid #e0e0e0;
+            }
+            .header {
+              background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+              color: white;
+              padding: 20px;
+              border-radius: 8px 8px 0 0;
+              text-align: center;
+              margin: -30px -30px 20px -30px;
+            }
+            h1 {
+              margin: 0;
+              font-size: 24px;
+            }
+            .order-info {
+              background: white;
+              padding: 20px;
+              border-radius: 8px;
+              margin: 20px 0;
+              border-left: 4px solid #d32f2f;
+            }
+            .info-row {
+              display: flex;
+              justify-content: space-between;
+              margin: 10px 0;
+              padding: 8px 0;
+              border-bottom: 1px solid #f0f0f0;
+            }
+            .info-label {
+              font-weight: bold;
+              color: #666;
+            }
+            .info-value {
+              color: #333;
+            }
+            .button {
+              display: inline-block;
+              padding: 12px 24px;
+              background-color: #1976d2;
+              color: white;
+              text-decoration: none;
+              border-radius: 6px;
+              font-weight: bold;
+              text-align: center;
+              margin: 20px auto;
+              display: block;
+              width: fit-content;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 30px;
+              padding-top: 20px;
+              border-top: 1px solid #e0e0e0;
+              color: #666;
+              font-size: 14px;
+            }
+            .emoji {
+              font-size: 32px;
+              text-align: center;
+              margin: 10px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="emoji">❌</div>
+              <h1>Pedido Cancelado</h1>
+            </div>
+
+            <p>Hola <strong>${data.workshopName}</strong>,</p>
+            <p>Te informamos que el pedido <strong>#${data.orderNumber}</strong> ha sido cancelado.</p>
+
+            <div class="order-info">
+              <div class="info-row">
+                <span class="info-label">Número de Pedido:</span>
+                <span class="info-value">#${data.orderNumber}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Cliente:</span>
+                <span class="info-value">${data.customerName}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Email:</span>
+                <span class="info-value">${data.customerEmail}</span>
+              </div>
+            </div>
+
+            <a href="${data.orderUrl}" class="button">
+              Ver Detalles del Pedido
+            </a>
+
+            <div class="footer">
+              <p>Este email fue enviado automáticamente por el sistema de notificaciones.</p>
+              <p>© ${new Date().getFullYear()} RodaMallorca. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    })
+
+    console.log(`✅ [EMAIL] Emails de cancelación enviados a ${data.customerEmail} y ${data.workshopOwnerEmail} - Pedido #${data.orderNumber}`)
+  } catch (error: any) {
+    console.error('❌ [EMAIL] Error enviando emails de cancelación:', error?.message || error)
+    // No lanzar error para no bloquear la cancelación del pedido
+  }
+}
+
+interface OrderStatusUpdateEmailData {
+  customerName: string
+  customerEmail: string
+  workshopName: string
+  orderNumber: string
+  newStatus: string
+  statusMessage: string
+  orderUrl: string
+}
+
+/**
+ * Envía email al cliente cuando cambia el estado de su pedido
+ */
+export const sendOrderStatusUpdateEmail = async (data: OrderStatusUpdateEmailData): Promise<void> => {
+  try {
+    if (!resend) {
+      console.warn('⚠️  [EMAIL] Resend no configurado. Email de actualización no enviado.')
+      console.log(`📧 [EMAIL] Se hubiera enviado email de actualización a ${data.customerEmail}`)
+      return
+    }
+
+    const emailFrom = EMAIL_FROM || 'RodaMallorca <noreply@rodamallorca.es>'
+
+    // Emojis según el estado
+    const statusEmoji: Record<string, string> = {
+      IN_PROGRESS: '🔧',
+      READY: '✅',
+      COMPLETED: '🎉',
+    }
+
+    const emoji = statusEmoji[data.newStatus] || '📦'
+
+    await resend.emails.send({
+      from: emailFrom,
+      to: data.customerEmail,
+      subject: `${emoji} Actualización de Pedido #${data.orderNumber}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Actualización de Pedido</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .container {
+              background-color: #f9f9f9;
+              border-radius: 8px;
+              padding: 30px;
+              border: 1px solid #e0e0e0;
+            }
+            .header {
+              background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+              color: white;
+              padding: 20px;
+              border-radius: 8px 8px 0 0;
+              text-align: center;
+              margin: -30px -30px 20px -30px;
+            }
+            h1 {
+              margin: 0;
+              font-size: 24px;
+            }
+            .order-info {
+              background: white;
+              padding: 20px;
+              border-radius: 8px;
+              margin: 20px 0;
+              border-left: 4px solid #1976d2;
+            }
+            .info-row {
+              display: flex;
+              justify-content: space-between;
+              margin: 10px 0;
+              padding: 8px 0;
+              border-bottom: 1px solid #f0f0f0;
+            }
+            .info-label {
+              font-weight: bold;
+              color: #666;
+            }
+            .info-value {
+              color: #333;
+            }
+            .status-badge {
+              display: inline-block;
+              padding: 10px 20px;
+              background: #e3f2fd;
+              color: #1976d2;
+              border-radius: 20px;
+              font-weight: bold;
+              font-size: 16px;
+              text-align: center;
+              margin: 20px 0;
+            }
+            .button {
+              display: inline-block;
+              padding: 12px 24px;
+              background-color: #1976d2;
+              color: white;
+              text-decoration: none;
+              border-radius: 6px;
+              font-weight: bold;
+              text-align: center;
+              margin: 20px auto;
+              display: block;
+              width: fit-content;
+            }
+            .footer {
+              text-align: center;
+              margin-top: 30px;
+              padding-top: 20px;
+              border-top: 1px solid #e0e0e0;
+              color: #666;
+              font-size: 14px;
+            }
+            .emoji {
+              font-size: 32px;
+              text-align: center;
+              margin: 10px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <div class="emoji">${emoji}</div>
+              <h1>Actualización de Tu Pedido</h1>
+            </div>
+
+            <p>Hola <strong>${data.customerName}</strong>,</p>
+            <p>${data.statusMessage}</p>
+
+            <div class="order-info">
+              <div class="info-row">
+                <span class="info-label">Número de Pedido:</span>
+                <span class="info-value">#${data.orderNumber}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Taller:</span>
+                <span class="info-value">${data.workshopName}</span>
+              </div>
+            </div>
+
+            <div style="text-align: center;">
+              <div class="status-badge">
+                ${emoji} ${data.statusMessage}
+              </div>
+            </div>
+
+            <a href="${data.orderUrl}" class="button">
+              Ver Detalles del Pedido
+            </a>
+
+            <div class="footer">
+              <p>Este email fue enviado automáticamente por el sistema de notificaciones.</p>
+              <p>© ${new Date().getFullYear()} RodaMallorca. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    })
+
+    console.log(`✅ [EMAIL] Email de actualización enviado a ${data.customerEmail} - Pedido #${data.orderNumber}`)
+  } catch (error: any) {
+    console.error('❌ [EMAIL] Error enviando email de actualización:', error?.message || error)
+    // No lanzar error para no bloquear la actualización del pedido
+  }
+}
+
+interface WorkshopWelcomeEmailData {
+  workshopName: string
+  ownerEmail: string
+  ownerName?: string
+  city?: string
+  claimUrl: string
+}
+
+/**
+ * Notifica al propietario de un taller que su negocio ha sido añadido a RodaMallorca
+ * e incluye el enlace para reclamar y gestionar su perfil.
+ */
+export const sendWorkshopWelcomeEmail = async (data: WorkshopWelcomeEmailData): Promise<void> => {
+  const emailFrom = EMAIL_FROM || 'RodaMallorca <noreply@rodamallorca.es>'
+
+  if (!resend) {
+    console.warn('⚠️  [EMAIL] Resend no configurado. Email de bienvenida no enviado.')
+    console.log(`📧 [EMAIL] Se hubiera enviado bienvenida a ${data.ownerEmail} para taller "${data.workshopName}"`)
+    console.log(`   Claim URL: ${data.claimUrl}`)
+    return
+  }
+
+  try {
+    await resend.emails.send({
+      from: emailFrom,
+      to: data.ownerEmail,
+      subject: `🚴 Tu taller "${data.workshopName}" ya está en RodaMallorca`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Tu taller está en RodaMallorca</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .container {
+              background-color: #f9f9f9;
+              border-radius: 8px;
+              padding: 30px;
+              border: 1px solid #e0e0e0;
+            }
+            .header {
+              background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+              color: white;
+              padding: 24px 20px;
+              border-radius: 8px 8px 0 0;
+              text-align: center;
+              margin: -30px -30px 24px -30px;
+            }
+            .header h1 { margin: 0; font-size: 22px; }
+            .header p { margin: 8px 0 0; font-size: 14px; opacity: 0.9; }
+            .benefit {
+              display: flex;
+              align-items: flex-start;
+              margin: 12px 0;
+              padding: 12px;
+              background: white;
+              border-radius: 6px;
+              border-left: 3px solid #1976d2;
+            }
+            .benefit-icon { font-size: 20px; margin-right: 12px; flex-shrink: 0; }
+            .cta-button {
+              display: block;
+              background: #1976d2;
+              color: white !important;
+              text-decoration: none;
+              text-align: center;
+              padding: 16px 32px;
+              border-radius: 8px;
+              font-size: 16px;
+              font-weight: bold;
+              margin: 24px 0;
+            }
+            .note {
+              background: #fff8e1;
+              border: 1px solid #ffcc02;
+              border-radius: 6px;
+              padding: 12px 16px;
+              font-size: 13px;
+              color: #5d4037;
+              margin-top: 16px;
+            }
+            .footer {
+              margin-top: 24px;
+              text-align: center;
+              font-size: 12px;
+              color: #999;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🚴 ¡Hola${data.ownerName ? `, ${data.ownerName}` : ''}!</h1>
+              <p>Tu taller "${data.workshopName}" ya aparece en RodaMallorca</p>
+            </div>
+
+            <p>Hemos añadido <strong>${data.workshopName}</strong>${data.city ? ` (${data.city})` : ''} a nuestro directorio de talleres de bicicletas en Mallorca para ayudarte a llegar a más clientes.</p>
+
+            <p>Para beneficiarte al máximo, reclama tu perfil y podrás:</p>
+
+            <div class="benefit">
+              <span class="benefit-icon">🏪</span>
+              <div>
+                <strong>Gestionar tu información</strong><br>
+                <span style="font-size:13px;color:#666">Actualiza fotos, descripción, horarios y datos de contacto.</span>
+              </div>
+            </div>
+            <div class="benefit">
+              <span class="benefit-icon">🛒</span>
+              <div>
+                <strong>Vender productos online</strong><br>
+                <span style="font-size:13px;color:#666">Publica recambios y accesorios y recibe pagos directamente.</span>
+              </div>
+            </div>
+            <div class="benefit">
+              <span class="benefit-icon">⭐</span>
+              <div>
+                <strong>Recibir opiniones verificadas</strong><br>
+                <span style="font-size:13px;color:#666">Construye tu reputación con reseñas de clientes reales.</span>
+              </div>
+            </div>
+            <div class="benefit">
+              <span class="benefit-icon">📊</span>
+              <div>
+                <strong>Panel de control completo</strong><br>
+                <span style="font-size:13px;color:#666">Gestiona pedidos, clientes y facturación en un solo lugar.</span>
+              </div>
+            </div>
+
+            <a href="${data.claimUrl}" class="cta-button">
+              ✅ Reclamar mi taller ahora
+            </a>
+
+            <div class="note">
+              <strong>⏱️ Este enlace es personal y de un solo uso.</strong> Si no eres el propietario de este taller o recibes este email por error, puedes ignorarlo.
+            </div>
+
+            <div class="footer">
+              <p>RodaMallorca — La plataforma de talleres de bicicletas en Mallorca</p>
+              <p>© ${new Date().getFullYear()} RodaMallorca. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    })
+
+    console.log(`✅ [EMAIL] Email de bienvenida enviado a ${data.ownerEmail} para taller "${data.workshopName}"`)
+  } catch (error: any) {
+    console.error(`❌ [EMAIL] Error enviando bienvenida a ${data.ownerEmail}:`, error?.message || error)
+    // No lanzar el error para no bloquear el proceso de notificación masiva
+  }
+}

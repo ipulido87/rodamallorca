@@ -19,6 +19,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import useSWR from 'swr'
 import { useSnackbar } from '../../../shared/hooks/use-snackbar'
@@ -36,6 +37,7 @@ import { StatsCards } from '../components/stats-cards'
 export const BillingInvoices = () => {
   const { workshopId } = useParams<{ workshopId: string }>()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { showError } = useSnackbar()
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
@@ -58,7 +60,7 @@ export const BillingInvoices = () => {
       const data = await getInvoicesByWorkshop(workshopId)
       setInvoices(data)
     } catch (error) {
-      showError('Error al cargar las facturas')
+      showError(t('billing.errorLoadingInvoices'))
       console.error('Error loading invoices:', error)
     } finally {
       setLoading(false)
@@ -90,7 +92,7 @@ export const BillingInvoices = () => {
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <CircularProgress size={60} />
           <Typography variant="h6" sx={{ mt: 2 }}>
-            Cargando facturas...
+            {t('billing.loadingInvoices')}
           </Typography>
         </Box>
       </Container>
@@ -103,10 +105,10 @@ export const BillingInvoices = () => {
         <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between' }}>
           <Box>
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              Facturación
+              {t('billing.invoicing')}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Gestiona las facturas de tu taller
+              {t('billing.manageInvoices')}
             </Typography>
           </Box>
           <Button
@@ -114,7 +116,7 @@ export const BillingInvoices = () => {
             startIcon={<Add />}
             onClick={() => navigate(`/billing/${workshopId}/create`)}
           >
-            Nueva Factura
+            {t('billing.newInvoice')}
           </Button>
         </Box>
 
@@ -122,10 +124,10 @@ export const BillingInvoices = () => {
         {stats && !statsLoading && (
           <Box sx={{ mb: 4 }}>
             <Typography variant="h6" fontWeight="bold" gutterBottom>
-              📊 Resumen Financiero
+              {t('billing.financialSummary')}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Estadísticas de facturación del mes actual
+              {t('billing.currentMonthStats')}
             </Typography>
             <StatsCards stats={stats} />
           </Box>
@@ -135,17 +137,17 @@ export const BillingInvoices = () => {
           <Box textAlign="center" py={10}>
             <Receipt sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
             <Typography variant="h5" color="text.secondary" gutterBottom>
-              No hay facturas todavía
+              {t('billing.noInvoicesYet')}
             </Typography>
             <Typography variant="body1" color="text.secondary" mb={3}>
-              Crea tu primera factura para empezar
+              {t('billing.createFirstInvoiceHint')}
             </Typography>
             <Button
               variant="contained"
               startIcon={<Add />}
               onClick={() => navigate(`/billing/${workshopId}/create`)}
             >
-              Crear Primera Factura
+              {t('billing.createFirstInvoice')}
             </Button>
           </Box>
         ) : (
@@ -168,17 +170,17 @@ export const BillingInvoices = () => {
 
                       {invoice.customer && (
                         <Typography variant="body2" color="text.secondary">
-                          Cliente: {invoice.customer.name}
+                          {t('billing.customer')}: {invoice.customer.name}
                         </Typography>
                       )}
 
                       <Typography variant="body2" color="text.secondary">
-                        Fecha: {formatDate(invoice.issueDate)}
+                        {t('billing.date')}: {formatDate(invoice.issueDate)}
                       </Typography>
 
                       {invoice.dueDate && (
                         <Typography variant="body2" color="text.secondary">
-                          Vencimiento: {formatDate(invoice.dueDate)}
+                          {t('billing.dueDate')}: {formatDate(invoice.dueDate)}
                         </Typography>
                       )}
 
@@ -196,11 +198,11 @@ export const BillingInvoices = () => {
                         {formatPrice(invoice.total)}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Base: {formatPrice(invoice.subtotal)}
+                        {t('billing.subtotal')}: {formatPrice(invoice.subtotal)}
                       </Typography>
                       <br />
                       <Typography variant="caption" color="text.secondary">
-                        IVA: {formatPrice(invoice.taxAmount)}
+                        {t('billing.tax')}: {formatPrice(invoice.taxAmount)}
                       </Typography>
 
                       <Box sx={{ mt: 2 }}>
@@ -209,7 +211,7 @@ export const BillingInvoices = () => {
                           startIcon={<Visibility />}
                           onClick={() => navigate(`/billing/${workshopId}/invoice/${invoice.id}`)}
                         >
-                          Ver Detalles
+                          {t('billing.viewDetails')}
                         </Button>
                       </Box>
                     </Box>

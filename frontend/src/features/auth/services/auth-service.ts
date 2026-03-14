@@ -1,46 +1,9 @@
-// src/services/auth-service.ts
-import axios from 'axios'
-import { API_URL, AUTH_ENDPOINTS } from '../../../constants/api'
+// src/features/auth/services/auth-service.ts
+import { AUTH_ENDPOINTS } from '../../../constants/api'
+import { API } from '../../../shared/api'
 
-export const API = axios.create({
-  baseURL: API_URL,
-  withCredentials: true,
-})
-
-// ✅ INTERCEPTOR PARA MANEJAR ERRORES ESPECÍFICOS
-API.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // ⭐ Detectar error de suscripción inactiva
-    if (
-      error.response?.status === 403 &&
-      error.response?.data?.error === 'NO_ACTIVE_SUBSCRIPTION'
-    ) {
-      // Redirigir a página de activación de suscripción
-      console.log('🔒 [API Interceptor] Suscripción inactiva, redirigiendo a /activate-subscription')
-      window.location.href = '/activate-subscription'
-      return Promise.reject({
-        ...error,
-        isSubscriptionRequired: true,
-      })
-    }
-
-    // Detectar email no verificado
-    if (
-      error.response?.status === 403 &&
-      error.response?.data?.error === 'EMAIL_NOT_VERIFIED'
-    ) {
-      // Mantenemos el error pero con la data específica para que el componente lo maneje
-      return Promise.reject({
-        ...error,
-        isEmailNotVerified: true,
-        email: error.response?.data?.email, // Si el backend lo incluye
-      })
-    }
-
-    return Promise.reject(error)
-  }
-)
+// Re-export API for backwards compatibility during migration
+export { API } from '../../../shared/api'
 
 // ---- Endpoints ----
 export async function register(input: {

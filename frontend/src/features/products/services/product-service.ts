@@ -1,4 +1,4 @@
-import { API } from '../../../features/auth/services/auth-service'
+import { API } from '@/shared/api'
 import type { ProcessedImage } from '../../media/services/media-service'
 
 export interface CreateProductData {
@@ -12,7 +12,7 @@ export interface CreateProductData {
 }
 
 export interface Product {
-  images: any
+  images: Array<{ id: string; url: string; position: number }>
   id: string
   workshopId: string
   title: string

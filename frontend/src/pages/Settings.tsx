@@ -22,9 +22,10 @@ import {
   Save,
 } from '@mui/icons-material'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import useSWR from 'swr'
 import { useAuth } from '../features/auth/hooks/useAuth'
-import { API } from '../features/auth/services/auth-service'
+import { API, getErrorMessage } from '@/shared/api'
 import { useSnackbar } from '../shared/hooks/use-snackbar'
 
 // Tipos
@@ -82,6 +83,7 @@ const saveUserSettings = async (settings: UserSettings): Promise<UserSettings> =
 
 export const Settings = () => {
   const { user } = useAuth()
+  const { t } = useTranslation()
   const { showSuccess, showError } = useSnackbar()
   const [saving, setSaving] = useState(false)
 
@@ -107,24 +109,24 @@ export const Settings = () => {
       const updated = await saveUserSettings(currentSettings)
       mutate(updated, false)
       setLocalSettings(null)
-      showSuccess('Configuración guardada correctamente')
-    } catch (error: any) {
-      showError(error.response?.data?.message || 'Error al guardar configuración')
+      showSuccess(t('settings.saved'))
+    } catch (error: unknown) {
+      showError(getErrorMessage(error, t('settings.saveError')))
     } finally {
       setSaving(false)
     }
   }
 
-  const updateSettings = (path: string[], value: any) => {
+  const updateSettings = (path: string[], value: unknown) => {
     if (!currentSettings) return
 
     const newSettings = { ...currentSettings }
-    let obj: any = newSettings
+    let obj: Record<string, unknown> = newSettings as Record<string, unknown>
 
     // Navegar por el path hasta el penúltimo elemento
     for (let i = 0; i < path.length - 1; i++) {
-      obj[path[i]] = { ...obj[path[i]] }
-      obj = obj[path[i]]
+      obj[path[i]] = { ...(obj[path[i]] as Record<string, unknown>) }
+      obj = obj[path[i]] as Record<string, unknown>
     }
 
     // Actualizar el valor final
@@ -139,7 +141,7 @@ export const Settings = () => {
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <CircularProgress size={60} />
           <Typography variant="h6" sx={{ mt: 2 }}>
-            Cargando configuración...
+            {t('settings.loadingSettings')}
           </Typography>
         </Box>
       </Container>
@@ -151,7 +153,7 @@ export const Settings = () => {
       <Container maxWidth="lg">
         <Box sx={{ py: 4 }}>
           <Alert severity="error">
-            No se pudo cargar la configuración
+            {t('settings.loadError')}
           </Alert>
         </Box>
       </Container>
@@ -165,10 +167,10 @@ export const Settings = () => {
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" fontWeight="bold" gutterBottom>
-          Configuración
+          {t('settings.title')}
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Personaliza tu experiencia en la plataforma
+          {t('settings.subtitle')}
         </Typography>
       </Box>
 
@@ -180,12 +182,12 @@ export const Settings = () => {
               <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
                 <Notifications color="primary" />
                 <Typography variant="h6" fontWeight="bold">
-                  Notificaciones
+                  {t('settings.notifications')}
                 </Typography>
               </Stack>
 
               <Typography variant="subtitle2" gutterBottom sx={{ mb: 2 }}>
-                Notificaciones por Email
+                {t('settings.emailNotifications')}
               </Typography>
               <FormGroup sx={{ mb: 3 }}>
                 <FormControlLabel
@@ -200,7 +202,7 @@ export const Settings = () => {
                       }
                     />
                   }
-                  label="Pedidos y confirmaciones"
+                  label={t('settings.ordersAndConfirmations')}
                 />
                 <FormControlLabel
                   control={
@@ -214,7 +216,7 @@ export const Settings = () => {
                       }
                     />
                   }
-                  label="Actualizaciones de productos"
+                  label={t('settings.productUpdates')}
                 />
                 <FormControlLabel
                   control={
@@ -228,14 +230,14 @@ export const Settings = () => {
                       }
                     />
                   }
-                  label="Ofertas y promociones"
+                  label={t('settings.offersAndPromotions')}
                 />
               </FormGroup>
 
               <Divider sx={{ my: 2 }} />
 
               <Typography variant="subtitle2" gutterBottom sx={{ mb: 2 }}>
-                Notificaciones Push
+                {t('settings.pushNotifications')}
               </Typography>
               <FormGroup>
                 <FormControlLabel
@@ -250,7 +252,7 @@ export const Settings = () => {
                       }
                     />
                   }
-                  label="Actualizaciones de pedidos"
+                  label={t('settings.orderUpdates')}
                 />
                 <FormControlLabel
                   control={
@@ -264,7 +266,7 @@ export const Settings = () => {
                       }
                     />
                   }
-                  label="Mensajes y comunicaciones"
+                  label={t('settings.messagesAndComms')}
                 />
               </FormGroup>
             </CardContent>
@@ -278,7 +280,7 @@ export const Settings = () => {
               <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
                 <Security color="primary" />
                 <Typography variant="h6" fontWeight="bold">
-                  Privacidad
+                  {t('settings.privacy')}
                 </Typography>
               </Stack>
 
@@ -295,7 +297,7 @@ export const Settings = () => {
                       }
                     />
                   }
-                  label="Perfil visible públicamente"
+                  label={t('settings.profileVisible')}
                 />
                 <FormControlLabel
                   control={
@@ -306,7 +308,7 @@ export const Settings = () => {
                       }
                     />
                   }
-                  label="Mostrar email en perfil público"
+                  label={t('settings.showEmailPublic')}
                 />
                 <FormControlLabel
                   control={
@@ -317,15 +319,14 @@ export const Settings = () => {
                       }
                     />
                   }
-                  label="Mostrar teléfono en perfil público"
+                  label={t('settings.showPhonePublic')}
                 />
               </FormGroup>
 
               <Divider sx={{ my: 3 }} />
 
               <Alert severity="info" sx={{ mt: 2 }}>
-                Tu información personal está protegida y nunca será compartida con
-                terceros sin tu consentimiento.
+                {t('settings.privacyNote')}
               </Alert>
             </CardContent>
           </Card>
@@ -339,14 +340,12 @@ export const Settings = () => {
                 <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
                   <Store color="primary" />
                   <Typography variant="h6" fontWeight="bold">
-                    Configuración de Taller
+                    {t('settings.workshopSettings')}
                   </Typography>
                 </Stack>
 
                 <Alert severity="info">
-                  Las configuraciones específicas de tu taller están disponibles en
-                  la sección "Mis Talleres". Desde allí puedes gestionar horarios,
-                  servicios, y otra información de tu negocio.
+                  {t('settings.workshopSettingsNote')}
                 </Alert>
 
                 <Box sx={{ mt: 2 }}>
@@ -354,7 +353,7 @@ export const Settings = () => {
                     variant="outlined"
                     onClick={() => (window.location.href = '/my-workshops')}
                   >
-                    Ir a Mis Talleres
+                    {t('settings.goToMyWorkshops')}
                   </Button>
                 </Box>
               </CardContent>
@@ -384,7 +383,7 @@ export const Settings = () => {
             onClick={() => setLocalSettings(null)}
             disabled={saving}
           >
-            Descartar Cambios
+            {t('settings.discardChanges')}
           </Button>
           <Button
             variant="contained"
@@ -392,7 +391,7 @@ export const Settings = () => {
             onClick={handleSave}
             disabled={saving}
           >
-            {saving ? 'Guardando...' : 'Guardar Configuración'}
+            {saving ? t('settings.saving') : t('settings.saveSettings')}
           </Button>
         </Box>
       )}

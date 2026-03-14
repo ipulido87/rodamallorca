@@ -1,4 +1,5 @@
-import { PrismaClient, Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client'
+import prisma from '../../../../../lib/prisma'
 import type { BillingRepository } from '../../../domain/repositories/billing-repository'
 import type {
   Customer,
@@ -11,12 +12,12 @@ import type {
   CreateInvoiceSeriesInput,
 } from '../../../domain/entities/billing'
 
-const prisma = new PrismaClient()
-
 // Helper para convertir Decimal a number
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma Decimal mapping
 function toDomainInvoice(prismaInvoice: any): Invoice {
   return {
     ...prismaInvoice,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma Decimal mapping
     items: prismaInvoice.items?.map((item: any) => ({
       ...item,
       quantity: item.quantity?.toNumber ? item.quantity.toNumber() : item.quantity,
@@ -59,6 +60,16 @@ export const billingRepositoryPrisma: BillingRepository = {
       orderBy: { name: 'asc' },
     })
     return customers as Customer[]
+  },
+
+  async findCustomerByWorkshopAndEmail(workshopId: string, email: string): Promise<Customer | null> {
+    const customer = await prisma.customer.findFirst({
+      where: {
+        workshopId,
+        email,
+      },
+    })
+    return customer as Customer | null
   },
 
   async updateCustomer(id: string, data: UpdateCustomerInput): Promise<Customer> {
@@ -193,6 +204,28 @@ export const billingRepositoryPrisma: BillingRepository = {
   async findInvoiceById(id: string): Promise<Invoice | null> {
     const invoice = await prisma.invoice.findUnique({
       where: { id },
+      include: {
+        customer: true,
+        series: true,
+        items: true,
+      },
+    })
+    return invoice ? toDomainInvoice(invoice) : null
+  },
+
+  async findInvoiceByIdWithDetails(id: string): Promise<any | null> {
+    const invoice = await prisma.invoice.findUnique({
+      where: { id },
+      include: {
+        items: true,
+      },
+    })
+    return invoice
+  },
+
+  async findInvoiceByOrderId(orderId: string): Promise<Invoice | null> {
+    const invoice = await prisma.invoice.findUnique({
+      where: { orderId },
       include: {
         customer: true,
         series: true,

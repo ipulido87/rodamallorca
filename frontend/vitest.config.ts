@@ -20,7 +20,17 @@ export default defineConfig({
         '**/*.config.*',
         '**/mockData/',
         'dist/',
+        'src/main.tsx',
+        'src/App.tsx',
+        'src/vite-env.d.ts',
       ],
+      thresholds: {
+        // Start with achievable thresholds, increase over time
+        statements: 20,
+        branches: 15,
+        functions: 20,
+        lines: 20,
+      },
     },
   },
   resolve: {

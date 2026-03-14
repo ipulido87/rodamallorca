@@ -80,6 +80,9 @@ export class ImageProcessor {
       if (error instanceof Error) {
         console.error('❌ [ImageProcessor] Error stack:', error.stack)
         console.error('❌ [ImageProcessor] Error message:', error.message)
+        if (error.message.includes('heif') || error.message.includes('bad seek')) {
+          throw new Error('El formato HEIC/HEIF (fotos de iPhone) no está soportado. Por favor convierte la imagen a JPG o PNG antes de subirla.')
+        }
       }
       throw error
     }

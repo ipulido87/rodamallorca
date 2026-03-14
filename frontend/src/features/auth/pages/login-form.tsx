@@ -14,27 +14,33 @@ import {
   Typography,
 } from '@mui/material'
 import { useState, type ChangeEvent, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { GoogleLoginButton } from '../components/google-login-button'
 import { useAuth } from '../hooks/useAuth'
+import { Seo } from '../../../shared/components/Seo'
 
-const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, 'El email es obligatorio')
-    .email('Debe ser un email válido'),
-  password: z
-    .string()
-    .min(1, 'La contraseña es obligatoria')
-    .min(6, 'La contraseña debe tener al menos 6 caracteres'),
-})
-
-type LoginFormData = z.infer<typeof loginSchema>
+type LoginFormData = {
+  email: string
+  password: string
+}
 
 export const LoginForm = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const auth = useAuth()
+
+  const loginSchema = z.object({
+    email: z
+      .string()
+      .min(1, t('auth.validation.emailRequired'))
+      .email(t('auth.validation.emailInvalid')),
+    password: z
+      .string()
+      .min(1, t('auth.validation.passwordRequired'))
+      .min(6, t('auth.validation.passwordMinLength', { count: 6 })),
+  })
 
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
@@ -77,25 +83,19 @@ export const LoginForm = () => {
     }
 
     try {
-      // ⭐ Obtener datos del usuario DIRECTAMENTE del login
       const loggedUser = await auth.login(result.data.email, result.data.password)
 
       if (!loggedUser) {
-        console.error('Usuario no disponible tras login')
         navigate('/catalog')
         return
       }
 
-      // ✅ Si es WORKSHOP_OWNER, verificar suscripción ANTES de redirigir
+      // Redirect based on role and subscription status
       if (loggedUser.role === 'WORKSHOP_OWNER') {
-        const hasSubscription = (loggedUser as any).hasActiveSubscription
-
-        if (!hasSubscription) {
-          console.log('🔒 Taller sin suscripción activa, redirigiendo a activación')
-          navigate('/activate-subscription', { replace: true })
-        } else {
-          console.log('✅ Taller con suscripción activa, redirigiendo a dashboard')
+        if (loggedUser.hasActiveSubscription) {
           navigate('/dashboard', { replace: true })
+        } else {
+          navigate('/activate-subscription', { replace: true })
         }
       } else if (loggedUser.role === 'USER') {
         navigate('/home', { replace: true })
@@ -103,9 +103,7 @@ export const LoginForm = () => {
         navigate('/catalog', { replace: true })
       }
     } catch (error: unknown) {
-      console.error('Login failed:', error)
-
-      // ✅ MANEJAR ERROR DE EMAIL NO VERIFICADO
+      // Handle EMAIL_NOT_VERIFIED error
       if (
         error instanceof Error &&
         error.message.startsWith('EMAIL_NOT_VERIFIED:')
@@ -113,7 +111,6 @@ export const LoginForm = () => {
         const email = error.message.split(':')[1]
         setPendingVerificationEmail(email)
         setShowVerificationDialog(true)
-        return
       }
     }
   }
@@ -123,32 +120,31 @@ export const LoginForm = () => {
     try {
       await auth.resendVerification(pendingVerificationEmail)
       setShowVerificationDialog(false)
-
-      // ✅ MOSTRAR MENSAJE DE ÉXITO
       auth.clearError()
-      setTimeout(() => {
-        alert(
-          '✅ Email de verificación reenviado. Revisa tu bandeja de entrada.'
-        )
-      }, 100)
-    } catch (error: unknown) {
-      console.error('Error reenviando verificación:', error)
+    } catch {
+      // Error is already handled in auth context
     } finally {
       setResendLoading(false)
     }
   }
 
   return (
-    <Container maxWidth="xs">
+    <>
+      <Seo
+        title={`${t('auth.loginTitle')} | RodaMallorca`}
+        description="Accede a tu cuenta de RodaMallorca para gestionar tus alquileres, reservas y compras de ciclismo en Mallorca."
+        robots="noindex,nofollow"
+      />
+      <Container maxWidth="xs">
       <Paper elevation={3} sx={{ p: 4, mt: 10 }}>
         <Typography variant="h5" textAlign="center" gutterBottom>
-          Iniciar Sesión
+          {t('auth.loginTitle')}
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
             fullWidth
-            label="Email"
+            label={t('auth.email')}
             name="email"
             type="email"
             value={formData.email}
@@ -161,7 +157,7 @@ export const LoginForm = () => {
           />
           <TextField
             fullWidth
-            label="Contraseña"
+            label={t('auth.password')}
             name="password"
             type="password"
             value={formData.password}
@@ -186,7 +182,7 @@ export const LoginForm = () => {
             sx={{ mt: 2 }}
             disabled={auth.loading}
           >
-            {auth.loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+            {auth.loading ? t('auth.loggingIn') : t('auth.loginTitle')}
           </Button>
 
           <Button
@@ -196,10 +192,10 @@ export const LoginForm = () => {
             onClick={() => navigate('/forgot-password')}
             disabled={auth.loading}
           >
-            ¿Olvidaste tu contraseña?
+            {t('auth.forgotPassword')}
           </Button>
 
-          <Divider sx={{ my: 3 }}>o</Divider>
+          <Divider sx={{ my: 3 }}>{t('common.or')}</Divider>
 
           <GoogleLoginButton mode="login" />
 
@@ -210,12 +206,11 @@ export const LoginForm = () => {
             onClick={() => navigate('/')}
             disabled={auth.loading}
           >
-            Volver al inicio
+            {t('common.backToHome')}
           </Button>
         </Box>
       </Paper>
 
-      {/* ✅ DIÁLOGO MEJORADO DE VERIFICACIÓN */}
       <Dialog
         open={showVerificationDialog}
         onClose={() => setShowVerificationDialog(false)}
@@ -223,31 +218,30 @@ export const LoginForm = () => {
         fullWidth
       >
         <DialogTitle sx={{ textAlign: 'center' }}>
-          📧 Email No Verificado
+          {t('auth.emailNotVerified')}
         </DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ mb: 2 }}>
-            Tu email <strong>{pendingVerificationEmail}</strong> aún no ha sido
-            verificado.
+            {t('auth.emailNotVerifiedDesc', { email: pendingVerificationEmail })}
           </DialogContentText>
 
           <Alert severity="info" sx={{ mb: 2 }}>
             <Typography variant="body2" gutterBottom>
-              <strong>¿Qué hacer?</strong>
+              <strong>{t('auth.whatToDo')}</strong>
             </Typography>
             <Typography variant="body2">
-              1. Revisa tu bandeja de entrada
+              1. {t('auth.checkInbox')}
               <br />
-              2. Busca el email de RodaMallorca
+              2. {t('auth.findEmail')}
               <br />
-              3. Haz clic en el botón de verificación
+              3. {t('auth.clickVerify')}
               <br />
-              4. Vuelve aquí para iniciar sesión
+              4. {t('auth.comeBackLogin')}
             </Typography>
           </Alert>
 
           <Typography variant="body2" color="text.secondary">
-            ¿No encuentras el email? Podemos reenviártelo.
+            {t('auth.cantFindEmail')}
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
@@ -255,17 +249,18 @@ export const LoginForm = () => {
             onClick={() => setShowVerificationDialog(false)}
             disabled={resendLoading}
           >
-            Cerrar
+            {t('common.close')}
           </Button>
           <Button
             onClick={handleResendVerification}
             variant="contained"
             disabled={resendLoading}
           >
-            {resendLoading ? 'Reenviando...' : '📨 Reenviar Email'}
+            {resendLoading ? t('auth.resending') : t('auth.resendEmail')}
           </Button>
         </DialogActions>
       </Dialog>
     </Container>
+    </>
   )
 }

@@ -1,15 +1,10 @@
 // src/features/products/types/products-types.ts
 import type { MouseEvent } from 'react'
+import type { ProductImage } from '../../catalog/types/catalog'
+
+export type { ProductImage }
 
 // Tipos compartidos para el layout/cards de productos y talleres
-
-export interface ProductImage {
-  id: string
-  original: string
-  medium: string
-  thumbnail: string
-  position: number
-}
 
 /** Modelo que usan las *cards* de producto (UI) */
 export interface CardProduct {
@@ -76,27 +71,5 @@ export interface ModernLayoutCommonProps {
   favoriteIds?: string[]
 }
 
-/* --------- Tipo que devuelve el backend --------- */
-export interface Product {
-  id: string
-  title: string
-  description?: string
-  price: number // céntimos
-  status: 'PUBLISHED' | 'DRAFT'
-  categoryId: string | null
-  workshopId: string
-  createdAt: string
-  updatedAt: string
-  category?: { id: string; name: string } | null
-  images: Array<
-    | { id: string; url: string; productId: string }
-    | {
-        id: string
-        original: string
-        medium: string
-        thumbnail: string
-        position: number
-        productId: string
-      }
-  >
-}
+// Re-export Product from service (most complete version with rental fields)
+export type { Product } from '../services/product-service'

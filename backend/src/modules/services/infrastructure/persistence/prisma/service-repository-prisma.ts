@@ -1,4 +1,5 @@
-import { PrismaClient } from '@prisma/client'
+import prisma from '../../../../../lib/prisma'
+import type { Prisma } from '@prisma/client'
 import type { ServiceRepository } from '../../../domain/repositories/service-repository'
 import type {
   Service,
@@ -8,8 +9,6 @@ import type {
   VehicleType,
   ServiceStatus,
 } from '../../../domain/entities/service'
-
-const prisma = new PrismaClient()
 
 export const serviceRepositoryPrisma: ServiceRepository = {
   async create(data: CreateServiceInput): Promise<Service> {
@@ -120,7 +119,7 @@ export const serviceRepositoryPrisma: ServiceRepository = {
     status?: ServiceStatus
     city?: string
   }): Promise<Service[]> {
-    const where: any = {}
+    const where: Prisma.ServiceWhereInput = {}
 
     if (filters.workshopId) {
       where.workshopId = filters.workshopId

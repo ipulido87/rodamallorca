@@ -1,7 +1,6 @@
 import type { ReviewRepository } from '../domain/repositories/review-repository'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { validateRating } from '../../../lib/validators'
+import { WorkshopStatsUpdater, type WorkshopStatsRepository } from '../domain/services/workshop-stats-updater'
 
 export async function createReview(
   input: {
@@ -10,12 +9,13 @@ export async function createReview(
     rating: number
     comment?: string | null
   },
-  deps: { repo: ReviewRepository }
-) {
-  // Validar rating
-  if (input.rating < 1 || input.rating > 5) {
-    throw new Error('El rating debe estar entre 1 y 5')
+  deps: {
+    repo: ReviewRepository
+    workshopRepo: WorkshopStatsRepository
   }
+) {
+  // Validar rating usando validador compartido
+  validateRating(input.rating)
 
   // Verificar si el usuario ya dejó una review para este taller
   const existingReview = await deps.repo.findByWorkshopAndUser(
@@ -30,24 +30,8 @@ export async function createReview(
   // Crear la review
   const review = await deps.repo.create(input)
 
-  // Actualizar estadísticas del workshop
-  await updateWorkshopStats(input.workshopId, deps.repo)
+  // Actualizar estadísticas del workshop usando servicio centralizado
+  await WorkshopStatsUpdater.updateStats(input.workshopId, deps.repo, deps.workshopRepo)
 
   return review
-}
-
-async function updateWorkshopStats(
-  workshopId: string,
-  repo: ReviewRepository
-) {
-  const averageRating = await repo.getWorkshopAverageRating(workshopId)
-  const reviewCount = await repo.getWorkshopReviewCount(workshopId)
-
-  await prisma.workshop.update({
-    where: { id: workshopId },
-    data: {
-      averageRating: averageRating || 0,
-      reviewCount,
-    },
-  })
 }

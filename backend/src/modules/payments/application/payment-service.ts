@@ -1,8 +1,13 @@
-import { PrismaClient } from '@prisma/client'
-import { stripe } from '../../subscriptions/infrastructure/stripe.config'
+import type { WorkshopRepository } from '../../workshops/domain/repositories/workshop-repository'
+import type { ProductRepository } from '../../products/domain/repositories/product-repository'
+import type { PaymentGateway } from '../domain/services/payment-gateway'
 import { calculateApplicationFee } from '../services/stripe-connect.service'
 
-const prisma = new PrismaClient()
+interface Dependencies {
+  workshopRepo: WorkshopRepository
+  productRepo: ProductRepository
+  paymentGateway: PaymentGateway
+}
 
 export interface CartItem {
   productId: string
@@ -31,23 +36,14 @@ export interface CreateCheckoutInput {
  * Crea una sesión de Checkout de Stripe para compra de productos
  * Usa Stripe Connect para enviar el pago al taller (menos comisión)
  */
-export async function createProductCheckoutSession(input: CreateCheckoutInput) {
+export async function createProductCheckoutSession(
+  input: CreateCheckoutInput,
+  deps: Dependencies
+) {
   const { userId, userEmail, workshopId, items, successUrl, cancelUrl } = input
+  const { workshopRepo, productRepo, paymentGateway } = deps
 
-  console.log(`💳 [Payment] Creando checkout para ${items.length} productos`)
-
-  // ⭐ Obtener workshop y verificar Stripe Connect
-  const workshop = await prisma.workshop.findUnique({
-    where: { id: workshopId },
-  })
-
-  console.log(`🔍 [Payment] Workshop encontrado:`, {
-    id: workshop?.id,
-    name: workshop?.name,
-    hasStripeAccount: !!workshop?.stripeConnectedAccountId,
-    stripeAccountId: workshop?.stripeConnectedAccountId,
-    onboardingComplete: workshop?.stripeOnboardingComplete,
-  })
+  const workshop = await workshopRepo.findByIdWithStripe(workshopId)
 
   if (!workshop) {
     throw new Error('Taller no encontrado')
@@ -57,79 +53,63 @@ export async function createProductCheckoutSession(input: CreateCheckoutInput) {
     throw new Error('El taller no tiene configurado Stripe Connect. No puede recibir pagos.')
   }
 
-  if (!workshop.stripeOnboardingComplete) {
-    throw new Error('El taller aún no ha completado la verificación de Stripe.')
-  }
-
-  console.log(`✅ [Payment] Workshop tiene Stripe Connect: ${workshop.stripeConnectedAccountId}`)
-
-  // ⭐ Validar que la cuenta de Stripe Connect existe y es válida
   try {
-    const account = await stripe.accounts.retrieve(workshop.stripeConnectedAccountId)
+    const account = await paymentGateway.getConnectedAccount(workshop.stripeConnectedAccountId)
 
-    if (!account || account.details_submitted === false) {
-      console.error(`❌ [Payment] Cuenta de Stripe Connect no está completa o no existe`)
+    // Verificar si el onboarding está completo en Stripe
+    const onboardingComplete = account.detailsSubmitted && account.chargesEnabled && account.payoutsEnabled
 
-      // Limpiar cuenta inválida de la BD
-      await prisma.workshop.update({
-        where: { id: workshopId },
-        data: {
-          stripeConnectedAccountId: null,
-          stripeOnboardingComplete: false,
-        },
-      })
+    // Si el onboarding está completo en Stripe pero no en la BD, actualizar
+    if (onboardingComplete && !workshop.stripeOnboardingComplete) {
+      await workshopRepo.updateStripeAccount(workshopId, workshop.stripeConnectedAccountId, true)
+    }
+
+    // Si el onboarding NO está completo, bloquear el pago
+    if (!onboardingComplete) {
+      await workshopRepo.updateStripeAccount(workshopId, workshop.stripeConnectedAccountId, false)
 
       throw new Error(
-        'La cuenta de pagos del taller no está configurada correctamente. ' +
+        'El taller aún no ha completado la verificación de Stripe. ' +
+        'Por favor, completa la configuración de pagos en tu panel de control para poder vender productos.'
+      )
+    }
+
+  } catch (error: unknown) {
+    const errObj = error instanceof Error ? error : null
+    const errCode = errObj && 'code' in errObj ? (errObj as Record<string, unknown>).code : undefined
+    const errType = errObj && 'type' in errObj ? (errObj as Record<string, unknown>).type : undefined
+    const errMsg = errObj?.message ?? ''
+
+    const isInvalidAccount =
+      errCode === 'resource_missing' ||
+      errType === 'StripeInvalidRequestError' ||
+      errMsg.includes('does not have access to account') ||
+      errMsg.includes('Application access may have been revoked')
+
+    if (isInvalidAccount) {
+      await workshopRepo.updateStripeAccount(workshopId, null, false)
+
+      throw new Error(
+        'La cuenta de pagos del taller ya no es válida o ha sido desconectada. ' +
         'El propietario debe reconectar Stripe Connect desde su panel de control.'
       )
     }
 
-    console.log(`✅ [Payment] Cuenta de Stripe validada correctamente`)
-  } catch (error: any) {
-    // Si Stripe retorna error de cuenta no encontrada
-    if (error.code === 'resource_missing' || error.type === 'StripeInvalidRequestError') {
-      console.error(`❌ [Payment] Cuenta de Stripe Connect no existe: ${workshop.stripeConnectedAccountId}`)
-
-      // Limpiar cuenta inválida automáticamente
-      await prisma.workshop.update({
-        where: { id: workshopId },
-        data: {
-          stripeConnectedAccountId: null,
-          stripeOnboardingComplete: false,
-        },
-      })
-
-      throw new Error(
-        'La cuenta de pagos del taller ya no existe. ' +
-        'El propietario debe reconectar Stripe Connect desde su panel de control.'
-      )
-    }
-
-    // Re-throw si es otro tipo de error
     throw error
   }
 
   // Validar que todos los productos existen
   const productIds = items.map((item) => item.productId)
-  const products = await prisma.product.findMany({
-    where: { id: { in: productIds } },
-  })
+  const products = await productRepo.findByIds(productIds)
 
   if (products.length !== productIds.length) {
     throw new Error('Algunos productos no existen')
   }
 
-  // Calcular total del pedido
   const totalAmount = items.reduce((sum, item) => sum + item.priceAtOrder * item.quantity, 0)
-  console.log(`💰 [Payment] Total del pedido: ${totalAmount / 100}€`)
-
-  // Calcular comisión de RodaMallorca (10%)
   const applicationFee = calculateApplicationFee(totalAmount)
-  console.log(`💵 [Payment] Comisión RodaMallorca (10%): ${applicationFee / 100}€`)
-  console.log(`💸 [Payment] Taller recibirá: ${(totalAmount - applicationFee) / 100}€`)
 
-  // Crear line items para Stripe
+  // Crear line items para gateway
   const lineItems = items.map((item) => {
     const product = products.find((p) => p.id === item.productId)
     if (!product) throw new Error(`Producto ${item.productId} no encontrado`)
@@ -143,19 +123,12 @@ export async function createProductCheckoutSession(input: CreateCheckoutInput) {
     }
 
     return {
-      price_data: {
-        currency: item.currency.toLowerCase(),
-        unit_amount: item.priceAtOrder, // Ya está en centavos
-        product_data: {
+      priceData: {
+        currency: item.currency,
+        unitAmount: item.priceAtOrder, // Ya está en centavos
+        productData: {
           name: product.title,
           description: description || undefined,
-          metadata: {
-            productId: item.productId,
-            workshopId,
-            isRental: item.isRental ? 'true' : 'false',
-            rentalStartDate: item.rentalStartDate || '',
-            rentalEndDate: item.rentalEndDate || '',
-          },
         },
       },
       quantity: item.quantity,
@@ -164,29 +137,19 @@ export async function createProductCheckoutSession(input: CreateCheckoutInput) {
 
   // ⭐ Crear sesión de Checkout con Stripe Connect
   try {
-    const session = await stripe.checkout.sessions.create({
+    const session = await paymentGateway.createCheckoutSession({
       mode: 'payment',
-      payment_method_types: ['card'],
-      line_items: lineItems,
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      customer_email: userEmail,
-
-      // ⭐ Configuración de Stripe Connect
-      payment_intent_data: {
-        application_fee_amount: applicationFee, // Comisión para RodaMallorca
-        transfer_data: {
-          destination: workshop.stripeConnectedAccountId, // Cuenta del taller
-        },
-        metadata: {
-          workshopId,
-          workshopName: workshop.name,
-        },
-      },
-
+      paymentMethodTypes: ['card', 'revolut_pay'],
+      lineItems,
+      successUrl,
+      cancelUrl,
+      customerEmail: userEmail,
+      applicationFeeAmount: applicationFee,
+      transferDestination: workshop.stripeConnectedAccountId!,
       metadata: {
         userId,
         workshopId,
+        workshopName: workshop.name,
         items: JSON.stringify(
           items.map((item) => ({
             productId: item.productId,
@@ -205,31 +168,22 @@ export async function createProductCheckoutSession(input: CreateCheckoutInput) {
       },
     })
 
-    console.log(`✅ [Payment] Sesión de checkout creada con Stripe Connect: ${session.id}`)
-    console.log(`   - Cuenta destino: ${workshop.stripeConnectedAccountId}`)
-    console.log(`   - Comisión: ${applicationFee / 100}€`)
-
     return {
       sessionId: session.id,
       url: session.url,
     }
-  } catch (error: any) {
-    // Manejar error específico de cuenta destino inválida
-    if (
-      error.message?.includes('No such destination') ||
-      error.message?.includes('account that is not connected') ||
-      error.code === 'account_invalid'
-    ) {
-      console.error(`❌ [Payment] Cuenta de Stripe Connect inválida, limpiando de la BD...`)
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : ''
+    const errCode = error instanceof Error && 'code' in error
+      ? (error as Record<string, unknown>).code
+      : undefined
 
-      // Limpiar cuenta inválida automáticamente
-      await prisma.workshop.update({
-        where: { id: workshopId },
-        data: {
-          stripeConnectedAccountId: null,
-          stripeOnboardingComplete: false,
-        },
-      })
+    if (
+      errMsg.includes('No such destination') ||
+      errMsg.includes('account that is not connected') ||
+      errCode === 'account_invalid'
+    ) {
+      await workshopRepo.updateStripeAccount(workshopId, null, false)
 
       throw new Error(
         'La cuenta de pagos del taller no es válida. ' +
@@ -237,7 +191,6 @@ export async function createProductCheckoutSession(input: CreateCheckoutInput) {
       )
     }
 
-    // Re-throw otros errores
     throw error
   }
 }

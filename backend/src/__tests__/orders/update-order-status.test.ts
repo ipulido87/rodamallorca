@@ -1,14 +1,27 @@
 import { OrderStatus } from '../../modules/orders/domain/enums/order-status'
 import { beforeEach, describe, expect, it, jest } from '@jest/globals'
-import { updateOrderStatus } from '../../modules/orders/application/update-order-status'
 import type { Order } from '../../modules/orders/domain/entities/order'
 import type { OrderRepository } from '../../modules/orders/domain/repositories/order-repository'
+import type { BillingRepository } from '../../modules/billing/domain/repositories/billing-repository'
+
+// Mock the email service to avoid @react-pdf/renderer issues
+jest.mock('../../modules/notifications/services/email-service', () => ({
+  sendInvoiceEmail: jest.fn(),
+}))
+
+// Mock the invoice generator to avoid issues
+jest.mock('../../modules/billing/application/generate-invoice-from-order', () => ({
+  generateInvoiceFromOrder: jest.fn(),
+}))
+
+import { updateOrderStatus } from '../../modules/orders/application/update-order-status'
 
 type MockFunction = ReturnType<typeof jest.fn>
 
 interface MockOrderRepository {
   create: MockFunction
   findById: MockFunction
+  findByIdWithDetails: MockFunction
   findByUserId: MockFunction
   findByWorkshopId: MockFunction
   updateStatus: MockFunction
@@ -20,9 +33,30 @@ interface MockWorkshopRepository {
   findById: MockFunction
 }
 
+interface MockBillingRepository {
+  createCustomer: MockFunction
+  findCustomerById: MockFunction
+  findCustomersByWorkshop: MockFunction
+  findCustomerByWorkshopAndEmail: MockFunction
+  updateCustomer: MockFunction
+  deleteCustomer: MockFunction
+  createInvoiceSeries: MockFunction
+  findInvoiceSeriesByWorkshop: MockFunction
+  findDefaultSeriesByWorkshop: MockFunction
+  getNextInvoiceNumber: MockFunction
+  createInvoice: MockFunction
+  findInvoiceById: MockFunction
+  findInvoiceByIdWithDetails: MockFunction
+  findInvoiceByOrderId: MockFunction
+  findInvoicesByWorkshop: MockFunction
+  updateInvoice: MockFunction
+  deleteInvoice: MockFunction
+}
+
 describe('updateOrderStatus', () => {
   let mockOrderRepo: MockOrderRepository
   let mockWorkshopRepo: MockWorkshopRepository
+  let mockBillingRepo: MockBillingRepository
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -30,6 +64,7 @@ describe('updateOrderStatus', () => {
     mockOrderRepo = {
       create: jest.fn(),
       findById: jest.fn(),
+      findByIdWithDetails: jest.fn(),
       findByUserId: jest.fn(),
       findByWorkshopId: jest.fn(),
       updateStatus: jest.fn(),
@@ -39,6 +74,26 @@ describe('updateOrderStatus', () => {
 
     mockWorkshopRepo = {
       findById: jest.fn(),
+    }
+
+    mockBillingRepo = {
+      createCustomer: jest.fn(),
+      findCustomerById: jest.fn(),
+      findCustomersByWorkshop: jest.fn(),
+      findCustomerByWorkshopAndEmail: jest.fn(),
+      updateCustomer: jest.fn(),
+      deleteCustomer: jest.fn(),
+      createInvoiceSeries: jest.fn(),
+      findInvoiceSeriesByWorkshop: jest.fn(),
+      findDefaultSeriesByWorkshop: jest.fn(),
+      getNextInvoiceNumber: jest.fn(),
+      createInvoice: jest.fn(),
+      findInvoiceById: jest.fn(),
+      findInvoiceByIdWithDetails: jest.fn(),
+      findInvoiceByOrderId: jest.fn(),
+      findInvoicesByWorkshop: jest.fn(),
+      updateInvoice: jest.fn(),
+      deleteInvoice: jest.fn(),
     }
   })
 
@@ -79,6 +134,7 @@ describe('updateOrderStatus', () => {
             id: string
           ) => Promise<{ id: string; ownerId: string } | null>
         },
+        billingRepo: mockBillingRepo as unknown as BillingRepository,
         authenticatedUserId: 'owner-123',
         userRole: 'WORKSHOP_OWNER',
       }
@@ -105,6 +161,7 @@ describe('updateOrderStatus', () => {
               id: string
             ) => Promise<{ id: string; ownerId: string } | null>
           },
+          billingRepo: mockBillingRepo as unknown as BillingRepository,
           authenticatedUserId: 'owner-123',
           userRole: 'WORKSHOP_OWNER',
         }
@@ -139,6 +196,7 @@ describe('updateOrderStatus', () => {
               id: string
             ) => Promise<{ id: string; ownerId: string } | null>
           },
+          billingRepo: mockBillingRepo as unknown as BillingRepository,
           authenticatedUserId: 'owner-123',
           userRole: 'WORKSHOP_OWNER',
         }
@@ -178,11 +236,12 @@ describe('updateOrderStatus', () => {
               id: string
             ) => Promise<{ id: string; ownerId: string } | null>
           },
+          billingRepo: mockBillingRepo as unknown as BillingRepository,
           authenticatedUserId: 'different-user',
           userRole: 'WORKSHOP_OWNER',
         }
       )
-    ).rejects.toThrow('No tienes permisos para actualizar este pedido')
+    ).rejects.toThrow('No eres el propietario de este taller')
   })
 
   it('debe permitir a un admin actualizar el estado', async () => {
@@ -221,7 +280,8 @@ describe('updateOrderStatus', () => {
           findById: (
             id: string
           ) => Promise<{ id: string; ownerId: string } | null>
-        },
+          },
+        billingRepo: mockBillingRepo as unknown as BillingRepository,
         authenticatedUserId: 'admin-123',
         userRole: 'ADMIN',
       }
@@ -262,6 +322,7 @@ describe('updateOrderStatus', () => {
               id: string
             ) => Promise<{ id: string; ownerId: string } | null>
           },
+          billingRepo: mockBillingRepo as unknown as BillingRepository,
           authenticatedUserId: 'owner-123',
           userRole: 'WORKSHOP_OWNER',
         }
@@ -303,6 +364,7 @@ describe('updateOrderStatus', () => {
               id: string
             ) => Promise<{ id: string; ownerId: string } | null>
           },
+          billingRepo: mockBillingRepo as unknown as BillingRepository,
           authenticatedUserId: 'owner-123',
           userRole: 'WORKSHOP_OWNER',
         }

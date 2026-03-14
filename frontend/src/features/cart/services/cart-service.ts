@@ -1,4 +1,4 @@
-import { API } from '../../auth/services/auth-service'
+import { API } from '@/shared/api'
 
 interface CreateOrderItem {
   productId: string | null

@@ -12,6 +12,9 @@ import {
   ShoppingCart,
   Verified,
 } from '@mui/icons-material'
+import { Seo } from '../../../shared/components/Seo'
+import { getOptimizedImageUrl } from '../../../shared/utils/cloudinary'
+import { getWorkshopPlaceholder } from '../../../shared/utils/placeholder'
 import {
   Alert,
   alpha,
@@ -40,6 +43,7 @@ import {
   searchServices,
 } from '../../catalog/services/catalog-service'
 import type { Product, Service } from '../../catalog/types/catalog'
+import type { CardService } from '../../products/types/products-types'
 import { ModernProductLayout, ModernServiceLayout } from '../../products/components/modern-product-layout'
 import { adaptProductImages } from '../../../utils/adapt-product-Images'
 import { ReviewForm } from '../../reviews/components/review-form'
@@ -116,7 +120,7 @@ export const WorkshopDetail = () => {
   const { data: productsData, isLoading: productsLoading } = useSWR(
     id && tabValue === 1 ? `/workshops/${id}/products` : null,
     async () => {
-      const response = await searchProducts({ workshopId: id!, size: 20 } as any)
+      const response = await searchProducts({ workshopId: id!, size: 20 })
       return response.items
     },
     {
@@ -129,7 +133,7 @@ export const WorkshopDetail = () => {
   const { data: servicesData, isLoading: servicesLoading } = useSWR(
     id && tabValue === 2 ? `/workshops/${id}/services` : null,
     async () => {
-      const response = await searchServices({ workshopId: id!, size: 20 } as any)
+      const response = await searchServices({ workshopId: id!, size: 20 })
       return response.items
     },
     {
@@ -139,7 +143,20 @@ export const WorkshopDetail = () => {
   )
 
   const products = productsData || []
-  const services = servicesData || []
+  const services: CardService[] = (servicesData || []).map((s: Service) => ({
+    id: s.id,
+    name: s.name,
+    description: s.description ?? undefined,
+    price: s.price,
+    duration: s.duration ?? undefined,
+    vehicleType: s.vehicleType,
+    workshop: s.workshop
+      ? { id: s.workshop.id, name: s.workshop.name, city: s.workshop.city ?? undefined }
+      : { id: id!, name: workshop?.name ?? '', city: workshop?.city ?? undefined },
+    serviceCategory: s.serviceCategory
+      ? { id: s.serviceCategory.id, name: s.serviceCategory.name, icon: s.serviceCategory.icon ?? undefined }
+      : { id: s.serviceCategoryId, name: '' },
+  }))
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue)
@@ -177,8 +194,45 @@ export const WorkshopDetail = () => {
     )
   }
 
+  const workshopImage = workshop.logoOriginal ?? workshop.logoMedium ?? undefined
+
   return (
     <Container maxWidth="lg">
+      <Seo
+        title={`${workshop.name} | Taller de Bicicletas en ${workshop.city ?? 'Mallorca'} | RodaMallorca`}
+        description={
+          workshop.description
+            ? `${workshop.description.slice(0, 140)}. Taller en ${workshop.city ?? 'Mallorca'}.`
+            : `${workshop.name} — taller de bicicletas verificado en ${workshop.city ?? 'Mallorca'}. Reparación, mantenimiento y venta de componentes.`
+        }
+        canonicalPath={`/workshop/${workshop.id}`}
+        keywords={`${workshop.name}, taller bicicletas ${workshop.city ?? 'Mallorca'}, reparación bicicleta ${workshop.city ?? 'Mallorca'}, mecánico bicicletas Mallorca`}
+        image={workshopImage}
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'LocalBusiness',
+          '@id': `https://rodamallorca.com/workshop/${workshop.id}`,
+          name: workshop.name,
+          description: workshop.description ?? undefined,
+          image: workshopImage,
+          url: `https://rodamallorca.com/workshop/${workshop.id}`,
+          telephone: workshop.phone ?? undefined,
+          email: workshop.email ?? undefined,
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: workshop.address ?? undefined,
+            addressLocality: workshop.city ?? 'Mallorca',
+            addressCountry: 'ES',
+          },
+          ...(workshop.averageRating && {
+            aggregateRating: {
+              '@type': 'AggregateRating',
+              ratingValue: workshop.averageRating,
+              reviewCount: workshop.reviewCount ?? 1,
+            },
+          }),
+        }}
+      />
       <Box sx={{ py: 4 }}>
         {/* Header con navegación */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
@@ -219,22 +273,20 @@ export const WorkshopDetail = () => {
               >
                 {/* Avatar del taller */}
                 <Avatar
-                  src={workshop.logoMedium || undefined}
+                  src={getOptimizedImageUrl(workshop.logoMedium, 'logo', workshop.id) || getWorkshopPlaceholder(workshop.id)}
                   alt={workshop.name}
                   sx={{
                     width: 120,
                     height: 120,
                     fontSize: '3rem',
-                    backgroundColor: workshop.logoMedium ? 'transparent' : theme.palette.primary.main,
+                    backgroundColor: 'transparent',
                     border: `4px solid ${theme.palette.common.white}`,
                     boxShadow: `0 4px 20px ${alpha(
                       theme.palette.primary.main,
                       0.3
                     )}`,
                   }}
-                >
-                  {!workshop.logoMedium && <Build sx={{ fontSize: '3rem' }} />}
-                </Avatar>
+                />
 
                 {/* Información principal */}
                 <Box sx={{ flex: 1 }}>

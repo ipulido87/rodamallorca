@@ -1,0 +1,6 @@
+export { FuseSearchProvider } from './providers/fuse-provider'
+export { useSmartSearch } from './hooks/use-smart-search'
+export { useAiSearch } from './hooks/use-ai-search'
+export { parseQuery, detectIntent } from './utils/query-parser'
+export type { SearchIntent } from './utils/query-parser'
+export type { SearchProvider, ParsedQuery, SmartSearchOptions } from './types'

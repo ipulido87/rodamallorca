@@ -1,5 +1,5 @@
 // frontend/src/features/catalog/services/catalog-service.ts
-import { API } from '../../auth/services/auth-service'
+import { API } from '@/shared/api'
 import type {
   PaginatedResponse,
   Product,
@@ -68,6 +68,32 @@ export const getProduct = async (id: string): Promise<PublicProduct> => {
 // Obtener detalle de workshop
 export const getWorkshopById = async (id: string): Promise<Workshop> => {
   const { data } = await API.get<Workshop>(`/owner/workshops/${id}`)
+  return data
+}
+
+// Búsqueda inteligente con IA
+export interface AiSearchResponse {
+  intent: 'workshops' | 'products' | 'services' | 'rentals' | 'routes'
+  filters: {
+    q?: string
+    city?: string
+    category?: string
+    minPrice?: number
+    maxPrice?: number
+  }
+  aiMessage?: string
+  results: unknown[]
+  total: number
+}
+
+export const aiSearch = async (
+  query: string,
+  signal?: AbortSignal
+): Promise<AiSearchResponse> => {
+  const { data } = await API.get<AiSearchResponse>(
+    `/catalog/ai-search?q=${encodeURIComponent(query)}`,
+    { signal }
+  )
   return data
 }
 

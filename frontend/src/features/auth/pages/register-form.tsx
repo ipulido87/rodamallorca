@@ -23,57 +23,70 @@ import { Build, Person, Email } from '@mui/icons-material'
 import axios, { AxiosError } from 'axios'
 import type { ChangeEvent, FormEvent } from 'react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 import { PASSWORD_MIN_LENGTH } from '../../../shared/constants/validation'
 import { register as apiRegister } from '../../auth/services/auth-service'
 import { GoogleLoginButton } from '../../auth/components/google-login-button'
+import { Seo } from '../../../shared/components/Seo'
 
 type UserRole = 'user' | 'owner'
 
-const registerSchema = z
-  .object({
-    name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
-    email: z
-      .string()
-      .min(1, 'El email es obligatorio')
-      .email('Debe ser un email válido'),
-    password: z
-      .string()
-      .min(
-        PASSWORD_MIN_LENGTH,
-        `La contraseña debe tener al menos ${PASSWORD_MIN_LENGTH} caracteres`
-      ),
-    birthDate: z.string().optional(),
-    phone: z.string().optional(),
-    role: z.enum(['user', 'owner']),
-    businessName: z.string().optional(),
-    businessAddress: z.string().optional(),
-    businessDescription: z.string().optional(),
-  })
-  .refine(
-    (data) => {
-      if (data.role === 'owner') {
-        return (
-          data.businessName &&
-          data.businessName.trim().length >= 2 &&
-          data.businessAddress &&
-          data.businessAddress.trim().length >= 5
-        )
-      }
-      return true
-    },
-    {
-      message: 'Los campos de taller son obligatorios para cuentas de taller',
-      path: ['businessName'],
-    }
-  )
-
-type RegisterFormData = z.infer<typeof registerSchema>
+type RegisterFormData = {
+  name: string
+  email: string
+  password: string
+  birthDate?: string
+  phone?: string
+  role: 'user' | 'owner'
+  businessName?: string
+  businessAddress?: string
+  businessDescription?: string
+}
 
 export const Register = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+
+  const registerSchema = z
+    .object({
+      name: z.string().min(2, t('auth.validation.nameMinLength', { count: 2 })),
+      email: z
+        .string()
+        .min(1, t('auth.validation.emailRequired'))
+        .email(t('auth.validation.emailInvalid')),
+      password: z
+        .string()
+        .min(
+          PASSWORD_MIN_LENGTH,
+          t('auth.validation.passwordMinLength', { count: PASSWORD_MIN_LENGTH })
+        ),
+      birthDate: z.string().optional(),
+      phone: z.string().optional(),
+      role: z.enum(['user', 'owner']),
+      businessName: z.string().optional(),
+      businessAddress: z.string().optional(),
+      businessDescription: z.string().optional(),
+    })
+    .refine(
+      (data) => {
+        if (data.role === 'owner') {
+          return (
+            data.businessName &&
+            data.businessName.trim().length >= 2 &&
+            data.businessAddress &&
+            data.businessAddress.trim().length >= 5
+          )
+        }
+        return true
+      },
+      {
+        message: t('auth.validation.workshopFieldsRequired'),
+        path: ['businessName'],
+      }
+    )
 
   const [formData, setFormData] = useState<RegisterFormData>({
     name: '',
@@ -89,7 +102,6 @@ export const Register = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  // ✅ SOLO UN PASO: form o success
   const [step, setStep] = useState<'form' | 'success'>('form')
   const [registeredEmail, setRegisteredEmail] = useState('')
 
@@ -221,7 +233,7 @@ export const Register = () => {
       setRegisteredEmail(payload.email)
       setStep('success')
     } catch (err) {
-      let msg = 'Error en el registro. Inténtalo de nuevo.'
+      let msg = t('auth.registerError')
       if (axios.isAxiosError(err)) {
         const ax = err as AxiosError<{ message?: string }>
         msg = ax.response?.data?.message ?? msg
@@ -233,12 +245,18 @@ export const Register = () => {
   }
 
   return (
-    <Container maxWidth="sm">
+    <>
+      <Seo
+        title={`${t('auth.createAccount')} | RodaMallorca`}
+        description="Regístrate en RodaMallorca para alquilar bicicletas, reservar talleres y comprar componentes de ciclismo en Mallorca."
+        robots="noindex,nofollow"
+      />
+      <Container maxWidth="sm">
       <Paper elevation={3} sx={{ p: 4, mt: 6 }}>
         {step === 'form' ? (
           <>
             <Typography variant="h5" textAlign="center" gutterBottom>
-              Crear Cuenta
+              {t('auth.createAccount')}
             </Typography>
 
             <Box textAlign="center" sx={{ mb: 3 }}>
@@ -246,8 +264,8 @@ export const Register = () => {
                 icon={formData.role === 'user' ? <Person /> : <Build />}
                 label={
                   formData.role === 'user'
-                    ? 'Registro como Cliente'
-                    : 'Registro como Taller'
+                    ? t('auth.registerAsCustomer')
+                    : t('auth.registerAsWorkshop')
                 }
                 color={formData.role === 'user' ? 'primary' : 'secondary'}
                 variant="outlined"
@@ -256,7 +274,7 @@ export const Register = () => {
 
             <Box component="form" onSubmit={handleRegister}>
               <FormControl component="fieldset" sx={{ mb: 2, width: '100%' }}>
-                <FormLabel component="legend">Tipo de cuenta</FormLabel>
+                <FormLabel component="legend">{t('auth.accountType')}</FormLabel>
                 <RadioGroup
                   row
                   value={formData.role}
@@ -271,7 +289,7 @@ export const Register = () => {
                         sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                       >
                         <Person fontSize="small" />
-                        Cliente
+                        {t('auth.clientLabel')}
                       </Box>
                     }
                   />
@@ -283,7 +301,7 @@ export const Register = () => {
                         sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                       >
                         <Build fontSize="small" />
-                        Taller
+                        {t('auth.workshopLabel')}
                       </Box>
                     }
                   />
@@ -291,7 +309,7 @@ export const Register = () => {
               </FormControl>
 
               <TextField
-                label="Nombre completo"
+                label={t('auth.fullName')}
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
@@ -303,7 +321,7 @@ export const Register = () => {
               />
 
               <TextField
-                label="Email"
+                label={t('auth.email')}
                 name="email"
                 type="email"
                 value={formData.email}
@@ -316,7 +334,7 @@ export const Register = () => {
               />
 
               <TextField
-                label="Contraseña"
+                label={t('auth.password')}
                 name="password"
                 type={showPassword ? 'text' : 'password'}
                 value={formData.password}
@@ -332,8 +350,8 @@ export const Register = () => {
                       <IconButton
                         aria-label={
                           showPassword
-                            ? 'Ocultar contraseña'
-                            : 'Mostrar contraseña'
+                            ? t('auth.hidePassword')
+                            : t('auth.showPassword')
                         }
                         onClick={() => setShowPassword((v) => !v)}
                         edge="end"
@@ -349,12 +367,12 @@ export const Register = () => {
                 <>
                   <Divider sx={{ my: 2 }}>
                     <Typography variant="caption" color="text.secondary">
-                      Información del Taller
+                      {t('auth.workshopInfo')}
                     </Typography>
                   </Divider>
 
                   <TextField
-                    label="Nombre del Taller/Negocio"
+                    label={t('auth.workshopName')}
                     name="businessName"
                     value={formData.businessName ?? ''}
                     onChange={handleChange}
@@ -366,20 +384,20 @@ export const Register = () => {
                   />
 
                   <TextField
-                    label="Dirección del Taller"
+                    label={t('auth.workshopAddress')}
                     name="businessAddress"
                     value={formData.businessAddress ?? ''}
                     onChange={handleChange}
                     margin="normal"
                     required
                     fullWidth
-                    placeholder="Calle, número, ciudad..."
+                    placeholder={t('auth.workshopAddressPlaceholder')}
                     error={!!validationErrors.businessAddress}
                     helperText={validationErrors.businessAddress}
                   />
 
                   <TextField
-                    label="Descripción del Taller"
+                    label={t('auth.workshopDescription')}
                     name="businessDescription"
                     value={formData.businessDescription ?? ''}
                     onChange={handleChange}
@@ -387,7 +405,7 @@ export const Register = () => {
                     fullWidth
                     multiline
                     rows={3}
-                    placeholder="Cuéntanos sobre tu taller, servicios que ofreces..."
+                    placeholder={t('auth.workshopDescriptionPlaceholder')}
                     error={!!validationErrors.businessDescription}
                     helperText={validationErrors.businessDescription}
                   />
@@ -395,7 +413,7 @@ export const Register = () => {
               )}
 
               <TextField
-                label="Fecha de Nacimiento"
+                label={t('auth.birthDate')}
                 name="birthDate"
                 type="date"
                 value={formData.birthDate ?? ''}
@@ -406,7 +424,7 @@ export const Register = () => {
               />
 
               <TextField
-                label="Teléfono"
+                label={t('auth.phone')}
                 name="phone"
                 type="tel"
                 value={formData.phone ?? ''}
@@ -440,13 +458,13 @@ export const Register = () => {
                 disabled={loading}
               >
                 {loading
-                  ? 'Registrando…'
-                  : `Crear Cuenta ${
-                      formData.role === 'user' ? 'de Cliente' : 'de Taller'
-                    }`}
+                  ? t('auth.registering')
+                  : formData.role === 'user'
+                    ? t('auth.createCustomerAccount')
+                    : t('auth.createWorkshopAccount')}
               </Button>
 
-              <Divider sx={{ my: 3 }}>o</Divider>
+              <Divider sx={{ my: 3 }}>{t('common.or')}</Divider>
               <GoogleLoginButton
                 mode="register"
                 role={formData.role === 'owner' ? 'WORKSHOP_OWNER' : 'USER'}
@@ -454,7 +472,7 @@ export const Register = () => {
 
               <Box textAlign="center" sx={{ mt: 2 }}>
                 <Button variant="text" onClick={() => navigate('/login')}>
-                  ¿Ya tienes cuenta? Iniciar sesión
+                  {t('auth.alreadyHaveAccount')}
                 </Button>
               </Box>
 
@@ -464,22 +482,21 @@ export const Register = () => {
                   onClick={() => navigate('/')}
                   size="small"
                 >
-                  Volver al inicio
+                  {t('common.backToHome')}
                 </Button>
               </Box>
             </Box>
           </>
         ) : (
-          // ✅ PANTALLA DE ÉXITO - SOLO INDICA REVISAR EMAIL
           <Box textAlign="center" py={4}>
             <Email sx={{ fontSize: 80, color: 'primary.main', mb: 3 }} />
 
             <Typography variant="h4" gutterBottom>
-              ¡Revisa tu Email!
+              {t('auth.checkEmail')}
             </Typography>
 
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-              Hemos enviado un link de verificación a:
+              {t('auth.verificationSent')}
             </Typography>
 
             <Paper sx={{ p: 2, bgcolor: 'grey.50', mb: 3 }}>
@@ -490,27 +507,23 @@ export const Register = () => {
 
             <Alert severity="info" sx={{ mb: 3, textAlign: 'left' }}>
               <Typography variant="body2" gutterBottom>
-                <strong>Instrucciones:</strong>
+                <strong>{t('auth.instructions')}</strong>
               </Typography>
               <Typography variant="body2" component="div">
-                1. Abre tu bandeja de entrada
+                1. {t('auth.instruction1')}
                 <br />
-                2. Busca el email de RodaMallorca
+                2. {t('auth.instruction2')}
                 <br />
-                3. Haz clic en el botón "Activar Mi Cuenta"
+                3. {t('auth.instruction3')}
                 <br />
-                4. ¡Listo! Serás redirigido automáticamente
+                4. {t('auth.instruction4')}
               </Typography>
-            </Alert>
-
-            <Alert severity="warning" sx={{ mb: 3 }}>
-              El link expirará en <strong>24 horas</strong>
             </Alert>
 
             <Divider sx={{ my: 3 }} />
 
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              ¿No recibiste el email?
+              {t('auth.didNotReceive')}
             </Typography>
 
             <Button
@@ -518,15 +531,16 @@ export const Register = () => {
               onClick={() => setStep('form')}
               sx={{ mr: 2 }}
             >
-              Volver al Registro
+              {t('auth.backToRegister')}
             </Button>
 
             <Button variant="text" onClick={() => navigate('/login')}>
-              Ir a Login
+              {t('auth.goToLogin')}
             </Button>
           </Box>
         )}
       </Paper>
     </Container>
+    </>
   )
 }

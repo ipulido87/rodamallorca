@@ -1,10 +1,10 @@
 import { OrderStatus } from '../domain/enums/order-status'
 import type { Order, UpdateOrderStatusInput } from '../domain/entities/order'
 import type { OrderRepository } from '../domain/repositories/order-repository'
-import { billingRepositoryPrisma } from '../../billing/infrastructure/persistence/prisma/billing-repository-prisma'
+import type { BillingRepository } from '../../billing/domain/repositories/billing-repository'
 import { generateInvoiceFromOrder } from '../../billing/application/generate-invoice-from-order'
-import { sendInvoiceEmail } from '../../notifications/services/email-service'
-import prisma from '../../../lib/prisma'
+import { sendInvoiceEmail, sendOrderStatusUpdateEmail } from '../../notifications/services/email-service'
+import { verifyEntityExists, verifyWorkshopOwnership } from '../../../lib/authorization'
 
 interface WorkshopRepository {
   findById(id: string): Promise<{ id: string; ownerId: string } | null>
@@ -13,6 +13,7 @@ interface WorkshopRepository {
 interface UpdateOrderStatusDeps {
   repo: OrderRepository
   workshopRepo: WorkshopRepository
+  billingRepo: BillingRepository
   authenticatedUserId: string
   userRole: string
 }
@@ -27,28 +28,16 @@ export async function updateOrderStatus(
   input: UpdateOrderStatusInput,
   deps: UpdateOrderStatusDeps
 ): Promise<Order> {
-  const { repo, workshopRepo, authenticatedUserId, userRole } = deps
+  const { repo, workshopRepo, billingRepo, authenticatedUserId, userRole } = deps
 
-  // Obtener el pedido actual
+  // Obtener el pedido actual usando helper compartido
   const order = await repo.findById(orderId, false)
+  verifyEntityExists(order, 'Pedido')
 
-  if (!order) {
-    throw new Error('Pedido no encontrado')
-  }
-
-  // Verificar que el taller existe y obtener el dueño
-  const workshop = await workshopRepo.findById(order.workshopId)
-
-  if (!workshop) {
-    throw new Error('Taller no encontrado')
-  }
-
-  // Verificar permisos - solo el dueño del taller puede actualizar
-  const isWorkshopOwner = workshop.ownerId === authenticatedUserId
-  const isAdmin = userRole === 'ADMIN'
-
-  if (!isWorkshopOwner && !isAdmin) {
-    throw new Error('No tienes permisos para actualizar este pedido')
+  // Verificar permisos - solo el dueño del taller puede actualizar, usando helper compartido
+  // (admin también tiene acceso pero primero validamos el workshop)
+  if (userRole !== 'ADMIN') {
+    await verifyWorkshopOwnership(order.workshopId, authenticatedUserId, workshopRepo)
   }
 
   // Validar transiciones de estado
@@ -61,35 +50,20 @@ export async function updateOrderStatus(
   if (input.status === OrderStatus.CONFIRMED && order.status !== OrderStatus.CONFIRMED) {
     try {
       const invoice = await generateInvoiceFromOrder(orderId, {
-        billingRepo: billingRepositoryPrisma,
+        billingRepo,
+        orderRepo: repo,
       })
       console.log(`✅ [AUTO-INVOICE] Factura generada automáticamente para pedido ${orderId}`)
 
-      // 📧 Enviar email al cliente con la factura
-      setImmediate(async () => {
+      // 📧 Enviar email al cliente con la factura de forma asíncrona
+      ;(async () => {
         try {
-          // Obtener datos completos del pedido y factura
-          const fullOrder = await prisma.order.findUnique({
-            where: { id: orderId },
-            include: {
-              user: true,
-              workshop: true,
-              items: {
-                include: {
-                  product: true,
-                },
-              },
-            },
-          })
+          // Obtener datos completos del pedido y factura usando repositorios
+          const fullOrder = await repo.findByIdWithDetails(orderId)
 
           if (!fullOrder) return
 
-          const fullInvoice = await prisma.invoice.findUnique({
-            where: { id: invoice.id },
-            include: {
-              items: true,
-            },
-          })
+          const fullInvoice = await billingRepo.findInvoiceByIdWithDetails(invoice.id)
 
           if (!fullInvoice) return
 
@@ -133,12 +107,55 @@ export async function updateOrderStatus(
         } catch (emailError) {
           console.error('❌ [EMAIL] Error enviando email de factura:', emailError)
         }
+      })().catch((error) => {
+        console.error('❌ [EMAIL] Error fatal en email de factura:', error)
       })
     } catch (error) {
       console.error(`❌ [AUTO-INVOICE] Error generando factura para pedido ${orderId}:`, error)
       // No lanzar error para no bloquear la confirmación del pedido
       // La factura se puede generar manualmente después si falla
     }
+  }
+
+  // 🔔 NOTIFICACIONES: Enviar emails al cliente cuando cambia el estado
+  // Solo para cambios relevantes (IN_PROGRESS, READY, COMPLETED)
+  const notifiableStatuses = [OrderStatus.IN_PROGRESS, OrderStatus.READY, OrderStatus.COMPLETED]
+
+  if (notifiableStatuses.includes(input.status) && order.status !== input.status) {
+    // Enviar emails de forma asíncrona sin bloquear la respuesta
+    ;(async () => {
+      try {
+        const fullOrder = await repo.findByIdWithDetails(orderId)
+
+        if (!fullOrder) return
+
+        const orderNumber = fullOrder.id.slice(0, 8).toUpperCase()
+        const customerName = fullOrder.user.name || fullOrder.user.email
+
+        // Mensajes según el estado
+        const statusMessages: Record<string, string> = {
+          [OrderStatus.IN_PROGRESS]: '¡Tu pedido está en progreso! Nuestro equipo está trabajando en él.',
+          [OrderStatus.READY]: '¡Tu pedido está listo para recoger! Puedes pasar a buscarlo cuando quieras.',
+          [OrderStatus.COMPLETED]: '¡Tu pedido ha sido completado! Gracias por tu compra.',
+        }
+
+        await sendOrderStatusUpdateEmail({
+          customerName,
+          customerEmail: fullOrder.user.email,
+          workshopName: fullOrder.workshop.name,
+          orderNumber,
+          newStatus: input.status,
+          statusMessage: statusMessages[input.status] || 'Tu pedido ha sido actualizado.',
+          orderUrl: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/orders/${orderId}`,
+        })
+
+        console.log(`✅ [NOTIFICATIONS] Email de actualización enviado para pedido ${orderNumber} - Estado: ${input.status}`)
+      } catch (error) {
+        console.error('❌ [NOTIFICATIONS] Error enviando email de actualización:', error)
+      }
+    })().catch((error) => {
+      console.error('❌ [NOTIFICATIONS] Error fatal en email de actualización:', error)
+    })
   }
 
   return updatedOrder

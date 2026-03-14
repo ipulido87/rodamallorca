@@ -1,4 +1,6 @@
 // Servicio global de confirmaciones - puede usarse en cualquier parte
+import i18n from '../../i18n/i18n'
+
 interface ConfirmOptions {
   title?: string
   message: string
@@ -32,12 +34,12 @@ class ConfirmService {
   }
 
   // Confirmación de eliminación (atajos comunes)
-  async delete(itemName: string = 'este elemento'): Promise<boolean> {
+  async delete(itemName: string = i18n.t('confirm.deleteDefault')): Promise<boolean> {
     return this.ask({
-      title: 'Confirmar eliminación',
-      message: `¿Estás seguro de eliminar ${itemName}? Esta acción no se puede deshacer.`,
-      confirmText: 'Eliminar',
-      cancelText: 'Cancelar',
+      title: i18n.t('confirm.deleteTitle'),
+      message: i18n.t('confirm.deleteMessage', { item: itemName }),
+      confirmText: i18n.t('common.delete'),
+      cancelText: i18n.t('common.cancel'),
       severity: 'error',
     })
   }
@@ -45,21 +47,21 @@ class ConfirmService {
   // Confirmación de descarte de cambios
   async discardChanges(): Promise<boolean> {
     return this.ask({
-      title: 'Descartar cambios',
-      message: '¿Estás seguro de descartar los cambios? Los cambios no guardados se perderán.',
-      confirmText: 'Descartar',
-      cancelText: 'Continuar editando',
+      title: i18n.t('confirm.discardTitle'),
+      message: i18n.t('confirm.discardMessage'),
+      confirmText: i18n.t('common.discard'),
+      cancelText: i18n.t('common.continueEditing'),
       severity: 'warning',
     })
   }
 
   // Confirmación genérica de acción
-  async action(message: string, title: string = 'Confirmar'): Promise<boolean> {
+  async action(message: string, title: string = i18n.t('confirm.confirmTitle')): Promise<boolean> {
     return this.ask({
       title,
       message,
-      confirmText: 'Confirmar',
-      cancelText: 'Cancelar',
+      confirmText: i18n.t('common.confirm'),
+      cancelText: i18n.t('common.cancel'),
       severity: 'info',
     })
   }

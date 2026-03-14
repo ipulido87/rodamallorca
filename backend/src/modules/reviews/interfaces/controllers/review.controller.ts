@@ -1,23 +1,13 @@
 import { NextFunction, Request, Response } from 'express'
-import { z } from 'zod'
 import { createReview } from '../../application/create-review'
 import { getWorkshopReviews } from '../../application/get-reviews'
 import { updateReview } from '../../application/update-review'
 import { deleteReview } from '../../application/delete-review'
 import { ReviewRepositoryPrisma } from '../../infrastructure/persistence/prisma/review-repository-prisma'
+import { WorkshopRepositoryPrisma } from '../../../workshops/infrastructure/persistence/prisma/workshop-repository-prisma'
 
 const repo = new ReviewRepositoryPrisma()
-
-const createReviewSchema = z.object({
-  workshopId: z.string().uuid(),
-  rating: z.number().int().min(1).max(5),
-  comment: z.string().optional().nullable(),
-})
-
-const updateReviewSchema = z.object({
-  rating: z.number().int().min(1).max(5).optional(),
-  comment: z.string().optional().nullable(),
-})
+const workshopRepo = new WorkshopRepositoryPrisma()
 
 export const createReviewController = async (
   req: Request,
@@ -31,14 +21,15 @@ export const createReviewController = async (
       })
     }
 
-    const body = createReviewSchema.parse(req.body)
+    // Validación ya realizada por middleware validateBody
+    const body = req.body
 
     const review = await createReview(
       {
         ...body,
         userId: req.user.id,
       },
-      { repo }
+      { repo, workshopRepo }
     )
 
     res.status(201).json(review)
@@ -55,7 +46,7 @@ export const getWorkshopReviewsController = async (
   try {
     const { workshopId } = req.params
 
-    const reviews = await getWorkshopReviews(workshopId, { repo })
+    const reviews = await getWorkshopReviews(workshopId as string, { repo })
 
     res.json(reviews)
   } catch (e) {
@@ -76,10 +67,12 @@ export const updateReviewController = async (
     }
 
     const { reviewId } = req.params
-    const body = updateReviewSchema.parse(req.body)
+    // Validación ya realizada por middleware validateBody
+    const body = req.body
 
-    const review = await updateReview(reviewId, body, {
+    const review = await updateReview(reviewId as string, body, {
       repo,
+      workshopRepo,
       authenticatedUserId: req.user.id,
     })
 
@@ -103,8 +96,9 @@ export const deleteReviewController = async (
 
     const { reviewId } = req.params
 
-    await deleteReview(reviewId, {
+    await deleteReview(reviewId as string, {
       repo,
+      workshopRepo,
       authenticatedUserId: req.user.id,
     })
 

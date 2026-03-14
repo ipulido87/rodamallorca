@@ -1,33 +1,18 @@
 import { NextFunction, Request, Response } from 'express'
-import { z } from 'zod'
 import { createWorkshop } from '../../application/create-workshop'
 import { deleteWorkshop } from '../../application/delete-workshop'
 import { updateWorkshop } from '../../application/update-workshop'
 import { WorkshopRepositoryPrisma } from '../../infrastructure/persistence/prisma/workshop-repository-prisma'
+import {
+  CreateWorkshopSchema,
+  UpdateWorkshopSchema,
+} from '../http/schemas/workshop.schemas'
 
 const repo = new WorkshopRepositoryPrisma()
 
-const createWorkshopSchema = z.object({
-  name: z.string().min(2),
-  description: z.string().optional().nullable(),
-  address: z.string().optional().nullable(),
-  city: z.string().optional().nullable(),
-  country: z.string().length(2).optional().nullable(),
-  phone: z.string().optional().nullable(),
-})
-
-// Schema para actualizar (campos opcionales)
-const updateWorkshopSchema = z.object({
-  name: z.string().min(2).optional(),
-  description: z.string().optional().nullable(),
-  address: z.string().optional().nullable(),
-  city: z.string().optional().nullable(),
-  country: z.string().length(2).optional().nullable(),
-  phone: z.string().optional().nullable(),
-  logoOriginal: z.string().optional().nullable(),
-  logoMedium: z.string().optional().nullable(),
-  logoThumbnail: z.string().optional().nullable(),
-})
+// Aliases para mantener compatibilidad con código existente
+const createWorkshopSchema = CreateWorkshopSchema
+const updateWorkshopSchema = UpdateWorkshopSchema
 
 export const createWorkshopController = async (
   req: Request,
@@ -41,6 +26,17 @@ export const createWorkshopController = async (
       console.error('req.user:', req.user)
       return res.status(401).json({
         error: 'Token inválido: falta ID de usuario. Por favor, vuelve a iniciar sesión.'
+      })
+    }
+
+    // ✅ VALIDACIÓN: Un usuario solo puede tener un taller
+    const existingWorkshops = await repo.findByOwnerId(req.user.id)
+    if (existingWorkshops.length > 0) {
+      console.log(`❌ [createWorkshopController] Usuario ${req.user.id} ya tiene ${existingWorkshops.length} taller(es)`)
+      return res.status(403).json({
+        error: 'MAX_WORKSHOPS_REACHED',
+        message: 'Solo puedes tener un taller por cuenta. Si necesitas gestionar múltiples talleres, contáctanos.',
+        existingWorkshopId: existingWorkshops[0].id,
       })
     }
 
@@ -61,7 +57,7 @@ export const getWorkshopController = async (
   next: NextFunction
 ) => {
   try {
-    const workshop = await repo.findById(req.params.id)
+    const workshop = await repo.findById(req.params.id as string)
 
     if (!workshop) {
       return res.status(404).json({ error: 'Workshop no encontrado' })
@@ -122,7 +118,7 @@ export const updateWorkshopController = async (
     const body = updateWorkshopSchema.parse(req.body)
 
     // Verificar que el taller pertenece al usuario
-    const existingWorkshop = await repo.findById(req.params.id)
+    const existingWorkshop = await repo.findById(req.params.id as string)
     if (!existingWorkshop) {
       return res.status(404).json({ error: 'Workshop no encontrado' })
     }
@@ -132,7 +128,7 @@ export const updateWorkshopController = async (
         .json({ error: 'No tienes permisos para editar este taller' })
     }
 
-    const result = await updateWorkshop(req.params.id, body, { repo })
+    const result = await updateWorkshop(req.params.id as string, body, { repo })
     res.json(result)
   } catch (e) {
     next(e)
@@ -155,7 +151,7 @@ export const deleteWorkshopController = async (
     }
 
     // Verificar que el taller pertenece al usuario
-    const existingWorkshop = await repo.findById(req.params.id)
+    const existingWorkshop = await repo.findById(req.params.id as string)
     if (!existingWorkshop) {
       return res.status(404).json({ error: 'Workshop no encontrado' })
     }
@@ -165,7 +161,7 @@ export const deleteWorkshopController = async (
         .json({ error: 'No tienes permisos para eliminar este taller' })
     }
 
-    await deleteWorkshop(req.params.id, { repo })
+    await deleteWorkshop(req.params.id as string, { repo })
     res.json({ message: 'Taller eliminado correctamente' })
   } catch (e) {
     next(e)

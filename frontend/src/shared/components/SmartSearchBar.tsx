@@ -1,0 +1,510 @@
+import {
+  AutoAwesome,
+  Build,
+  Clear,
+  Map,
+  PedalBike,
+  Search,
+  Store,
+} from '@mui/icons-material'
+import {
+  alpha,
+  Box,
+  ButtonBase,
+  Chip,
+  CircularProgress,
+  IconButton,
+  InputAdornment,
+  InputBase,
+  Stack,
+  TextField,
+  Tooltip,
+  Typography,
+} from '@mui/material'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
+import { detectIntent, parseQuery } from '../search'
+import { aiSearch } from '@/features/catalog/services/catalog-service'
+import type { ParsedQuery, SearchIntent } from '../search'
+
+// ─── Tipos ────────────────────────────────────────────────────────────────────
+
+interface SmartSearchBarProps {
+  value: string
+  onChange: (value: string) => void
+  placeholder?: string
+  parsedQuery?: ParsedQuery
+  showHints?: boolean
+  /**
+   * 'catalog' (default): estilo MUI TextField, para páginas de Talleres/Productos.
+   * 'hero': estilo glassmorphism oscuro con placeholder animado y navegación al enviar.
+   */
+  variant?: 'catalog' | 'hero'
+}
+
+// ─── Datos del hero ────────────────────────────────────────────────────────────
+
+const HERO_EXAMPLES = [
+  'Quiero alquilar una bici de montaña en Palma',
+  'Taller para reparar mi bici en Sóller',
+  'Freno Shimano de segunda mano barato',
+  'Taller bien valorado cerca de Alcúdia',
+  'Llanta de carbono menos de 200€',
+  'Revisión completa de mi bicicleta',
+  'Casco nuevo para ciclismo de ruta',
+  'Mecánico en Pollença urgente',
+]
+
+const INTENT_META: Record<SearchIntent, { label: string; icon: React.ReactNode; color: string }> = {
+  talleres: { label: 'Buscar en Talleres', icon: <Build sx={{ fontSize: 18 }} />, color: '#5c6bc0' },
+  productos: { label: 'Buscar en Productos', icon: <Store sx={{ fontSize: 18 }} />, color: '#26a69a' },
+  alquiler: { label: 'Buscar Alquiler', icon: <PedalBike sx={{ fontSize: 18 }} />, color: '#4caf50' },
+  rutas: { label: 'Ver Rutas', icon: <Map sx={{ fontSize: 18 }} />, color: '#e53935' },
+}
+
+const INTENT_ROUTES: Record<string, string> = {
+  workshops: '/talleres',
+  products: '/productos',
+  services: '/talleres',
+  rentals: '/rentals',
+  routes: '/rutas',
+}
+
+// ─── Chips de filtros detectados (compartido entre variantes) ──────────────────
+
+const ParsedQueryChips = ({
+  parsed,
+  dark = false,
+}: {
+  parsed: ParsedQuery
+  dark?: boolean
+}) => {
+  const { t } = useTranslation()
+  const chips: Array<{ label: string; color?: 'primary' | 'secondary' | 'success' | 'warning' }> = []
+
+  if (parsed.city) chips.push({ label: `📍 ${parsed.city}`, color: 'primary' })
+  if (parsed.condition === 'used') chips.push({ label: `♻️ ${t('search.secondHand')}`, color: 'secondary' })
+  if (parsed.condition === 'new') chips.push({ label: `✨ ${t('search.brandNew')}`, color: 'success' })
+  if (parsed.sort === 'price_asc') chips.push({ label: `💰 ${t('search.cheapest')}`, color: 'warning' })
+  if (parsed.sort === 'price_desc') chips.push({ label: `💎 ${t('search.premium')}`, color: 'warning' })
+  if (parsed.sort === 'rating_desc') chips.push({ label: `⭐ ${t('search.bestRated')}`, color: 'success' })
+  if (parsed.maxPrice) chips.push({ label: `${t('search.upTo')} ${parsed.maxPrice}€`, color: 'secondary' })
+  if (parsed.minPrice) chips.push({ label: `${t('search.from')} ${parsed.minPrice}€`, color: 'secondary' })
+
+  if (chips.length === 0) return null
+
+  return (
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 1 }}>
+      {!dark && (
+        <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center', mr: 0.5 }}>
+          {t('search.detected')}
+        </Typography>
+      )}
+      {chips.map((chip) =>
+        dark ? (
+          <Chip
+            key={chip.label}
+            label={chip.label}
+            size="small"
+            sx={{
+              backgroundColor: alpha('#ffffff', 0.18),
+              color: 'white',
+              fontSize: '0.72rem',
+              backdropFilter: 'blur(10px)',
+            }}
+          />
+        ) : (
+          <Chip
+            key={chip.label}
+            label={chip.label}
+            size="small"
+            color={chip.color}
+            variant="outlined"
+            sx={{ fontSize: '0.7rem' }}
+          />
+        )
+      )}
+    </Box>
+  )
+}
+
+// ─── Variante catalog (Talleres / Productos) ───────────────────────────────────
+
+const CatalogSearchBar = ({
+  value,
+  onChange,
+  placeholder,
+  parsedQuery,
+  showHints,
+}: Omit<SmartSearchBarProps, 'variant'>) => {
+  const { t } = useTranslation()
+  const hasValue = value.trim().length > 0
+
+  return (
+    <Box sx={{ width: '100%', maxWidth: 640, mx: 'auto' }}>
+      <TextField
+        fullWidth
+        variant="outlined"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder ?? t('search.heroPlaceholder')}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Tooltip title={t('search.smartSearchInfo')}>
+                <AutoAwesome sx={{ color: 'primary.main', fontSize: 20 }} />
+              </Tooltip>
+            </InputAdornment>
+          ),
+          endAdornment: hasValue ? (
+            <InputAdornment position="end">
+              <IconButton size="small" onClick={() => onChange('')} aria-label={t('search.clearSearch')}>
+                <Clear fontSize="small" />
+              </IconButton>
+            </InputAdornment>
+          ) : (
+            <InputAdornment position="end">
+              <Search sx={{ color: 'action.active' }} />
+            </InputAdornment>
+          ),
+        }}
+        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+      />
+
+      {showHints && parsedQuery && hasValue && <ParsedQueryChips parsed={parsedQuery} />}
+    </Box>
+  )
+}
+
+// ─── Variante hero (Landing page) ─────────────────────────────────────────────
+
+const HeroSearchBar = ({ value, onChange }: Pick<SmartSearchBarProps, 'value' | 'onChange'>) => {
+  const navigate = useNavigate()
+  const { t } = useTranslation()
+  const inputRef = useRef<HTMLInputElement>(null)
+  const [placeholderIndex, setPlaceholderIndex] = useState(0)
+  const [showPlaceholderAnim, setShowPlaceholderAnim] = useState(true)
+  const [searching, setSearching] = useState(false)
+  const [aiMessage, setAiMessage] = useState<string | null>(null)
+
+  const heroExamples = [
+    t('search.placeholder1'),
+    t('search.placeholder2'),
+    t('search.placeholder3'),
+    t('search.placeholder4'),
+    t('search.placeholder5'),
+    t('search.placeholder6'),
+    t('search.placeholder7'),
+    t('search.placeholder8'),
+  ]
+
+  const intentLabels: Record<SearchIntent, { label: string; icon: React.ReactNode; color: string }> = {
+    talleres: { label: t('search.searchWorkshops'), icon: <Build sx={{ fontSize: 18 }} />, color: '#5c6bc0' },
+    productos: { label: t('search.searchProducts'), icon: <Store sx={{ fontSize: 18 }} />, color: '#26a69a' },
+    alquiler: { label: t('search.searchRentals'), icon: <PedalBike sx={{ fontSize: 18 }} />, color: '#4caf50' },
+    rutas: { label: t('search.viewRoutes'), icon: <Map sx={{ fontSize: 18 }} />, color: '#e53935' },
+  }
+
+  // Rota los ejemplos de placeholder cada 3.5 s mientras el input está vacío
+  useEffect(() => {
+    if (value.trim()) return
+    const interval = setInterval(() => {
+      setShowPlaceholderAnim(false)
+      setTimeout(() => {
+        setPlaceholderIndex((i) => (i + 1) % heroExamples.length)
+        setShowPlaceholderAnim(true)
+      }, 300)
+    }, 3500)
+    return () => clearInterval(interval)
+  }, [value])
+
+  const intent = value.trim() ? detectIntent(value) : null
+  const parsed = value.trim() ? parseQuery(value) : null
+  const intentMeta = intent ? intentLabels[intent] : null
+
+  const handleSubmit = useCallback(async () => {
+    const q = value.trim()
+    if (!q || searching) return
+
+    setSearching(true)
+    setAiMessage(null)
+
+    try {
+      // Llamar al endpoint de IA para interpretar la búsqueda
+      const result = await aiSearch(q)
+
+      // Mostrar mensaje de IA brevemente
+      if (result.aiMessage) {
+        setAiMessage(result.aiMessage)
+      }
+
+      // Navegar a la página correcta según la intención detectada por IA
+      const route = INTENT_ROUTES[result.intent] ?? '/talleres'
+      const params = new URLSearchParams()
+
+      // Importante: usar q limpio de IA para no sobre-filtrar con frases largas
+      if (result.filters.q?.trim()) {
+        params.set('q', result.filters.q.trim())
+      }
+      if (result.filters.city) params.set('city', result.filters.city)
+      if (result.filters.category) params.set('category', result.filters.category)
+      if (typeof result.filters.minPrice === 'number') {
+        params.set('minPrice', String(result.filters.minPrice))
+      }
+      if (typeof result.filters.maxPrice === 'number') {
+        params.set('maxPrice', String(result.filters.maxPrice))
+      }
+
+      // Fallback defensivo si IA no devuelve filtros útiles
+      if (!params.toString()) {
+        params.set('q', q)
+      }
+
+      // Pequeña pausa para que el usuario vea el mensaje de IA
+      setTimeout(() => {
+        if (result.intent === 'routes') {
+          navigate('/rutas')
+        } else {
+          navigate(
+            params.toString() ? `${route}?${params}` : route,
+            {
+              state: {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any -- AI results shape depends on intent
+                aiResults: result.results as any[],
+                aiMessage: result.aiMessage,
+                aiTotal: result.total,
+                aiQuery: q,
+              },
+            }
+          )
+        }
+        setSearching(false)
+        setAiMessage(null)
+      }, result.aiMessage ? 600 : 0)
+    } catch {
+      // Fallback: navegación clásica sin IA
+      const destination = detectIntent(q)
+      const params = new URLSearchParams({ q })
+      if (destination === 'talleres') navigate(`/talleres?${params}`)
+      else if (destination === 'alquiler') navigate(`/rentals?${params}`)
+      else if (destination === 'rutas') navigate('/rutas')
+      else navigate(`/productos?${params}`)
+      setSearching(false)
+    }
+  }, [value, searching, navigate])
+
+  return (
+    <Box sx={{ width: '100%', maxWidth: 680 }}>
+      {/* Caja del input */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          backgroundColor: alpha('#ffffff', 0.12),
+          backdropFilter: 'blur(20px)',
+          border: `1.5px solid ${alpha('#ffffff', 0.25)}`,
+          borderRadius: 3,
+          px: 2,
+          py: 0.5,
+          gap: 1,
+          transition: 'border-color 0.2s, background-color 0.2s',
+          '&:focus-within': {
+            borderColor: alpha('#ffffff', 0.55),
+            backgroundColor: alpha('#ffffff', 0.16),
+          },
+        }}
+      >
+        <AutoAwesome
+          sx={{
+            color: value.trim() ? alpha('#ffffff', 0.9) : alpha('#ffffff', 0.5),
+            fontSize: 22,
+            flexShrink: 0,
+            transition: 'color 0.2s',
+          }}
+        />
+
+        {/* Input con placeholder animado */}
+        <Box sx={{ flex: 1, position: 'relative', py: 1.2 }}>
+          <InputBase
+            inputRef={inputRef}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+            sx={{
+              width: '100%',
+              color: 'white',
+              fontSize: { xs: '0.95rem', sm: '1.05rem' },
+              '& input': { padding: 0, '&::placeholder': { color: 'transparent' } },
+            }}
+            inputProps={{ 'aria-label': t('search.inlinePlaceholder') }}
+          />
+
+          {!value && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                display: 'flex',
+                alignItems: 'center',
+                pointerEvents: 'none',
+              }}
+              onClick={() => inputRef.current?.focus()}
+            >
+              <AnimatePresence mode="wait">
+                {showPlaceholderAnim && (
+                  <motion.span
+                    key={placeholderIndex}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.3 }}
+                    style={{
+                      color: alpha('#ffffff', 0.45),
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: 'block',
+                      width: '100%',
+                    }}
+                  >
+                    {heroExamples[placeholderIndex]}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </Box>
+          )}
+        </Box>
+
+        {/* Botón enviar */}
+        <ButtonBase
+          onClick={handleSubmit}
+          disabled={!value.trim() || searching}
+          sx={{
+            backgroundColor: value.trim()
+              ? (intentMeta?.color ?? '#3949ab')
+              : alpha('#ffffff', 0.15),
+            color: 'white',
+            borderRadius: 2,
+            px: 2.5,
+            py: 1,
+            fontSize: '0.9rem',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 0.8,
+            flexShrink: 0,
+            transition: 'background-color 0.25s',
+            '&:hover': {
+              backgroundColor: value.trim()
+                ? alpha(intentMeta?.color ?? '#3949ab', 0.85)
+                : alpha('#ffffff', 0.22),
+            },
+          }}
+        >
+          {searching ? (
+            <CircularProgress size={18} sx={{ color: 'white' }} />
+          ) : (
+            <Search sx={{ fontSize: 18 }} />
+          )}
+          <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+            {searching ? t('search.analyzing') : t('search.searchButton')}
+          </Box>
+        </ButtonBase>
+      </Box>
+
+      {/* Chip de intención + filtros detectados */}
+      <AnimatePresence>
+        {value.trim() && intentMeta && parsed && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Stack direction="row" spacing={1} sx={{ mt: 1.5, flexWrap: 'wrap', gap: 0.8 }}>
+              <Chip
+                icon={<Box sx={{ display: 'flex', color: 'white !important' }}>{intentMeta.icon}</Box>}
+                label={intentMeta.label}
+                size="small"
+                sx={{
+                  backgroundColor: alpha(intentMeta.color, 0.85),
+                  color: 'white',
+                  fontWeight: 600,
+                  fontSize: '0.75rem',
+                  backdropFilter: 'blur(10px)',
+                  '& .MuiChip-icon': { color: 'white' },
+                }}
+              />
+              <ParsedQueryChips parsed={parsed} dark />
+            </Stack>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Mensaje de IA */}
+      <AnimatePresence>
+        {aiMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Typography
+              variant="caption"
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                mt: 1,
+                color: alpha('#ffffff', 0.8),
+                fontSize: '0.78rem',
+                pl: 0.5,
+              }}
+            >
+              <AutoAwesome sx={{ fontSize: 14, color: alpha('#ffffff', 0.6) }} />
+              {aiMessage}
+            </Typography>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {!value.trim() && (
+        <Typography
+          variant="caption"
+          sx={{ display: 'block', mt: 1, color: alpha('#ffffff', 0.4), fontSize: '0.72rem', pl: 0.5 }}
+        >
+          {t('search.inlineHint')}
+        </Typography>
+      )}
+    </Box>
+  )
+}
+
+// ─── Componente público ────────────────────────────────────────────────────────
+
+/**
+ * Barra de búsqueda inteligente con NLP en español.
+ *
+ * variant="catalog" (default): TextField MUI para páginas de Talleres y Productos.
+ * variant="hero": glassmorphism oscuro con placeholder animado para la landing page.
+ *
+ * Ejemplos de queries que entiende:
+ *   "freno shimano usado barato Palma"
+ *   "taller cerca de Sóller bien valorado"
+ *   "alquilar bici de montaña el sábado"
+ */
+export const SmartSearchBar = ({
+  variant = 'catalog',
+  ...props
+}: SmartSearchBarProps) => {
+  if (variant === 'hero') {
+    return <HeroSearchBar value={props.value} onChange={props.onChange} />
+  }
+  return <CatalogSearchBar {...props} />
+}

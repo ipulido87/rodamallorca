@@ -1,5 +1,4 @@
 import type { NextFunction, Request, Response } from 'express'
-import { z } from 'zod'
 import prisma from '../../../../lib/prisma'
 import { billingRepositoryPrisma } from '../../infrastructure/persistence/prisma/billing-repository-prisma'
 import { createCustomer } from '../../application/create-customer'
@@ -18,60 +17,6 @@ const workshopRepo = {
   },
 }
 
-// Esquemas de validación
-const createCustomerSchema = z.object({
-  workshopId: z.string().uuid(),
-  type: z.enum(['INDIVIDUAL', 'BUSINESS']).optional(),
-  name: z.string().min(2),
-  taxId: z.string().optional(),
-  email: z.string().email().optional(),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  postalCode: z.string().optional(),
-  country: z.string().optional(),
-  notes: z.string().optional(),
-})
-
-const createInvoiceItemSchema = z.object({
-  description: z.string().min(1),
-  quantity: z.number().min(0.01),
-  unitPrice: z.number().int().min(0),
-  discount: z.number().int().min(0).optional(),
-  taxRate: z.number().min(0).max(100).optional(),
-})
-
-const createInvoiceSchema = z.object({
-  workshopId: z.string().uuid(),
-  customerId: z.string().uuid().optional(),
-  seriesId: z.string().uuid(),
-  issueDate: z.string().datetime().optional(),
-  dueDate: z.string().datetime().optional(),
-  status: z.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED']).optional(),
-  notes: z.string().optional(),
-  internalNotes: z.string().optional(),
-  paymentMethod: z.string().optional(),
-  items: z.array(createInvoiceItemSchema).min(1),
-})
-
-const updateInvoiceSchema = z.object({
-  customerId: z.string().uuid().optional(),
-  dueDate: z.string().datetime().optional(),
-  status: z.enum(['DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED']).optional(),
-  notes: z.string().optional(),
-  internalNotes: z.string().optional(),
-  paymentMethod: z.string().optional(),
-  paidAt: z.string().datetime().optional(),
-})
-
-const createInvoiceSeriesSchema = z.object({
-  workshopId: z.string().uuid(),
-  name: z.string().min(1),
-  prefix: z.string().min(1).max(10),
-  year: z.number().int().min(2000).max(2100),
-  isDefault: z.boolean().optional(),
-})
-
 /**
  * POST /api/owner/billing/customers
  * Crear un nuevo cliente
@@ -86,7 +31,8 @@ export const createCustomerController = async (
       return res.status(401).json({ error: 'Usuario no autenticado' })
     }
 
-    const body = createCustomerSchema.parse(req.body)
+    // Validación ya realizada por middleware validateBody
+    const body = req.body
     const customer = await createCustomer(body, {
       repo,
       workshopRepo,
@@ -114,7 +60,7 @@ export const listCustomersController = async (
     }
 
     const { workshopId } = req.params
-    const customers = await listCustomersByWorkshop(workshopId, { repo })
+    const customers = await listCustomersByWorkshop(workshopId as string, { repo })
 
     res.json(customers)
   } catch (e) {
@@ -136,7 +82,8 @@ export const createInvoiceSeriesController = async (
       return res.status(401).json({ error: 'Usuario no autenticado' })
     }
 
-    const body = createInvoiceSeriesSchema.parse(req.body)
+    // Validación ya realizada por middleware validateBody
+    const body = req.body
     const series = await repo.createInvoiceSeries(body)
 
     res.status(201).json(series)
@@ -160,13 +107,13 @@ export const listInvoiceSeriesController = async (
     }
 
     const { workshopId } = req.params
-    let series = await repo.findInvoiceSeriesByWorkshop(workshopId)
+    let series = await repo.findInvoiceSeriesByWorkshop(workshopId as string)
 
     // Si no existe ninguna serie, crear una por defecto automáticamente
     if (series.length === 0) {
       const currentYear = new Date().getFullYear()
       const defaultSeries = await repo.createInvoiceSeries({
-        workshopId,
+        workshopId: workshopId as string,
         name: 'Serie Principal',
         prefix: 'F',
         year: currentYear,
@@ -195,7 +142,8 @@ export const createInvoiceController = async (
       return res.status(401).json({ error: 'Usuario no autenticado' })
     }
 
-    const body = createInvoiceSchema.parse(req.body)
+    // Validación ya realizada por middleware validateBody
+    const body = req.body
 
     const invoice = await createInvoice(
       {
@@ -234,7 +182,7 @@ export const listInvoicesController = async (
     const { status, customerId } = req.query
 
     const invoices = await listInvoicesByWorkshop(
-      workshopId,
+      workshopId as string,
       {
         status: status as string,
         customerId: customerId as string,
@@ -263,7 +211,7 @@ export const getInvoiceByIdController = async (
     }
 
     const { id } = req.params
-    const invoice = await repo.findInvoiceById(id)
+    const invoice = await repo.findInvoiceById(id as string)
 
     if (!invoice) {
       return res.status(404).json({ error: 'Factura no encontrada' })
@@ -290,9 +238,10 @@ export const updateInvoiceController = async (
     }
 
     const { id } = req.params
-    const body = updateInvoiceSchema.parse(req.body)
+    // Validación ya realizada por middleware validateBody
+    const body = req.body
 
-    const invoice = await repo.updateInvoice(id, {
+    const invoice = await repo.updateInvoice(id as string, {
       ...body,
       dueDate: body.dueDate ? new Date(body.dueDate) : undefined,
       paidAt: body.paidAt ? new Date(body.paidAt) : undefined,
@@ -319,7 +268,7 @@ export const deleteInvoiceController = async (
     }
 
     const { id } = req.params
-    await repo.deleteInvoice(id)
+    await repo.deleteInvoice(id as string)
 
     res.status(204).send()
   } catch (e) {
@@ -344,7 +293,7 @@ export const getWorkshopStatsController = async (
     const { workshopId } = req.params
 
     // Verificar que el taller existe y pertenece al usuario
-    const workshop = await workshopRepo.findById(workshopId)
+    const workshop = await workshopRepo.findById(workshopId as string)
     if (!workshop) {
       return res.status(404).json({ error: 'Taller no encontrado' })
     }
@@ -353,7 +302,7 @@ export const getWorkshopStatsController = async (
       return res.status(403).json({ error: 'No tienes permisos para ver las estadísticas de este taller' })
     }
 
-    const stats = await getWorkshopStats(workshopId, { billingRepo: repo })
+    const stats = await getWorkshopStats(workshopId as string, { billingRepo: repo })
 
     res.json(stats)
   } catch (e) {

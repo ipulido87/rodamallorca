@@ -28,6 +28,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import useSWR from 'swr'
 import type { Workshop } from '../../workshops/services/workshop-service'
@@ -42,6 +43,7 @@ import {
 } from '../services/order-service'
 
 export const Orders = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [selectedWorkshopId, setSelectedWorkshopId] = useState<string>('')
   const [error, setError] = useState('')
@@ -110,7 +112,7 @@ export const Orders = () => {
 
       setUpdateDialog({ open: false, order: null, newStatus: null })
     } catch {
-      setError('Error al actualizar el estado del pedido')
+      setError(t('orders.errorUpdatingStatus'))
     } finally {
       setUpdateLoading(null)
     }
@@ -143,7 +145,7 @@ export const Orders = () => {
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <CircularProgress />
           <Typography variant="h6" sx={{ mt: 2 }}>
-            Cargando talleres...
+            {t('orders.loadingWorkshops')}
           </Typography>
         </Box>
       </Container>
@@ -156,17 +158,17 @@ export const Orders = () => {
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <Store sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h4" gutterBottom>
-            No tienes talleres registrados
+            {t('orders.noWorkshops')}
           </Typography>
           <Typography variant="body1" color="text.secondary" gutterBottom>
-            Necesitas crear un taller para poder ver pedidos
+            {t('orders.needWorkshopForOrders')}
           </Typography>
           <Button
             variant="contained"
             onClick={() => navigate('/create-workshop')}
             sx={{ mt: 2 }}
           >
-            Crear Taller
+            {t('orders.createWorkshop')}
           </Button>
         </Box>
       </Container>
@@ -184,7 +186,7 @@ export const Orders = () => {
             mb: 3,
           }}
         >
-          <Typography variant="h4">Pedidos del Taller</Typography>
+          <Typography variant="h4">{t('orders.workshopOrders')}</Typography>
         </Box>
 
         {/* Selector de taller (si tiene múltiples) */}
@@ -192,10 +194,10 @@ export const Orders = () => {
           <Card sx={{ mb: 3 }}>
             <CardContent>
               <FormControl fullWidth>
-                <InputLabel>Selecciona un taller</InputLabel>
+                <InputLabel>{t('orders.selectWorkshop')}</InputLabel>
                 <Select
                   value={selectedWorkshopId}
-                  label="Selecciona un taller"
+                  label={t('orders.selectWorkshop')}
                   onChange={(e) => setSelectedWorkshopId(e.target.value)}
                 >
                   {workshops.map((workshop) => (
@@ -238,7 +240,7 @@ export const Orders = () => {
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <CircularProgress />
             <Typography variant="body1" sx={{ mt: 2 }}>
-              Cargando pedidos...
+              {t('orders.loadingOrders')}
             </Typography>
           </Box>
         )}
@@ -247,10 +249,10 @@ export const Orders = () => {
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <Receipt sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
             <Typography variant="h6" gutterBottom>
-              No hay pedidos aún
+              {t('orders.noOrdersYet')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Los pedidos de tus clientes aparecerán aquí
+              {t('orders.ordersWillAppearHere')}
             </Typography>
           </Box>
         )}
@@ -270,7 +272,7 @@ export const Orders = () => {
                   >
                     <Box>
                       <Typography variant="h6" gutterBottom>
-                        Pedido #{order.id.slice(0, 8)}
+                        {t('orders.orderNumber', { id: order.id.slice(0, 8) })}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         {new Date(order.createdAt).toLocaleDateString('es-ES', {
@@ -292,13 +294,13 @@ export const Orders = () => {
 
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="body2" color="text.secondary">
-                      Cliente: {order.user?.email || 'N/A'}
+                      {t('orders.client')}: {order.user?.email || 'N/A'}
                     </Typography>
                     <Typography variant="h6" color="primary" sx={{ mt: 1 }}>
-                      Total: {formatPrice(order.totalAmount)}
+                      {t('orders.total')}: {formatPrice(order.totalAmount)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {order.items?.length || 0} producto(s)
+                      {t('orders.productCount', { count: order.items?.length || 0 })}
                     </Typography>
                   </Box>
 
@@ -312,7 +314,7 @@ export const Orders = () => {
                       }}
                     >
                       <Typography variant="caption" color="text.secondary">
-                        Notas del cliente:
+                        {t('orders.clientNotes')}:
                       </Typography>
                       <Typography variant="body2">{order.notes}</Typography>
                     </Box>
@@ -325,7 +327,7 @@ export const Orders = () => {
                       startIcon={<Visibility />}
                       onClick={() => navigate(`/orders/${order.id}`)}
                     >
-                      Ver Detalles
+                      {t('orders.viewDetails')}
                     </Button>
                     <Button
                       variant="outlined"
@@ -334,7 +336,7 @@ export const Orders = () => {
                       onClick={() => handleStatusChangeClick(order)}
                       disabled={order.status === 'COMPLETED'}
                     >
-                      Cambiar Estado
+                      {t('orders.changeStatus')}
                     </Button>
                   </Box>
                 </CardContent>
@@ -351,16 +353,16 @@ export const Orders = () => {
           setUpdateDialog({ open: false, order: null, newStatus: null })
         }
       >
-        <DialogTitle>Actualizar Estado del Pedido</DialogTitle>
+        <DialogTitle>{t('orders.updateOrderStatus')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Pedido #{updateDialog.order?.id.slice(0, 8)}
+            {t('orders.orderNumber', { id: updateDialog.order?.id.slice(0, 8) })}
           </Typography>
           <FormControl fullWidth>
-            <InputLabel>Nuevo Estado</InputLabel>
+            <InputLabel>{t('orders.newStatus')}</InputLabel>
             <Select
               value={updateDialog.newStatus || ''}
-              label="Nuevo Estado"
+              label={t('orders.newStatus')}
               onChange={(e) =>
                 setUpdateDialog((prev) => ({
                   ...prev,
@@ -368,12 +370,12 @@ export const Orders = () => {
                 }))
               }
             >
-              <MenuItem value="PENDING">Pendiente</MenuItem>
-              <MenuItem value="CONFIRMED">Confirmado</MenuItem>
-              <MenuItem value="IN_PROGRESS">En Proceso</MenuItem>
-              <MenuItem value="READY">Listo</MenuItem>
-              <MenuItem value="COMPLETED">Completado</MenuItem>
-              <MenuItem value="CANCELLED">Cancelado</MenuItem>
+              <MenuItem value="PENDING">{t('orders.pending')}</MenuItem>
+              <MenuItem value="CONFIRMED">{t('orders.confirmed')}</MenuItem>
+              <MenuItem value="IN_PROGRESS">{t('orders.inProgress')}</MenuItem>
+              <MenuItem value="READY">{t('orders.ready')}</MenuItem>
+              <MenuItem value="COMPLETED">{t('orders.completed')}</MenuItem>
+              <MenuItem value="CANCELLED">{t('orders.cancelled')}</MenuItem>
             </Select>
           </FormControl>
         </DialogContent>
@@ -383,14 +385,14 @@ export const Orders = () => {
               setUpdateDialog({ open: false, order: null, newStatus: null })
             }
           >
-            Cancelar
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleUpdateConfirm}
             variant="contained"
             disabled={!updateDialog.newStatus || !!updateLoading}
           >
-            {updateLoading ? 'Actualizando...' : 'Actualizar'}
+            {updateLoading ? t('orders.updating') : t('orders.update')}
           </Button>
         </DialogActions>
       </Dialog>

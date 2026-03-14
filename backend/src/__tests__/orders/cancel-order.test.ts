@@ -1,5 +1,26 @@
 import { OrderStatus } from '../../modules/orders/domain/enums/order-status'
 import { beforeEach, describe, expect, it, jest } from '@jest/globals'
+
+// Mock @react-pdf/renderer before any imports that use it
+jest.mock('@react-pdf/renderer', () => ({
+  Document: jest.fn(() => null),
+  Page: jest.fn(() => null),
+  Text: jest.fn(() => null),
+  View: jest.fn(() => null),
+  StyleSheet: {
+    create: jest.fn((styles: any) => styles),
+  },
+  pdf: jest.fn(() => ({
+    toBlob: jest.fn(() => Promise.resolve(null as any)),
+    toBuffer: jest.fn(() => Promise.resolve(null as any)),
+  })),
+}));
+
+// Mock the email service to avoid PDF generation
+jest.mock('../../modules/notifications/services/email-service', () => ({
+  sendOrderCancelledEmail: jest.fn(() => Promise.resolve(null as any)),
+}));
+
 import { cancelOrder } from '../../modules/orders/application/cancel-order'
 import type { Order } from '../../modules/orders/domain/entities/order'
 import type { OrderRepository } from '../../modules/orders/domain/repositories/order-repository'
@@ -9,6 +30,7 @@ type MockFunction = ReturnType<typeof jest.fn>
 interface MockOrderRepository {
   create: MockFunction
   findById: MockFunction
+  findByIdWithDetails: MockFunction
   findByUserId: MockFunction
   findByWorkshopId: MockFunction
   updateStatus: MockFunction
@@ -25,6 +47,7 @@ describe('cancelOrder', () => {
     mockRepo = {
       create: jest.fn(),
       findById: jest.fn(),
+      findByIdWithDetails: jest.fn(),
       findByUserId: jest.fn(),
       findByWorkshopId: jest.fn(),
       updateStatus: jest.fn(),
@@ -100,7 +123,7 @@ describe('cancelOrder', () => {
         authenticatedUserId: 'different-user',
         userRole: 'USER',
       })
-    ).rejects.toThrow('No tienes permisos para cancelar este pedido')
+    ).rejects.toThrow('No tienes permiso para acceder a este recurso')
   })
 
   it('debe permitir a un admin cancelar el pedido', async () => {

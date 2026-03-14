@@ -17,6 +17,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useState, type MouseEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { ModernWorkshopLayout } from '../../products/components/modern-product-layout'
 import {
@@ -26,6 +27,7 @@ import {
 } from '../services/workshop-service'
 
 export const MyWorkshops = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [workshops, setWorkshops] = useState<Workshop[]>([])
   const [loading, setLoading] = useState(true)
@@ -51,7 +53,7 @@ export const MyWorkshops = () => {
       const data = await getMyWorkshops()
       setWorkshops(data)
     } catch {
-      setError('Error al cargar los talleres')
+      setError(t('workshops.errorLoadingWorkshops'))
     } finally {
       setLoading(false)
     }
@@ -76,7 +78,7 @@ export const MyWorkshops = () => {
       // Cerrar el modal
       setDeleteDialog({ open: false, workshop: null })
     } catch {
-      setError('Error al eliminar el taller')
+      setError(t('workshops.errorDeletingWorkshop'))
     } finally {
       setDeleteLoading(null)
     }
@@ -125,7 +127,7 @@ export const MyWorkshops = () => {
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <CircularProgress size={60} />
           <Typography variant="h6" sx={{ mt: 2 }}>
-            Cargando tus talleres...
+            {t('workshops.loadingWorkshops')}
           </Typography>
         </Box>
       </Container>
@@ -146,21 +148,27 @@ export const MyWorkshops = () => {
         >
           <Box>
             <Typography variant="h4" fontWeight="bold" gutterBottom>
-              Mis Talleres
+              {t('workshops.myWorkshops')}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Gestiona tu catálogo de talleres
+              {t('workshops.manageCatalog')}
             </Typography>
           </Box>
 
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={() => navigate('/create-workshop')}
-            size="large"
-          >
-            Nuevo Taller
-          </Button>
+          {workshops.length === 0 ? (
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => navigate('/create-workshop')}
+              size="large"
+            >
+              {t('workshops.createWorkshop')}
+            </Button>
+          ) : (
+            <Alert severity="info" sx={{ maxWidth: 400 }}>
+              {t('workshops.alreadyHaveWorkshop')}
+            </Alert>
+          )}
         </Box>
 
         {/* Error Alert */}
@@ -175,7 +183,7 @@ export const MyWorkshops = () => {
           workshops={workshops}
           loading={false} // Ya manejamos loading arriba
           error={undefined} // Ya manejamos error arriba
-          emptyMessage="No tienes talleres registrados"
+          emptyMessage={t('workshops.noWorkshopsRegistered')}
           onOpenMenu={handleOpenMenu}
         />
 
@@ -191,13 +199,13 @@ export const MyWorkshops = () => {
             <ListItemIcon>
               <Edit fontSize="small" />
             </ListItemIcon>
-            <ListItemText>Editar</ListItemText>
+            <ListItemText>{t('workshops.edit')}</ListItemText>
           </MenuItem>
           <MenuItem onClick={handleDelete}>
             <ListItemIcon>
               <Delete fontSize="small" color="error" />
             </ListItemIcon>
-            <ListItemText sx={{ color: 'error.main' }}>Eliminar</ListItemText>
+            <ListItemText sx={{ color: 'error.main' }}>{t('common.delete')}</ListItemText>
           </MenuItem>
         </Menu>
 
@@ -208,15 +216,13 @@ export const MyWorkshops = () => {
           maxWidth="sm"
           fullWidth
         >
-          <DialogTitle>Confirmar eliminación</DialogTitle>
+          <DialogTitle>{t('confirm.deleteTitle')}</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              ¿Estás seguro de que quieres eliminar el taller "
-              <strong>{deleteDialog.workshop?.name}</strong>"?
+              {t('workshops.confirmDeleteWorkshop', { name: deleteDialog.workshop?.name })}
             </DialogContentText>
             <DialogContentText sx={{ mt: 2, color: 'warning.main' }}>
-              Esta acción no se puede deshacer. Todos los productos asociados a
-              este taller también serán eliminados.
+              {t('workshops.deleteWarning')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -224,7 +230,7 @@ export const MyWorkshops = () => {
               onClick={handleDeleteCancel}
               disabled={deleteLoading !== null}
             >
-              Cancelar
+              {t('common.cancel')}
             </Button>
             <Button
               onClick={handleDeleteConfirm}
@@ -232,7 +238,7 @@ export const MyWorkshops = () => {
               variant="contained"
               disabled={deleteLoading !== null}
             >
-              {deleteLoading ? 'Eliminando...' : 'Eliminar'}
+              {deleteLoading ? t('workshops.deleting') : t('common.delete')}
             </Button>
           </DialogActions>
         </Dialog>

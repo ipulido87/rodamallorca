@@ -1,5 +1,6 @@
 import type { ServiceRepository } from '../domain/repositories/service-repository'
 import type { Service, UpdateServiceInput } from '../domain/entities/service'
+import { verifyWorkshopOwnership, verifyEntityExists } from '../../../lib/authorization'
 
 interface UpdateServiceDeps {
   repo: ServiceRepository
@@ -21,31 +22,17 @@ export async function updateService(
 ): Promise<Service> {
   const { repo, workshopRepo, authenticatedUserId } = deps
 
-  // Obtener el servicio actual
+  // Obtener el servicio actual usando helper compartido
   const service = await repo.findById(serviceId)
+  verifyEntityExists(service, 'Servicio')
 
-  if (!service) {
-    throw new Error('Servicio no encontrado')
-  }
+  // Verificar que el taller existe y que el usuario es el dueño usando helper compartido
+  await verifyWorkshopOwnership(service.workshopId, authenticatedUserId, workshopRepo)
 
-  // Verificar que el taller existe y que el usuario es el dueño
-  const workshop = await workshopRepo.findById(service.workshopId)
-
-  if (!workshop) {
-    throw new Error('Taller no encontrado')
-  }
-
-  if (workshop.ownerId !== authenticatedUserId) {
-    throw new Error('No tienes permisos para actualizar este servicio')
-  }
-
-  // Si se está cambiando la categoría, verificar que existe
+  // Si se está cambiando la categoría, verificar que existe usando helper compartido
   if (data.serviceCategoryId) {
     const category = await repo.findCategoryById(data.serviceCategoryId)
-
-    if (!category) {
-      throw new Error('Categoría de servicio no encontrada')
-    }
+    verifyEntityExists(category, 'Categoría de servicio')
   }
 
   // Actualizar el servicio

@@ -15,7 +15,11 @@
     "strictFunctionTypes": false,
     "strictPropertyInitialization": false,
     "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/__tests__/**", "**/*.test.ts", "**/*.spec.ts"]

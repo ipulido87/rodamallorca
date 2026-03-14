@@ -2,10 +2,12 @@ import {
   Add,
   ArrowBack,
   LocationOn,
+  Phone,
   Remove,
   ShoppingCart,
   Store,
 } from '@mui/icons-material'
+import { Seo } from '../../../shared/components/Seo'
 import {
   Box,
   Button,
@@ -78,7 +80,11 @@ export const ProductDetail = () => {
         price: product.price,
         currency: product.currency,
       },
-      quantity
+      quantity,
+      {
+        canAcceptPayments: product.workshop.canAcceptPayments,
+        phone: product.workshop.phone,
+      }
     )
 
     // Mostrar feedback visual con snackbar
@@ -95,7 +101,7 @@ export const ProductDetail = () => {
     return (
       <Container maxWidth="lg">
         <Box sx={{ py: 4, textAlign: 'center' }}>
-          <Typography variant="h6">Loading product...</Typography>
+          <Typography variant="h6">Cargando producto...</Typography>
         </Box>
       </Container>
     )
@@ -106,24 +112,61 @@ export const ProductDetail = () => {
       <Container maxWidth="lg">
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <Typography variant="h6" color="error" gutterBottom>
-            {error || 'Product not found'}
+            {error || 'Producto no encontrado'}
           </Typography>
           <Button variant="contained" onClick={() => navigate('/catalog')}>
-            Back to Catalog
+            Volver al Catálogo
           </Button>
         </Box>
       </Container>
     )
   }
 
+  const productImage = product.images?.[0]?.original ?? undefined
+
   return (
     <Container maxWidth="lg">
+      <Seo
+        title={`${product.title} | RodaMallorca`}
+        description={
+          product.description
+            ? `${product.description.slice(0, 140)}. Disponible en ${product.workshop.city ?? 'Mallorca'}.`
+            : `${product.title} en venta en ${product.workshop.name}. Taller verificado en ${product.workshop.city ?? 'Mallorca'}.`
+        }
+        canonicalPath={`/product/${product.id}`}
+        keywords={`${product.title}, recambios bicicleta Mallorca, ${product.category?.name ?? 'componentes'} bicicleta`}
+        image={productImage}
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: product.title,
+          description: product.description ?? undefined,
+          image: productImage,
+          offers: {
+            '@type': 'Offer',
+            price: (product.price / 100).toFixed(2),
+            priceCurrency: product.currency ?? 'EUR',
+            availability: product.status?.toUpperCase() === 'PUBLISHED'
+              ? 'https://schema.org/InStock'
+              : 'https://schema.org/OutOfStock',
+            seller: {
+              '@type': 'LocalBusiness',
+              name: product.workshop.name,
+              address: {
+                '@type': 'PostalAddress',
+                addressLocality: product.workshop.city ?? 'Mallorca',
+                addressCountry: 'ES',
+              },
+            },
+          },
+        }}
+      />
       <Box sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
           <IconButton onClick={() => navigate('/catalog')} sx={{ mr: 2 }}>
             <ArrowBack />
           </IconButton>
-          <Typography variant="h4">Product Details</Typography>
+          <Typography variant="h4" fontWeight="bold">Detalles del Producto</Typography>
         </Box>
 
         <Box
@@ -175,18 +218,14 @@ export const ProductDetail = () => {
 
             {product.category && (
               <Typography variant="body1" gutterBottom>
-                <strong>Category:</strong> {product.category.name}
+                <strong>Categoría:</strong> {product.category.name}
               </Typography>
             )}
-
-            <Typography variant="body1" gutterBottom>
-              <strong>Currency:</strong> {product.currency}
-            </Typography>
 
             {product.description && (
               <Box sx={{ my: 3 }}>
                 <Typography variant="h6" gutterBottom>
-                  Description
+                  Descripción
                 </Typography>
                 <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
                   {product.description}
@@ -199,7 +238,7 @@ export const ProductDetail = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <Store sx={{ mr: 1, color: 'primary.main' }} />
-                  <Typography variant="h6">Workshop Information</Typography>
+                  <Typography variant="h6">Información del Taller</Typography>
                 </Box>
 
                 <Typography variant="h6" gutterBottom>
@@ -215,15 +254,58 @@ export const ProductDetail = () => {
                   </Typography>
                 </Box>
 
-                <Typography variant="caption" color="text.secondary">
-                  Workshop ID: {product.workshop.id}
-                </Typography>
+                <Button
+                  variant="text"
+                  size="small"
+                  onClick={() => navigate(`/workshop/${product.workshop.id}`)}
+                  sx={{ mt: 1, p: 0 }}
+                >
+                  Ver taller
+                </Button>
               </CardContent>
             </Card>
 
             {/* Add to Cart Section */}
             <Box sx={{ mt: 4 }}>
-              {product.status.toUpperCase() === 'PUBLISHED' && user && (
+              {product.status.toUpperCase() === 'PUBLISHED' && user && product.workshop.canAcceptPayments !== true && (
+                <Box
+                  sx={{
+                    p: 3,
+                    border: '1px solid',
+                    borderColor: 'info.main',
+                    borderRadius: 2,
+                    bgcolor: 'info.50',
+                  }}
+                >
+                  <Typography variant="body1" color="info.dark" gutterBottom fontWeight={600}>
+                    Este producto no está disponible para compra online
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
+                    El taller aún no tiene habilitados los pagos online. Visita su página o llámales directamente para adquirirlo.
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+                    <Button
+                      variant="contained"
+                      size="medium"
+                      onClick={() => navigate(`/workshop/${product.workshop.id}`)}
+                    >
+                      Ver página del taller
+                    </Button>
+                    {product.workshop.phone && (
+                      <Button
+                        variant="outlined"
+                        size="medium"
+                        startIcon={<Phone />}
+                        href={`tel:${product.workshop.phone}`}
+                      >
+                        {product.workshop.phone}
+                      </Button>
+                    )}
+                  </Box>
+                </Box>
+              )}
+
+              {product.status.toUpperCase() === 'PUBLISHED' && user && product.workshop.canAcceptPayments === true && (
                 <>
                   <Box
                     sx={{
@@ -314,11 +396,11 @@ export const ProductDetail = () => {
           </Box>
         </Box>
 
-        {/* Product Metadata */}
+        {/* Información adicional */}
         <Card sx={{ mt: 4 }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              Product Information
+              Información del Producto
             </Typography>
             <Box
               sx={{
@@ -329,24 +411,20 @@ export const ProductDetail = () => {
             >
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Product ID
-                </Typography>
-                <Typography variant="body2">{product.id}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Listed Date
+                  Publicado
                 </Typography>
                 <Typography variant="body2">
-                  {new Date(product.createdAt).toLocaleDateString()}
+                  {new Date(product.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
                 </Typography>
               </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">
-                  Status
-                </Typography>
-                <Typography variant="body2">{product.status}</Typography>
-              </Box>
+              {product.category && (
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Categoría
+                  </Typography>
+                  <Typography variant="body2">{product.category.name}</Typography>
+                </Box>
+              )}
             </Box>
           </CardContent>
         </Card>

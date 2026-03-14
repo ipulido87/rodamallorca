@@ -1,8 +1,9 @@
 import {
   Prisma,
   PrismaClient,
-  type $Enums, // 👈 para el tipo del enum
+  type $Enums,
 } from '@prisma/client'
+import prismaClient from '../../../../../lib/prisma'
 import type {
   CreateOrderRepoInput,
   OrderRepository,
@@ -22,7 +23,7 @@ const toDomainStatus = (s: PrismaOrderStatus): DomainOrderStatus =>
   s as unknown as DomainOrderStatus
 
 export class OrderRepositoryPrisma implements OrderRepository {
-  constructor(private prisma: PrismaClient = new PrismaClient()) {}
+  constructor(private prisma: PrismaClient = prismaClient) {}
 
   async create(input: CreateOrderRepoInput): Promise<Order> {
     if (!input.userId) throw new Error('userId es obligatorio')
@@ -36,6 +37,10 @@ export class OrderRepositoryPrisma implements OrderRepository {
         totalAmount: input.totalAmount,
         currency: 'EUR',
         notes: input.notes,
+        // Campos de pago (Stripe)
+        paymentStatus: input.paymentStatus || 'PENDING',
+        stripeSessionId: input.stripeSessionId ?? null,
+        stripePaymentIntentId: input.stripePaymentIntentId ?? null,
         items: {
           create: input.items.map((i) => ({
             productId: i.productId,
@@ -79,6 +84,36 @@ export class OrderRepositoryPrisma implements OrderRepository {
       },
     })
     return order ? this.mapToOrder(order) : null
+  }
+
+  async findByIdWithDetails(id: string): Promise<any | null> {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        workshop: {
+          select: {
+            id: true,
+            name: true,
+            owner: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+        items: true,
+      },
+    })
+    return order
   }
 
   async findByUserId(userId: string, includeItems = false): Promise<Order[]> {
@@ -130,7 +165,8 @@ export class OrderRepositoryPrisma implements OrderRepository {
     await this.prisma.order.delete({ where: { id } })
   }
 
-  private mapToOrder(order: any): Order {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma query result mapping
+  private mapToOrder(order: Record<string, any>): Order {
     return {
       id: order.id,
       userId: order.userId,
@@ -143,7 +179,7 @@ export class OrderRepositoryPrisma implements OrderRepository {
       updatedAt: order.updatedAt,
       items:
         'items' in order && order.items
-          ? order.items.map((item: any) => ({
+          ? order.items.map((item: Record<string, any>) => ({
               id: item.id,
               orderId: item.orderId,
               productId: item.productId,

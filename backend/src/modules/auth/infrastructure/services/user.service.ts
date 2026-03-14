@@ -1,7 +1,9 @@
-import { UserRole } from '@prisma/client'
 import bcrypt from 'bcrypt'
 import { v4 as uuidv4 } from 'uuid'
 import prisma from '../../../../lib/prisma'
+
+// Define UserRole locally to avoid Prisma dependency issues
+type UserRole = 'USER' | 'WORKSHOP_OWNER' | 'ADMIN'
 
 type SaveUserInput = {
   email: string

@@ -22,11 +22,16 @@ export interface CreateOrderRepoInput {
   totalAmount: number
   items: CreateOrderRepoItem[]
   type?: 'PRODUCT_ORDER' | 'SERVICE_REPAIR' | 'RENTAL'
+  // Campos de pago (Stripe)
+  paymentStatus?: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED'
+  stripeSessionId?: string | null
+  stripePaymentIntentId?: string | null
 }
 
 export interface OrderRepository {
   create(input: CreateOrderRepoInput): Promise<Order>
   findById(id: string, includeItems?: boolean): Promise<Order | null>
+  findByIdWithDetails(id: string): Promise<any | null>
   findByUserId(userId: string, includeItems?: boolean): Promise<Order[]>
   findByWorkshopId(workshopId: string, includeItems?: boolean): Promise<Order[]>
   updateStatus(id: string, input: { status: OrderStatus }): Promise<Order>

@@ -1,10 +1,9 @@
-import { PrismaClient, UserRole } from '@prisma/client'
+import { UserRole } from '@prisma/client'
+import prisma from '../../../../../lib/prisma'
 import {
   UserDTO,
   UserRepository,
 } from '../../../domain/repositories/user-repository'
-
-const prisma = new PrismaClient()
 
 export class UserRepositoryPrisma implements UserRepository {
   async findByEmail(email: string): Promise<UserDTO | null> {
@@ -19,6 +18,35 @@ export class UserRepositoryPrisma implements UserRepository {
           role: u.role,
         }
       : null
+  }
+
+  async create(input: {
+    email: string
+    password: string
+    name: string
+    birthDate?: Date
+    phone?: string
+    role?: string
+  }): Promise<UserDTO> {
+    const u = await prisma.user.create({
+      data: {
+        email: input.email,
+        password: input.password,
+        name: input.name,
+        birthDate: input.birthDate,
+        phone: input.phone,
+        role: (input.role as UserRole) || UserRole.USER,
+      },
+    })
+
+    return {
+      id: u.id,
+      email: u.email,
+      name: u.name,
+      picture: u.picture,
+      googleId: u.googleId,
+      role: u.role,
+    }
   }
 
   async upsertGoogleUser(input: {

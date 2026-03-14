@@ -33,9 +33,10 @@ import {
   Cancel,
 } from '@mui/icons-material'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import useSWR from 'swr'
 import { useAuth } from '../features/auth/hooks/useAuth'
-import { API } from '../features/auth/services/auth-service'
+import { API, getErrorMessage } from '@/shared/api'
 import { useSnackbar } from '../shared/hooks/use-snackbar'
 import type { User } from '../features/auth/providers/auth-providers'
 
@@ -60,6 +61,7 @@ const changePassword = async (
 export const Profile = () => {
   const { user: authUser, refreshMe } = useAuth()
   const { showSuccess, showError } = useSnackbar()
+  const { t } = useTranslation()
   const [editMode, setEditMode] = useState(false)
   const [passwordDialog, setPasswordDialog] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -118,9 +120,9 @@ export const Profile = () => {
       await refreshMe()
 
       setEditMode(false)
-      showSuccess('Perfil actualizado correctamente')
-    } catch (error: any) {
-      showError(error.response?.data?.message || 'Error al actualizar perfil')
+      showSuccess(t('profile.profileUpdated'))
+    } catch (error: unknown) {
+      showError(getErrorMessage(error, t('profile.profileUpdateError')))
     } finally {
       setSaving(false)
     }
@@ -128,12 +130,12 @@ export const Profile = () => {
 
   const handleChangePassword = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      showError('Las contraseñas no coinciden')
+      showError(t('profile.passwordsMismatch'))
       return
     }
 
     if (passwordData.newPassword.length < 6) {
-      showError('La contraseña debe tener al menos 6 caracteres')
+      showError(t('profile.passwordTooShort'))
       return
     }
 
@@ -148,9 +150,9 @@ export const Profile = () => {
         confirmPassword: '',
       })
 
-      showSuccess('Contraseña cambiada correctamente')
-    } catch (error: any) {
-      showError(error.response?.data?.message || 'Error al cambiar contraseña')
+      showSuccess(t('profile.passwordChanged'))
+    } catch (error: unknown) {
+      showError(getErrorMessage(error, t('profile.passwordChangeError')))
     } finally {
       setSaving(false)
     }
@@ -159,11 +161,11 @@ export const Profile = () => {
   const getRoleLabel = (role?: string) => {
     switch (role) {
       case 'WORKSHOP_OWNER':
-        return 'Propietario de Taller'
+        return t('profile.workshopOwner')
       case 'ADMIN':
-        return 'Administrador'
+        return t('profile.admin')
       default:
-        return 'Usuario'
+        return t('nav.user')
     }
   }
 
@@ -184,7 +186,7 @@ export const Profile = () => {
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <CircularProgress size={60} />
           <Typography variant="h6" sx={{ mt: 2 }}>
-            Cargando perfil...
+            {t('profile.loadingProfile')}
           </Typography>
         </Box>
       </Container>
@@ -196,7 +198,7 @@ export const Profile = () => {
       <Container maxWidth="lg">
         <Box sx={{ py: 4 }}>
           <Alert severity="error">
-            No se pudo cargar la información del perfil
+            {t('profile.loadError')}
           </Alert>
         </Box>
       </Container>
@@ -208,10 +210,10 @@ export const Profile = () => {
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" fontWeight="bold" gutterBottom>
-          Mi Perfil
+          {t('profile.title')}
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Gestiona tu información personal
+          {t('profile.subtitle')}
         </Typography>
       </Box>
 
@@ -238,7 +240,7 @@ export const Profile = () => {
                     {editMode ? (
                       <TextField
                         fullWidth
-                        label="Nombre"
+                        label={t('profile.name')}
                         value={formData.name}
                         onChange={(e) =>
                           setFormData({ ...formData, name: e.target.value })
@@ -247,7 +249,7 @@ export const Profile = () => {
                     ) : (
                       <>
                         <Typography variant="h5" fontWeight="bold">
-                          {user.name || 'Sin nombre'}
+                          {user.name || t('profile.noName')}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
                           {user.email}
@@ -277,7 +279,7 @@ export const Profile = () => {
                     color="text.secondary"
                     gutterBottom
                   >
-                    Email
+                    {t('auth.email')}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Email color="action" />
@@ -285,7 +287,7 @@ export const Profile = () => {
                     {user.verified && (
                       <Chip
                         icon={<Verified />}
-                        label="Verificado"
+                        label={t('common.verified')}
                         size="small"
                         color="success"
                       />
@@ -302,12 +304,12 @@ export const Profile = () => {
                     color="text.secondary"
                     gutterBottom
                   >
-                    Teléfono
+                    {t('profile.phoneLabel')}
                   </Typography>
                   {editMode ? (
                     <TextField
                       fullWidth
-                      placeholder="Ej: +34 600 000 000"
+                      placeholder={t('profile.phonePlaceholder')}
                       value={formData.phone}
                       onChange={(e) =>
                         setFormData({ ...formData, phone: e.target.value })
@@ -320,7 +322,7 @@ export const Profile = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Phone color="action" />
                       <Typography variant="body1">
-                        {user.phone || 'No especificado'}
+                        {user.phone || t('profile.notSpecified')}
                       </Typography>
                     </Box>
                   )}
@@ -335,7 +337,7 @@ export const Profile = () => {
                     color="text.secondary"
                     gutterBottom
                   >
-                    Fecha de Nacimiento
+                    {t('profile.birthDateLabel')}
                   </Typography>
                   {editMode ? (
                     <TextField
@@ -359,7 +361,7 @@ export const Profile = () => {
                               month: 'long',
                               day: 'numeric',
                             })
-                          : 'No especificada'}
+                          : t('profile.notSpecifiedFem')}
                       </Typography>
                     </Box>
                   )}
@@ -377,7 +379,7 @@ export const Profile = () => {
                         disabled={saving}
                         fullWidth
                       >
-                        {saving ? 'Guardando...' : 'Guardar Cambios'}
+                        {saving ? t('profile.savingChanges') : t('profile.saveChanges')}
                       </Button>
                       <Button
                         variant="outlined"
@@ -386,7 +388,7 @@ export const Profile = () => {
                         disabled={saving}
                         fullWidth
                       >
-                        Cancelar
+                        {t('common.cancel')}
                       </Button>
                     </Stack>
                   </>
@@ -403,25 +405,25 @@ export const Profile = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Información de Cuenta
+                  {t('profile.accountInfo')}
                 </Typography>
                 <Stack spacing={2}>
                   <Box>
                     <Typography variant="caption" color="text.secondary">
-                      Rol
+                      {t('profile.role')}
                     </Typography>
                     <Box sx={{ mt: 0.5 }}>
                       <Chip
                         icon={<Person />}
                         label={getRoleLabel(user.role)}
-                        color={getRoleColor(user.role) as any}
+                        color={getRoleColor(user.role) as 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'}
                         size="small"
                       />
                     </Box>
                   </Box>
                   <Box>
                     <Typography variant="caption" color="text.secondary">
-                      Miembro desde
+                      {t('profile.memberSince')}
                     </Typography>
                     <Typography variant="body2">
                       {user.createdAt
@@ -430,12 +432,12 @@ export const Profile = () => {
                             month: 'long',
                             day: 'numeric',
                           })
-                        : 'Desconocido'}
+                        : t('profile.unknown')}
                     </Typography>
                   </Box>
                   <Box>
                     <Typography variant="caption" color="text.secondary">
-                      Última actualización
+                      {t('profile.lastUpdate')}
                     </Typography>
                     <Typography variant="body2">
                       {user.updatedAt
@@ -444,7 +446,7 @@ export const Profile = () => {
                             month: 'long',
                             day: 'numeric',
                           })
-                        : 'Desconocido'}
+                        : t('profile.unknown')}
                     </Typography>
                   </Box>
                 </Stack>
@@ -455,7 +457,7 @@ export const Profile = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Seguridad
+                  {t('profile.security')}
                 </Typography>
                 <Button
                   variant="outlined"
@@ -463,7 +465,7 @@ export const Profile = () => {
                   onClick={() => setPasswordDialog(true)}
                   fullWidth
                 >
-                  Cambiar Contraseña
+                  {t('profile.changePassword')}
                 </Button>
               </CardContent>
             </Card>
@@ -478,12 +480,12 @@ export const Profile = () => {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Cambiar Contraseña</DialogTitle>
+        <DialogTitle>{t('profile.changePassword')}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
             <TextField
               type="password"
-              label="Contraseña Actual"
+              label={t('profile.currentPassword')}
               value={passwordData.currentPassword}
               onChange={(e) =>
                 setPasswordData({ ...passwordData, currentPassword: e.target.value })
@@ -492,17 +494,17 @@ export const Profile = () => {
             />
             <TextField
               type="password"
-              label="Nueva Contraseña"
+              label={t('profile.newPassword')}
               value={passwordData.newPassword}
               onChange={(e) =>
                 setPasswordData({ ...passwordData, newPassword: e.target.value })
               }
               fullWidth
-              helperText="Mínimo 6 caracteres"
+              helperText={t('profile.minChars')}
             />
             <TextField
               type="password"
-              label="Confirmar Nueva Contraseña"
+              label={t('profile.confirmNewPassword')}
               value={passwordData.confirmPassword}
               onChange={(e) =>
                 setPasswordData({ ...passwordData, confirmPassword: e.target.value })
@@ -513,14 +515,14 @@ export const Profile = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setPasswordDialog(false)} disabled={saving}>
-            Cancelar
+            {t('common.cancel')}
           </Button>
           <Button
             variant="contained"
             onClick={handleChangePassword}
             disabled={saving}
           >
-            {saving ? 'Cambiando...' : 'Cambiar Contraseña'}
+            {saving ? t('profile.changingPassword') : t('profile.changePassword')}
           </Button>
         </DialogActions>
       </Dialog>
