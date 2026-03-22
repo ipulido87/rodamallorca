@@ -1,9 +1,12 @@
 # Dependencies
 node_modules/
 
-# Lockfiles de otros gestores de paquetes (este proyecto usa pnpm)
+# Lockfiles de otros gestores de paquetes (este proyecto usa pnpm con workspace root)
 package-lock.json
 yarn.lock
+# Solo usar el pnpm-lock.yaml de la raíz, no lockfiles por subpaquete
+frontend/pnpm-lock.yaml
+backend/pnpm-lock.yaml
 
 # Environment variables
 .env
