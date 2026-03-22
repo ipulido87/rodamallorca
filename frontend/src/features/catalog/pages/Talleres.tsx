@@ -8,6 +8,7 @@ import {
 import { AutoAwesome } from '@mui/icons-material'
 import { Chip } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLocation, useSearchParams } from 'react-router-dom'
 import { Seo } from '../../../shared/components/Seo'
 import { FilterBar } from '../../../shared/components/FilterBar'

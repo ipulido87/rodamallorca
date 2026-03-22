@@ -5,6 +5,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { Seo } from '../../../shared/components/Seo'
 import { FilterBar } from '../../../shared/components/FilterBar'
@@ -37,6 +38,7 @@ const adaptCatalogProductForLayout = (product: PublicProduct) => ({
 })
 
 export const Productos = () => {
+  const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const [productFilters, setProductFilters] = useState<FilterValues>({})
 
