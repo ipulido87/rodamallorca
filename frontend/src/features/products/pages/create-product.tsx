@@ -20,6 +20,7 @@ import { PedalBike, Inventory } from '@mui/icons-material'
 import { AxiosError } from 'axios'
 import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ImageUpload } from '../../media/components/image-downloads'
 import type { ProcessedImage } from '../../media/services/media-service'
 import {
@@ -55,6 +56,7 @@ interface CreateProductFormData extends CreateProductData {
 }
 
 export const CreateProduct = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [loading, setLoading] = useState(false)
@@ -140,7 +142,7 @@ export const CreateProduct = () => {
 
     // Validar que tenga al menos una imagen
     if (formData.images.length === 0) {
-      setError('Debes subir al menos una imagen del producto')
+      setError(t('createProduct.imageRequired'))
       setLoading(false)
       return
     }
@@ -183,8 +185,8 @@ export const CreateProduct = () => {
 
       setSuccess(
         formData.isRental
-          ? '¡Bicicleta de alquiler creada correctamente!'
-          : '¡Producto creado correctamente!'
+          ? t('createProduct.rentalCreated')
+          : t('createProduct.productCreated')
       )
       // Navegar según el tipo: alquiler → my-rentals, producto → my-products
       setTimeout(() => {
@@ -192,9 +194,9 @@ export const CreateProduct = () => {
       }, 1500)
     } catch (err) {
       if (err instanceof AxiosError) {
-        setError(err.response?.data?.message || 'Error al crear el producto')
+        setError(err.response?.data?.message || t('createProduct.createError'))
       } else {
-        setError('Error al crear el producto')
+        setError(t('createProduct.createError'))
       }
     } finally {
       setLoading(false)
@@ -212,16 +214,16 @@ export const CreateProduct = () => {
           )}
           <Box>
             <Typography variant="h4" gutterBottom sx={{ mb: 0 }}>
-              {formData.isRental ? 'Crear Bicicleta de Alquiler' : 'Crear Producto'}
+              {formData.isRental ? t('createProduct.createRentalBike') : t('createProduct.createProductTitle')}
             </Typography>
             {formData.isRental && (
-              <Chip label="Modo Alquiler" color="success" size="small" />
+              <Chip label={t('createProduct.rentalMode')} color="success" size="small" />
             )}
           </Box>
         </Stack>
 
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Completa la información de tu producto para agregarlo al catálogo
+          {t('createProduct.fillInfo')}
         </Typography>
 
         {error && (
@@ -239,22 +241,22 @@ export const CreateProduct = () => {
         <Box component="form" onSubmit={handleSubmit}>
           {/* Información básica */}
           <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-            Información básica
+            {t('createProduct.basicInfo')}
           </Typography>
 
           <TextField
-            label="Título del producto"
+            label={t('createProduct.productTitle')}
             name="title"
             value={formData.title}
             onChange={handleChange}
             margin="normal"
             required
             fullWidth
-            placeholder="Ej: Bicicleta de montaña Trek"
+            placeholder={t('createProduct.titlePlaceholder')}
           />
 
           <TextField
-            label={formData.isRental ? 'Precio por Día (€)' : 'Precio (€)'}
+            label={formData.isRental ? t('createProduct.pricePerDay') : t('createProduct.price')}
             name={formData.isRental ? 'rentalPricePerDay' : 'price'}
             type="number"
             value={formData.isRental ? formData.rentalPricePerDay : formData.price}
@@ -265,8 +267,8 @@ export const CreateProduct = () => {
             inputProps={{ min: 0, step: 0.01 }}
             helperText={
               formData.isRental
-                ? 'Precio de alquiler por día en euros'
-                : 'Precio de venta en euros (ej: 299.99)'
+                ? t('createProduct.rentalPriceHelper')
+                : t('createProduct.salePriceHelper')
             }
           />
 
@@ -274,11 +276,11 @@ export const CreateProduct = () => {
           <Collapse in={formData.isRental}>
             <Box sx={{ mt: 2, p: 2, border: '1px solid', borderColor: 'success.light', borderRadius: 2, bgcolor: 'success.50' }}>
               <Typography variant="h6" gutterBottom color="success.dark" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <PedalBike /> Configuración de Alquiler
+                <PedalBike /> {t('createProduct.rentalConfig')}
               </Typography>
 
               <TextField
-                label="Precio por Semana (€) - Opcional"
+                label={t('createProduct.weeklyPrice')}
                 name="rentalPricePerWeek"
                 type="number"
                 value={formData.rentalPricePerWeek}
@@ -286,11 +288,11 @@ export const CreateProduct = () => {
                 margin="normal"
                 fullWidth
                 inputProps={{ min: 0, step: 0.01 }}
-                helperText="Precio especial para alquiler semanal (descuento)"
+                helperText={t('createProduct.weeklyPriceHelper')}
               />
 
               <TextField
-                label="Cantidad Disponible"
+                label={t('createProduct.availableQuantity')}
                 name="availableQuantity"
                 type="number"
                 value={formData.availableQuantity}
@@ -299,40 +301,40 @@ export const CreateProduct = () => {
                 fullWidth
                 required={formData.isRental}
                 inputProps={{ min: 1 }}
-                helperText="Cuántas bicis de este tipo tienes disponibles para alquilar"
+                helperText={t('createProduct.availableQuantityHelper')}
               />
 
               <TextField
-                label="Tipo de Bicicleta"
+                label={t('createProduct.bikeType')}
                 name="bikeType"
                 value={formData.bikeType}
                 onChange={handleChange}
                 margin="normal"
                 fullWidth
                 select
-                helperText="Categoría de la bicicleta"
+                helperText={t('createProduct.bikeTypeHelper')}
               >
-                <MenuItem value="">-- Seleccionar --</MenuItem>
-                <MenuItem value="road">Carretera (Road)</MenuItem>
-                <MenuItem value="mountain">Montaña (MTB)</MenuItem>
-                <MenuItem value="hybrid">Híbrida</MenuItem>
-                <MenuItem value="ebike">Eléctrica (E-bike)</MenuItem>
-                <MenuItem value="gravel">Gravel</MenuItem>
-                <MenuItem value="city">Ciudad</MenuItem>
+                <MenuItem value="">{t('createProduct.select')}</MenuItem>
+                <MenuItem value="road">{t('createProduct.road')}</MenuItem>
+                <MenuItem value="mountain">{t('createProduct.mountain')}</MenuItem>
+                <MenuItem value="hybrid">{t('createProduct.hybrid')}</MenuItem>
+                <MenuItem value="ebike">{t('createProduct.ebike')}</MenuItem>
+                <MenuItem value="gravel">{t('createProduct.gravel')}</MenuItem>
+                <MenuItem value="city">{t('createProduct.city')}</MenuItem>
               </TextField>
 
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <TextField
-                  label="Talla"
+                  label={t('createProduct.size')}
                   name="bikeSize"
                   value={formData.bikeSize}
                   onChange={handleChange}
                   margin="normal"
                   fullWidth
                   select
-                  helperText="Talla de cuadro"
+                  helperText={t('createProduct.frameSizeHelper')}
                 >
-                  <MenuItem value="">-- Seleccionar --</MenuItem>
+                  <MenuItem value="">{t('createProduct.select')}</MenuItem>
                   <MenuItem value="XS">XS</MenuItem>
                   <MenuItem value="S">S</MenuItem>
                   <MenuItem value="M">M</MenuItem>
@@ -342,7 +344,7 @@ export const CreateProduct = () => {
                 </TextField>
 
                 <TextField
-                  label="Tamaño Cuadro (cm)"
+                  label={t('createProduct.frameSize')}
                   name="frameSize"
                   type="number"
                   value={formData.frameSize}
@@ -350,34 +352,34 @@ export const CreateProduct = () => {
                   margin="normal"
                   fullWidth
                   inputProps={{ min: 0 }}
-                  helperText="Ej: 54, 56, 58"
+                  helperText={t('createProduct.frameSizeExample')}
                 />
               </Stack>
 
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <TextField
-                  label="Marca"
+                  label={t('createProduct.brand')}
                   name="bikeBrand"
                   value={formData.bikeBrand}
                   onChange={handleChange}
                   margin="normal"
                   fullWidth
-                  placeholder="Ej: Trek, Specialized, Giant"
+                  placeholder={t('createProduct.brandPlaceholder')}
                 />
 
                 <TextField
-                  label="Modelo"
+                  label={t('createProduct.model')}
                   name="bikeModel"
                   value={formData.bikeModel}
                   onChange={handleChange}
                   margin="normal"
                   fullWidth
-                  placeholder="Ej: Domane SL5, Tarmac"
+                  placeholder={t('createProduct.modelPlaceholder')}
                 />
               </Stack>
 
               <Typography variant="subtitle2" sx={{ mt: 3, mb: 1 }}>
-                Accesorios Incluidos
+                {t('createProduct.includedAccessories')}
               </Typography>
               <FormGroup>
                 <FormControlLabel
@@ -388,7 +390,7 @@ export const CreateProduct = () => {
                       name="includesHelmet"
                     />
                   }
-                  label="Incluye Casco"
+                  label={t('createProduct.includesHelmet')}
                 />
                 <FormControlLabel
                   control={
@@ -398,7 +400,7 @@ export const CreateProduct = () => {
                       name="includesLock"
                     />
                   }
-                  label="Incluye Candado"
+                  label={t('createProduct.includesLock')}
                 />
                 <FormControlLabel
                   control={
@@ -408,12 +410,12 @@ export const CreateProduct = () => {
                       name="includesLights"
                     />
                   }
-                  label="Incluye Luces"
+                  label={t('createProduct.includesLights')}
                 />
               </FormGroup>
 
               <TextField
-                label="Depósito (€) - Opcional"
+                label={t('createProduct.deposit')}
                 name="depositAmount"
                 type="number"
                 value={formData.depositAmount}
@@ -421,12 +423,12 @@ export const CreateProduct = () => {
                 margin="normal"
                 fullWidth
                 inputProps={{ min: 0, step: 0.01 }}
-                helperText="Cantidad a cobrar como depósito reembolsable"
+                helperText={t('createProduct.depositHelper')}
               />
 
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <TextField
-                  label="Alquiler Mínimo (días)"
+                  label={t('createProduct.minRentalDays')}
                   name="minRentalDays"
                   type="number"
                   value={formData.minRentalDays}
@@ -434,11 +436,11 @@ export const CreateProduct = () => {
                   margin="normal"
                   fullWidth
                   inputProps={{ min: 1 }}
-                  helperText="Mínimo de días"
+                  helperText={t('createProduct.minDaysHelper')}
                 />
 
                 <TextField
-                  label="Alquiler Máximo (días)"
+                  label={t('createProduct.maxRentalDays')}
                   name="maxRentalDays"
                   type="number"
                   value={formData.maxRentalDays}
@@ -446,14 +448,14 @@ export const CreateProduct = () => {
                   margin="normal"
                   fullWidth
                   inputProps={{ min: 1 }}
-                  helperText="Máximo de días"
+                  helperText={t('createProduct.maxDaysHelper')}
                 />
               </Stack>
             </Box>
           </Collapse>
 
           <TextField
-            label="Condición"
+            label={t('createProduct.condition')}
             name="condition"
             value={formData.condition}
             onChange={handleChange}
@@ -461,15 +463,15 @@ export const CreateProduct = () => {
             required
             fullWidth
             select
-            helperText="Estado actual del producto"
+            helperText={t('createProduct.conditionHelper')}
           >
-            <MenuItem value="new">Nuevo</MenuItem>
-            <MenuItem value="used">Usado</MenuItem>
-            <MenuItem value="refurb">Reacondicionado</MenuItem>
+            <MenuItem value="new">{t('common.new')}</MenuItem>
+            <MenuItem value="used">{t('common.used')}</MenuItem>
+            <MenuItem value="refurb">{t('common.refurbished')}</MenuItem>
           </TextField>
 
           <TextField
-            label="Estado de publicación"
+            label={t('createProduct.publishStatus')}
             name="status"
             value={formData.status}
             onChange={handleChange}
@@ -477,25 +479,25 @@ export const CreateProduct = () => {
             required
             fullWidth
             select
-            helperText="DRAFT: Solo tú lo ves | PUBLISHED: Visible en el catálogo"
+            helperText={t('createProduct.publishStatusHelper')}
           >
-            <MenuItem value="DRAFT">Borrador</MenuItem>
-            <MenuItem value="PUBLISHED">Publicado</MenuItem>
+            <MenuItem value="DRAFT">{t('createProduct.draft')}</MenuItem>
+            <MenuItem value="PUBLISHED">{t('createProduct.published')}</MenuItem>
           </TextField>
 
           {/* Campo de categoría (solo para productos de venta, no alquileres) */}
           {!formData.isRental && (
             <TextField
-              label="Categoría"
+              label={t('createProduct.category')}
               name="categoryId"
               value={formData.categoryId}
               onChange={handleChange}
               margin="normal"
               fullWidth
               select
-              helperText="Tipo de producto que estás vendiendo"
+              helperText={t('createProduct.categoryHelper')}
             >
-              <MenuItem value="">-- Sin categoría --</MenuItem>
+              <MenuItem value="">{t('createProduct.noCategory')}</MenuItem>
               {categories.map((cat) => (
                 <MenuItem key={cat.id} value={cat.id}>
                   {cat.name}
@@ -505,7 +507,7 @@ export const CreateProduct = () => {
           )}
 
           <TextField
-            label="Descripción"
+            label={t('createProduct.description')}
             name="description"
             value={formData.description}
             onChange={handleChange}
@@ -513,7 +515,7 @@ export const CreateProduct = () => {
             fullWidth
             multiline
             rows={4}
-            placeholder="Describe las características, estado, accesorios incluidos, etc."
+            placeholder={t('createProduct.descriptionPlaceholder')}
           />
 
           <Divider sx={{ my: 3 }} />
@@ -541,8 +543,8 @@ export const CreateProduct = () => {
               size="large"
             >
               {loading
-                ? (formData.isRental ? 'Creando bicicleta...' : 'Creando producto...')
-                : (formData.isRental ? 'Crear Bicicleta' : 'Crear Producto')
+                ? (formData.isRental ? t('createProduct.creatingBike') : t('createProduct.creatingProduct'))
+                : (formData.isRental ? t('createProduct.createBike') : t('createProduct.createProduct'))
               }
             </Button>
 
@@ -552,7 +554,7 @@ export const CreateProduct = () => {
               disabled={loading}
               size="large"
             >
-              Cancelar
+              {t('common.cancel')}
             </Button>
           </Box>
 
@@ -562,8 +564,7 @@ export const CreateProduct = () => {
             color="text.secondary"
             sx={{ mt: 2, display: 'block' }}
           >
-            Al crear el producto, las imágenes se procesarán automáticamente en
-            diferentes tamaños para optimizar la carga en web y móvil.
+            {t('createProduct.imageProcessingNote')}
           </Typography>
         </Box>
       </Paper>

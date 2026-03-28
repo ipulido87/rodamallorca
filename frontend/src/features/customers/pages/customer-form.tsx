@@ -26,6 +26,7 @@ import {
 } from '@mui/material'
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useSnackbar } from '../../../shared/hooks/use-snackbar'
 import {
   createCustomer,
@@ -36,6 +37,7 @@ import type { Customer, CustomerType } from '../types/customer'
 import { getErrorMessage } from '@/shared/api'
 
 export const CustomerForm = () => {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const theme = useTheme()
@@ -54,7 +56,7 @@ export const CustomerForm = () => {
     address: '',
     city: '',
     postalCode: '',
-    country: 'España',
+    country: t('customerForm.spain'),
     notes: '',
   })
 
@@ -78,12 +80,12 @@ export const CustomerForm = () => {
         address: customer.address || '',
         city: customer.city || '',
         postalCode: customer.postalCode || '',
-        country: customer.country || 'España',
+        country: customer.country || t('customerForm.spain'),
         notes: customer.notes || '',
       })
     } catch (error) {
       console.error('Error loading customer:', error)
-      showError('Error al cargar el cliente')
+      showError(t('customerForm.loadError'))
       navigate('/customers')
     } finally {
       setLoadingCustomer(false)
@@ -104,7 +106,7 @@ export const CustomerForm = () => {
 
     // Validación básica
     if (!formData.name.trim()) {
-      showError('El nombre es obligatorio')
+      showError(t('customerForm.nameRequired'))
       return
     }
 
@@ -113,17 +115,17 @@ export const CustomerForm = () => {
 
       if (isEditMode) {
         await updateCustomer(id!, formData)
-        showSuccess('Cliente actualizado correctamente')
+        showSuccess(t('customerForm.updated'))
       } else {
         await createCustomer(formData)
-        showSuccess('Cliente creado correctamente')
+        showSuccess(t('customerForm.created'))
       }
 
       navigate('/customers')
     } catch (error: unknown) {
       console.error('Error saving customer:', error)
       showError(
-        getErrorMessage(error, `Error al ${isEditMode ? 'actualizar' : 'crear'} el cliente`)
+        getErrorMessage(error, t(isEditMode ? 'customerForm.updateError' : 'customerForm.createError'))
       )
     } finally {
       setLoading(false)
@@ -136,7 +138,7 @@ export const CustomerForm = () => {
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <CircularProgress size={60} />
           <Typography variant="h6" sx={{ mt: 2 }}>
-            Cargando cliente...
+            {t('customerForm.loading')}
           </Typography>
         </Box>
       </Container>
@@ -171,12 +173,12 @@ export const CustomerForm = () => {
             </IconButton>
             <Box>
               <Typography variant="h4" fontWeight="bold">
-                {isEditMode ? 'Editar Cliente' : 'Nuevo Cliente'}
+                {isEditMode ? t('customerForm.editTitle') : t('customerForm.newTitle')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 {isEditMode
-                  ? 'Actualiza la información del cliente'
-                  : 'Completa los datos para crear un nuevo cliente'}
+                  ? t('customerForm.editSubtitle')
+                  : t('customerForm.newSubtitle')}
               </Typography>
             </Box>
           </Box>
@@ -189,7 +191,7 @@ export const CustomerForm = () => {
               <Stack spacing={4}>
                 {/* Tipo de Cliente */}
                 <FormControl component="fieldset">
-                  <FormLabel component="legend">Tipo de Cliente</FormLabel>
+                  <FormLabel component="legend">{t('customerForm.customerType')}</FormLabel>
                   <RadioGroup
                     row
                     name="type"
@@ -202,7 +204,7 @@ export const CustomerForm = () => {
                       label={
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Person />
-                          <span>Particular</span>
+                          <span>{t('customerForm.individual')}</span>
                         </Box>
                       }
                     />
@@ -212,7 +214,7 @@ export const CustomerForm = () => {
                       label={
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Business />
-                          <span>Empresa</span>
+                          <span>{t('customerForm.business')}</span>
                         </Box>
                       }
                     />
@@ -222,20 +224,20 @@ export const CustomerForm = () => {
                 {/* Información Básica */}
                 <Box>
                   <Typography variant="h6" gutterBottom>
-                    Información Básica
+                    {t('customerForm.basicInfo')}
                   </Typography>
                   <Stack spacing={2}>
                     <TextField
                       fullWidth
                       required
-                      label={formData.type === 'INDIVIDUAL' ? 'Nombre completo' : 'Razón social'}
+                      label={formData.type === 'INDIVIDUAL' ? t('customerForm.fullName') : t('customerForm.companyName')}
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
                     />
                     <TextField
                       fullWidth
-                      label={formData.type === 'BUSINESS' ? 'CIF' : 'NIF/NIE'}
+                      label={formData.type === 'BUSINESS' ? t('customerForm.cif') : t('customerForm.nif')}
                       name="taxId"
                       value={formData.taxId}
                       onChange={handleChange}
@@ -247,7 +249,7 @@ export const CustomerForm = () => {
                 {/* Información de Contacto */}
                 <Box>
                   <Typography variant="h6" gutterBottom>
-                    Información de Contacto
+                    {t('customerForm.contactInfo')}
                   </Typography>
                   <Stack spacing={2}>
                     <TextField
@@ -257,11 +259,11 @@ export const CustomerForm = () => {
                       type="email"
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="cliente@ejemplo.com"
+                      placeholder={t('customerForm.emailPlaceholder')}
                     />
                     <TextField
                       fullWidth
-                      label="Teléfono"
+                      label={t('customerForm.phone')}
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
@@ -273,21 +275,21 @@ export const CustomerForm = () => {
                 {/* Dirección */}
                 <Box>
                   <Typography variant="h6" gutterBottom>
-                    Dirección
+                    {t('customerForm.address')}
                   </Typography>
                   <Stack spacing={2}>
                     <TextField
                       fullWidth
-                      label="Dirección"
+                      label={t('customerForm.address')}
                       name="address"
                       value={formData.address}
                       onChange={handleChange}
-                      placeholder="Calle, número, piso, puerta"
+                      placeholder={t('customerForm.addressPlaceholder')}
                     />
                     <Stack direction={isMobile ? 'column' : 'row'} spacing={2}>
                       <TextField
                         fullWidth
-                        label="Ciudad"
+                        label={t('customerForm.city')}
                         name="city"
                         value={formData.city}
                         onChange={handleChange}
@@ -295,7 +297,7 @@ export const CustomerForm = () => {
                       />
                       <TextField
                         fullWidth={isMobile}
-                        label="Código Postal"
+                        label={t('customerForm.postalCode')}
                         name="postalCode"
                         value={formData.postalCode}
                         onChange={handleChange}
@@ -305,7 +307,7 @@ export const CustomerForm = () => {
                     </Stack>
                     <TextField
                       fullWidth
-                      label="País"
+                      label={t('customerForm.country')}
                       name="country"
                       value={formData.country}
                       onChange={handleChange}
@@ -316,17 +318,17 @@ export const CustomerForm = () => {
                 {/* Notas Internas */}
                 <Box>
                   <Typography variant="h6" gutterBottom>
-                    Notas Internas
+                    {t('customerForm.internalNotes')}
                   </Typography>
                   <TextField
                     fullWidth
                     multiline
                     rows={4}
-                    label="Notas"
+                    label={t('customerForm.notes')}
                     name="notes"
                     value={formData.notes}
                     onChange={handleChange}
-                    placeholder="Información adicional sobre el cliente (solo visible internamente)"
+                    placeholder={t('customerForm.notesPlaceholder')}
                   />
                 </Box>
 
@@ -342,7 +344,7 @@ export const CustomerForm = () => {
                     fullWidth={isMobile}
                     disabled={loading}
                   >
-                    Cancelar
+                    {t('common.cancel')}
                   </Button>
                   <Button
                     type="submit"
@@ -352,10 +354,10 @@ export const CustomerForm = () => {
                     disabled={loading}
                   >
                     {loading
-                      ? 'Guardando...'
+                      ? t('customerForm.saving')
                       : isEditMode
-                      ? 'Actualizar Cliente'
-                      : 'Crear Cliente'}
+                      ? t('customerForm.updateBtn')
+                      : t('customerForm.createBtn')}
                   </Button>
                 </Stack>
               </Stack>

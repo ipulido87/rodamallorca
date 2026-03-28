@@ -23,12 +23,14 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useCart } from '../hooks/useCart'
 import { notify } from '../../../shared/services/notification-service'
 
 export const Cart = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
@@ -53,7 +55,7 @@ export const Cart = () => {
     }
 
     if (cart.items.length === 0) {
-      notify.warning('Tu carrito está vacío')
+      notify.warning(t('cart.emptyCart'))
       return
     }
 
@@ -65,10 +67,10 @@ export const Cart = () => {
       <Container maxWidth="lg">
         <Stack alignItems="center" spacing={2} sx={{ py: 4 }}>
           <Typography variant="h6">
-            Please log in to view your cart
+            {t('cart.loginRequired')}
           </Typography>
           <Button variant="contained" onClick={() => navigate('/login')}>
-            Log In
+            {t('checkout.logIn')}
           </Button>
         </Stack>
       </Container>
@@ -81,13 +83,13 @@ export const Cart = () => {
         <Stack alignItems="center" spacing={2} sx={{ py: 4 }}>
           <ShoppingCartOutlined sx={{ fontSize: 80, color: 'text.secondary' }} />
           <Typography variant="h4">
-            Your cart is empty
+            {t('cart.emptyCart')}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Start adding products to your cart!
+            {t('cart.startAdding')}
           </Typography>
           <Button variant="contained" onClick={() => navigate('/catalog')}>
-            Browse Catalog
+            {t('cart.browseCatalog')}
           </Button>
         </Stack>
       </Container>
@@ -98,17 +100,17 @@ export const Cart = () => {
     <Container maxWidth="lg">
       <Stack spacing={3} sx={{ py: 4 }}>
         <Typography variant="h4">
-          Shopping Cart ({getItemCount()} items)
+          {t('cart.shoppingCart', { count: getItemCount() })}
         </Typography>
 
         {/* Workshop Info */}
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              Workshop: {cart.items[0].workshopName}
+              {t('cart.workshop', { name: cart.items[0].workshopName })}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              All items in your cart are from this workshop
+              {t('cart.allItemsFrom')}
             </Typography>
           </CardContent>
         </Card>
@@ -162,7 +164,7 @@ export const Cart = () => {
                       </IconButton>
                     </Stack>
                     <Stack alignItems="flex-end">
-                      <Typography variant="caption" color="text.secondary">Subtotal</Typography>
+                      <Typography variant="caption" color="text.secondary">{t('cart.subtotal')}</Typography>
                       <Typography variant="h6" fontWeight={700}>
                         {formatPrice(item.price * item.quantity)}
                       </Typography>
@@ -177,11 +179,11 @@ export const Cart = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Product</TableCell>
-                  <TableCell align="center">Price</TableCell>
-                  <TableCell align="center">Quantity</TableCell>
-                  <TableCell align="right">Subtotal</TableCell>
-                  <TableCell align="center">Actions</TableCell>
+                  <TableCell>{t('cart.product')}</TableCell>
+                  <TableCell align="center">{t('cart.price')}</TableCell>
+                  <TableCell align="center">{t('cart.quantity')}</TableCell>
+                  <TableCell align="right">{t('cart.subtotal')}</TableCell>
+                  <TableCell align="center">{t('cart.actions')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>

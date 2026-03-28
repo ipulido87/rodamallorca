@@ -18,6 +18,7 @@ import {
 import { useState, useEffect } from 'react'
 import useSWR from 'swr'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useSnackbar } from '../../../shared/hooks/use-snackbar'
 import {
   createInvoice,
@@ -31,6 +32,7 @@ import {
 import { InvoiceOcrScanner, type OcrInvoiceData } from '../components/invoice-ocr-scanner'
 
 export const CreateInvoice = () => {
+  const { t } = useTranslation()
   const { workshopId } = useParams<{ workshopId: string }>()
   const navigate = useNavigate()
   const { showSuccess, showError } = useSnackbar()
@@ -152,19 +154,19 @@ export const CreateInvoice = () => {
     }
 
     setOcrDialogOpen(false)
-    showSuccess('✓ Datos extraídos del OCR aplicados al formulario')
+    showSuccess(t('createInvoice.ocrApplied'))
   }
 
   const handleSubmit = async () => {
     if (!workshopId) return
 
     if (!formData.seriesId) {
-      showError('Selecciona una serie de facturación')
+      showError(t('createInvoice.selectSeries'))
       return
     }
 
     if (items.length === 0 || !items[0].description) {
-      showError('Agrega al menos una línea a la factura')
+      showError(t('createInvoice.addLine'))
       return
     }
 
@@ -187,10 +189,10 @@ export const CreateInvoice = () => {
       }
 
       await createInvoice(invoiceData)
-      showSuccess('✓ Factura creada correctamente')
+      showSuccess(t('createInvoice.invoiceCreated'))
       navigate(`/billing/${workshopId}`)
     } catch (error) {
-      showError('Error al crear la factura')
+      showError(t('createInvoice.createError'))
       console.error(error)
     } finally {
       setLoading(false)
@@ -204,7 +206,7 @@ export const CreateInvoice = () => {
       <Box sx={{ py: 4 }}>
         <Box sx={{ mb: 4 }}>
           <Button startIcon={<ArrowBack />} onClick={() => navigate(`/billing/${workshopId}`)}>
-            Volver
+            {t('common.back')}
           </Button>
           <Box
             sx={{
@@ -215,7 +217,7 @@ export const CreateInvoice = () => {
             }}
           >
             <Typography variant="h4" fontWeight="bold">
-              Nueva Factura
+              {t('createInvoice.title')}
             </Typography>
             <Button
               variant="outlined"
@@ -223,7 +225,7 @@ export const CreateInvoice = () => {
               onClick={() => setOcrDialogOpen(true)}
               color="secondary"
             >
-              Escanear Factura (OCR)
+              {t('createInvoice.scanOcr')}
             </Button>
           </Box>
         </Box>
@@ -234,20 +236,20 @@ export const CreateInvoice = () => {
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Datos de la Factura
+                  {t('createInvoice.invoiceData')}
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={12} md={6}>
                     <FormControl fullWidth>
-                      <InputLabel>Cliente (opcional)</InputLabel>
+                      <InputLabel>{t('createInvoice.customerOptional')}</InputLabel>
                       <Select
                         value={formData.customerId}
-                        label="Cliente (opcional)"
+                        label={t('createInvoice.customerOptional')}
                         onChange={(e) =>
                           setFormData({ ...formData, customerId: e.target.value })
                         }
                       >
-                        <MenuItem value="">Sin cliente</MenuItem>
+                        <MenuItem value="">{t('createInvoice.noCustomer')}</MenuItem>
                         {customers.map((customer) => (
                           <MenuItem key={customer.id} value={customer.id}>
                             {customer.name}
@@ -258,10 +260,10 @@ export const CreateInvoice = () => {
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <FormControl fullWidth required>
-                      <InputLabel>Serie</InputLabel>
+                      <InputLabel>{t('billing.series')}</InputLabel>
                       <Select
                         value={formData.seriesId}
-                        label="Serie"
+                        label={t('billing.series')}
                         onChange={(e) => setFormData({ ...formData, seriesId: e.target.value })}
                       >
                         {series.map((s) => (
@@ -275,12 +277,12 @@ export const CreateInvoice = () => {
                   <Grid item xs={12} md={6}>
                     <TextField
                       fullWidth
-                      label="Método de Pago"
+                      label={t('billing.paymentMethod')}
                       value={formData.paymentMethod}
                       onChange={(e) =>
                         setFormData({ ...formData, paymentMethod: e.target.value })
                       }
-                      placeholder="Efectivo, Tarjeta, Transferencia..."
+                      placeholder={t('createInvoice.paymentPlaceholder')}
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -288,7 +290,7 @@ export const CreateInvoice = () => {
                       fullWidth
                       multiline
                       rows={2}
-                      label="Notas"
+                      label={t('billing.notes')}
                       value={formData.notes}
                       onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     />
@@ -301,9 +303,9 @@ export const CreateInvoice = () => {
             <Card>
               <CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                  <Typography variant="h6">Líneas de Factura</Typography>
+                  <Typography variant="h6">{t('billing.invoiceLines')}</Typography>
                   <Button startIcon={<Add />} onClick={addItem} size="small">
-                    Agregar Línea
+                    {t('createInvoice.addLineBtn')}
                   </Button>
                 </Box>
 
@@ -316,7 +318,7 @@ export const CreateInvoice = () => {
                             <TextField
                               fullWidth
                               required
-                              label="Descripción"
+                              label={t('billing.description')}
                               value={item.description}
                               onChange={(e) => updateItem(index, 'description', e.target.value)}
                             />
@@ -325,7 +327,7 @@ export const CreateInvoice = () => {
                             <TextField
                               fullWidth
                               type="number"
-                              label="Cantidad"
+                              label={t('billing.quantity')}
                               value={item.quantity}
                               onChange={(e) =>
                                 updateItem(index, 'quantity', parseFloat(e.target.value))
@@ -337,7 +339,7 @@ export const CreateInvoice = () => {
                             <TextField
                               fullWidth
                               type="number"
-                              label="Precio €"
+                              label={t('createInvoice.priceEur')}
                               value={item.unitPrice}
                               onChange={(e) =>
                                 updateItem(index, 'unitPrice', parseFloat(e.target.value))
@@ -349,7 +351,7 @@ export const CreateInvoice = () => {
                             <TextField
                               fullWidth
                               type="number"
-                              label="Desc. €"
+                              label={t('billing.discount')}
                               value={item.discount}
                               onChange={(e) =>
                                 updateItem(index, 'discount', parseFloat(e.target.value))
@@ -361,7 +363,7 @@ export const CreateInvoice = () => {
                             <TextField
                               fullWidth
                               type="number"
-                              label="IVA %"
+                              label={t('billing.taxPercent')}
                               value={item.taxRate}
                               onChange={(e) =>
                                 updateItem(index, 'taxRate', parseFloat(e.target.value))
@@ -397,7 +399,7 @@ export const CreateInvoice = () => {
             <Card sx={{ position: 'sticky', top: 20 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Resumen
+                  {t('createInvoice.summary')}
                 </Typography>
 
                 <Box sx={{ mb: 2 }}>
@@ -408,7 +410,7 @@ export const CreateInvoice = () => {
                       mb: 1,
                     }}
                   >
-                    <Typography variant="body2">Subtotal:</Typography>
+                    <Typography variant="body2">{t('billing.subtotal')}:</Typography>
                     <Typography variant="body2">
                       {formatPrice(Math.round(totals.subtotal * 100))}
                     </Typography>
@@ -420,7 +422,7 @@ export const CreateInvoice = () => {
                       mb: 1,
                     }}
                   >
-                    <Typography variant="body2">IVA:</Typography>
+                    <Typography variant="body2">{t('billing.tax')}:</Typography>
                     <Typography variant="body2">
                       {formatPrice(Math.round(totals.taxAmount * 100))}
                     </Typography>
@@ -448,7 +450,7 @@ export const CreateInvoice = () => {
                   onClick={handleSubmit}
                   disabled={loading}
                 >
-                  {loading ? 'Creando...' : 'Crear Factura'}
+                  {loading ? t('createInvoice.creating') : t('createInvoice.createInvoice')}
                 </Button>
               </CardContent>
             </Card>

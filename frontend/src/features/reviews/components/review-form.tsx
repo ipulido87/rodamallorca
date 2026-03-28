@@ -13,6 +13,7 @@ import { Star } from '@mui/icons-material'
 import { createReview } from '../services/review-service'
 import type { CreateReviewInput } from '../types/review-types'
 import { getErrorMessage } from '@/shared/api'
+import { useTranslation } from 'react-i18next'
 
 interface ReviewFormProps {
   workshopId: string
@@ -20,6 +21,7 @@ interface ReviewFormProps {
 }
 
 export const ReviewForm = ({ workshopId, onReviewCreated }: ReviewFormProps) => {
+  const { t } = useTranslation()
   const [rating, setRating] = useState<number>(0)
   const [comment, setComment] = useState('')
   const [loading, setLoading] = useState(false)
@@ -30,7 +32,7 @@ export const ReviewForm = ({ workshopId, onReviewCreated }: ReviewFormProps) => 
     e.preventDefault()
 
     if (rating === 0) {
-      setError('Por favor selecciona una calificación')
+      setError(t('reviews.selectRating'))
       return
     }
 
@@ -57,7 +59,7 @@ export const ReviewForm = ({ workshopId, onReviewCreated }: ReviewFormProps) => 
       // Limpiar mensaje de éxito después de 3 segundos
       setTimeout(() => setSuccess(false), 3000)
     } catch (err: unknown) {
-      setError(getErrorMessage(err, 'Error al enviar la review'))
+      setError(getErrorMessage(err, t('reviews.submitError')))
     } finally {
       setLoading(false)
     }
@@ -66,7 +68,7 @@ export const ReviewForm = ({ workshopId, onReviewCreated }: ReviewFormProps) => 
   return (
     <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
       <Typography variant="h6" fontWeight="bold" gutterBottom>
-        Deja tu opinión
+        {t('reviews.leaveReview')}
       </Typography>
 
       {error && (
@@ -77,14 +79,14 @@ export const ReviewForm = ({ workshopId, onReviewCreated }: ReviewFormProps) => 
 
       {success && (
         <Alert severity="success" sx={{ mb: 2 }}>
-          ¡Gracias por tu opinión! Tu review ha sido publicada.
+          {t('reviews.thankYou')}
         </Alert>
       )}
 
       <Box component="form" onSubmit={handleSubmit}>
         <Box sx={{ mb: 2 }}>
           <Typography variant="subtitle2" gutterBottom>
-            Calificación *
+            {t('reviews.rating')}
           </Typography>
           <Rating
             value={rating}
@@ -97,14 +99,14 @@ export const ReviewForm = ({ workshopId, onReviewCreated }: ReviewFormProps) => 
         </Box>
 
         <TextField
-          label="Comentario (opcional)"
+          label={t('reviews.commentLabel')}
           multiline
           rows={4}
           fullWidth
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           disabled={loading}
-          placeholder="Cuéntanos sobre tu experiencia con este taller..."
+          placeholder={t('reviews.commentPlaceholder')}
           sx={{ mb: 2 }}
         />
 
@@ -114,7 +116,7 @@ export const ReviewForm = ({ workshopId, onReviewCreated }: ReviewFormProps) => 
           disabled={loading || rating === 0}
           startIcon={loading ? <CircularProgress size={20} /> : undefined}
         >
-          {loading ? 'Enviando...' : 'Publicar Review'}
+          {loading ? t('reviews.submitting') : t('reviews.publishReview')}
         </Button>
       </Box>
     </Paper>

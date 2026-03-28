@@ -30,8 +30,10 @@ import {
   type OrderStatus,
 } from '../services/order-service'
 import { isAxiosError } from 'axios'
+import { useTranslation } from 'react-i18next'
 
 export const MyRentals = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { user } = useAuth()
   const { showSuccess, showError } = useSnackbar()
@@ -83,11 +85,11 @@ export const MyRentals = () => {
       )
 
       setCancelDialog({ open: false, order: null })
-      showSuccess('✓ Alquiler cancelado correctamente')
+      showSuccess(t('myRentals.rentalCancelled'))
     } catch (err) {
       console.error('❌ [MY_RENTALS] Error cancelando alquiler:', err)
 
-      let errorMessage = 'Error al cancelar el alquiler'
+      let errorMessage = t('myRentals.errorCancellingRental')
 
       if (isAxiosError(err)) {
         const data = err.response?.data as Record<string, unknown> | undefined
@@ -96,7 +98,7 @@ export const MyRentals = () => {
 
         if (backendMessage) {
           if (backendMessage.includes('completado') || backendMessage.includes('cancelado')) {
-            errorMessage = '⚠️ Este alquiler ya está en estado final y no puede ser modificado'
+            errorMessage = t('myRentals.rentalFinalState')
           } else if (backendMessage.includes('no se puede')) {
             errorMessage = `⚠️ ${backendMessage}`
           } else {
@@ -135,10 +137,10 @@ export const MyRentals = () => {
   }
 
   const getRentalStatus = (order: Order) => {
-    if (order.status === 'CANCELLED') return 'Cancelado'
-    if (order.status === 'COMPLETED') return 'Completado'
+    if (order.status === 'CANCELLED') return t('myRentals.statusCancelled')
+    if (order.status === 'COMPLETED') return t('myRentals.statusCompleted')
 
-    if (!order.items || order.items.length === 0) return 'Pendiente'
+    if (!order.items || order.items.length === 0) return t('myRentals.statusPending')
 
     const startDate = order.items[0].rentalStartDate
       ? new Date(order.items[0].rentalStartDate)
@@ -150,11 +152,11 @@ export const MyRentals = () => {
 
     if (startDate && endDate) {
       if (now < startDate) {
-        return 'Próximo'
+        return t('myRentals.statusUpcoming')
       } else if (now >= startDate && now <= endDate) {
-        return 'En uso'
+        return t('myRentals.statusInUse')
       } else if (now > endDate) {
-        return 'Finalizado - Pendiente devolución'
+        return t('myRentals.statusFinishedPendingReturn')
       }
     }
 
@@ -164,11 +166,11 @@ export const MyRentals = () => {
   const getRentalStatusColor = (order: Order): 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' => {
     const status = getRentalStatus(order)
 
-    if (status === 'Cancelado') return 'error'
-    if (status === 'Completado') return 'success'
-    if (status === 'En uso') return 'primary'
-    if (status === 'Próximo') return 'info'
-    if (status.includes('Finalizado')) return 'warning'
+    if (status === t('myRentals.statusCancelled')) return 'error'
+    if (status === t('myRentals.statusCompleted')) return 'success'
+    if (status === t('myRentals.statusInUse')) return 'primary'
+    if (status === t('myRentals.statusUpcoming')) return 'info'
+    if (status === t('myRentals.statusFinishedPendingReturn')) return 'warning'
 
     return getOrderStatusColor(order.status)
   }
@@ -179,7 +181,7 @@ export const MyRentals = () => {
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <CircularProgress size={60} />
           <Typography variant="h6" sx={{ mt: 2 }}>
-            Cargando tus alquileres...
+            {t('myRentals.loadingRentals')}
           </Typography>
         </Box>
       </Container>
@@ -192,10 +194,10 @@ export const MyRentals = () => {
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Mis Alquileres
+            {t('myRentals.myRentals')}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Gestiona tus alquileres de bicicletas
+            {t('myRentals.myRentalsSubtitle')}
           </Typography>
         </Box>
 
@@ -213,17 +215,17 @@ export const MyRentals = () => {
               sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }}
             />
             <Typography variant="h5" color="text.secondary" gutterBottom>
-              No tienes alquileres todavía
+              {t('myRentals.noRentalsYet')}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Explora nuestro catálogo de bicicletas disponibles para alquilar
+              {t('myRentals.exploreCatalog')}
             </Typography>
             <Button
               variant="contained"
               size="large"
               onClick={() => navigate('/alquileres')}
             >
-              Ver Bicicletas Disponibles
+              {t('myRentals.viewAvailableBikes')}
             </Button>
           </Box>
         ) : (
@@ -250,14 +252,14 @@ export const MyRentals = () => {
                         >
                           <TwoWheeler color="primary" />
                           <Typography variant="h6">
-                            Alquiler #{order.id.slice(0, 8)}
+                            {t('myRentals.rentalPrefix')} #{order.id.slice(0, 8)}
                           </Typography>
                         </Stack>
 
                         {item && (
                           <>
                             <Typography variant="body1" fontWeight={600} mb={1}>
-                              {item.description || 'Bicicleta'}
+                              {item.description || t('myRentals.bicycle')}
                             </Typography>
 
                             {/* Fechas de alquiler */}
@@ -266,7 +268,7 @@ export const MyRentals = () => {
                               <Typography variant="body2" color="text.secondary">
                                 {item.rentalStartDate && formatDate(item.rentalStartDate)} -{' '}
                                 {item.rentalEndDate && formatDate(item.rentalEndDate)}
-                                {item.rentalDays && ` (${item.rentalDays} ${item.rentalDays === 1 ? 'día' : 'días'})`}
+                                {item.rentalDays && ` (${item.rentalDays} ${item.rentalDays === 1 ? t('myRentals.day') : t('myRentals.days')})`}
                               </Typography>
                             </Box>
 
@@ -275,7 +277,7 @@ export const MyRentals = () => {
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                 <Info sx={{ fontSize: 18, color: 'info.main' }} />
                                 <Typography variant="caption" color="text.secondary">
-                                  Depósito: {formatPrice(item.depositPaid)} (reembolsable)
+                                  {t('myRentals.deposit')}: {formatPrice(item.depositPaid)} ({t('myRentals.refundable')})
                                 </Typography>
                               </Box>
                             )}
@@ -283,7 +285,7 @@ export const MyRentals = () => {
                         )}
 
                         <Typography variant="caption" color="text.secondary" display="block" mt={1}>
-                          Pedido realizado: {new Date(order.createdAt).toLocaleDateString('es-ES', {
+                          {t('myRentals.orderPlaced')}: {new Date(order.createdAt).toLocaleDateString('es-ES', {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric',
@@ -309,7 +311,7 @@ export const MyRentals = () => {
                         startIcon={<Visibility />}
                         onClick={() => navigate(`/orders/${order.id}`)}
                       >
-                        Ver Detalles
+                        {t('myRentals.viewDetails')}
                       </Button>
                       {order.status !== 'COMPLETED' &&
                         order.status !== 'CANCELLED' && (
@@ -319,7 +321,7 @@ export const MyRentals = () => {
                             startIcon={<Cancel />}
                             onClick={() => handleCancelClick(order)}
                           >
-                            Cancelar Alquiler
+                            {t('myRentals.cancelRental')}
                           </Button>
                         )}
                     </Stack>
@@ -337,14 +339,14 @@ export const MyRentals = () => {
           maxWidth="sm"
           fullWidth
         >
-          <DialogTitle>Confirmar cancelación</DialogTitle>
+          <DialogTitle>{t('orders.confirmCancel')}</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              ¿Estás seguro de que quieres cancelar el alquiler #
+              {t('myRentals.confirmCancelRentalMessage')} #
               {cancelDialog.order?.id.slice(0, 8)}?
             </DialogContentText>
             <DialogContentText sx={{ mt: 2, color: 'warning.main' }}>
-              Esta acción no se puede deshacer.
+              {t('orders.cannotUndo')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -352,7 +354,7 @@ export const MyRentals = () => {
               onClick={handleCancelDialogClose}
               disabled={cancelLoading !== null}
             >
-              No, Mantener Alquiler
+              {t('myRentals.keepRental')}
             </Button>
             <Button
               onClick={handleCancelConfirm}
@@ -360,7 +362,7 @@ export const MyRentals = () => {
               variant="contained"
               disabled={cancelLoading !== null}
             >
-              {cancelLoading ? 'Cancelando...' : 'Sí, Cancelar Alquiler'}
+              {cancelLoading ? t('orders.cancelling') : t('myRentals.yesCancelRental')}
             </Button>
           </DialogActions>
         </Dialog>

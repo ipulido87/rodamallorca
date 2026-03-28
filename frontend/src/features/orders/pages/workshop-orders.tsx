@@ -41,8 +41,10 @@ import {
   updateOrderStatus,
 } from '../services/order-service'
 import { isAxiosError } from 'axios'
+import { useTranslation } from 'react-i18next'
 
 export const WorkshopOrders = () => {
+  const { t } = useTranslation()
   const { workshopId } = useParams<{ workshopId: string }>()
   const navigate = useNavigate()
   const { showSuccess, showError } = useSnackbar()
@@ -96,11 +98,11 @@ export const WorkshopOrders = () => {
       )
 
       setUpdateDialog({ open: false, order: null, newStatus: null })
-      showSuccess('✓ Estado del pedido actualizado correctamente')
+      showSuccess(t('workshopOrders.statusUpdated'))
     } catch (err) {
       console.error('❌ [WORKSHOP_ORDERS] Error actualizando estado:', err)
 
-      let errorMessage = 'Error al actualizar el estado del pedido'
+      let errorMessage = t('workshopOrders.errorUpdatingStatus')
 
       if (isAxiosError(err)) {
         const data = err.response?.data as Record<string, unknown> | undefined
@@ -110,7 +112,7 @@ export const WorkshopOrders = () => {
         if (backendMessage) {
           // Mejorar mensajes específicos
           if (backendMessage.includes('completado') || backendMessage.includes('cancelado')) {
-            errorMessage = '⚠️ Este pedido ya está en estado final y no puede ser modificado'
+            errorMessage = t('workshopOrders.orderFinalState')
           } else if (backendMessage.includes('no se puede cambiar')) {
             errorMessage = `⚠️ ${backendMessage}`
           } else {
@@ -145,9 +147,9 @@ export const WorkshopOrders = () => {
 
   const getOrderTypeLabel = (type?: string) => {
     const labels: Record<string, string> = {
-      PRODUCT_ORDER: 'Producto',
-      SERVICE_REPAIR: 'Reparación',
-      RENTAL: 'Alquiler',
+      PRODUCT_ORDER: t('orders.typeProduct'),
+      SERVICE_REPAIR: t('orders.typeRepair'),
+      RENTAL: t('orders.typeRental'),
     }
     return labels[type || 'PRODUCT_ORDER']
   }
@@ -195,7 +197,7 @@ export const WorkshopOrders = () => {
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <CircularProgress size={60} />
           <Typography variant="h6" sx={{ mt: 2 }}>
-            Cargando pedidos del taller...
+            {t('workshopOrders.loadingOrders')}
           </Typography>
         </Box>
       </Container>
@@ -208,10 +210,10 @@ export const WorkshopOrders = () => {
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Pedidos del Taller
+            {t('workshopOrders.workshopOrders')}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Gestiona los pedidos recibidos en tu taller
+            {t('workshopOrders.workshopOrdersSubtitle')}
           </Typography>
         </Box>
 
@@ -227,7 +229,7 @@ export const WorkshopOrders = () => {
           <Box textAlign="center" py={10}>
             <Receipt sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
             <Typography variant="h5" color="text.secondary">
-              No hay pedidos todavía
+              {t('workshopOrders.noOrdersYet')}
             </Typography>
           </Box>
         ) : (
@@ -252,7 +254,7 @@ export const WorkshopOrders = () => {
                       >
                         {order.type === 'RENTAL' ? <TwoWheeler /> : getStatusIcon(order.status)}
                         <Typography variant="h6">
-                          Pedido #{order.id.slice(0, 8)}
+                          {t('orders.orderPrefix')} #{order.id.slice(0, 8)}
                         </Typography>
                         <Chip
                           size="small"
@@ -271,7 +273,7 @@ export const WorkshopOrders = () => {
                         })}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" mt={1}>
-                        Cliente: {order.userId.slice(0, 8)}
+                        {t('workshopOrders.client')}: {order.userId.slice(0, 8)}
                       </Typography>
                       {/* Mostrar fechas de alquiler si es un pedido de tipo RENTAL */}
                       {order.type === 'RENTAL' && order.items && order.items.length > 0 && (
@@ -280,7 +282,7 @@ export const WorkshopOrders = () => {
                           <Typography variant="caption" color="text.secondary">
                             {order.items[0].rentalStartDate && formatDate(order.items[0].rentalStartDate)} -{' '}
                             {order.items[0].rentalEndDate && formatDate(order.items[0].rentalEndDate)}
-                            {order.items[0].rentalDays && ` (${order.items[0].rentalDays} días)`}
+                            {order.items[0].rentalDays && ` (${order.items[0].rentalDays} ${t('orders.days')})`}
                           </Typography>
                         </Box>
                       )}
@@ -293,7 +295,7 @@ export const WorkshopOrders = () => {
 
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="body2" color="text.secondary">
-                      Total
+                      {t('orders.total')}
                     </Typography>
                     <Typography variant="h5" fontWeight="bold" color="primary">
                       {formatPrice(order.totalAmount)}
@@ -302,7 +304,7 @@ export const WorkshopOrders = () => {
 
                   {order.notes && (
                     <Typography variant="body2" color="text.secondary" mb={2}>
-                      Notas del cliente: {order.notes}
+                      {t('workshopOrders.clientNotes')}: {order.notes}
                     </Typography>
                   )}
 
@@ -312,7 +314,7 @@ export const WorkshopOrders = () => {
                       startIcon={<Visibility />}
                       onClick={() => navigate(`/orders/${order.id}`)}
                     >
-                      Ver Detalles
+                      {t('orders.viewDetails')}
                     </Button>
                     {order.status !== 'COMPLETED' &&
                       order.status !== 'CANCELLED' && (
@@ -321,7 +323,7 @@ export const WorkshopOrders = () => {
                           startIcon={<Settings />}
                           onClick={() => handleStatusChangeClick(order)}
                         >
-                          Actualizar Estado
+                          {t('workshopOrders.updateStatus')}
                         </Button>
                       )}
                   </Stack>
@@ -338,17 +340,17 @@ export const WorkshopOrders = () => {
           maxWidth="sm"
           fullWidth
         >
-          <DialogTitle>Actualizar Estado del Pedido</DialogTitle>
+          <DialogTitle>{t('workshopOrders.updateOrderStatus')}</DialogTitle>
           <DialogContent>
             <Typography variant="body2" color="text.secondary" mb={3}>
-              Pedido #{updateDialog.order?.id.slice(0, 8)}
+              {t('orders.orderPrefix')} #{updateDialog.order?.id.slice(0, 8)}
             </Typography>
 
             <FormControl fullWidth>
-              <InputLabel>Nuevo Estado</InputLabel>
+              <InputLabel>{t('workshopOrders.newStatus')}</InputLabel>
               <Select
                 value={updateDialog.newStatus || ''}
-                label="Nuevo Estado"
+                label={t('workshopOrders.newStatus')}
                 onChange={(e) =>
                   setUpdateDialog((prev) => ({
                     ...prev,
@@ -370,7 +372,7 @@ export const WorkshopOrders = () => {
               onClick={handleUpdateDialogClose}
               disabled={updateLoading !== null}
             >
-              Cancelar
+              {t('workshopOrders.cancel')}
             </Button>
             <Button
               onClick={handleUpdateConfirm}
@@ -378,7 +380,7 @@ export const WorkshopOrders = () => {
               variant="contained"
               disabled={!updateDialog.newStatus || updateLoading !== null}
             >
-              {updateLoading ? 'Actualizando...' : 'Actualizar'}
+              {updateLoading ? t('workshopOrders.updating') : t('workshopOrders.update')}
             </Button>
           </DialogActions>
         </Dialog>

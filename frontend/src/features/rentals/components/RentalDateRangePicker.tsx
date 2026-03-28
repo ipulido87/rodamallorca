@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { DayPicker, type DateRange } from 'react-day-picker'
 import 'react-day-picker/style.css'
 import {
@@ -57,6 +58,7 @@ export const RentalDateRangePicker = ({
   minDays,
   maxDays,
 }: RentalDateRangePickerProps) => {
+  const { t } = useTranslation()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
@@ -88,12 +90,12 @@ export const RentalDateRangePicker = ({
         const msPerDay = 1000 * 60 * 60 * 24
         const days = Math.round((selected.to.getTime() - selected.from.getTime()) / msPerDay)
         if (days < minDays) {
-          setRangeError(`Mínimo ${minDays} día${minDays !== 1 ? 's' : ''}`)
+          setRangeError(t('rentalDatePicker.minDaysError', { days: minDays }))
           setRange({ from: selected.from, to: undefined })
           return
         }
         if (days > maxDays) {
-          setRangeError(`Máximo ${maxDays} días`)
+          setRangeError(t('rentalDatePicker.maxDaysError', { days: maxDays }))
           setRange({ from: selected.from, to: undefined })
           return
         }
@@ -224,10 +226,10 @@ export const RentalDateRangePicker = ({
         <Box>
           <Typography variant="subtitle1" fontWeight={700}>
             {!range?.from
-              ? 'Elige la fecha de recogida'
+              ? t('rentalDatePicker.choosePickupDate')
               : !range.to
-                ? 'Elige la fecha de devolución'
-                : `${daysCount} día${daysCount !== 1 ? 's' : ''} seleccionado${daysCount !== 1 ? 's' : ''}`}
+                ? t('rentalDatePicker.chooseReturnDate')
+                : t('rentalDatePicker.daysSelected', { count: daysCount })}
           </Typography>
           {range?.from && range?.to && (
             <Typography variant="caption" color="text.secondary">
@@ -267,7 +269,7 @@ export const RentalDateRangePicker = ({
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="caption" color="text.secondary">
-          Mín. {minDays} día{minDays !== 1 ? 's' : ''} · Máx. {maxDays} días
+          {t('rentalDatePicker.minMax', { min: minDays, max: maxDays })}
         </Typography>
         {(startDate || range?.from) && (
           <Typography
@@ -276,7 +278,7 @@ export const RentalDateRangePicker = ({
             onClick={handleClear}
             sx={{ cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
           >
-            Limpiar fechas
+            {t('rentalDatePicker.clearDates')}
           </Typography>
         )}
       </Box>
@@ -314,10 +316,10 @@ export const RentalDateRangePicker = ({
         }}
       >
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.3 }}>
-          Recogida
+          {t('rentalDatePicker.pickup')}
         </Typography>
         <Typography variant="body2" fontWeight={startDate ? 600 : 400} color={startDate ? 'text.primary' : 'text.disabled'}>
-          {startDate ? formatShort(startDate) : 'Añadir fecha'}
+          {startDate ? formatShort(startDate) : t('rentalDatePicker.addDate')}
         </Typography>
       </Box>
 
@@ -337,10 +339,10 @@ export const RentalDateRangePicker = ({
         }}
       >
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.3 }}>
-          Devolución
+          {t('rentalDatePicker.return')}
         </Typography>
         <Typography variant="body2" fontWeight={endDate ? 600 : 400} color={endDate ? 'text.primary' : 'text.disabled'}>
-          {endDate ? formatShort(endDate) : 'Añadir fecha'}
+          {endDate ? formatShort(endDate) : t('rentalDatePicker.addDate')}
         </Typography>
       </Box>
 

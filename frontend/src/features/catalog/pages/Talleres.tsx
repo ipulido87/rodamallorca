@@ -210,13 +210,13 @@ export const Talleres = () => {
             }}
           >
             <Typography variant="body2" color="text.secondary">
-              Mostrando{' '}
+              {t('common.showing')}{' '}
               {(workshopsPagination.page - 1) * workshopsPagination.size + 1}–
               {Math.min(
                 workshopsPagination.page * workshopsPagination.size,
                 workshopsPagination.total
               )}{' '}
-              de {workshopsPagination.total} talleres
+              {t('common.of')} {workshopsPagination.total} {t('catalog.workshops.count')}
             </Typography>
             <Pagination
               color="primary"
@@ -233,8 +233,8 @@ export const Talleres = () => {
   return (
     <Container maxWidth="xl" sx={{ py: 6 }}>
       <Seo
-        title="Talleres de Bicicletas en Mallorca | RodaMallorca"
-        description="Encuentra talleres de bicicletas verificados en Mallorca. Reparación, mantenimiento y servicios de ciclismo. Reserva cita online con los mejores mecánicos de Palma y toda la isla."
+        title={t('catalog.workshops.title')}
+        description={t('catalog.workshops.subtitle')}
         canonicalPath="/talleres"
         keywords="talleres bicicletas Mallorca, reparación bicicleta Mallorca, mecánico bicicletas Palma, taller ciclismo Mallorca"
         structuredData={[
@@ -291,7 +291,7 @@ export const Talleres = () => {
           <SmartSearchBar
             value={rawQuery}
             onChange={setQuery}
-            placeholder='Busca por nombre, ciudad o describe lo que necesitas...'
+            placeholder={t('catalog.workshops.searchPlaceholder')}
             parsedQuery={parsedQuery}
           />
         </Box>

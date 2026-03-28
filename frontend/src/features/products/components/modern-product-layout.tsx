@@ -29,6 +29,7 @@ import {
   useTheme,
 } from '@mui/material'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { getOptimizedImageUrl } from '../../../shared/utils/cloudinary'
 
@@ -67,6 +68,7 @@ const ProductCard = ({
   isFavorite?: boolean
   onOpenMenu?: OnOpenMenuHandler
 }) => {
+  const { t } = useTranslation()
   const theme = useTheme()
   const navigate = useNavigate()
   const [isHovered, setIsHovered] = useState(false)
@@ -80,11 +82,11 @@ const ProductCard = ({
   const getConditionProps = (c: CardProduct['condition']) => {
     switch (c) {
       case 'new':
-        return { color: 'success' as const, label: 'Nuevo' }
+        return { color: 'success' as const, label: t('products.condition.new') }
       case 'used':
-        return { color: 'default' as const, label: 'Usado' }
+        return { color: 'default' as const, label: t('products.condition.used') }
       case 'refurb':
-        return { color: 'warning' as const, label: 'Reacondicionado' }
+        return { color: 'warning' as const, label: t('products.condition.refurb') }
       default:
         return { color: 'default' as const, label: c }
     }
@@ -176,7 +178,7 @@ const ProductCard = ({
             size="small"
           />
           {product.status === 'DRAFT' && (
-            <Chip label="Borrador" size="small" color="warning" />
+            <Chip label={t('products.status.draft')} size="small" color="warning" />
           )}
         </Stack>
 
@@ -386,6 +388,7 @@ const WorkshopCard = ({
 
 /* -------------------- Service Card -------------------- */
 const ServiceCard = ({ service }: { service: CardService }) => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const theme = useTheme()
   const [isHovered, setIsHovered] = useState(false)
@@ -395,13 +398,13 @@ const ServiceCard = ({ service }: { service: CardService }) => {
   const getVehicleTypeLabel = (type: CardService['vehicleType']) => {
     switch (type) {
       case 'BICYCLE':
-        return 'Bicicleta'
+        return t('products.vehicleType.bicycle')
       case 'E_BIKE':
-        return 'Bici eléctrica'
+        return t('products.vehicleType.eBike')
       case 'E_SCOOTER':
-        return 'Patinete eléctrico'
+        return t('products.vehicleType.eScooter')
       case 'ALL':
-        return 'Todos'
+        return t('products.vehicleType.all')
       default:
         return type
     }
@@ -531,7 +534,7 @@ const ServiceCard = ({ service }: { service: CardService }) => {
           <Typography variant="h5" fontWeight={700} color="primary.main">
             {formatPrice(service.price)}
           </Typography>
-          <Chip label="Ver detalles" size="small" color="primary" />
+          <Chip label={t('products.viewDetails')} size="small" color="primary" />
         </Box>
       </CardContent>
     </Card>
@@ -543,7 +546,7 @@ export const ModernLayout = ({
   items,
   loading = false,
   error,
-  emptyMessage = 'No hay elementos disponibles',
+  emptyMessage,
   onFavoriteToggle,
   favoriteIds = [],
   type,
@@ -553,6 +556,7 @@ export const ModernLayout = ({
   type: 'product' | 'workshop' | 'service'
   onOpenMenu?: OnOpenMenuHandler
 } & ModernLayoutCommonProps) => {
+  const { t } = useTranslation()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const isTablet = useMediaQuery(theme.breakpoints.down('md'))
@@ -599,7 +603,7 @@ export const ModernLayout = ({
     return (
       <Container maxWidth="lg">
         <Box textAlign="center" py={10}>
-          <Typography variant="h5">{emptyMessage}</Typography>
+          <Typography variant="h5">{emptyMessage || t('products.noItemsAvailable')}</Typography>
         </Box>
       </Container>
     )

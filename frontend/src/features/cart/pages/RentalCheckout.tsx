@@ -10,6 +10,7 @@ import {
   Alert,
 } from '@mui/material'
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { redirectToProductCheckout } from '../services/payment-service'
@@ -31,6 +32,7 @@ interface RentalData {
 }
 
 export const RentalCheckout = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { user } = useAuth()
   const [rentalData, setRentalData] = useState<RentalData | null>(null)
@@ -41,7 +43,7 @@ export const RentalCheckout = () => {
     // Leer datos del alquiler desde localStorage
     const storedData = localStorage.getItem('rentalCheckoutData')
     if (!storedData) {
-      notify.error('No se encontraron datos de alquiler')
+      notify.error(t('rentalCheckout.noRentalData'))
       navigate('/rentals')
       return
     }
@@ -50,7 +52,7 @@ export const RentalCheckout = () => {
       const data = JSON.parse(storedData) as RentalData
       setRentalData(data)
     } catch (err) {
-      notify.error('Error al cargar los datos del alquiler')
+      notify.error(t('rentalCheckout.loadError'))
       navigate('/rentals')
     }
   }, [navigate])
@@ -78,7 +80,7 @@ export const RentalCheckout = () => {
     }
 
     if (!rentalData) {
-      notify.error('No hay datos de alquiler')
+      notify.error(t('rentalCheckout.noRentalData'))
       return
     }
 
@@ -93,7 +95,7 @@ export const RentalCheckout = () => {
           quantity: 1,
           priceAtOrder: rentalData.totalPrice,
           currency: 'EUR',
-          description: `Alquiler ${rentalData.bikeName} (${rentalData.days} ${rentalData.days === 1 ? 'día' : 'días'})`,
+          description: t('rentalCheckout.rentalDescription', { bikeName: rentalData.bikeName, days: rentalData.days }),
           // Campos específicos de alquiler
           isRental: true,
           rentalStartDate: rentalData.startDate,
@@ -114,7 +116,7 @@ export const RentalCheckout = () => {
     } catch (err: unknown) {
       console.error('Error iniciando checkout de alquiler:', err)
       setError(
-        getErrorMessage(err, 'Error al iniciar el pago. Por favor intenta de nuevo.')
+        getErrorMessage(err, t('checkout.paymentError'))
       )
       setLoading(false)
     }
@@ -125,10 +127,10 @@ export const RentalCheckout = () => {
       <Container maxWidth="lg">
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <Typography variant="h6" gutterBottom>
-            Inicia sesión para continuar con el alquiler
+            {t('rentalCheckout.loginRequired')}
           </Typography>
           <Button variant="contained" onClick={() => navigate('/login')}>
-            Iniciar Sesión
+            {t('rentalCheckout.logIn')}
           </Button>
         </Box>
       </Container>
@@ -140,7 +142,7 @@ export const RentalCheckout = () => {
       <Container maxWidth="lg">
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <Typography variant="h6" gutterBottom>
-            Cargando datos del alquiler...
+            {t('rentalCheckout.loading')}
           </Typography>
         </Box>
       </Container>
@@ -151,7 +153,7 @@ export const RentalCheckout = () => {
     <Container maxWidth="lg">
       <Box sx={{ py: 4 }}>
         <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
-          Confirmar Alquiler
+          {t('rentalCheckout.title')}
         </Typography>
 
         <Box
@@ -168,7 +170,7 @@ export const RentalCheckout = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <TwoWheeler sx={{ mr: 1, color: 'primary.main' }} />
-                  <Typography variant="h6">Bicicleta</Typography>
+                  <Typography variant="h6">{t('rentalCheckout.bike')}</Typography>
                 </Box>
                 {rentalData.bikeImage && (
                   <Box
@@ -198,11 +200,11 @@ export const RentalCheckout = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <CalendarMonth sx={{ mr: 1, color: 'primary.main' }} />
-                  <Typography variant="h6">Período de Alquiler</Typography>
+                  <Typography variant="h6">{t('rentalCheckout.rentalPeriod')}</Typography>
                 </Box>
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="body2" color="text.secondary">
-                    Fecha de inicio
+                    {t('rentalCheckout.startDate')}
                   </Typography>
                   <Typography variant="body1" fontWeight={600}>
                     {formatDate(rentalData.startDate)}
@@ -210,7 +212,7 @@ export const RentalCheckout = () => {
                 </Box>
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="body2" color="text.secondary">
-                    Fecha de devolución
+                    {t('rentalCheckout.returnDate')}
                   </Typography>
                   <Typography variant="body1" fontWeight={600}>
                     {formatDate(rentalData.endDate)}
@@ -218,10 +220,10 @@ export const RentalCheckout = () => {
                 </Box>
                 <Box>
                   <Typography variant="body2" color="text.secondary">
-                    Duración
+                    {t('rentalCheckout.duration')}
                   </Typography>
                   <Typography variant="body1" fontWeight={600}>
-                    {rentalData.days} {rentalData.days === 1 ? 'día' : 'días'}
+                    {t('rentalCheckout.daysCount', { count: rentalData.days })}
                   </Typography>
                 </Box>
               </CardContent>
@@ -230,17 +232,16 @@ export const RentalCheckout = () => {
             {/* Important Info */}
             <Alert severity="info" sx={{ mb: 3 }}>
               <Typography variant="body2" fontWeight={600} gutterBottom>
-                Información importante:
+                {t('rentalCheckout.importantInfo')}
               </Typography>
               <Typography variant="body2" component="div">
-                • La bicicleta debe recogerse el día de inicio en el taller
+                {t('rentalCheckout.infoPickup')}
                 <br />
-                • Debes devolver la bicicleta antes de las 18:00 del último día
+                {t('rentalCheckout.infoReturn')}
                 <br />
-                • El depósito se devolverá tras verificar el estado de la
-                bicicleta
-                <br />• Trae tu DNI/pasaporte y carnet de conducir al recoger
-                la bicicleta
+                {t('rentalCheckout.infoDeposit')}
+                <br />
+                {t('rentalCheckout.infoId')}
               </Typography>
             </Alert>
           </Box>
@@ -250,7 +251,7 @@ export const RentalCheckout = () => {
             <Card sx={{ position: 'sticky', top: 20 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Resumen de Pago
+                  {t('rentalCheckout.paymentSummary')}
                 </Typography>
                 <Divider sx={{ my: 2 }} />
 
@@ -263,7 +264,7 @@ export const RentalCheckout = () => {
                   }}
                 >
                   <Typography variant="body2" color="text.secondary">
-                    Precio por día:
+                    {t('rentalCheckout.pricePerDay')}
                   </Typography>
                   <Typography variant="body2">
                     {formatPrice(rentalData.pricePerDay)}
@@ -277,7 +278,7 @@ export const RentalCheckout = () => {
                   }}
                 >
                   <Typography variant="body2" color="text.secondary">
-                    Días de alquiler:
+                    {t('rentalCheckout.rentalDays')}
                   </Typography>
                   <Typography variant="body2">{rentalData.days}</Typography>
                 </Box>
@@ -289,7 +290,7 @@ export const RentalCheckout = () => {
                   }}
                 >
                   <Typography variant="body1" fontWeight={600}>
-                    Subtotal alquiler:
+                    {t('rentalCheckout.rentalSubtotal')}
                   </Typography>
                   <Typography variant="body1" fontWeight={600}>
                     {formatPrice(rentalData.totalPrice)}
@@ -309,7 +310,7 @@ export const RentalCheckout = () => {
                       }}
                     >
                       <Typography variant="body1" fontWeight={600}>
-                        Depósito (reembolsable):
+                        {t('rentalCheckout.depositRefundable')}
                       </Typography>
                       <Typography variant="body1" fontWeight={600}>
                         {formatPrice(rentalData.deposit)}
@@ -328,7 +329,7 @@ export const RentalCheckout = () => {
                     mb: 3,
                   }}
                 >
-                  <Typography variant="h6">Total a pagar:</Typography>
+                  <Typography variant="h6">{t('rentalCheckout.totalToPay')}</Typography>
                   <Typography variant="h6" color="primary" fontWeight={700}>
                     {formatPrice(rentalData.totalPrice + (rentalData.deposit || 0))}
                   </Typography>
@@ -340,8 +341,7 @@ export const RentalCheckout = () => {
                     color="text.secondary"
                     sx={{ display: 'block', mb: 3 }}
                   >
-                    El depósito de {formatPrice(rentalData.deposit)} se devolverá
-                    cuando devuelvas la bicicleta en buen estado.
+                    {t('rentalCheckout.depositNote', { amount: formatPrice(rentalData.deposit) })}
                   </Typography>
                 )}
 
@@ -367,7 +367,7 @@ export const RentalCheckout = () => {
                   onClick={handleConfirmRental}
                   disabled={loading}
                 >
-                  {loading ? 'Redirigiendo a pago...' : 'Confirmar y Pagar'}
+                  {loading ? t('checkout.redirectingPayment') : t('rentalCheckout.confirmAndPay')}
                 </Button>
 
                 <Button
@@ -378,7 +378,7 @@ export const RentalCheckout = () => {
                   sx={{ mt: 2 }}
                   disabled={loading}
                 >
-                  Volver
+                  {t('rentalCheckout.goBack')}
                 </Button>
               </CardContent>
             </Card>

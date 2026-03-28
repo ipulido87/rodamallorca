@@ -369,7 +369,7 @@ export const OrderDetail = () => {
                   startIcon={<Cancel />}
                   onClick={handleCancelClick}
                 >
-                  Cancelar Pedido
+                  {t('orders.cancelOrder')}
                 </Button>
               </CardContent>
             </Card>
@@ -382,18 +382,18 @@ export const OrderDetail = () => {
           maxWidth="sm"
           fullWidth
         >
-          <DialogTitle>Confirmar cancelación</DialogTitle>
+          <DialogTitle>{t('orders.confirmCancel')}</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              ¿Estás seguro de que quieres cancelar este pedido?
+              {t('orders.confirmCancelMessage')}
             </DialogContentText>
             <DialogContentText sx={{ mt: 2, color: 'warning.main' }}>
-              Esta acción no se puede deshacer.
+              {t('orders.cannotUndo')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCancelDialogClose} disabled={cancelLoading}>
-              No, Mantener Pedido
+              {t('orders.keepOrder')}
             </Button>
             <Button
               onClick={handleCancelConfirm}
@@ -401,7 +401,7 @@ export const OrderDetail = () => {
               variant="contained"
               disabled={cancelLoading}
             >
-              {cancelLoading ? 'Cancelando...' : 'Sí, Cancelar Pedido'}
+              {cancelLoading ? t('orders.cancelling') : t('orders.yesCancelOrder')}
             </Button>
           </DialogActions>
         </Dialog>
