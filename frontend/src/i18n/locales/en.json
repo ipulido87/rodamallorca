@@ -1029,5 +1029,70 @@
     "cancel": "Cancel",
     "updating": "Updating...",
     "update": "Update"
+  },
+  "workshopDetail": {
+    "loading": "Loading workshop information...",
+    "notFound": "Workshop not found",
+    "backToCatalog": "Back to Catalog",
+    "title": "Workshop Detail",
+    "reviews": "reviews",
+    "memberSince": "Member since",
+    "callNow": "Call Now",
+    "sendEmail": "Send Email",
+    "viewProducts": "View Products",
+    "tabInfo": "Information",
+    "tabProducts": "Products",
+    "tabServices": "Services",
+    "tabReviews": "Reviews",
+    "featuredServices": "Featured Services",
+    "specialties": "Specialties",
+    "businessHours": "Business Hours",
+    "weekdayHours": "Monday to Friday: 9:00 - 18:00",
+    "saturdayHours": "Saturdays: 9:00 - 14:00",
+    "sundayHours": "Sundays: Closed",
+    "holidayNote": "* Hours may vary on holidays",
+    "loadingProducts": "Loading products...",
+    "noProducts": "This workshop has no available products",
+    "noProductsPublished": "This workshop has no published products at this time.",
+    "loadingServices": "Loading services...",
+    "noServices": "This workshop has no available services",
+    "noServicesPublished": "This workshop has no published services at this time."
+  },
+  "productDetail": {
+    "loading": "Loading product...",
+    "notFound": "Product not found",
+    "backToCatalog": "Back to Catalog",
+    "title": "Product Details",
+    "category": "Category",
+    "description": "Description",
+    "workshopInfo": "Workshop Information",
+    "viewWorkshop": "View workshop",
+    "notAvailableOnline": "This product is not available for online purchase",
+    "paymentsNotEnabled": "This workshop does not have online payments enabled yet. Visit their page or call them directly to purchase.",
+    "viewWorkshopPage": "View workshop page",
+    "quantity": "Quantity",
+    "addToCart": "Add to Cart",
+    "viewCart": "View Cart",
+    "statusNotAvailable": "This product is in {{status}} status and is not available for purchase.",
+    "onlyPublishedCanBuy": "Only published products can be added to the cart.",
+    "loginToBuy": "Please log in to purchase this product.",
+    "productInfo": "Product Information",
+    "published": "Published"
+  },
+  "checkoutCancel": {
+    "title": "Payment Cancelled",
+    "noCharge": "No charges were made",
+    "returnMessage": "You can return to your cart to complete the payment when you're ready.",
+    "backToCart": "Back to Cart",
+    "continueShopping": "Continue Shopping"
+  },
+  "filterBar": {
+    "all": "All",
+    "clearFilters": "Clear filters",
+    "active": "active"
+  },
+  "rentalCatalog": {
+    "title": "Bicycle Rental in Mallorca",
+    "dates": "Dates"
   }
 }

@@ -1090,5 +1090,70 @@
   },
   "editProduct": {
     "titleMinLength": "El título debe tener al menos 2 caracteres"
+  },
+  "workshopDetail": {
+    "loading": "Cargando información del taller...",
+    "notFound": "Taller no encontrado",
+    "backToCatalog": "Volver al Catálogo",
+    "title": "Detalle del Taller",
+    "reviews": "reseñas",
+    "memberSince": "Miembro desde",
+    "callNow": "Llamar Ahora",
+    "sendEmail": "Enviar Email",
+    "viewProducts": "Ver Productos",
+    "tabInfo": "Información",
+    "tabProducts": "Productos",
+    "tabServices": "Servicios",
+    "tabReviews": "Opiniones",
+    "featuredServices": "Servicios Destacados",
+    "specialties": "Especialidades",
+    "businessHours": "Horarios de Atención",
+    "weekdayHours": "Lunes a Viernes: 9:00 - 18:00",
+    "saturdayHours": "Sábados: 9:00 - 14:00",
+    "sundayHours": "Domingos: Cerrado",
+    "holidayNote": "* Los horarios pueden variar en días festivos",
+    "loadingProducts": "Cargando productos...",
+    "noProducts": "Este taller no tiene productos disponibles",
+    "noProductsPublished": "Este taller no tiene productos publicados en este momento.",
+    "loadingServices": "Cargando servicios...",
+    "noServices": "Este taller no tiene servicios disponibles",
+    "noServicesPublished": "Este taller no tiene servicios publicados en este momento."
+  },
+  "productDetail": {
+    "loading": "Cargando producto...",
+    "notFound": "Producto no encontrado",
+    "backToCatalog": "Volver al Catálogo",
+    "title": "Detalles del Producto",
+    "category": "Categoría",
+    "description": "Descripción",
+    "workshopInfo": "Información del Taller",
+    "viewWorkshop": "Ver taller",
+    "notAvailableOnline": "Este producto no está disponible para compra online",
+    "paymentsNotEnabled": "El taller aún no tiene habilitados los pagos online. Visita su página o llámales directamente para adquirirlo.",
+    "viewWorkshopPage": "Ver página del taller",
+    "quantity": "Cantidad",
+    "addToCart": "Añadir al Carrito",
+    "viewCart": "Ver Carrito",
+    "statusNotAvailable": "Este producto está en estado {{status}} y no está disponible para compra.",
+    "onlyPublishedCanBuy": "Solo los productos publicados pueden ser añadidos al carrito.",
+    "loginToBuy": "Por favor inicia sesión para comprar este producto.",
+    "productInfo": "Información del Producto",
+    "published": "Publicado"
+  },
+  "checkoutCancel": {
+    "title": "Pago Cancelado",
+    "noCharge": "No se realizó ningún cargo",
+    "returnMessage": "Puedes volver a tu carrito para completar el pago cuando estés listo.",
+    "backToCart": "Volver al Carrito",
+    "continueShopping": "Seguir Comprando"
+  },
+  "filterBar": {
+    "all": "Todas",
+    "clearFilters": "Limpiar filtros",
+    "active": "activos"
+  },
+  "rentalCatalog": {
+    "title": "Alquiler de Bicicletas en Mallorca",
+    "dates": "Fechas"
   }
 }

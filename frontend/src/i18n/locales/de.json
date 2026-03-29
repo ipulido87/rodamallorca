@@ -1018,5 +1018,70 @@
   },
   "editProduct": {
     "titleMinLength": "Der Titel muss mindestens 2 Zeichen lang sein"
+  },
+  "workshopDetail": {
+    "loading": "Werkstattinformationen werden geladen...",
+    "notFound": "Werkstatt nicht gefunden",
+    "backToCatalog": "Zurück zum Katalog",
+    "title": "Werkstattdetails",
+    "reviews": "Bewertungen",
+    "memberSince": "Mitglied seit",
+    "callNow": "Jetzt anrufen",
+    "sendEmail": "E-Mail senden",
+    "viewProducts": "Produkte ansehen",
+    "tabInfo": "Informationen",
+    "tabProducts": "Produkte",
+    "tabServices": "Dienstleistungen",
+    "tabReviews": "Bewertungen",
+    "featuredServices": "Hervorgehobene Dienstleistungen",
+    "specialties": "Spezialitäten",
+    "businessHours": "Öffnungszeiten",
+    "weekdayHours": "Montag bis Freitag: 9:00 - 18:00",
+    "saturdayHours": "Samstags: 9:00 - 14:00",
+    "sundayHours": "Sonntags: Geschlossen",
+    "holidayNote": "* Öffnungszeiten können an Feiertagen abweichen",
+    "loadingProducts": "Produkte werden geladen...",
+    "noProducts": "Diese Werkstatt hat keine verfügbaren Produkte",
+    "noProductsPublished": "Diese Werkstatt hat derzeit keine veröffentlichten Produkte.",
+    "loadingServices": "Dienstleistungen werden geladen...",
+    "noServices": "Diese Werkstatt hat keine verfügbaren Dienstleistungen",
+    "noServicesPublished": "Diese Werkstatt hat derzeit keine veröffentlichten Dienstleistungen."
+  },
+  "productDetail": {
+    "loading": "Produkt wird geladen...",
+    "notFound": "Produkt nicht gefunden",
+    "backToCatalog": "Zurück zum Katalog",
+    "title": "Produktdetails",
+    "category": "Kategorie",
+    "description": "Beschreibung",
+    "workshopInfo": "Werkstattinformationen",
+    "viewWorkshop": "Werkstatt ansehen",
+    "notAvailableOnline": "Dieses Produkt ist nicht für den Online-Kauf verfügbar",
+    "paymentsNotEnabled": "Diese Werkstatt hat noch keine Online-Zahlungen aktiviert. Besuchen Sie deren Seite oder rufen Sie direkt an.",
+    "viewWorkshopPage": "Werkstattseite ansehen",
+    "quantity": "Menge",
+    "addToCart": "In den Warenkorb",
+    "viewCart": "Warenkorb ansehen",
+    "statusNotAvailable": "Dieses Produkt hat den Status {{status}} und ist nicht zum Kauf verfügbar.",
+    "onlyPublishedCanBuy": "Nur veröffentlichte Produkte können in den Warenkorb gelegt werden.",
+    "loginToBuy": "Bitte melden Sie sich an, um dieses Produkt zu kaufen.",
+    "productInfo": "Produktinformationen",
+    "published": "Veröffentlicht"
+  },
+  "checkoutCancel": {
+    "title": "Zahlung storniert",
+    "noCharge": "Es wurden keine Gebühren erhoben",
+    "returnMessage": "Sie können zu Ihrem Warenkorb zurückkehren, um die Zahlung abzuschließen, wenn Sie bereit sind.",
+    "backToCart": "Zurück zum Warenkorb",
+    "continueShopping": "Weiter einkaufen"
+  },
+  "filterBar": {
+    "all": "Alle",
+    "clearFilters": "Filter löschen",
+    "active": "aktiv"
+  },
+  "rentalCatalog": {
+    "title": "Fahrradverleih auf Mallorca",
+    "dates": "Daten"
   }
 }
