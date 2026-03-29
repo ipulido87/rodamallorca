@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Seo } from '../../../shared/components/Seo'
 import { BikeImage } from '../../../shared/components/BikeImage'
@@ -44,6 +45,7 @@ import {
 import { RentalDateRangePicker } from '../components/RentalDateRangePicker'
 
 export const RentalDetail = () => {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
@@ -81,7 +83,7 @@ export const RentalDetail = () => {
       })
       .catch((err) => {
         console.error('Error cargando detalles:', err)
-        setError('No se pudo cargar la bicicleta')
+        setError(t('rentalDetail.loadError'))
         setLoading(false)
       })
   }, [id])
@@ -108,13 +110,13 @@ export const RentalDetail = () => {
 
         if (!availabilityRes.available) {
           setAvailabilityError(
-            `No hay suficientes unidades disponibles. Disponibles: ${availabilityRes.availableQuantity}`
+            t('rentalDetail.notEnoughUnits', { available: availabilityRes.availableQuantity })
           )
         }
       })
       .catch((err) => {
         console.error('Error verificando disponibilidad:', err)
-        setAvailabilityError(err.response?.data?.error || 'Error verificando disponibilidad')
+        setAvailabilityError(err.response?.data?.error || t('rentalDetail.availabilityError'))
         setChecking(false)
       })
   }, [id, startDate, endDate, quantity])
@@ -154,12 +156,12 @@ export const RentalDetail = () => {
 
   const getBikeTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      road: 'Carretera',
-      mountain: 'Montaña',
-      hybrid: 'Híbrida',
-      ebike: 'Eléctrica',
-      gravel: 'Gravel',
-      city: 'Ciudad',
+      road: t('rentals.bikeType.road'),
+      mountain: t('rentals.bikeType.mountain'),
+      hybrid: t('rentals.bikeType.hybrid'),
+      ebike: t('rentals.bikeType.ebike'),
+      gravel: t('rentals.bikeType.gravel'),
+      city: t('rentals.bikeType.city'),
     }
     return labels[type] || type
   }
@@ -175,9 +177,9 @@ export const RentalDetail = () => {
   if (error || !bike) {
     return (
       <Container maxWidth="md" sx={{ py: 8 }}>
-        <Alert severity="error">{error || 'Bicicleta no encontrada'}</Alert>
+        <Alert severity="error">{error || t('rentalDetail.bikeNotFound')}</Alert>
         <Button startIcon={<ArrowBack />} onClick={() => navigate('/rentals')} sx={{ mt: 2 }}>
-          Volver al Catálogo
+          {t('rentalDetail.backToCatalog')}
         </Button>
       </Container>
     )
@@ -189,11 +191,11 @@ export const RentalDetail = () => {
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', py: 4 }}>
       <Seo
-        title={`${bike.title} — Alquiler ${bike.bikeType ? `Bicicleta ${bike.bikeType === 'road' ? 'Carretera' : bike.bikeType === 'mountain' ? 'Montaña' : bike.bikeType === 'ebike' ? 'Eléctrica' : bike.bikeType === 'gravel' ? 'Gravel' : bike.bikeType} ` : ''}en ${bike.workshop.city ?? 'Mallorca'} | RodaMallorca`}
+        title={`${bike.title} — ${t('rentalDetail.seo.rental')} ${bike.bikeType ? `${t('rentalDetail.seo.bicycle')} ${getBikeTypeLabel(bike.bikeType)} ` : ''}${t('rentalDetail.seo.in')} ${bike.workshop.city ?? 'Mallorca'} | RodaMallorca`}
         description={
           bike.description
-            ? `${bike.description.slice(0, 130)}. Desde ${pricePerDay}€/día en ${bike.workshop.name}, ${bike.workshop.city ?? 'Mallorca'}.`
-            : `Alquila ${bike.title}${bike.bikeBrand ? ` (${bike.bikeBrand})` : ''} desde ${pricePerDay}€/día en ${bike.workshop.name}. Taller verificado en ${bike.workshop.city ?? 'Mallorca'}.`
+            ? `${bike.description.slice(0, 130)}. ${t('rentalDetail.seo.priceFrom', { price: pricePerDay, workshop: bike.workshop.name, city: bike.workshop.city ?? 'Mallorca' })}`
+            : t('rentalDetail.seo.defaultDescription', { title: bike.title, brand: bike.bikeBrand ? ` (${bike.bikeBrand})` : '', price: pricePerDay, workshop: bike.workshop.name, city: bike.workshop.city ?? 'Mallorca' })
         }
         canonicalPath={`/alquileres/${bike.id}`}
         keywords={`alquiler ${bike.title} Mallorca, ${bike.bikeType ? `alquiler bicicleta ${bike.bikeType} Mallorca` : 'alquiler bicicleta Mallorca'}, ${bike.workshop.city ?? 'Mallorca'} bici alquiler`}
@@ -204,8 +206,8 @@ export const RentalDetail = () => {
             '@context': 'https://schema.org',
             '@type': 'BreadcrumbList',
             itemListElement: [
-              { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://rodamallorca.es/' },
-              { '@type': 'ListItem', position: 2, name: 'Alquiler de Bicicletas', item: 'https://rodamallorca.es/alquileres' },
+              { '@type': 'ListItem', position: 1, name: t('rentalDetail.seo.home'), item: 'https://rodamallorca.es/' },
+              { '@type': 'ListItem', position: 2, name: t('rentalDetail.seo.bikeRentals'), item: 'https://rodamallorca.es/alquileres' },
               { '@type': 'ListItem', position: 3, name: bike.title, item: `https://rodamallorca.es/alquileres/${bike.id}` },
             ],
           },
@@ -269,7 +271,7 @@ export const RentalDetail = () => {
       <Container maxWidth="lg">
         {/* Botón volver */}
         <Button startIcon={<ArrowBack />} onClick={() => navigate('/rentals')} sx={{ mb: 3 }}>
-          Volver al Catálogo
+          {t('rentalDetail.backToCatalog')}
         </Button>
 
         <Box sx={{ display: 'flex', gap: 4, flexDirection: { xs: 'column', md: 'row' } }}>
@@ -290,12 +292,12 @@ export const RentalDetail = () => {
             <Box sx={{ mb: 3 }}>
               <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
                 {bike.workshop.isVerified && (
-                  <Chip icon={<CheckCircle />} label="Verificado" color="success" />
+                  <Chip icon={<CheckCircle />} label={t('rentalDetail.verified')} color="success" />
                 )}
                 {bike.bikeType && (
                   <Chip icon={<DirectionsBike />} label={getBikeTypeLabel(bike.bikeType)} />
                 )}
-                {bike.bikeSize && <Chip label={`Talla ${bike.bikeSize}`} />}
+                {bike.bikeSize && <Chip label={t('rentalDetail.size', { size: bike.bikeSize })} />}
               </Box>
 
               <Typography variant="h4" gutterBottom fontWeight="bold">
@@ -314,7 +316,7 @@ export const RentalDetail = () => {
             {bike.description && (
               <Paper sx={{ p: 3, mb: 3 }}>
                 <Typography variant="h6" gutterBottom>
-                  Descripción
+                  {t('rentalDetail.description')}
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
                   {bike.description}
@@ -325,7 +327,7 @@ export const RentalDetail = () => {
             {/* Características */}
             <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom>
-                Características
+                {t('rentalDetail.features')}
               </Typography>
               <List>
                 {bike.frameSize && (
@@ -333,7 +335,7 @@ export const RentalDetail = () => {
                     <ListItemIcon>
                       <CheckCircleOutline />
                     </ListItemIcon>
-                    <ListItemText primary={`Tamaño del cuadro: ${bike.frameSize}cm`} />
+                    <ListItemText primary={t('rentalDetail.frameSize', { size: bike.frameSize })} />
                   </ListItem>
                 )}
                 {bike.includesHelmet && (
@@ -341,7 +343,7 @@ export const RentalDetail = () => {
                     <ListItemIcon>
                       <Security />
                     </ListItemIcon>
-                    <ListItemText primary="Incluye casco" />
+                    <ListItemText primary={t('rentalDetail.includesHelmet')} />
                   </ListItem>
                 )}
                 {bike.includesLock && (
@@ -349,7 +351,7 @@ export const RentalDetail = () => {
                     <ListItemIcon>
                       <Security />
                     </ListItemIcon>
-                    <ListItemText primary="Incluye candado" />
+                    <ListItemText primary={t('rentalDetail.includesLock')} />
                   </ListItem>
                 )}
                 {bike.includesLights && (
@@ -357,7 +359,7 @@ export const RentalDetail = () => {
                     <ListItemIcon>
                       <Lightbulb />
                     </ListItemIcon>
-                    <ListItemText primary="Incluye luces" />
+                    <ListItemText primary={t('rentalDetail.includesLights')} />
                   </ListItem>
                 )}
               </List>
@@ -368,10 +370,10 @@ export const RentalDetail = () => {
               <Paper sx={{ p: 3, mb: 3 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                   <EventBusy color="warning" fontSize="small" />
-                  <Typography variant="h6">Fechas no disponibles</Typography>
+                  <Typography variant="h6">{t('rentalDetail.unavailableDates')}</Typography>
                 </Box>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                  Esta bicicleta ya está reservada en los siguientes períodos:
+                  {t('rentalDetail.bikeAlreadyBooked')}
                 </Typography>
                 {fullyBlockedRanges.map((b, i) => (
                   <Chip
@@ -389,7 +391,7 @@ export const RentalDetail = () => {
             {/* Info del taller */}
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
-                Sobre el Taller
+                {t('rentalDetail.aboutWorkshop')}
               </Typography>
               <List>
                 <ListItem>
@@ -417,7 +419,7 @@ export const RentalDetail = () => {
           <Box sx={{ width: { xs: '100%', md: '400px' }, flexShrink: 0 }}>
             <Paper sx={{ p: 3, position: 'sticky', top: 20 }}>
               <Typography variant="h5" gutterBottom fontWeight="bold">
-                Reserva tu Bicicleta
+                {t('rentalDetail.reserveYourBike')}
               </Typography>
 
               {/* Precio */}
@@ -427,12 +429,12 @@ export const RentalDetail = () => {
                     {(bike.rentalPricePerDay / 100).toFixed(0)}€
                   </Typography>
                   <Typography variant="h6" color="text.secondary">
-                    / día
+                    {t('rentalDetail.perDay')}
                   </Typography>
                 </Box>
                 {bike.rentalPricePerWeek && (
                   <Typography variant="body2" color="text.secondary">
-                    {(bike.rentalPricePerWeek / 100).toFixed(0)}€ por semana
+                    {t('rentalDetail.pricePerWeek', { price: (bike.rentalPricePerWeek / 100).toFixed(0) })}
                   </Typography>
                 )}
               </Box>
@@ -454,7 +456,7 @@ export const RentalDetail = () => {
 
               <TextField
                 fullWidth
-                label="Cantidad"
+                label={t('rentalDetail.quantity')}
                 type="number"
                 value={quantity}
                 onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
@@ -478,13 +480,13 @@ export const RentalDetail = () => {
               {available && pricing && (
                 <Box sx={{ mb: 3 }}>
                   <Alert severity="success" sx={{ mb: 2 }}>
-                    ¡Disponible! {bike.availableQuantity} unidades disponibles
+                    {t('rentalDetail.available', { count: bike.availableQuantity })}
                   </Alert>
 
                   {pricing.pricePerWeek && pricing.days >= 7 && (
                     <Chip
                       icon={<Savings />}
-                      label="Tarifa semanal aplicada — precio más económico"
+                      label={t('rentalDetail.weeklyRateApplied')}
                       color="success"
                       variant="outlined"
                       size="small"
@@ -515,7 +517,7 @@ export const RentalDetail = () => {
 
                     {pricing.deposit && (
                       <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                        + {(pricing.deposit / 100).toFixed(2)}€ de depósito (reembolsable)
+                        {t('rentalDetail.depositRefundable', { amount: (pricing.deposit / 100).toFixed(2) })}
                       </Typography>
                     )}
                   </Paper>
@@ -532,14 +534,14 @@ export const RentalDetail = () => {
                 onClick={handleReserve}
                 sx={{ mb: 2 }}
               >
-                Reservar Ahora
+                {t('rentalDetail.reserveNow')}
               </Button>
 
               <Alert severity="info" icon={<Info />}>
                 <Typography variant="caption">
-                  Alquiler mínimo: {bike.minRentalDays} día{bike.minRentalDays !== 1 ? 's' : ''}
+                  {t('rentalDetail.minRental', { days: bike.minRentalDays })}
                   <br />
-                  Alquiler máximo: {bike.maxRentalDays} días
+                  {t('rentalDetail.maxRental', { days: bike.maxRentalDays })}
                 </Typography>
               </Alert>
             </Paper>

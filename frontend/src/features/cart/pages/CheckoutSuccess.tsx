@@ -1,10 +1,12 @@
 import { CheckCircle } from '@mui/icons-material'
 import { Box, Button, Container, Stack, Typography } from '@mui/material'
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useCart } from '../hooks/useCart'
 
 export const CheckoutSuccess = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { clearCart } = useCart()
@@ -31,17 +33,17 @@ export const CheckoutSuccess = () => {
           <CheckCircle sx={{ fontSize: 120, color: 'success.main' }} />
 
           <Typography variant="h3" fontWeight="bold">
-            ¡Pago Exitoso!
+            {t('checkoutSuccess.title')}
           </Typography>
 
           <Typography variant="h6" color="text.secondary">
-            {isRental ? 'Tu alquiler ha sido confirmado y pagado' : 'Tu pedido ha sido confirmado y pagado'}
+            {isRental ? t('checkoutSuccess.rentalConfirmed') : t('checkoutSuccess.orderConfirmed')}
           </Typography>
 
           <Typography variant="body1" color="text.secondary">
             {isRental
-              ? 'Recibirás un email de confirmación con los detalles del alquiler. Recoge la bicicleta en el taller el día de inicio.'
-              : 'Recibirás un email de confirmación con los detalles de tu pedido. El taller comenzará a preparar tu compra.'}
+              ? t('checkoutSuccess.rentalDetails')
+              : t('checkoutSuccess.orderDetails')}
           </Typography>
 
           <Stack direction="row" spacing={2} sx={{ mt: 4 }}>
@@ -50,7 +52,7 @@ export const CheckoutSuccess = () => {
               size="large"
               onClick={() => navigate(isRental ? '/customer-rentals' : '/my-orders')}
             >
-              {isRental ? 'Ver Mis Alquileres' : 'Ver Mis Pedidos'}
+              {isRental ? t('checkoutSuccess.viewMyRentals') : t('checkout.viewMyOrders')}
             </Button>
 
             <Button
@@ -58,7 +60,7 @@ export const CheckoutSuccess = () => {
               size="large"
               onClick={() => navigate(isRental ? '/alquileres' : '/catalog')}
             >
-              {isRental ? 'Ver más Bicis' : 'Seguir Comprando'}
+              {isRental ? t('checkoutSuccess.browseMoreBikes') : t('cart.continueShopping')}
             </Button>
           </Stack>
         </Stack>

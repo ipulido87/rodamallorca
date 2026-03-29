@@ -13,6 +13,7 @@ import {
 } from '@mui/material'
 import type { ChangeEvent } from 'react'
 import { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { getImageUrl } from '../../../utils/api-urls'
 import type { ProcessedImage } from '../services/media-service'
 import { uploadMultipleImages } from '../services/media-service'
@@ -30,6 +31,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   onImagesChange,
   disabled = false,
 }) => {
+  const { t } = useTranslation()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -41,7 +43,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     // Validar número máximo de imágenes
     const totalImages = currentImages.length + files.length
     if (totalImages > maxImages) {
-      setError(`Máximo ${maxImages} imágenes permitidas`)
+      setError(t('media.maxImagesAllowed', { max: maxImages }))
       return
     }
 
@@ -54,18 +56,16 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         ext.endsWith('.heic') ||
         ext.endsWith('.heif')
       ) {
-        setError(
-          'El formato HEIC/HEIF (fotos de iPhone) no está soportado. Convierte la imagen a JPG o PNG antes de subirla.'
-        )
+        setError(t('media.heicNotSupported'))
         return false
       }
       if (!file.type.startsWith('image/')) {
-        setError('Solo se permiten archivos de imagen')
+        setError(t('media.onlyImagesAllowed'))
         return false
       }
       if (file.size > 5 * 1024 * 1024) {
         // 5MB
-        setError('Las imágenes deben ser menores a 5MB')
+        setError(t('media.imageTooLarge'))
         return false
       }
       return true
@@ -86,7 +86,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         fileInputRef.current.value = ''
       }
     } catch (err) {
-      setError('Error al subir las imágenes')
+      setError(t('media.uploadError'))
       console.error('Upload error:', err)
     } finally {
       setLoading(false)
@@ -105,11 +105,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   return (
     <Box>
       <Typography variant="h6" gutterBottom>
-        Imágenes del producto
+        {t('media.productImages')}
       </Typography>
 
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Máximo {maxImages} imágenes. Formatos: JPG, PNG, WebP (no HEIC/HEIF). Tamaño máximo: 5MB por imagen.
+        {t('media.imageRequirements', { max: maxImages })}
       </Typography>
 
       {error && (
@@ -142,11 +142,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
               />
               <Typography variant="h6" gutterBottom>
                 {currentImages.length === 0
-                  ? 'Sube las primeras imágenes'
-                  : 'Agregar más imágenes'}
+                  ? t('media.uploadFirstImages')
+                  : t('media.addMoreImages')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Haz clic para seleccionar archivos o arrastra y suelta aquí
+                {t('media.clickToSelectOrDrag')}
               </Typography>
               <Button
                 variant="contained"

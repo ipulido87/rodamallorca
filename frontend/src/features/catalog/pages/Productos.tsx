@@ -145,7 +145,7 @@ export const Productos = () => {
         {productsPagination.total > 0 && (
           <Box textAlign="center" sx={{ mt: 4 }}>
             <Typography variant="body2" color="text.secondary">
-              Mostrando {filteredProducts.length} de {productsPagination.total} recambios
+              {t('common.showing')} {filteredProducts.length} {t('common.of')} {productsPagination.total} {t('catalog.products.count')}
             </Typography>
           </Box>
         )}
@@ -157,7 +157,7 @@ export const Productos = () => {
     <Container maxWidth="xl" sx={{ py: 6 }}>
       <Seo
         title="Recambios y Componentes de Bicicleta en Mallorca | RodaMallorca"
-        description="Compra recambios, componentes y accesorios para tu bicicleta en Mallorca. Piezas de talleres verificados con envío y recogida en Mallorca."
+        description={t('catalog.products.subtitle')}
         canonicalPath="/productos"
         keywords="recambios bicicleta Mallorca, componentes ciclismo Mallorca, piezas bicicleta Palma, accesorios bici Mallorca"
         structuredData={[
@@ -199,7 +199,7 @@ export const Productos = () => {
         <SmartSearchBar
           value={rawQuery}
           onChange={setQuery}
-          placeholder='Describe lo que buscas: "llanta usada barata en Palma"...'
+          placeholder={t('catalog.products.searchPlaceholder')}
           parsedQuery={parsedQuery}
         />
       </Box>

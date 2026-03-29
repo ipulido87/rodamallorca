@@ -17,6 +17,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/hooks/useAuth'
 import { useCart } from '../hooks/useCart'
@@ -25,6 +26,7 @@ import { notify } from '../../../shared/services/notification-service'
 import { getErrorMessage } from '@/shared/api'
 
 export const Checkout = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { user } = useAuth()
   const { cart, clearCart, getTotalAmount, getItemCount } = useCart()
@@ -44,13 +46,13 @@ export const Checkout = () => {
     }
 
     if (cart.items.length === 0) {
-      notify.warning('Tu carrito está vacío')
+      notify.warning(t('checkout.emptyCart'))
       navigate('/cart')
       return
     }
 
     if (!cart.workshopId) {
-      notify.error('No se ha seleccionado ningún taller')
+      notify.error(t('checkout.noWorkshop'))
       navigate('/cart')
       return
     }
@@ -77,13 +79,13 @@ export const Checkout = () => {
       const apiMessage = getErrorMessage(err, '')
       const isStripeConnectError =
         apiMessage.includes('Stripe Connect') ||
-        apiMessage.includes('no puede recibir pagos') ||
-        apiMessage.includes('verificación de Stripe')
+        apiMessage.includes(t('checkout.cantReceivePayments')) ||
+        apiMessage.includes(t('checkout.stripeVerification'))
 
       setError(
         isStripeConnectError
-          ? `${cart.items[0]?.workshopName || 'Este taller'} aún no acepta pagos online. Por favor, contacta directamente con el taller.`
-          : apiMessage || 'Error al iniciar el pago. Por favor intenta de nuevo.'
+          ? `${cart.items[0]?.workshopName || t('checkout.thisWorkshop')} ${t('checkout.noOnlinePayments')}`
+          : apiMessage || t('checkout.paymentError')
       )
       setLoading(false)
     }
@@ -94,10 +96,10 @@ export const Checkout = () => {
       <Container maxWidth="lg">
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <Typography variant="h6" gutterBottom>
-            Please log in to checkout
+            {t('checkout.loginRequired')}
           </Typography>
           <Button variant="contained" onClick={() => navigate('/login')}>
-            Log In
+            {t('checkout.logIn')}
           </Button>
         </Box>
       </Container>
@@ -109,10 +111,10 @@ export const Checkout = () => {
       <Container maxWidth="lg">
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <Typography variant="h6" gutterBottom>
-            Your cart is empty
+            {t('checkout.emptyCart')}
           </Typography>
           <Button variant="contained" onClick={() => navigate('/catalog')}>
-            Browse Catalog
+            {t('cart.browseCatalog')}
           </Button>
         </Box>
       </Container>
@@ -125,20 +127,20 @@ export const Checkout = () => {
         <Box sx={{ py: 8, textAlign: 'center' }}>
           <CheckCircle sx={{ fontSize: 100, color: 'success.main', mb: 2 }} />
           <Typography variant="h4" gutterBottom>
-            Order Placed Successfully!
+            {t('checkout.orderSuccess')}
           </Typography>
           <Typography variant="body1" color="text.secondary" gutterBottom>
-            Your order has been submitted to the workshop.
+            {t('checkout.orderSubmitted')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Redirecting to your orders...
+            {t('checkout.redirectingOrders')}
           </Typography>
           <Button
             variant="contained"
             onClick={() => navigate('/my-orders')}
             sx={{ mt: 2 }}
           >
-            View My Orders
+            {t('checkout.viewMyOrders')}
           </Button>
         </Box>
       </Container>
@@ -149,7 +151,7 @@ export const Checkout = () => {
     <Container maxWidth="lg">
       <Box sx={{ py: 4 }}>
         <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
-          Checkout
+          {t('checkout.title')}
         </Typography>
 
         <Box
@@ -165,7 +167,7 @@ export const Checkout = () => {
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Workshop
+                  {t('checkout.workshopLabel')}
                 </Typography>
                 <Typography variant="body1">
                   {cart.items[0].workshopName}
@@ -177,16 +179,16 @@ export const Checkout = () => {
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Order Items ({getItemCount()} items)
+                  {t('checkout.orderItems', { count: getItemCount() })}
                 </Typography>
                 <TableContainer>
                   <Table size="small">
                     <TableHead>
                       <TableRow>
-                        <TableCell>Product</TableCell>
-                        <TableCell align="center">Qty</TableCell>
-                        <TableCell align="right">Price</TableCell>
-                        <TableCell align="right">Subtotal</TableCell>
+                        <TableCell>{t('cart.product')}</TableCell>
+                        <TableCell align="center">{t('checkout.qty')}</TableCell>
+                        <TableCell align="right">{t('cart.price')}</TableCell>
+                        <TableCell align="right">{t('cart.subtotal')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -229,13 +231,13 @@ export const Checkout = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Order Notes (Optional)
+                  {t('checkout.orderNotes')}
                 </Typography>
                 <TextField
                   fullWidth
                   multiline
                   rows={4}
-                  placeholder="Add any special instructions or notes for the workshop..."
+                  placeholder={t('checkout.orderNotesPlaceholder')}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   variant="outlined"
@@ -249,7 +251,7 @@ export const Checkout = () => {
             <Card sx={{ position: 'sticky', top: 20 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Order Summary
+                  {t('cart.orderSummary')}
                 </Typography>
                 <Divider sx={{ my: 2 }} />
                 <Box
@@ -259,7 +261,7 @@ export const Checkout = () => {
                     mb: 1,
                   }}
                 >
-                  <Typography variant="body1">Subtotal:</Typography>
+                  <Typography variant="body1">{t('cart.subtotal')}:</Typography>
                   <Typography variant="body1">
                     {formatPrice(getTotalAmount())}
                   </Typography>
@@ -271,7 +273,7 @@ export const Checkout = () => {
                     mb: 2,
                   }}
                 >
-                  <Typography variant="body1">Items:</Typography>
+                  <Typography variant="body1">{t('cart.items')}</Typography>
                   <Typography variant="body1">{getItemCount()}</Typography>
                 </Box>
                 <Divider sx={{ my: 2 }} />
@@ -282,7 +284,7 @@ export const Checkout = () => {
                     mb: 3,
                   }}
                 >
-                  <Typography variant="h6">Total:</Typography>
+                  <Typography variant="h6">{t('cart.total')}</Typography>
                   <Typography variant="h6" color="primary" fontWeight={700}>
                     {formatPrice(getTotalAmount())}
                   </Typography>
@@ -306,7 +308,7 @@ export const Checkout = () => {
                 {cart.workshopCanAcceptPayments === false ? (
                   <>
                     <Alert severity="info" sx={{ mb: 2 }}>
-                      Este taller aún no tiene habilitados los pagos online. Contacta directamente con ellos para realizar tu compra.
+                      {t('checkout.paymentNotEnabled')}
                     </Alert>
                     <Button
                       variant="contained"
@@ -316,7 +318,7 @@ export const Checkout = () => {
                       onClick={() => navigate(`/workshop/${cart.workshopId}`)}
                       sx={{ mb: 1.5 }}
                     >
-                      Ver página del taller
+                      {t('checkout.viewWorkshopPage')}
                     </Button>
                     {cart.workshopPhone && (
                       <Button
@@ -327,7 +329,7 @@ export const Checkout = () => {
                         href={`tel:${cart.workshopPhone}`}
                         sx={{ mb: 1.5 }}
                       >
-                        Llamar: {cart.workshopPhone}
+                        {t('checkout.call')}{cart.workshopPhone}
                       </Button>
                     )}
                   </>
@@ -340,7 +342,7 @@ export const Checkout = () => {
                     disabled={loading}
                     sx={{ mb: 1.5 }}
                   >
-                    {loading ? 'Redirigiendo a pago...' : 'Pagar con Tarjeta'}
+                    {loading ? t('checkout.redirectingPayment') : t('checkout.payWithCard')}
                   </Button>
                 )}
 
@@ -351,7 +353,7 @@ export const Checkout = () => {
                   onClick={() => navigate('/cart')}
                   disabled={loading}
                 >
-                  Volver al Carrito
+                  {t('checkout.backToCart')}
                 </Button>
               </CardContent>
             </Card>

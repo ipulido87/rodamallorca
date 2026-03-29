@@ -30,8 +30,10 @@ import {
   type OrderStatus,
 } from '../services/order-service'
 import { isAxiosError } from 'axios'
+import { useTranslation } from 'react-i18next'
 
 export const MyOrders = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { user } = useAuth()
   const { showSuccess, showError } = useSnackbar()
@@ -87,11 +89,11 @@ export const MyOrders = () => {
       )
 
       setCancelDialog({ open: false, order: null })
-      showSuccess('✓ Pedido cancelado correctamente')
+      showSuccess(t('orders.orderCancelled'))
     } catch (err) {
       console.error('❌ [MY_ORDERS] Error cancelando pedido:', err)
 
-      let errorMessage = 'Error al cancelar el pedido'
+      let errorMessage = t('orders.errorCancellingOrder')
 
       if (isAxiosError(err)) {
         const data = err.response?.data as Record<string, unknown> | undefined
@@ -101,7 +103,7 @@ export const MyOrders = () => {
         if (backendMessage) {
           // Mejorar mensajes específicos
           if (backendMessage.includes('completado') || backendMessage.includes('cancelado')) {
-            errorMessage = '⚠️ Este pedido ya está en estado final y no puede ser modificado'
+            errorMessage = t('orders.orderFinalState')
           } else if (backendMessage.includes('no se puede')) {
             errorMessage = `⚠️ ${backendMessage}`
           } else {
@@ -136,9 +138,9 @@ export const MyOrders = () => {
 
   const getOrderTypeLabel = (type?: string) => {
     const labels: Record<string, string> = {
-      PRODUCT_ORDER: 'Producto',
-      SERVICE_REPAIR: 'Reparación',
-      RENTAL: 'Alquiler',
+      PRODUCT_ORDER: t('orders.typeProduct'),
+      SERVICE_REPAIR: t('orders.typeRepair'),
+      RENTAL: t('orders.typeRental'),
     }
     return labels[type || 'PRODUCT_ORDER']
   }
@@ -158,7 +160,7 @@ export const MyOrders = () => {
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <CircularProgress size={60} />
           <Typography variant="h6" sx={{ mt: 2 }}>
-            Cargando tus pedidos...
+            {t('orders.loadingOrders')}
           </Typography>
         </Box>
       </Container>
@@ -174,10 +176,10 @@ export const MyOrders = () => {
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" fontWeight="bold" gutterBottom>
-            Mis Pedidos
+            {t('orders.myOrders')}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Gestiona y consulta el estado de tus pedidos
+            {t('orders.myOrdersSubtitle')}
           </Typography>
         </Box>
 
@@ -195,7 +197,7 @@ export const MyOrders = () => {
               sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }}
             />
             <Typography variant="h5" color="text.secondary">
-              No tienes pedidos todavía
+              {t('orders.noOrdersYet')}
             </Typography>
           </Box>
         ) : (
@@ -220,7 +222,7 @@ export const MyOrders = () => {
                       >
                         {order.type === 'RENTAL' ? <TwoWheeler /> : <Receipt />}
                         <Typography variant="h6">
-                          Pedido #{order.id.slice(0, 8)}
+                          {t('orders.orderPrefix')} #{order.id.slice(0, 8)}
                         </Typography>
                         <Chip
                           size="small"
@@ -245,7 +247,7 @@ export const MyOrders = () => {
                           <Typography variant="caption" color="text.secondary">
                             {order.items[0].rentalStartDate && formatDate(order.items[0].rentalStartDate)} -{' '}
                             {order.items[0].rentalEndDate && formatDate(order.items[0].rentalEndDate)}
-                            {order.items[0].rentalDays && ` (${order.items[0].rentalDays} días)`}
+                            {order.items[0].rentalDays && ` (${order.items[0].rentalDays} ${t('orders.days')})`}
                           </Typography>
                         </Box>
                       )}
@@ -258,7 +260,7 @@ export const MyOrders = () => {
 
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="body2" color="text.secondary">
-                      Total
+                      {t('orders.total')}
                     </Typography>
                     <Typography variant="h5" fontWeight="bold" color="primary">
                       {formatPrice(order.totalAmount)}
@@ -267,7 +269,7 @@ export const MyOrders = () => {
 
                   {order.notes && (
                     <Typography variant="body2" color="text.secondary" mb={2}>
-                      Notas: {order.notes}
+                      {t('orders.notes')}: {order.notes}
                     </Typography>
                   )}
 
@@ -277,7 +279,7 @@ export const MyOrders = () => {
                       startIcon={<Visibility />}
                       onClick={() => navigate(`/orders/${order.id}`)}
                     >
-                      Ver Detalles
+                      {t('orders.viewDetails')}
                     </Button>
                     {order.status !== 'COMPLETED' &&
                       order.status !== 'CANCELLED' && (
@@ -287,7 +289,7 @@ export const MyOrders = () => {
                           startIcon={<Cancel />}
                           onClick={() => handleCancelClick(order)}
                         >
-                          Cancelar Pedido
+                          {t('orders.cancelOrder')}
                         </Button>
                       )}
                   </Stack>
@@ -304,14 +306,14 @@ export const MyOrders = () => {
           maxWidth="sm"
           fullWidth
         >
-          <DialogTitle>Confirmar cancelación</DialogTitle>
+          <DialogTitle>{t('orders.confirmCancel')}</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              ¿Estás seguro de que quieres cancelar el pedido #
+              {t('orders.confirmCancelOrderMessage')} #
               {cancelDialog.order?.id.slice(0, 8)}?
             </DialogContentText>
             <DialogContentText sx={{ mt: 2, color: 'warning.main' }}>
-              Esta acción no se puede deshacer.
+              {t('orders.cannotUndo')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -319,7 +321,7 @@ export const MyOrders = () => {
               onClick={handleCancelDialogClose}
               disabled={cancelLoading !== null}
             >
-              No, Mantener Pedido
+              {t('orders.keepOrder')}
             </Button>
             <Button
               onClick={handleCancelConfirm}
@@ -327,7 +329,7 @@ export const MyOrders = () => {
               variant="contained"
               disabled={cancelLoading !== null}
             >
-              {cancelLoading ? 'Cancelando...' : 'Sí, Cancelar Pedido'}
+              {cancelLoading ? t('orders.cancelling') : t('orders.yesCancelOrder')}
             </Button>
           </DialogActions>
         </Dialog>
