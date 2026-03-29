@@ -20,6 +20,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { ApiError } from '../../../shared/types/api'
 import { adaptProductImages } from '../../../utils/adapt-product-Images'
@@ -31,6 +32,7 @@ import type { PublicProduct } from '../../catalog/types/catalog'
 import { ProductImageGallery } from '../components/product-image-galery'
 
 export const ProductDetail = () => {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -101,7 +103,7 @@ export const ProductDetail = () => {
     return (
       <Container maxWidth="lg">
         <Box sx={{ py: 4, textAlign: 'center' }}>
-          <Typography variant="h6">Cargando producto...</Typography>
+          <Typography variant="h6">{t('productDetail.loading')}</Typography>
         </Box>
       </Container>
     )
@@ -112,10 +114,10 @@ export const ProductDetail = () => {
       <Container maxWidth="lg">
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <Typography variant="h6" color="error" gutterBottom>
-            {error || 'Producto no encontrado'}
+            {error || t('productDetail.notFound')}
           </Typography>
           <Button variant="contained" onClick={() => navigate('/catalog')}>
-            Volver al Catálogo
+            {t('productDetail.backToCatalog')}
           </Button>
         </Box>
       </Container>
@@ -166,7 +168,7 @@ export const ProductDetail = () => {
           <IconButton onClick={() => navigate('/catalog')} sx={{ mr: 2 }}>
             <ArrowBack />
           </IconButton>
-          <Typography variant="h4" fontWeight="bold">Detalles del Producto</Typography>
+          <Typography variant="h4" fontWeight="bold">{t('productDetail.title')}</Typography>
         </Box>
 
         <Box
@@ -218,14 +220,14 @@ export const ProductDetail = () => {
 
             {product.category && (
               <Typography variant="body1" gutterBottom>
-                <strong>Categoría:</strong> {product.category.name}
+                <strong>{t('productDetail.category')}:</strong> {product.category.name}
               </Typography>
             )}
 
             {product.description && (
               <Box sx={{ my: 3 }}>
                 <Typography variant="h6" gutterBottom>
-                  Descripción
+                  {t('productDetail.description')}
                 </Typography>
                 <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
                   {product.description}
@@ -238,7 +240,7 @@ export const ProductDetail = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <Store sx={{ mr: 1, color: 'primary.main' }} />
-                  <Typography variant="h6">Información del Taller</Typography>
+                  <Typography variant="h6">{t('productDetail.workshopInfo')}</Typography>
                 </Box>
 
                 <Typography variant="h6" gutterBottom>
@@ -260,7 +262,7 @@ export const ProductDetail = () => {
                   onClick={() => navigate(`/workshop/${product.workshop.id}`)}
                   sx={{ mt: 1, p: 0 }}
                 >
-                  Ver taller
+                  {t('productDetail.viewWorkshop')}
                 </Button>
               </CardContent>
             </Card>
@@ -278,10 +280,10 @@ export const ProductDetail = () => {
                   }}
                 >
                   <Typography variant="body1" color="info.dark" gutterBottom fontWeight={600}>
-                    Este producto no está disponible para compra online
+                    {t('productDetail.notAvailableOnline')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
-                    El taller aún no tiene habilitados los pagos online. Visita su página o llámales directamente para adquirirlo.
+                    {t('productDetail.paymentsNotEnabled')}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
                     <Button
@@ -289,7 +291,7 @@ export const ProductDetail = () => {
                       size="medium"
                       onClick={() => navigate(`/workshop/${product.workshop.id}`)}
                     >
-                      Ver página del taller
+                      {t('productDetail.viewWorkshopPage')}
                     </Button>
                     {product.workshop.phone && (
                       <Button
@@ -316,7 +318,7 @@ export const ProductDetail = () => {
                     }}
                   >
                     <Typography variant="body1" fontWeight={500}>
-                      Cantidad:
+                      {t('productDetail.quantity')}:
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <IconButton
@@ -355,14 +357,14 @@ export const ProductDetail = () => {
                       onClick={handleAddToCart}
                       sx={{ flex: 1 }}
                     >
-                      Añadir al Carrito
+                      {t('productDetail.addToCart')}
                     </Button>
                     <Button
                       variant="outlined"
                       size="large"
                       onClick={() => navigate('/cart')}
                     >
-                      Ver Carrito ({getItemCount()})
+                      {t('productDetail.viewCart')} ({getItemCount()})
                     </Button>
                   </Box>
                 </>
@@ -371,10 +373,10 @@ export const ProductDetail = () => {
               {product.status.toUpperCase() !== 'PUBLISHED' && user && (
                 <Box sx={{ textAlign: 'center', py: 2 }}>
                   <Typography variant="body1" color="warning.main" gutterBottom>
-                    Este producto está en estado {product.status} y no está disponible para compra.
+                    {t('productDetail.statusNotAvailable', { status: product.status })}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Solo los productos publicados pueden ser añadidos al carrito.
+                    {t('productDetail.onlyPublishedCanBuy')}
                   </Typography>
                 </Box>
               )}
@@ -382,13 +384,13 @@ export const ProductDetail = () => {
               {!user && (
                 <Box sx={{ textAlign: 'center', py: 2 }}>
                   <Typography variant="body1" color="text.secondary" gutterBottom>
-                    Por favor inicia sesión para comprar este producto.
+                    {t('productDetail.loginToBuy')}
                   </Typography>
                   <Button
                     variant="contained"
                     onClick={() => navigate('/login')}
                   >
-                    Iniciar Sesión
+                    {t('nav.login')}
                   </Button>
                 </Box>
               )}
@@ -400,7 +402,7 @@ export const ProductDetail = () => {
         <Card sx={{ mt: 4 }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              Información del Producto
+              {t('productDetail.productInfo')}
             </Typography>
             <Box
               sx={{
@@ -411,7 +413,7 @@ export const ProductDetail = () => {
             >
               <Box>
                 <Typography variant="caption" color="text.secondary">
-                  Publicado
+                  {t('productDetail.published')}
                 </Typography>
                 <Typography variant="body2">
                   {new Date(product.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
@@ -420,7 +422,7 @@ export const ProductDetail = () => {
               {product.category && (
                 <Box>
                   <Typography variant="caption" color="text.secondary">
-                    Categoría
+                    {t('productDetail.category')}
                   </Typography>
                   <Typography variant="body2">{product.category.name}</Typography>
                 </Box>

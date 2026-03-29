@@ -260,7 +260,7 @@ export const Cart = () => {
         >
           <Stack direction={isMobile ? 'column' : 'row'} spacing={2}>
             <Button variant="outlined" onClick={() => navigate('/catalog')} fullWidth={isMobile}>
-              Continue Shopping
+              {t('cart.continueShopping')}
             </Button>
             <Button
               variant="outlined"
@@ -268,27 +268,27 @@ export const Cart = () => {
               onClick={clearCart}
               fullWidth={isMobile}
             >
-              Clear Cart
+              {t('cart.clearCart')}
             </Button>
           </Stack>
 
           <Card sx={{ minWidth: isMobile ? 'auto' : 300, width: isMobile ? '100%' : 'auto' }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Order Summary
+                {t('cart.orderSummary')}
               </Typography>
               <Divider sx={{ my: 2 }} />
               <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
-                <Typography variant="body1">Subtotal:</Typography>
+                <Typography variant="body1">{t('cart.subtotal')}:</Typography>
                 <Typography variant="body1">{formatPrice(getTotalAmount())}</Typography>
               </Stack>
               <Stack direction="row" justifyContent="space-between" sx={{ mb: 2 }}>
-                <Typography variant="body1">Items:</Typography>
+                <Typography variant="body1">{t('cart.items')}</Typography>
                 <Typography variant="body1">{getItemCount()}</Typography>
               </Stack>
               <Divider sx={{ my: 2 }} />
               <Stack direction="row" justifyContent="space-between" sx={{ mb: 3 }}>
-                <Typography variant="h6">Total:</Typography>
+                <Typography variant="h6">{t('cart.total')}</Typography>
                 <Typography variant="h6" color="primary" fontWeight={700}>
                   {formatPrice(getTotalAmount())}
                 </Typography>
@@ -299,7 +299,7 @@ export const Cart = () => {
                 size="large"
                 onClick={handleCheckout}
               >
-                Proceed to Checkout
+                {t('cart.checkout')}
               </Button>
             </CardContent>
           </Card>

@@ -35,6 +35,7 @@ import {
   useTheme,
 } from '@mui/material'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import useSWR from 'swr'
 import {
@@ -99,6 +100,7 @@ const adaptProductForLayout = (product: Product) => ({
 })
 
 export const WorkshopDetail = () => {
+  const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const theme = useTheme()
@@ -168,7 +170,7 @@ export const WorkshopDetail = () => {
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <CircularProgress size={60} />
           <Typography variant="h6" sx={{ mt: 2 }}>
-            Cargando información del taller...
+            {t('workshopDetail.loading')}
           </Typography>
         </Box>
       </Container>
@@ -180,14 +182,14 @@ export const WorkshopDetail = () => {
       <Container maxWidth="lg">
         <Box sx={{ py: 4, textAlign: 'center' }}>
           <Alert severity="error" sx={{ mb: 3 }}>
-            {error?.message || 'Taller no encontrado'}
+            {error?.message || t('workshopDetail.notFound')}
           </Alert>
           <Button
             variant="contained"
             onClick={() => navigate('/catalog')}
             startIcon={<ArrowBack />}
           >
-            Volver al Catálogo
+            {t('workshopDetail.backToCatalog')}
           </Button>
         </Box>
       </Container>
@@ -249,7 +251,7 @@ export const WorkshopDetail = () => {
             <ArrowBack />
           </IconButton>
           <Typography variant="h4" fontWeight="bold">
-            Detalle del Taller
+            {t('workshopDetail.title')}
           </Typography>
         </Box>
 
@@ -302,7 +304,7 @@ export const WorkshopDetail = () => {
                     {workshop.verified && (
                       <Chip
                         icon={<Verified />}
-                        label="Verificado"
+                        label={t('common.verified')}
                         color="success"
                         variant="filled"
                         sx={{ fontWeight: 600 }}
@@ -327,7 +329,7 @@ export const WorkshopDetail = () => {
                         {workshop.rating}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        ({workshop.reviewCount} reseñas)
+                        ({workshop.reviewCount} {t('workshopDetail.reviews')})
                       </Typography>
                     </Stack>
                   )}
@@ -375,7 +377,7 @@ export const WorkshopDetail = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Business sx={{ mr: 2, color: 'primary.main' }} />
                       <Typography variant="body1">
-                        Miembro desde{' '}
+                        {t('workshopDetail.memberSince')}{' '}
                         {new Date(workshop.createdAt).getFullYear()}
                       </Typography>
                     </Box>
@@ -394,7 +396,7 @@ export const WorkshopDetail = () => {
                       fontWeight: 600,
                     }}
                   >
-                    Llamar Ahora
+                    {t('workshopDetail.callNow')}
                   </Button>
 
                   <Button
@@ -407,7 +409,7 @@ export const WorkshopDetail = () => {
                       fontWeight: 600,
                     }}
                   >
-                    Enviar Email
+                    {t('workshopDetail.sendEmail')}
                   </Button>
 
                   <Button
@@ -421,7 +423,7 @@ export const WorkshopDetail = () => {
                       fontWeight: 600,
                     }}
                   >
-                    Ver Productos
+                    {t('workshopDetail.viewProducts')}
                   </Button>
                 </Stack>
               </Stack>
@@ -437,10 +439,10 @@ export const WorkshopDetail = () => {
               textColor="primary"
               indicatorColor="primary"
             >
-              <Tab label="Información" icon={<Business />} iconPosition="start" />
-              <Tab label="Productos" icon={<ShoppingCart />} iconPosition="start" />
-              <Tab label="Servicios" icon={<Build />} iconPosition="start" />
-              <Tab label="Opiniones" icon={<RateReview />} iconPosition="start" />
+              <Tab label={t('workshopDetail.tabInfo')} icon={<Business />} iconPosition="start" />
+              <Tab label={t('workshopDetail.tabProducts')} icon={<ShoppingCart />} iconPosition="start" />
+              <Tab label={t('workshopDetail.tabServices')} icon={<Build />} iconPosition="start" />
+              <Tab label={t('workshopDetail.tabReviews')} icon={<RateReview />} iconPosition="start" />
             </Tabs>
           </Box>
 
@@ -454,7 +456,7 @@ export const WorkshopDetail = () => {
                   <Card sx={{ flex: 1, borderRadius: 3 }}>
                     <CardContent sx={{ p: 3 }}>
                       <Typography variant="h5" fontWeight="bold" gutterBottom>
-                        Servicios Destacados
+                        {t('workshopDetail.featuredServices')}
                       </Typography>
                       <Stack spacing={1}>
                         {workshop.services.map((service, index) => (
@@ -476,7 +478,7 @@ export const WorkshopDetail = () => {
                   <Card sx={{ flex: 1, borderRadius: 3 }}>
                     <CardContent sx={{ p: 3 }}>
                       <Typography variant="h5" fontWeight="bold" gutterBottom>
-                        Especialidades
+                        {t('workshopDetail.specialties')}
                       </Typography>
                       <Stack spacing={1}>
                         {workshop.specialties.map((specialty, index) => (
@@ -499,21 +501,21 @@ export const WorkshopDetail = () => {
                 <CardContent sx={{ p: 3 }}>
                   <Typography variant="h5" fontWeight="bold" gutterBottom>
                     <Schedule sx={{ mr: 1, verticalAlign: 'middle' }} />
-                    Horarios de Atención
+                    {t('workshopDetail.businessHours')}
                   </Typography>
                   <Typography variant="body1" color="text.secondary">
-                    Lunes a Viernes: 9:00 - 18:00
+                    {t('workshopDetail.weekdayHours')}
                     <br />
-                    Sábados: 9:00 - 14:00
+                    {t('workshopDetail.saturdayHours')}
                     <br />
-                    Domingos: Cerrado
+                    {t('workshopDetail.sundayHours')}
                   </Typography>
                   <Typography
                     variant="caption"
                     color="warning.main"
                     sx={{ mt: 2, display: 'block' }}
                   >
-                    * Los horarios pueden variar en días festivos
+                    {t('workshopDetail.holidayNote')}
                   </Typography>
                 </CardContent>
               </Card>
@@ -526,18 +528,18 @@ export const WorkshopDetail = () => {
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <CircularProgress />
                 <Typography variant="body1" sx={{ mt: 2 }}>
-                  Cargando productos...
+                  {t('workshopDetail.loadingProducts')}
                 </Typography>
               </Box>
             ) : products.length > 0 ? (
               <ModernProductLayout
                 products={products.map(adaptProductForLayout)}
                 loading={false}
-                emptyMessage="Este taller no tiene productos disponibles"
+                emptyMessage={t('workshopDetail.noProducts')}
               />
             ) : (
               <Alert severity="info">
-                Este taller no tiene productos publicados en este momento.
+                {t('workshopDetail.noProductsPublished')}
               </Alert>
             )}
           </TabPanel>
@@ -548,18 +550,18 @@ export const WorkshopDetail = () => {
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <CircularProgress />
                 <Typography variant="body1" sx={{ mt: 2 }}>
-                  Cargando servicios...
+                  {t('workshopDetail.loadingServices')}
                 </Typography>
               </Box>
             ) : services.length > 0 ? (
               <ModernServiceLayout
                 services={services}
                 loading={false}
-                emptyMessage="Este taller no tiene servicios disponibles"
+                emptyMessage={t('workshopDetail.noServices')}
               />
             ) : (
               <Alert severity="info">
-                Este taller no tiene servicios publicados en este momento.
+                {t('workshopDetail.noServicesPublished')}
               </Alert>
             )}
           </TabPanel>

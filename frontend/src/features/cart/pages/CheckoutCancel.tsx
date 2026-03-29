@@ -1,8 +1,10 @@
 import { Cancel } from '@mui/icons-material'
 import { Box, Button, Container, Stack, Typography } from '@mui/material'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 export const CheckoutCancel = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   return (
@@ -12,15 +14,15 @@ export const CheckoutCancel = () => {
           <Cancel sx={{ fontSize: 120, color: 'warning.main' }} />
 
           <Typography variant="h3" fontWeight="bold">
-            Pago Cancelado
+            {t('checkoutCancel.title')}
           </Typography>
 
           <Typography variant="h6" color="text.secondary">
-            No se realizó ningún cargo
+            {t('checkoutCancel.noCharge')}
           </Typography>
 
           <Typography variant="body1" color="text.secondary">
-            Puedes volver a tu carrito para completar el pago cuando estés listo.
+            {t('checkoutCancel.returnMessage')}
           </Typography>
 
           <Stack direction="row" spacing={2} sx={{ mt: 4 }}>
@@ -29,7 +31,7 @@ export const CheckoutCancel = () => {
               size="large"
               onClick={() => navigate('/cart')}
             >
-              Volver al Carrito
+              {t('checkoutCancel.backToCart')}
             </Button>
 
             <Button
@@ -37,7 +39,7 @@ export const CheckoutCancel = () => {
               size="large"
               onClick={() => navigate('/catalog')}
             >
-              Seguir Comprando
+              {t('checkoutCancel.continueShopping')}
             </Button>
           </Stack>
         </Stack>

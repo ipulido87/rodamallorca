@@ -17,6 +17,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type {
   FilterConfig,
   FilterValue,
@@ -38,6 +39,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   onClear,
   collapsible = true,
 }) => {
+  const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
 
   const hasActiveFilters = Object.entries(values).some(([key, value]) => {
@@ -74,7 +76,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               }
             >
               <MenuItem value="">
-                <em>Todas</em>
+                <em>{t('filterBar.all')}</em>
               </MenuItem>
               {filter.options?.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
@@ -175,7 +177,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           onClick={onClear}
           sx={{ whiteSpace: 'nowrap' }}
         >
-          Limpiar filtros
+          {t('filterBar.clearFilters')}
         </Button>
       )}
     </Stack>
@@ -212,8 +214,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       >
         <FilterList sx={{ mr: 1, color: 'text.secondary' }} />
         <Typography variant="body2" color="text.secondary" sx={{ flexGrow: 1 }}>
-          Filtros{' '}
-          {hasActiveFilters && `(${Object.keys(values).length} activos)`}
+          {t('common.filter')}{' '}
+          {hasActiveFilters && `(${Object.keys(values).length} ${t('filterBar.active')})`}
         </Typography>
         <IconButton size="small">
           {expanded ? <ExpandLess /> : <ExpandMore />}

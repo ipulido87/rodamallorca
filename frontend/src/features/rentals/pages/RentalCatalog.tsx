@@ -178,7 +178,7 @@ export const RentalCatalog = () => {
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography variant="h3" component="h1" gutterBottom fontWeight="bold">
-            Alquiler de Bicicletas en Mallorca
+            {t('rentalCatalog.title')}
           </Typography>
           <Typography variant="h6" color="text.secondary">
             {t('rentals.findPerfectBike')}
@@ -229,7 +229,7 @@ export const RentalCatalog = () => {
 
               {/* Fechas */}
               <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                Fechas
+                {t('rentalCatalog.dates')}
               </Typography>
               <RentalDateRangePicker
                 startDate={filters.startDate || ''}
