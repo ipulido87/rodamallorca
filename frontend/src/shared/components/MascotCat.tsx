@@ -60,6 +60,7 @@ function CatOnBikeSvg({ flipped = false }: { flipped?: boolean }) {
       style={{
         transform: flipped ? 'scaleX(-1)' : undefined,
         overflow: 'visible',
+        filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.55)) drop-shadow(0 0 2px rgba(0,0,0,0.4))',
       }}
     >
       {/* Inject CSS keyframes */}
@@ -70,30 +71,32 @@ function CatOnBikeSvg({ flipped = false }: { flipped?: boolean }) {
       {/* ══════════ BICICLETA ══════════ */}
 
       {/* Rueda trasera */}
-      <circle cx="50" cy="110" r="24" fill="none" stroke="#ccc" strokeWidth="3" />
-      <circle cx="50" cy="110" r="22" fill="none" stroke="#999" strokeWidth="1" />
+      <circle cx="50" cy="110" r="24" fill="none" stroke="#1a1a2e" strokeWidth="4.5" />
+      <circle cx="50" cy="110" r="24" fill="none" stroke="#ffffff" strokeWidth="2.5" />
+      <circle cx="50" cy="110" r="22" fill="none" stroke="#e0e0e0" strokeWidth="1.2" />
       {/* Radios traseros — CSS animation */}
       <g style={{ transformOrigin: '50px 110px', animation: 'spin-rear 2s linear infinite' }}>
-        <line x1="50" y1="88" x2="50" y2="132" stroke="#aaa" strokeWidth="0.8" />
-        <line x1="28" y1="110" x2="72" y2="110" stroke="#aaa" strokeWidth="0.8" />
-        <line x1="33" y1="94" x2="67" y2="126" stroke="#aaa" strokeWidth="0.8" />
-        <line x1="67" y1="94" x2="33" y2="126" stroke="#aaa" strokeWidth="0.8" />
+        <line x1="50" y1="88" x2="50" y2="132" stroke="#ffffff" strokeWidth="1.2" />
+        <line x1="28" y1="110" x2="72" y2="110" stroke="#ffffff" strokeWidth="1.2" />
+        <line x1="33" y1="94" x2="67" y2="126" stroke="#ffffff" strokeWidth="1.2" />
+        <line x1="67" y1="94" x2="33" y2="126" stroke="#ffffff" strokeWidth="1.2" />
       </g>
       {/* Buje trasero */}
-      <circle cx="50" cy="110" r="3" fill="#666" />
+      <circle cx="50" cy="110" r="3.5" fill="#1a1a2e" stroke="#ffffff" strokeWidth="0.6" />
 
       {/* Rueda delantera */}
-      <circle cx="150" cy="110" r="24" fill="none" stroke="#ccc" strokeWidth="3" />
-      <circle cx="150" cy="110" r="22" fill="none" stroke="#999" strokeWidth="1" />
+      <circle cx="150" cy="110" r="24" fill="none" stroke="#1a1a2e" strokeWidth="4.5" />
+      <circle cx="150" cy="110" r="24" fill="none" stroke="#ffffff" strokeWidth="2.5" />
+      <circle cx="150" cy="110" r="22" fill="none" stroke="#e0e0e0" strokeWidth="1.2" />
       {/* Radios delanteros — CSS animation */}
       <g style={{ transformOrigin: '150px 110px', animation: 'spin-front 2s linear infinite' }}>
-        <line x1="150" y1="88" x2="150" y2="132" stroke="#aaa" strokeWidth="0.8" />
-        <line x1="128" y1="110" x2="172" y2="110" stroke="#aaa" strokeWidth="0.8" />
-        <line x1="133" y1="94" x2="167" y2="126" stroke="#aaa" strokeWidth="0.8" />
-        <line x1="167" y1="94" x2="133" y2="126" stroke="#aaa" strokeWidth="0.8" />
+        <line x1="150" y1="88" x2="150" y2="132" stroke="#ffffff" strokeWidth="1.2" />
+        <line x1="128" y1="110" x2="172" y2="110" stroke="#ffffff" strokeWidth="1.2" />
+        <line x1="133" y1="94" x2="167" y2="126" stroke="#ffffff" strokeWidth="1.2" />
+        <line x1="167" y1="94" x2="133" y2="126" stroke="#ffffff" strokeWidth="1.2" />
       </g>
       {/* Buje delantero */}
-      <circle cx="150" cy="110" r="3" fill="#666" />
+      <circle cx="150" cy="110" r="3.5" fill="#1a1a2e" stroke="#ffffff" strokeWidth="0.6" />
 
       {/* Cuadro de la bici */}
       <line x1="72" y1="82" x2="138" y2="78" stroke="#e65100" strokeWidth="3.5" strokeLinecap="round" />
