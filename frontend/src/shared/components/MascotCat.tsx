@@ -1,4 +1,4 @@
-import { Box } from '@mui/material'
+import { Box, useMediaQuery, useTheme } from '@mui/material'
 import { motion, useMotionValue, animate } from 'framer-motion'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -210,12 +210,14 @@ interface MascotCatProps {
 }
 
 export function MascotCat({ onZoneChange, containerWidth = 600 }: MascotCatProps) {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const [isRinging, setIsRinging] = useState(false)
   const [direction, setDirection] = useState<'right' | 'left'>('right')
   const catX = useMotionValue(0)
   const lastZone = useRef<string>('none')
 
-  const catSize = { width: 110, height: 80 }
+  const catSize = isMobile ? { width: 60, height: 44 } : { width: 110, height: 80 }
 
   const updateZone = useCallback((x: number) => {
     const totalTravel = containerWidth + catSize.width * 2
@@ -260,7 +262,7 @@ export function MascotCat({ onZoneChange, containerWidth = 600 }: MascotCatProps
     catX.set(-catSize.width)
     const timeout = setTimeout(runCycle, 4000)
     return () => clearTimeout(timeout)
-  }, [containerWidth]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [containerWidth, isMobile]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleClick = () => {
     if (isRinging) return
@@ -273,7 +275,7 @@ export function MascotCat({ onZoneChange, containerWidth = 600 }: MascotCatProps
       style={{ x: catX }}
       sx={{
         position: 'absolute',
-        bottom: { xs: -22, md: -28 },
+        bottom: { xs: -12, sm: -22, md: -28 },
         width: catSize.width,
         height: catSize.height,
         zIndex: 10,
