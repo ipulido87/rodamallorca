@@ -1,9 +1,9 @@
-import { Box, Button, Chip, Container, Stack, useTheme, alpha } from '@mui/material'
+import { Box, Button, Chip, Container, Stack, Typography, useMediaQuery, useTheme, alpha } from '@mui/material'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Search, Build, KeyboardArrowDown } from '@mui/icons-material'
+import { ArrowForward, Build, KeyboardArrowDown, Search } from '@mui/icons-material'
 import { SmartSearchBar } from './SmartSearchBar'
 import { MascotCat, useCatTextInteraction } from './MascotCat'
 
@@ -93,6 +93,7 @@ const buttonVariants = {
 export function HeroSection() {
   const { t } = useTranslation()
   const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const navigate = useNavigate()
   const heroRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLDivElement>(null)
@@ -284,7 +285,13 @@ export function HeroSection() {
 
               {/* CTA Buttons */}
               <motion.div variants={itemVariants}>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mt: 1 }}>
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  spacing={{ xs: 0, sm: 2 }}
+                  alignItems={{ xs: 'flex-start', sm: 'center' }}
+                  sx={{ mt: 1 }}
+                >
+                  {/* Primary CTA */}
                   <MotionButton
                     variant="contained"
                     size="large"
@@ -298,11 +305,12 @@ export function HeroSection() {
                       color: '#0d1b2a',
                       px: 5,
                       py: 2,
-                      fontSize: '1.15rem',
+                      fontSize: { xs: '1rem', sm: '1.15rem' },
                       fontWeight: 700,
                       borderRadius: 3,
                       boxShadow: `0 10px 40px ${alpha('#000', 0.3)}`,
                       textTransform: 'none',
+                      width: { xs: '100%', sm: 'auto' },
                       transition: 'box-shadow 0.3s ease',
                       '&:hover': {
                         backgroundColor: '#ffffff',
@@ -313,31 +321,53 @@ export function HeroSection() {
                     {t('hero.exploreCatalog')}
                   </MotionButton>
 
+                  {/* Separator on mobile */}
+                  {isMobile && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: alpha('#ffffff', 0.4),
+                        textAlign: 'left',
+                        py: 1.5,
+                        letterSpacing: 2,
+                        fontSize: '0.7rem',
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      {t('hero.orJoin')}
+                    </Typography>
+                  )}
+
+                  {/* Secondary CTA — text link on mobile, glass button on desktop */}
                   <MotionButton
-                    variant="outlined"
-                    size="large"
+                    variant={isMobile ? 'text' : 'outlined'}
+                    size={isMobile ? 'small' : 'large'}
                     onClick={() => navigate('/register?type=owner')}
-                    startIcon={<Build />}
-                    whileHover={{ scale: 1.05, y: -4 }}
+                    startIcon={!isMobile ? <Build /> : undefined}
+                    endIcon={isMobile ? <ArrowForward fontSize="small" /> : undefined}
+                    whileHover={{ scale: isMobile ? 1.02 : 1.05, y: isMobile ? 0 : -4 }}
                     whileTap={{ scale: 0.97 }}
                     variants={buttonVariants}
                     sx={{
                       borderColor: alpha('#ffffff', 0.5),
                       color: theme.palette.common.white,
-                      px: 5,
-                      py: 2,
-                      fontSize: '1.15rem',
-                      fontWeight: 700,
+                      px: { xs: 0, sm: 5 },
+                      py: { xs: 0, sm: 2 },
+                      fontSize: { xs: '0.875rem', sm: '1.15rem' },
+                      fontWeight: { xs: 400, sm: 700 },
                       borderRadius: 3,
                       borderWidth: 2,
                       textTransform: 'none',
-                      backdropFilter: 'blur(10px)',
-                      backgroundColor: alpha('#ffffff', 0.05),
+                      backdropFilter: { xs: 'none', sm: 'blur(10px)' },
+                      backgroundColor: { xs: 'transparent', sm: alpha('#ffffff', 0.05) },
+                      opacity: { xs: 0.75, sm: 1 },
+                      minWidth: 0,
                       transition: 'all 0.3s ease',
                       '&:hover': {
                         borderColor: '#ffffff',
-                        backgroundColor: alpha('#ffffff', 0.15),
+                        backgroundColor: { xs: 'transparent', sm: alpha('#ffffff', 0.15) },
                         borderWidth: 2,
+                        opacity: 1,
                       },
                     }}
                   >
