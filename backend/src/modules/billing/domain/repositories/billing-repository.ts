@@ -33,6 +33,7 @@ export interface BillingRepository {
     status?: string
     customerId?: string
   }): Promise<Invoice[]>
+  findInvoicesByWorkshopAndDateRange(workshopId: string, startDate: Date, endDate?: Date): Promise<Invoice[]>
   updateInvoice(id: string, data: UpdateInvoiceInput): Promise<Invoice>
   deleteInvoice(id: string): Promise<void>
 }

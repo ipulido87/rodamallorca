@@ -3,6 +3,7 @@ import prisma from '../../../../../lib/prisma'
 import {
   UserDTO,
   UserRepository,
+  UserWithCredentials,
 } from '../../../domain/repositories/user-repository'
 
 export class UserRepositoryPrisma implements UserRepository {
@@ -18,6 +19,29 @@ export class UserRepositoryPrisma implements UserRepository {
           role: u.role,
         }
       : null
+  }
+
+  async findByEmailWithCredentials(email: string): Promise<UserWithCredentials | null> {
+    const u = await prisma.user.findUnique({ where: { email } })
+    if (!u) return null
+    return {
+      id: u.id,
+      email: u.email,
+      name: u.name,
+      picture: u.picture,
+      googleId: u.googleId,
+      role: u.role,
+      password: u.password,
+      verified: u.verified ?? false,
+      birthDate: u.birthDate,
+      phone: u.phone,
+      createdAt: u.createdAt,
+      updatedAt: u.updatedAt,
+      verificationCode: u.verificationCode,
+      codeExpiresAt: u.codeExpiresAt,
+      resetToken: u.resetToken,
+      resetTokenExpiresAt: u.resetTokenExpiresAt,
+    }
   }
 
   async create(input: {

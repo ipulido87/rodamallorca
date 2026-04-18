@@ -262,6 +262,24 @@ export const billingRepositoryPrisma: BillingRepository = {
     return invoices.map(toDomainInvoice)
   },
 
+  async findInvoicesByWorkshopAndDateRange(
+    workshopId: string,
+    startDate: Date,
+    endDate?: Date
+  ): Promise<Invoice[]> {
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        workshopId,
+        issueDate: {
+          gte: startDate,
+          ...(endDate ? { lte: endDate } : {}),
+        },
+      },
+      orderBy: { issueDate: 'asc' },
+    })
+    return invoices.map(toDomainInvoice)
+  },
+
   async updateInvoice(id: string, data: UpdateInvoiceInput): Promise<Invoice> {
     const invoice = await prisma.invoice.update({
       where: { id },
